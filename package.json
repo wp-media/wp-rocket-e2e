@@ -1,0 +1,19 @@
+{
+  "name": "wp-rocket-e2e",
+  "version": "1.0.0",
+  "description": "WP Rocket E2E Tests with Playwright",
+  "main": "playwright.config.ts",
+  "scripts": {
+    "test:e2e": "playwright test --config tests/e2e/playwright.config.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wp-media/wp-rocket-e2e.git"
+  },
+  "author": "WP Media",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wp-media/wp-rocket-e2e/issues"
+  },
+  "homepage": "https://github.com/wp-media/wp-rocket-e2e#readme"
+}
