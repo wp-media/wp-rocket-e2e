@@ -11,7 +11,7 @@ async function globalTeardown() {
 
   // Delete 'storageState.json'.
   const fs = require('fs');
-  fs.unlink('tests/e2e/config/storageState.json', err => {
+  fs.unlink('./config/storageState.json', err => {
     if (err) {
         console.log('Unable to clear storage.')
     }
