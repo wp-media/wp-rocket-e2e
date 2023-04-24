@@ -116,4 +116,12 @@ export class pageUtils {
     goto_helper = async () => {
         await this.page.goto(WP_BASE_URL + '/wp-admin/tools.php?page=rocket_e2e_tests_helper');
     }
+
+    upload_new_plugin = async (file) => {
+        const plugin_zip = '#pluginzip';
+        await this.page.goto(WP_BASE_URL + '/wp-admin/plugin-install.php');
+        await this.page.locator('.upload-view-toggle').click();
+        await this.page.locator(plugin_zip).click();
+        await this.page.locator(plugin_zip).setInputFiles(file);
+    }
 }
