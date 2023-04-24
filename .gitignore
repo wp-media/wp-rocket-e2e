@@ -1,1 +1,6 @@
 /config/wp.config.ts
+/node_modules
+/reports
+/artifacts
+package-lock.json
+package.json
