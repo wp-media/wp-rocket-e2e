@@ -6,7 +6,7 @@ import { devices } from '@playwright/test';
 import { WP_BASE_URL } from './config/wp.config';
 
 export default defineConfig({
-	testMatch: 'test-list.ts',
+	testMatch: 'test.list.ts',
 	globalTeardown: require.resolve('./config/global-teardown'),
 	/* Maximum time one test can run for. */
 	timeout: 90000,
