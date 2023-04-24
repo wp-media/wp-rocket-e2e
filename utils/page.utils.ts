@@ -85,11 +85,11 @@ export class pageUtils {
 
     toggle_plugin_activation = async (plugin_slug: string, activate = true) => {
         if (!activate) {
-            if (this.page.locator('#deactivate-' + plugin_slug).isVisible()) {
+            if (this.page.locator('#activate-' + plugin_slug).isVisible()) {
                 return;
             }
         } else {
-            if (this.page.locator('#activate-' + plugin_slug).isVisible()) {
+            if (this.page.locator('#deactivate-' + plugin_slug).isVisible()) {
                 return;
             }
         }
