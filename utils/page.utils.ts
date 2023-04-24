@@ -112,4 +112,8 @@ export class pageUtils {
     goto_site_health = async () => {
         await this.page.goto(WP_BASE_URL + '/wp-admin/site-health.php');
     }
+
+    goto_helper = async () => {
+        await this.page.goto(WP_BASE_URL + '/wp-admin/tools.php?page=rocket_e2e_tests_helper');
+    }
 }
