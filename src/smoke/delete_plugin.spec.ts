@@ -18,7 +18,7 @@ const deletePlugin = () => {
         };
 
         // With WPR deactivated, Delete WPR
-        page_utils.toggle_plugin_activation('wp-rocket', false);
+        await page_utils.toggle_plugin_activation('wp-rocket', false);
         await locator.delete.click();
 
         // Check that WPR is deactivated
