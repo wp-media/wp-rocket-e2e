@@ -1,14 +1,13 @@
 import path from 'path';
-import type { PlaywrightTestConfig } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
 import { devices } from '@playwright/test';
 
 // Internal dependencies
 import { WP_BASE_URL } from './config/wp.config';
 
-const config: PlaywrightTestConfig = {
-	globalSetup: require.resolve('./config/global-setup'),
+export default defineConfig({
+	testMatch: 'test-list.ts',
 	globalTeardown: require.resolve('./config/global-teardown'),
-	testDir: './src',
 	/* Maximum time one test can run for. */
 	timeout: 90000,
 	globalTimeout: 900000,
@@ -26,7 +25,7 @@ const config: PlaywrightTestConfig = {
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 	use: {
 		baseURL: WP_BASE_URL,
-		headless: true,
+		headless: false,
 		viewport: {
 			width: 960,
 			height: 700,
@@ -40,23 +39,25 @@ const config: PlaywrightTestConfig = {
 		trace: 'retain-on-failure',
 		screenshot: 'only-on-failure',
 		video: 'retain-on-failure',
-		// Tell all tests to load signed-in state from 'storageState.json'.
-		storageState: 'tests/e2e/config/storageState.json',
 		actionTimeout: 10_000, // 10 seconds.
 	},
-	webServer: {
-        command: 'npm run wp-env start\nnpm run wp-env run cli wp theme activate twentytwentytwo\nnpm run wp-env run cli wp plugin install classic-editor',
-        port: 8888,
-        timeout: 120 * 1000,
-        reuseExistingServer: true,
-    },
+	// webServer: {
+    //     command: 'npm run wp-env start\nnpm run wp-env run cli wp theme activate twentytwentytwo\nnpm run wp-env run cli wp plugin install classic-editor',
+    //     port: 8888,
+    //     timeout: 120 * 1000,
+    //     reuseExistingServer: true,
+    // },
 
 	/* Configure projects for major browsers */
 	projects: [
+		// Setup project
+		{ name: 'setup', testMatch: 'auth.setup.ts' },
 		{
 			name: 'chrome',
 			use: {
 				...devices['Desktop Chrome'],
+				// Use prepared auth state.
+				storageState: './config/storageState.json',
 			},
 		},
 
@@ -88,6 +89,4 @@ const config: PlaywrightTestConfig = {
 		//   },
 		// },
 	],
-};
-
-export default config;
+});
