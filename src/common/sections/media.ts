@@ -44,23 +44,56 @@ export class media {
     /**
      * Toggle lazyload option.
      */
-    toggleLazyLoad = async () => {
+    toggleLazyLoad = async (checked = false) => {
+        // Bail if passed state is currently active.
+        if (!checked) {
+            if (!await this.page.locator(this.selectors.lazyload.checkbox).isChecked()) {
+                return;
+            }
+        } else {
+            if (await this.page.locator(this.selectors.lazyload.checkbox).isChecked()) {
+                return;
+            }
+        }
+
         await this.locators.lazyload.click();
     }
 
     /**
      * Toggle lazyload iframes option.
      */
-    toggleLazyLoadIframes = async () => {
+    toggleLazyLoadIframes = async (checked = false) => {
+        // Bail if passed state is currently active.
+        if (!checked) {
+            if (!await this.page.locator(this.selectors.lazyload_iframes.checkbox).isChecked()) {
+                return;
+            }
+        } else {
+            if (await this.page.locator(this.selectors.lazyload_iframes.checkbox).isChecked()) {
+                return;
+            }
+        }
+
         await this.locators.lazyload_iframes.click();
     }
 
     /**
      * Toggle replace youtube preview option.
      */
-    toggleLazyLoadyoutube = async () => {
-        if (! await this.page.isChecked(this.selectors.lazyload_iframes.checkbox)) {
+    toggleLazyLoadyoutube = async (checked = false) => {
+        if (! await this.page.locator(this.selectors.lazyload_iframes.checkbox).isChecked()) {
             return;
+        }
+
+        // Bail if passed state is currently active.
+        if (!checked) {
+            if (!await this.page.locator(this.selectors.lazyload_youtube.checkbox).isChecked()) {
+                return;
+            }
+        } else {
+            if (await this.page.locator(this.selectors.lazyload_youtube.checkbox).isChecked()) {
+                return;
+            }
         }
         
         await this.locators.lazyload_youtube.click();
@@ -69,14 +102,22 @@ export class media {
     /**
      * Toggle image dimension option.
      */
-    toggleImageDimension = async () => {
+    toggleImageDimension = async (checked = false) => {
+        // Bail if passed state is currently active.
+        if (!checked) {
+            if (!await this.page.locator(this.selectors.image_dimensions.checkbox).isChecked()) {
+                return;
+            }
+        } else {
+            if (await this.page.locator(this.selectors.image_dimensions.checkbox).isChecked()) {
+                return;
+            }
+        }
         await this.locators.image_dimensions.click();
     }
 
     /**
      * Return default: false when no option in section is enabled
-     * 
-     * @returns bool
      */
      checkAnyEnabledOption = async () => {
         if (await this.page.isChecked(this.selectors.lazyload.checkbox)) {
@@ -92,5 +133,23 @@ export class media {
         }
 
         return false;
+    }
+
+    /**
+     * Mass toggle all settings
+     */
+    toggleEnableAll = async (enable_all = false) => {
+        if (enable_all) {
+            await this.toggleLazyLoad(true);
+            await this.toggleLazyLoadIframes(true);
+            await this.toggleLazyLoadyoutube(true);
+            await this.toggleImageDimension(true);
+            return;
+        }
+
+        await this.toggleLazyLoad();
+        await this.toggleLazyLoadIframes();
+        await this.toggleLazyLoadyoutube();
+        await this.toggleImageDimension();
     }
 }

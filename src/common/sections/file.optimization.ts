@@ -19,6 +19,14 @@ export class fileOptimization {
                 'enable': 'label[for=minify_concatenate_css]',
                 'activate': 'text=Activate combine CSS'
             },
+            'optimize_css_delivery':{
+                'checkbox': '#optimize_css_delivery',
+                'enable': 'label[for=optimize_css_delivery]',
+            },
+            'rucss': {
+                'enable': '#wpr-radio-remove_unused_css',
+                'activate': 'text=Activate Remove Unused CSS'
+            },
             'minify_js': {
                 'checkbox': '#minify_js',
                 'enable': 'label[for=minify_js]',
@@ -48,6 +56,13 @@ export class fileOptimization {
             'combine_css': {
                 'enable': this.page.locator(this.selectors.combine_css.enable),
                 'activate': this.page.locator(this.selectors.combine_css.activate)
+            },
+            'optimize_css_delivery': {
+                'enable': this.page.locator(this.selectors.optimize_css_delivery.enable)
+            },
+            'rucss': {
+                'enable': this.page.locator(this.selectors.rucss.enable),
+                'activate': this.page.locator(this.selectors.rucss.activate)
             },
             'minify_js': {
                 'enable': this.page.locator(this.selectors.minify_js.enable),
@@ -84,13 +99,163 @@ export class fileOptimization {
     /**
      * Toggle minify css option.
      */
-    toggleMinifyCss = async () => {
-        if (await this.page.isEnabled(this.selectors.combine_css.checkbox)) {
-            await this.locators.minify_css.enable.click();
+    toggleMinifyCss = async (checked = false) => {
+        // Bail if passed state is currently active.
+        if (!checked) {
+            if (!await this.page.locator(this.selectors.minify_css.checkbox).isChecked()) {
+                return;
+            }
+        } else {
+            if (await this.page.locator(this.selectors.minify_css.checkbox).isChecked()) {
+                return;
+            }
+        }
+
+        await this.locators.minify_css.enable.click();
+
+        if (checked) {
+            await this.page.waitForSelector(this.selectors.minify_css.activate);
+            await this.locators.minify_css.activate.click();
+        }
+    }
+
+    /**
+     * Toggle combine css option.
+     */
+    toggleCombineCss = async (checked = false) => {
+        // Bail if combine css is disabled.
+        if (!await this.page.isEnabled(this.selectors.combine_css.checkbox)) {
             return;
         }
 
-        await this.enableMinifiyCss();
+         // Bail if passed state is currently active.
+         if (!checked) {
+            if (!await this.page.locator(this.selectors.combine_css.checkbox).isChecked()) {
+                return;
+            }
+        } else {
+            if (await this.page.locator(this.selectors.combine_css.checkbox).isChecked()) {
+                return;
+            }
+        }
+
+        await this.locators.combine_css.enable.click();
+
+        if (checked) {
+            await this.page.waitForSelector(this.selectors.combine_css.activate);
+            await this.locators.combine_css.activate.click();
+        }
+    }
+
+    /**
+     * Toggle optimize css delivery option.
+     */
+    toggleOptimizeCssDelivery = async (checked = false) => {
+        // Bail if passed state is currently active.
+        if (!checked) {
+            if (!await this.page.locator(this.selectors.optimize_css_delivery.checkbox).isChecked()) {
+                return;
+            }
+        } else {
+            if (await this.page.locator(this.selectors.optimize_css_delivery.checkbox).isChecked()) {
+                return;
+            }
+        }
+
+        await this.locators.optimize_css_delivery.enable.click();
+    }
+
+    /**
+     * Enable RUCSS.
+     */
+    enableRucss = async () => {
+        await this.page.waitForSelector(this.selectors.rucss.activate);
+        await this.locators.rucss.activate.click();
+    }
+
+    /**
+     * Toggle minify js option.
+     */
+    toggleMinifyJs = async (checked = false) => {
+        // Bail if passed state is currently active.
+        if (!checked) {
+            if (!await this.page.locator(this.selectors.minify_js.checkbox).isChecked()) {
+                return;
+            }
+        } else {
+            if (await this.page.locator(this.selectors.minify_js.checkbox).isChecked()) {
+                return;
+            }
+        }
+
+        await this.locators.minify_js.enable.click();
+
+        if (checked) {
+            await this.page.waitForSelector(this.selectors.minify_js.activate);
+            await this.locators.minify_js.activate.click();
+        }
+    }
+
+    /**
+     * Toggle combine js option.
+     */
+    toggleCombineJs = async (checked = false) => {
+        // Bail if combine js is disabled.
+        if (!await this.page.isEnabled(this.selectors.combine_js.checkbox)) {
+            return;
+        }
+
+        // Bail if passed state is currently active.
+        if (!checked) {
+           if (!await this.page.locator(this.selectors.combine_js.checkbox).isChecked()) {
+               return;
+           }
+       } else {
+           if (await this.page.locator(this.selectors.combine_js.checkbox).isChecked()) {
+               return;
+           }
+       }
+
+       await this.locators.combine_js.enable.click();
+
+       if (checked) {
+           await this.page.waitForSelector(this.selectors.combine_js.activate);
+           await this.locators.combine_js.activate.click();
+       }
+   }
+
+    /**
+     * Toggle defer js option.
+     */
+    toggleDeferJs = async (checked = false) => {
+         // Bail if passed state is currently active.
+        if (!checked) {
+            if (!await this.page.locator(this.selectors.defer_js.checkbox).isChecked()) {
+                return;
+            }
+        } else {
+            if (await this.page.locator(this.selectors.defer_js.checkbox).isChecked()) {
+                return;
+            }
+        }
+        await this.locators.defer_js.enable.click();
+    }
+
+    /**
+     * Toggle delay js option.
+     */
+     toggleDelayJs = async (checked = false) => {
+         // Bail if passed state is currently active.
+        if (!checked) {
+            if (!await this.page.locator(this.selectors.delay_js.checkbox).isChecked()) {
+                return;
+            }
+        } else {
+            if (await this.page.locator(this.selectors.delay_js.checkbox).isChecked()) {
+                return;
+            }
+        }
+        await this.locators.delay_js.enable.click();
     }
 
     /**
@@ -115,22 +280,6 @@ export class fileOptimization {
     }
 
     /**
-     * Toggle minify js option.
-     */
-    toggleMinifyJs = async () => {
-        if (await this.page.isEnabled(this.selectors.combine_js.checkbox)) {
-            await this.locators.minify_js.enable.click();
-            return;
-        }
-
-        if (await this.page.isChecked(this.selectors.delay_js.checkbox)) {
-            return;
-        }
-
-        await this.enableMinifyJs();
-    }
-
-    /**
      * Enable combine js option.
      */
     enableCombineJs = async () => {
@@ -140,20 +289,6 @@ export class fileOptimization {
         
         await this.locators.combine_js.enable.click();
         await this.locators.combine_js.activate.click();
-    }
-
-    /**
-     * Toggle defer js option.
-     */
-    toggleDeferJs = async () => {
-        await this.locators.defer_js.enable.click();
-    }
-
-    /**
-     * Toggle delay js option.
-     */
-    toggleDelayJs = async () => {
-        await this.locators.delay_js.enable.click();
     }
 
     /**
@@ -183,5 +318,31 @@ export class fileOptimization {
         }
 
         return false;
+    }
+
+     /**
+     * Mass toggle all settings
+     */
+     toggleEnableAll = async (enable_all = false) => {
+        if (enable_all) {
+            await this.toggleMinifyCss(true);
+            await this.toggleCombineCss(true);
+            await this.toggleOptimizeCssDelivery(true);
+            await this.enableRucss();
+            await this.toggleMinifyJs(true);
+            await this.toggleCombineJs(true);
+            await this.toggleDeferJs(true);
+            await this.toggleDelayJs(true);
+            return;
+        }
+
+        await this.toggleMinifyCss();
+        await this.toggleMinifyCss();
+        await this.toggleOptimizeCssDelivery();
+        await this.enableRucss();
+        await this.toggleMinifyJs();
+        await this.toggleCombineJs();
+        await this.toggleDeferJs();
+        await this.toggleDelayJs();
     }
 }

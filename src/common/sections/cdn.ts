@@ -19,14 +19,22 @@ export class cdn {
     /**
      * Toggle CDN option. 
      */
-    toggleCDN = async () => {
+    toggleCDN = async (checked = false) => {
+        // Bail if passed state is currently active.
+        if (!checked) {
+            if (!await this.page.locator('#cdn').isChecked()) {
+                return;
+            }
+        } else {
+            if (await this.page.locator('#cdn').isChecked()) {
+                return;
+            }
+        }
         await this.locators.cdn.click();
     }
 
     /**
      * Return default: false when no option in section is enabled
-     * 
-     * @returns bool
      */
      checkAnyEnabledOption = async () => {
         if (await this.page.isChecked('#cdn')) {
@@ -34,5 +42,19 @@ export class cdn {
         }
 
         return false;
+    }
+
+    /**
+     * Mass toggle all settings
+     */
+    toggleEnableAll = async (enable_all = false) => {
+        if (enable_all) {
+            await this.toggleCDN(true);
+            await this.page.getByRole('textbox', { name: 'cdn.example.com' }).fill('test.example.com');
+            return;
+        }
+
+        await this.toggleCDN();
+        await this.page.getByRole('textbox', { name: 'cdn.example.com' }).fill('');
     }
 }
