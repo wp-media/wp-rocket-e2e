@@ -32,6 +32,12 @@ const deletePlugin = () => {
             'select_deactivate': page.locator( 'label[for=deactivate]' ),
         };
 
+        // Confirm Dialog Box.
+        page.on('dialog', async(dialog) => {
+            expect(dialog.type()).toContain('confirm');
+            expect(dialog.message()).toContain('Are you sure you want to delete WP Rocket and its data?');
+            await dialog.accept();
+        })
         // Remove WPR
         await removePlugin(page_utils, locator, page);
         // Check that there is no related error in debug.log
@@ -53,40 +59,56 @@ const deletePlugin = () => {
          */
         await page_utils.goto_wpr();
 
+        await page.waitForLoadState('load', { timeout: 30000 });
+
         // Enable all settings for cache section.
         await cache.visit();
         await cache.toggleEnableAll(true);
         await save_settings(page);
+
+        await page.waitForLoadState('load', { timeout: 30000 });
 
         // Enable all settings for file optimization section.
         await fileOpt.visit();
         await fileOpt.toggleEnableAll(true);
         await save_settings(page);
 
+        await page.waitForLoadState('load', { timeout: 30000 });
+
         // Enable all settings for Media section.
         await media.visit();
         await media.toggleEnableAll(true);
         await save_settings(page);
+
+        await page.waitForLoadState('load', { timeout: 30000 });
 
         // Enable all settings for Preload section.
         await preload.visit();
         await preload.toggleEnableAll(true);
         await save_settings(page);
 
+        await page.waitForLoadState('load', { timeout: 30000 });
+
         // Enable all settings for Database.
         await database.visit();
         await database.toggleEnableAll(true);
         await page.getByRole('button', { name: 'Save Changes and Optimize' }).click();
+
+        await page.waitForLoadState('load', { timeout: 30000 });
 
          // Enable all settings for CDN.
          await cdn.visit();
          await cdn.toggleEnableAll(true);
          await save_settings(page);
 
+         await page.waitForLoadState('load', { timeout: 30000 });
+
          // Enable all settings for Heartbeat.
          await heartbeat.visit();
          await heartbeat.toggleEnableAll(true);
          await save_settings(page);
+
+         await page.waitForLoadState('load', { timeout: 30000 });
 
          // Enable all settings for Addons.
          await addons.visit();
@@ -94,6 +116,10 @@ const deletePlugin = () => {
 
          // Remove WPR
         await removePlugin(page_utils, locator, page);
+
+         // Reload plugins page.
+        await page_utils.goto_plugin();
+        
         // Check that there is no related error in debug.log
         await expect(page.locator('#wpr_debug_log_notice')).toBeHidden();
     });
@@ -112,8 +138,7 @@ const removePlugin = async (page_utils, locator, page) => {
         await page.locator('text=Confirm').click();
     }
 
-    // Confirm Dialog Box.
-    page.on('dialog', dialog => dialog.accept());
+    await page.waitForLoadState('load', { timeout: 30000 });
 
     // Delete WPR.
     await locator.delete.click();
@@ -121,11 +146,12 @@ const removePlugin = async (page_utils, locator, page) => {
     if (await page.getByRole('button', { name: 'Yes, delete these files and data' }).isVisible()) {
         await page.getByRole('button', { name: 'Yes, delete these files and data' }).click();
         await expect(page.locator('#activate-wp-rocket')).toBeHidden();
-    } else {
-        // Check that WPR is deleted successfully
-        await page.waitForSelector('#wp-rocket-deleted');
-        await expect(page.locator('#wp-rocket-deleted')).toBeVisible();   
+        return;
     }
+
+    // Check that WPR is deleted successfully
+    await page.waitForSelector('#wp-rocket-deleted');
+    await expect(page.locator('#wp-rocket-deleted')).toBeVisible();   
 }
 
 export default deletePlugin;
