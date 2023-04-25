@@ -121,6 +121,7 @@ export class pageUtils {
         await this.page.goto(WP_BASE_URL + '/wp-admin/plugin-install.php');
         await this.page.locator('.upload-view-toggle').click();
         await this.page.locator('#pluginzip').setInputFiles(file);
-        await this.page.locator('#install-plugin-submit').click();
+        await this.page.waitForSelector('#install-plugin-submit');
+        await this.page.locator('#install-plugin-submit').click({ timeout: 50000 });
     }
 }
