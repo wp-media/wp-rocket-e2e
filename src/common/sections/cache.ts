@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 
-export class Cache {
+export class cache {
 	readonly page: Page;
     readonly locators;
     readonly selectors;
@@ -82,7 +82,7 @@ export class Cache {
     }
 
     /**
-     * 
+     * Mass toggle all settings
      */
     toggleEnableAll = async (enable_all = false) => {
         if (enable_all) {
