@@ -28,6 +28,7 @@ export async function log_error(err, prefix = ''){
  * @param page Page Object.
  */
 export const save_settings = async ( page ) => {
+    await page.waitForSelector('#wpr-options-submit');
     // save settings
     await page.locator('#wpr-options-submit').click();
 }
