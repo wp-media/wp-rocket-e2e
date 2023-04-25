@@ -85,11 +85,11 @@ export class pageUtils {
 
     toggle_plugin_activation = async (plugin_slug: string, activate = true) => {
         if (!activate) {
-            if (this.page.locator('#activate-' + plugin_slug).isVisible()) {
+            if (await this.page.locator('#activate-' + plugin_slug).isVisible()) {
                 return;
             }
         } else {
-            if (this.page.locator('#deactivate-' + plugin_slug).isVisible()) {
+            if (await this.page.locator('#deactivate-' + plugin_slug).isVisible()) {
                 return;
             }
         }
@@ -121,7 +121,6 @@ export class pageUtils {
         const plugin_zip = '#pluginzip';
         await this.page.goto(WP_BASE_URL + '/wp-admin/plugin-install.php');
         await this.page.locator('.upload-view-toggle').click();
-        await this.page.locator(plugin_zip).click();
         await this.page.locator(plugin_zip).setInputFiles(file);
     }
 }
