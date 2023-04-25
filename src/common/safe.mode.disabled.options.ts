@@ -3,7 +3,7 @@ import { Page } from '@playwright/test';
 /**
  * Local deps.
  */
-import { fileOptimization } from '../common/sections/file.optimization';
+import { fileOptimization } from './sections/file.optimization';
 import { media as Media } from './sections/media';
 import { cdn as CDN } from './sections/cdn';
 import { save_settings } from '../../utils/helpers';
