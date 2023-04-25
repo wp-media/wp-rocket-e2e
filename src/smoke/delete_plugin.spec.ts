@@ -10,15 +10,26 @@ const deletePlugin = () => {
     
         const page_utils = new pageUtils( page );
  
-        await page_utils.visit_page('wp-admin');
         await page_utils.goto_plugin();
 
         const locator = {
-            'delete': page.locator( '#delete-wp-rocket' )
+            'delete': page.locator( '#delete-wp-rocket' ),
+            'select_deactivate': page.locator( 'label[for=deactivate]' ),
         };
 
-        // With WPR deactivated, Delete WPR
+        // Ensure WPR is deactivated.
         await page_utils.toggle_plugin_activation('wp-rocket', false);
+
+        // Check for deactivation modal.
+        if (await locator.select_deactivate.isVisible()) {
+            await locator.select_deactivate.click();
+            await page.locator('text=Confirm').click();
+        }
+
+        // Confirm Dialog Box.
+        page.on('dialog', dialog => dialog.accept());
+
+        // Delete WPR.
         await locator.delete.click();
 
         // Check that WPR is deactivated
@@ -27,7 +38,7 @@ const deletePlugin = () => {
         await expect(page.locator('#wpr_debug_log_notice')).toBeHidden();
 
         // Upload WPR Zip Archive and Activate
-        await page_utils.upload_new_plugin('../plugin/wp-rocket.zip');
+        await page_utils.upload_new_plugin('./plugin/wp-rocket.zip');
         // Enable all settings and save, then deactivate.
     });
 }
