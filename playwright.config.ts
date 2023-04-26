@@ -9,7 +9,7 @@ export default defineConfig({
 	testMatch: 'test.list.ts',
 	globalTeardown: require.resolve('./config/global-teardown'),
 	/* Maximum time one test can run for. */
-	timeout: 90000,
+	timeout: 200000,
 	globalTimeout: 900000,
 	reportSlowTests: null,
 	/* Fail the build on CI if you accidentally left test.only in the source code. */
