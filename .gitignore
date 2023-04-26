@@ -4,4 +4,5 @@
 /artifacts
 package-lock.json
 package.json
+/plugin
 !*/plugin/.gitkeep
