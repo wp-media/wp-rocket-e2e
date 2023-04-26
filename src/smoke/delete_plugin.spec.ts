@@ -44,7 +44,7 @@ const deletePlugin = () => {
         await expect(page.locator('#wpr_debug_log_notice')).toBeHidden();
 
         // Upload WPR Zip Archive to start second phase of test
-        await page_utils.upload_new_plugin('./plugin/wp-rocket_3.13.1.zip');
+        await page_utils.upload_new_plugin('./plugin/wp-rocket.zip');
         await expect(page).toHaveURL(/action\=upload\-plugin/);      
 
         // 2nd test Phase
@@ -119,7 +119,7 @@ const deletePlugin = () => {
 
          // Reload plugins page.
         await page_utils.goto_plugin();
-        
+
         // Check that there is no related error in debug.log
         await expect(page.locator('#wpr_debug_log_notice')).toBeHidden();
     });
