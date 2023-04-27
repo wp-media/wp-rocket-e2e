@@ -37,3 +37,7 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
  
  ## Reporting
  At the end of a failed test cycle, playwright will launch a temporary server and open reports with videos and screenshot of failed tests.
+ 
+ Errors like the one below indicates that WP Rocket has some related errors in debug.log
+![Screenshot 2023-04-27 at 09 55 37](https://user-images.githubusercontent.com/38788055/234812244-c1cd0c87-702a-49a9-baf6-0fab7afd2cd0.png)
+
