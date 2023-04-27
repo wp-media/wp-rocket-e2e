@@ -15,7 +15,7 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
  ## Installation
  - Clone this repo
  - run a `npm install` to install dependencies, well for this case it's just playwright.
- Additionaly, in some cases on a fresh install you might also need to run `npx playwright install` to download the various browser engines as well.
+ - Additionaly, in some cases on a fresh install you might also need to run `npx playwright install` to download the various browser engines as well.
  
  ## Running Tests
  - Dont' forget to install the [helper plugin](https://github.com/wp-media/wp-rocket-e2e-test-helper)
