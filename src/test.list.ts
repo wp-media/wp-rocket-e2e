@@ -15,8 +15,8 @@ import { test } from '@playwright/test';
 
 // import deactivation from './admin/rocket.deactivation.spec';
 // import wpCache from './admin/wp.cache.constant.spec';
-import deletePlugin from './smoke/delete_plugin.spec';
-import upgradingPlugin from './smoke/upgrading_plugin.spec';
+import deletePlugin from './smoke/delete.plugin.spec';
+import upgradingPlugin from './smoke/upgrading.plugin.spec';
 
 // Test list.
 // test.describe('Rocket License', rocketLicense);
