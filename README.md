@@ -20,6 +20,8 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
  ## Configuration
  You'll need to update the site you want to run tests on as well as the credentials.
  
+ Update the `wp.config.sample.ts` to `wp.config.ts` in https://github.com/wp-media/wp-rocket-e2e/blob/trunk/config/
+ 
  Change the `live_username` & `live_password` & `WP_BASE_URL` to that of your test site.
  
  You can find this [here](https://github.com/wp-media/wp-rocket-e2e/blob/trunk/config/wp.config.ts)
