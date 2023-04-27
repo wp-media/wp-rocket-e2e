@@ -28,7 +28,7 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
  
  ## Running Tests
  - Please delete the debug.log from your test site before running tests, We will automate this step in the future.
- - Dont' forget to install the [helper plugin](https://github.com/wp-media/wp-rocket-e2e-test-helper)
+ - Don't forget to install the [helper plugin](https://github.com/wp-media/wp-rocket-e2e-test-helper)
  - To run tests on playwright, simply run `npx playwright test` or `npm run test:e2e` which ever you prefer.
  
  **NB:** By default, test will run tests in headless mode.
