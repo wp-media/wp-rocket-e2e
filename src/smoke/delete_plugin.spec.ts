@@ -44,7 +44,7 @@ const deletePlugin = () => {
         await expect(page.locator('#wpr_debug_log_notice')).toBeHidden();
 
         // Upload WPR Zip Archive to start second phase of test
-        await page_utils.upload_new_plugin('./plugin/wp-rocket.zip');
+        await page_utils.upload_new_plugin('./plugin/new_release.zip');
         await expect(page).toHaveURL(/action\=upload\-plugin/);      
 
         // 2nd test Phase
@@ -52,6 +52,8 @@ const deletePlugin = () => {
         // Activate WPR
         await page.waitForSelector('a:has-text("Activate Plugin")');
         await page.locator('a:has-text("Activate Plugin")').click();
+
+        await page.waitForLoadState('load', { timeout: 30000 });
 
         /**
          * Enable all settings and save, 

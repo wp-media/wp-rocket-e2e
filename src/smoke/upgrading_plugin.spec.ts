@@ -27,7 +27,7 @@ const upgradingPlugin = () => {
         await openRucssBeacon(fileOpt, page);
 
         // Upgrade to the lastest WPR version.
-        await page_utils.upload_new_plugin('./plugin/wp-rocket.zip');
+        await page_utils.upload_new_plugin('./plugin/new_release.zip');
         await page.waitForLoadState('load', { timeout: 30000 });
         await expect(page).toHaveURL(/action\=upload\-plugin/); 
         
@@ -82,7 +82,7 @@ const openRucssBeacon = async (fileOpt, page, ignore_wait = false) => {
         await fileOpt.toggleOptimizeCssDelivery(true);
         // Activate RUCSS
         await fileOpt.enableRucss();
-        
+
         await page.waitForSelector('iframe[title="Help Scout Beacon - Open"]');
 
         // Click the RUCSS Beacon
