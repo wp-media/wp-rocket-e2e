@@ -25,6 +25,7 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
  You can find this [here](https://github.com/wp-media/wp-rocket-e2e/blob/trunk/config/wp.config.ts)
  
  ## Running Tests
+ - Please delete the debug.log from your test site before running tests, We will automate this step in the future.
  - Dont' forget to install the [helper plugin](https://github.com/wp-media/wp-rocket-e2e-test-helper)
  - To run tests on playwright, simply run `npx playwright test` or `npm run test:e2e` which ever you prefer.
  
