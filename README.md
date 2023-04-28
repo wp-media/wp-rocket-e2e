@@ -31,7 +31,7 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
  - Don't forget to install the [helper plugin](https://github.com/wp-media/wp-rocket-e2e-test-helper)
  - To run tests on playwright, simply run `npx playwright test` or `npm run test:e2e` which ever you prefer.
  
- **NB:** By default, test will run tests in headless mode.
+ **NB:** By default, test will run in headless mode.
  
  ## Debugging Tests
  Use `npx playwright test --debug` to control and get a view of each test step.
