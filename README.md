@@ -10,7 +10,7 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
   - zip for 3.10.9 - **leave this as `wp-rocket_3.10.9.zip`**
   - Make sure to put these files in the `./plugin` folder in the root - Playwright will pick these files when needed and use them during tests.
   
-  **NB:** Files like the new release and previous stable release are not constant so make sure to always update the new versions in the `./plugin` folder.
+  **NB:** Files like the new release and previous stable release are not constant so make sure to always update as your tests fit.
   
  ## Installation
  - Clone this repo
