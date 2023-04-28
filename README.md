@@ -24,7 +24,7 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
  
  Change the `live_username` & `live_password` & `WP_BASE_URL` to that of your test site.
  
- You can find this [here](https://github.com/wp-media/wp-rocket-e2e/blob/trunk/config/wp.config.ts)
+ You can find this [here](https://github.com/wp-media/wp-rocket-e2e/blob/trunk/config/wp.config.sample.ts)
  
  ## Running Tests
  - Please delete the debug.log from your test site before running tests, We will automate this step in the future.
