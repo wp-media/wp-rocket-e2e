@@ -12,6 +12,7 @@ export class advancedRules {
             'cache_reject_cookies': this.page.locator('#cache_reject_cookies'),
             'cache_reject_ua': this.page.locator('#cache_reject_ua'),
             'cache_purge_pages': this.page.locator('#cache_purge_pages'),
+            'cache_query_strings': this.page.locator('#cache_query_strings'),
         }
     }
 
@@ -20,7 +21,7 @@ export class advancedRules {
     }
 
     /**
-     * Never cache url. 
+     * Add rules
      */
     addRule = async (id:string, pattern:string) => {
         await this.locators[id].fill(pattern);
