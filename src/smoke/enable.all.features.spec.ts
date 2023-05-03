@@ -30,6 +30,16 @@ const enableAllFeatures = () => {
         const heartbeat = new Heartbeat(page);
         const addons = new Addons(page);
 
+        // Install and activated wpr.
+        await page_utils.upload_new_plugin('./plugin/new_release.zip');
+        await page.waitForLoadState('load', { timeout: 30000 });
+
+        if (await page.locator('a:has-text("Activate Plugin")').isHidden()) {
+            await page.locator('a:has-text("Replace current with uploaded")').click();
+        } else {
+            await page.locator('a:has-text("Activate Plugin")').click();
+        }
+
         /**
          * Enable all settings and save, 
          * then deactivate.
