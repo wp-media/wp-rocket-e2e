@@ -24,7 +24,7 @@ const enableAllFeatures = () => {
         const fileOpt = new fileOptimization(page);
         const media = new Media(page);
         const preload = new Preload(page);
-        const advanced_rules = new advancedRules(page)
+        const advanced_rules = new advancedRules(page);
         const database = new Database( page );
         const cdn = new Cdn(page);
         const heartbeat = new Heartbeat(page);
