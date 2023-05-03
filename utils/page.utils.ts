@@ -124,4 +124,17 @@ export class pageUtils {
         await this.page.waitForSelector('#install-plugin-submit');
         await this.page.locator('#install-plugin-submit').click({ timeout: 120000 });
     }
+
+    wp_admin_logout = async () => {
+        await this.page.locator('#wp-admin-bar-my-account').hover();
+        await this.page.waitForSelector('#wp-admin-bar-logout');
+        await this.page.locator('#wp-admin-bar-logout a').click();
+    }
+
+    auth = async () => {
+        await this.visit_page('wp-admin');
+        await this.wp_admin_login();
+        await this.page.waitForURL(WP_BASE_URL + '/wp-admin/');
+        await this.page.context().storageState({ path: './config/storageState.json' });
+    }
 }
