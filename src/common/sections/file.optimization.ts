@@ -169,7 +169,10 @@ export class fileOptimization {
      * Enable RUCSS.
      */
     enableRucss = async () => {
-        await this.page.waitForSelector(this.selectors.rucss.activate);
+        if (await this.page.locator(this.selectors.rucss.activate).isHidden()) {
+            return;
+        }
+
         await this.locators.rucss.activate.click();
     }
 
