@@ -9,6 +9,7 @@ import { save_settings } from '../../utils/helpers';
 import { fileOptimization } from '../common/sections/file.optimization';
 import { media as Media } from '../common/sections/media';
 import { preload as Preload } from '../common/sections/preload';
+import { advancedRules } from '../common/sections/advanced.rules';
 import { database as Database } from '../common/sections/database';
 import { cdn as Cdn } from '../common/sections/cdn';
 import { heartbeat as Heartbeat } from '../common/sections/heartbeat';
@@ -22,6 +23,7 @@ const deletePlugin = () => {
         const fileOpt = new fileOptimization( page );
         const media = new Media( page );
         const preload = new Preload( page );
+        const advanced_rules = new advancedRules(page);
         const database = new Database( page );
         const cdn = new Cdn( page );
         const heartbeat = new Heartbeat( page );
@@ -37,7 +39,13 @@ const deletePlugin = () => {
             expect(dialog.type()).toContain('confirm');
             expect(dialog.message()).toContain('Are you sure you want to delete WP Rocket and its data?');
             await dialog.accept();
-        })
+        });
+
+        // Install and activated wpr.
+        await page_utils.upload_new_plugin('./plugin/new_release.zip');
+        await page.waitForLoadState('load', { timeout: 30000 });
+        await expect(page).toHaveURL(/action\=upload\-plugin/); 
+
         // Remove WPR
         await removePlugin(page_utils, locator, page);
         // Check that there is no related error in debug.log
@@ -90,6 +98,17 @@ const deletePlugin = () => {
         await save_settings(page);
 
         await page.waitForLoadState('load', { timeout: 30000 });
+
+         // Advanced rules section.
+         await advanced_rules.visit();
+         await advanced_rules.addRule('cache_reject_uri', '/test\n/.*\n/test2');
+         await advanced_rules.addRule('cache_reject_cookies', 'woocommerce_items_in_cart');
+         await advanced_rules.addRule('cache_reject_ua', 'Mobile(.*)Safari(.*)');
+         await advanced_rules.addRule('cache_purge_pages', '/hello-world/');
+         await advanced_rules.addRule('cache_query_strings', 'country');
+         await save_settings(page);
+ 
+         await page.waitForLoadState('load', { timeout: 30000 });
 
         // Enable all settings for Database.
         await database.visit();
