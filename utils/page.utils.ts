@@ -1,10 +1,24 @@
 import type { Page } from '@playwright/test';
+
+
 import { WP_BASE_URL, WP_USERNAME, WP_PASSWORD } from '../config/wp.config';
+import { save_settings } from './helpers';
+
+import { cache as Cache } from '../src/common/sections/cache';
+import { fileOptimization } from '../src/common/sections/file.optimization';
+import { media as Media } from '../src/common/sections/media';
+import { preload as Preload } from '../src/common/sections/preload';
+import { advancedRules } from '../src/common/sections/advanced.rules';
+import { database as Database } from '../src/common/sections/database';
+import { cdn as Cdn } from '../src/common/sections/cdn';
+import { heartbeat as Heartbeat } from '../src/common/sections/heartbeat';
+import { addons as Addons } from '../src/common/sections/addons';
 
 export class pageUtils {
 	readonly page: Page;
 	readonly selectors;
 	readonly locators;
+    readonly sections;
 
     constructor( page: Page ){
         this.page = page;
@@ -15,6 +29,18 @@ export class pageUtils {
 
         this.locators = {
             'plugin': page.locator( this.selectors.plugins )
+        };
+
+        this.sections = {
+            'cache': new Cache(this.page),
+            'fileOpt' : new fileOptimization(this.page),
+            'media': new Media(this.page),
+            'preload': new Preload(this.page),
+            'advanced_rules': new advancedRules(this.page),
+            'database': new Database(this.page),
+            'cdn': new Cdn(this.page),
+            'heartbeat': new Heartbeat(this.page),
+            'addons': new Addons(this.page)
         };
     }
 
@@ -136,5 +162,73 @@ export class pageUtils {
         await this.wp_admin_login();
         await this.page.waitForURL(WP_BASE_URL + '/wp-admin/');
         await this.page.context().storageState({ path: './config/storageState.json' });
+    }
+
+    disable_all_options = async () => {
+        await this.goto_wpr();
+
+        // Disable all settings for cache section.
+        await this.sections.cache.visit();
+        await this.sections.cache.toggleEnableAll();
+        await save_settings(this.page);
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Disable all settings for file optimization section.
+        await this.sections.fileOpt.visit();
+        await this.sections.fileOpt.toggleEnableAll();
+        await save_settings(this.page);
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Disable all settings for Media section.
+        await this.sections.media.visit();
+        await this.sections.media.toggleEnableAll();
+        await save_settings(this.page);
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Disable all settings for Preload section.
+        await this.sections.preload.visit();
+        await this.sections.preload.toggleEnableAll();
+        await save_settings(this.page);
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Advanced rules section.
+        await this.sections.advanced_rules.visit();
+        await this.sections.advanced_rules.addRule('cache_reject_uri', '');
+        await this.sections.advanced_rules.addRule('cache_reject_cookies', '');
+        await this.sections.advanced_rules.addRule('cache_reject_ua', '');
+        await this.sections.advanced_rules.addRule('cache_purge_pages', '');
+        await this.sections.advanced_rules.addRule('cache_query_strings', '');
+        await save_settings(this.page);
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Disable all settings for Database.
+        await this.sections.database.visit();
+        await this.sections.database.toggleEnableAll();
+        await this.page.getByRole('button', { name: 'Save Changes and Optimize' }).click();
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Disable all settings for CDN.
+        await this.sections.cdn.visit();
+        await this.sections.cdn.toggleEnableAll();
+        await save_settings(this.page);
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Disable all settings for Heartbeat.
+        await this.sections.heartbeat.visit();
+        await this.sections.heartbeat.toggleEnableAll();
+        await save_settings(this.page);
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Disable all settings for Addons.
+        await this.sections.addons.visit();
+        await this.sections.addons.toggleEnableAll();
     }
 }
