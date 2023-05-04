@@ -119,4 +119,27 @@ export class addons {
         await this.toggleCloudflare();
         await this.toggleSucuriCacheSync();
     }
+
+     /**
+     * Check that all options are disabled.
+     */
+    areAllOptionDisabled = async () => {
+        if (await this.page.locator(this.selectors.varnish_auto_purge.checkbox).isChecked()) {
+            return false;
+        }
+
+        if (await this.page.locator(this.selectors.cache_webp.checkbox).isChecked()) {
+            return false;
+        }
+
+        if (await this.page.locator(this.selectors.do_cloudflare.checkbox).isChecked()) {
+            return false;
+        }
+
+        if (await this.page.locator(this.selectors.sucury_waf_cache_sync.checkbox).isChecked()) {
+            return false;
+        }
+
+        return true;
+    }
 }

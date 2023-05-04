@@ -26,4 +26,31 @@ export class advancedRules {
     addRule = async (id:string, pattern:string) => {
         await this.locators[id].fill(pattern);
     }
+
+     /**
+     * Check that all rules are empty.
+     */
+    areAllRulesEmpty = async () => {
+        if (await this.locators.cache_reject_uri.inputValue() !== '') {
+            return false;
+        }
+
+        if (await this.locators.cache_reject_cookies.inputValue() !== '') {
+            return false;
+        }
+
+        if (await this.locators.cache_reject_ua.inputValue() !== '') {
+            return false;
+        }
+
+        if (await this.locators.cache_purge_pages.inputValue() !== '') {
+            return false;
+        }
+
+        if (await this.locators.cache_query_strings.inputValue() !== '') {
+            return false;
+        }
+
+        return true;
+    }
 } 

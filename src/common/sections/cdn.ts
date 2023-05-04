@@ -57,4 +57,19 @@ export class cdn {
         await this.toggleCDN();
         await this.page.getByRole('textbox', { name: 'cdn.example.com' }).fill('');
     }
+
+    /**
+     * Check that all options are disabled.
+     */
+    areAllOptionDisabled = async () => {
+        if (await this.page.locator('#cdn').isChecked()) {
+            return false;
+        }
+
+        if (await this.page.getByRole('textbox', { name: 'cdn.example.com' }).inputValue() !== '') {
+            return false;
+        }
+
+        return true;
+    }
 }

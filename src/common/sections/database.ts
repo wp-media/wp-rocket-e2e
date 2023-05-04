@@ -211,4 +211,36 @@ export class database  {
         await this.toggleOptimizeTables();
         await this.toggleAutomaticCleanUp();
     }
+
+    /**
+     * Check that all options are disabled.
+     */
+    areAllOptionDisabled = async () => {
+        if (await this.page.locator(this.selectors.database_revisions.checkbox).isChecked()) {
+            return false;
+        }
+        if (await this.page.locator(this.selectors.database_auto_drafts.checkbox).isChecked()) {
+            return false;
+        }
+        if (await this.page.locator(this.selectors.database_trashed_posts.checkbox).isChecked()) {
+            return false;
+        }
+        if (await this.page.locator(this.selectors.database_spam_comments.checkbox).isChecked()) {
+            return false;
+        }
+        if (await this.page.locator(this.selectors.database_trashed_comments.checkbox).isChecked()) {
+            return false;
+        }
+        if (await this.page.locator(this.selectors.database_all_transients.checkbox).isChecked()) {
+            return false;
+        }
+        if (await this.page.locator(this.selectors.database_optimize_tables.checkbox).isChecked()) {
+            return false;
+        }
+        if (await this.page.locator(this.selectors.schedule_automatic_cleanup.checkbox).isChecked()) {
+            return false;
+        }
+
+        return true;
+    }
 }

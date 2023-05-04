@@ -77,4 +77,18 @@ export class preload {
         await this.togglePreload();
         await this.togglePreloadLinks();
     }
+
+    /**
+     * Check that all options are disabled.
+     */
+    areAllOptionDisabled = async () => {
+        if (await this.page.locator(this.selectors.preload.checkbox).isChecked()) {
+            return false;
+        }
+        if (await this.page.locator(this.selectors.preload_links.checkbox).isChecked()) {
+            return false;
+        }
+
+        return true;
+    }
 }

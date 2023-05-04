@@ -96,4 +96,23 @@ export class cache {
         await this.toggleMobileDeviceSeparateCache();
         await this.toggleCacheLoggedUser();
     }
+
+     /**
+     * Check that all options are disabled.
+     */
+    areAllOptionDisabled = async () => {
+        if (await this.page.locator(this.selectors.mobile_device_cache.checkbox).isChecked()) {
+            return false;
+        }
+
+        if (await this.page.locator(this.selectors.mobile_device_separate_cache.checkbox).isChecked()) {
+            return false;
+        }
+
+        if (await this.page.locator(this.selectors.cache_logged_user.checkbox).isChecked()) {
+            return false;
+        }
+
+        return true;
+    }
 }

@@ -44,4 +44,15 @@ export class heartbeat {
 
         await this.toggleHeartbeatControl();
     }
+
+    /**
+     * Check that all options are disabled.
+     */
+    areAllOptionDisabled = async () => {
+        if (await this.page.locator('#control_heartbeat').isChecked()) {
+            return false;
+        }
+
+        return true;
+    }
 }

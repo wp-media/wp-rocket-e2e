@@ -152,4 +152,21 @@ export class media {
         await this.toggleLazyLoadyoutube();
         await this.toggleImageDimension();
     }
+
+    /**
+     * Check that all options are disabled.
+     */
+    areAllOptionDisabled = async () => {
+        if (await this.page.locator(this.selectors.lazyload.checkbox).isChecked()) {
+            return false;
+        }
+        if (await this.page.locator(this.selectors.lazyload_iframes.checkbox).isChecked()) {
+            return false;
+        }
+        if (await this.page.locator(this.selectors.image_dimensions.checkbox).isChecked()) {
+            return false;
+        }
+
+        return true;
+    }
 }

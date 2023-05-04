@@ -348,4 +348,27 @@ export class fileOptimization {
         await this.toggleDeferJs();
         await this.toggleDelayJs();
     }
+
+    /**
+     * Check that all options are disabled.
+     */
+    areAllOptionDisabled = async () => {
+        if (await this.page.locator(this.selectors.minify_css.checkbox).isChecked()) {
+            return false;
+        }
+        if (await this.page.locator(this.selectors.optimize_css_delivery.checkbox).isChecked()) {
+            return false;
+        }
+        if (await this.page.locator(this.selectors.minify_js.checkbox).isChecked()) {
+            return false;
+        }
+        if (await this.page.locator(this.selectors.defer_js.checkbox).isChecked()) {
+            return false;
+        }
+        if (await this.page.locator(this.selectors.delay_js.checkbox).isChecked()) {
+            return false;
+        }
+
+        return true;
+    }
 }
