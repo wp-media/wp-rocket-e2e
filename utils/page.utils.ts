@@ -231,4 +231,11 @@ export class pageUtils {
         await this.sections.addons.visit();
         await this.sections.addons.toggleEnableAll();
     }
+
+    import_settings = async (file) => {
+        await this.goto_wpr();
+        await this.page.locator('#wpr-nav-tools').click();
+        await this.page.locator('#upload').setInputFiles(file);
+        await this.page.locator('.wpr-tools:nth-child(3) button').click({ timeout: 120000 });
+    }
 }
