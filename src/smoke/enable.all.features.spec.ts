@@ -5,8 +5,9 @@ import { test, expect, chromium } from '@playwright/test';
  */
 import { WP_BASE_URL } from '../../config/wp.config';
 import { pageUtils } from '../../utils/page.utils';
-import { cache as Cache } from '../common/sections/cache';
 import { save_settings } from '../../utils/helpers';
+
+import { cache as Cache } from '../common/sections/cache';
 import { fileOptimization } from '../common/sections/file.optimization';
 import { media as Media } from '../common/sections/media';
 import { preload as Preload } from '../common/sections/preload';
