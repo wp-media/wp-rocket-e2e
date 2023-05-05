@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 
 // Interfaces
 import { exportedSettings } from './interfaces';
+import { ui_reflected_settings } from './exclusions';
 
 let home_dir: String, install_path: String;
 home_dir = os.homedir();
@@ -113,38 +114,6 @@ export const read_any_file = async (file) => {
  * @return  {Promise<boolean>}                     Return bool.
  */
 export const is_exported_correctly = async (exported_settings: exportedSettings, exception: string): Promise< boolean > => {
-    const ui_reflected_settings = [
-        'lazyload',
-        'remove_unused_css',
-        'async_css',
-        'cache_logged_user',
-        'cache_mobile',
-        'do_caching_mobile_files',
-        'minify_css',
-        'minify_js',
-        'minify_concatenate_css',
-        'minify_concatenate_js',
-        'defer_all_js',
-        'lazyload_iframes',
-        'lazyload_youtube',
-        'database_revisions',
-        'database_auto_drafts',
-        'database_trashed_posts',
-        'database_spam_comments',
-        'database_trashed_comments',
-        'database_all_transients',
-        'database_optimize_tables',
-        'schedule_automatic_cleanup',
-        'manual_preload',
-        'do_cloudflare',
-        'sucury_waf_cache_sync',
-        'control_heartbeat',
-        'cdn',
-        'varnish_auto_purge',
-        'image_dimensions',
-        'delay_js', 
-    ];
-
     for (let key in exported_settings) {
         for (let option of ui_reflected_settings) {
             if (key == exception) {
