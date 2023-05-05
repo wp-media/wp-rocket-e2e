@@ -41,6 +41,8 @@ const enableAllFeatures = () => {
             await page.locator('a:has-text("Activate Plugin")').click();
         }
 
+        await page.waitForLoadState('load', { timeout: 30000 });
+
         /**
          * Enable all settings and save, 
          * then deactivate.
