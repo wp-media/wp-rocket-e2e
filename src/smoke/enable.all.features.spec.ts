@@ -114,6 +114,8 @@ const enableAllFeatures = () => {
          // visit the site url
          await page_utils.wp_admin_logout();
 
+         await page.waitForLoadState('load', { timeout: 30000 });
+
         page.on('response', async (response) => {
             expect(response.status()).not.toEqual(500);
             expect(response.status()).not.toEqual(404);
