@@ -15,10 +15,12 @@ import { test } from '@playwright/test';
 
 // import deactivation from './admin/rocket.deactivation.spec';
 // import wpCache from './admin/wp.cache.constant.spec';
+
 import enableAllFeatures from './smoke/enable.all.features.spec';
 import deletePlugin from './smoke/delete.plugin.spec';
 import upgradingPlugin from './smoke/upgrading.plugin.spec';
 import rollBack from './smoke/roll.back.spec';
+import settingsExportImport from './smoke/settings.export.import.spec';
 
 // Test list.
 // test.describe('Rocket License', rocketLicense);
@@ -39,3 +41,4 @@ test.describe('Enable all features', enableAllFeatures);
 test.describe('Delete Plugin', deletePlugin);
 test.describe('Upgrading Plugin', upgradingPlugin);
 test.describe('Roll Back Plugin', rollBack);
+test.describe('Settings Export', settingsExportImport);
