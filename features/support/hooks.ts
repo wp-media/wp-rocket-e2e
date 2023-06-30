@@ -2,6 +2,8 @@ import playwright, {BrowserContext} from "playwright";
 import {After, AfterAll, Before, BeforeAll, Status} from "@cucumber/cucumber";
 import {Browser, Page} from "@playwright/test";
 import fs from "fs/promises";
+import {deleteTransient, resetWP} from "../../utils/commands";
+import {WP_BASE_URL} from "../../config/wp.config";
 
 let browser: Browser;
 let context: BrowserContext;
@@ -27,6 +29,7 @@ Before(async function ({ pickle }) {
         },
     });
     world.page = await context.newPage();
+    await world.page.goto(WP_BASE_URL)
 });
 
 After(async function ({ pickle, result }) {
@@ -49,8 +52,13 @@ After(async function ({ pickle, result }) {
         );
     }
 
+    resetWP();
+
 });
 
+After(async function () {
+    deleteTransient('wp_rocket_customer_data')
+})
 
 AfterAll(async function () {
     await browser.close();
