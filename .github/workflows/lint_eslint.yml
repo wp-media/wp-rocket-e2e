@@ -2,7 +2,7 @@ name: Typescript eslint
 on:
   pull_request:
     branches:
-      - branch-*
+      - trunk
 
 jobs:
   lint:
