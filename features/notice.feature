@@ -34,7 +34,7 @@ Feature: CPCSS Notice
 
   Scenario: Expired account with CPCSS
     Given I have CPCSS turned on
-    And I have an expired accountF
+    And I have an expired account
     Then I must not see the banner 'We highly recommend the updated Remove Unused CSS for a better CSS optimization. Load CSS Asynchronously is always available as a back-up.'
 
   Scenario: Unexpired account with CPCSS and other user

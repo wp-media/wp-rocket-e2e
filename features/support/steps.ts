@@ -1,15 +1,19 @@
 import wp, {activatePlugin, cp, generateUsers, rm, setTransient} from "../../utils/commands";
 import world from "./hooks";
 import {expect} from "@playwright/test";
-import path from "path";
 import {AfterAll, BeforeAll} from "@cucumber/cucumber";
 import {WP_BASE_URL, WP_ROOT_DIR} from "../../config/wp.config";
+import { pageUtils } from '../../utils/page.utils';
 
 const { Given, When, Then } = require("@cucumber/cucumber");
 Given('I have an {word} account', { timeout: 60 * 1000 }, async function (status) {
 
 
     const expiration = "unexpired" === status ? Date.now() + 99999 : Date.now() - 99999;
+
+    if("unexpired" === status) {
+        return
+    }
 
     setTransient('wp_rocket_customer_data', JSON.stringify({
         'ID' : 1,
@@ -71,8 +75,9 @@ When('I go {string}', async function (url) {
     await world.page.goto(`${WP_BASE_URL}${url}`);
 });
 
-When('I connect as {string}', function (user) {
-
+When('I connect as {string}', async function (user) {
+    const page_utils = new pageUtils( world.page );
+    await page_utils.auth(user);
 });
 
 Given('I am on the page {string}', {timeout: 10 * 1000} , async function (url) {
@@ -83,27 +88,32 @@ BeforeAll(async function () {
     wp('rewrite structure /%year%/%monthnum%/%postname%/')
     generateUsers([
         {
+            name: 'admin2',
             email: 'administrator@email.org',
             role: 'administrator',
         },
         {
+            name: 'subscriber',
             email: 'subscriber@email.org',
             role: 'subscriber',
         },
         {
+            name: 'editor',
             email: 'editor@email.org',
             role: 'editor',
         },
         {
+            name: 'author',
             email: 'author@email.org',
             role: 'author',
         },
         {
+            name: 'contributor',
             email: 'contributor@email.org',
             role: 'contributor',
         },
     ])
-    const t = await cp(`${process.env.PWD}/plugin/wp-rocket`, `${WP_ROOT_DIR}/wp-content/plugins/wp-rocket`)
+    await cp(`${process.env.PWD}/plugin/wp-rocket`, `${WP_ROOT_DIR}/wp-content/plugins/wp-rocket`)
 })
 
 AfterAll(function () {

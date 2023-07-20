@@ -74,9 +74,9 @@ export async function deleteTransient(name: string) {
     wp(`transient delete ${name}`)
 }
 
-export async function generateUsers(users: Array<{email: string, role: string}>) {
+export async function generateUsers(users: Array<{name: string,email: string, role: string}>) {
     users.map(async user => {
-        await wp(`user create ${user.role} ${user.email} --role=${user.role} --user_pass=password`)
+        await wp(`user create ${user.name} ${user.email} --role=${user.role} --user_pass=password`)
     })
 }
 
