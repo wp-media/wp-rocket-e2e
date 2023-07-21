@@ -4,7 +4,9 @@
   "description": "WP Rocket E2E Tests with Playwright",
   "main": "playwright.config.ts",
   "scripts": {
-    "test:e2e": "playwright test --config playwright.config.ts"
+    "test:e2e": "playwright test --config playwright.config.ts",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint  . --ext .ts --fix"
   },
   "repository": {
     "type": "git",
@@ -13,7 +15,12 @@
   "author": "WP Media",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.32.3"
+    "@playwright/test": "^1.32.3",
+    "@typescript-eslint/eslint-plugin": "^6.1.0",
+    "@typescript-eslint/parser": "^6.1.0",
+    "eslint": "^8.45.0",
+    "eslint-plugin-es5": "^1.5.0",
+    "typescript": "^5.1.6"
   },
   "bugs": {
     "url": "https://github.com/wp-media/wp-rocket-e2e/issues"
