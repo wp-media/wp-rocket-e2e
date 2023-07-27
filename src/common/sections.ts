@@ -68,6 +68,16 @@ export class Sections {
   public toggle = async (optionId: string): Promise<void> => {
     this.canPerformAction();
 
+    if(this.propertyExist(optionId, "checkbox")) {
+        if (this.optionState && await this.page.locator(this.getStringProperty(optionId, 'checkbox')).isChecked()) {
+            return;
+        }
+
+        if (!this.optionState && !await this.page.locator(this.getStringProperty(optionId, 'checkbox')).isChecked()) {
+            return;
+        }
+    }
+
     if (this.propertyExist(optionId, "checkbox") && this.optionState && await this.page.locator(this.getStringProperty(optionId, 'checkbox')).isChecked()) {
         return;
     }
