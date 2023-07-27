@@ -36,7 +36,18 @@ export const selectors = {
             combineCss: {
                 checkbox: "#minify_concatenate_css",
                 target: "label[for=minify_concatenate_css]",
-                activate: "text=Activate combine CSS"
+                before: async (page: Page): Promise<boolean> => {
+                    await page.waitForSelector("#minify_concatenate_css");
+                    return await page.isEnabled("#minify_concatenate_css");
+                },
+                after: async (page: Page, state: boolean): Promise<void> => {
+                    if (!state) {
+                        return;
+                    }
+
+                    await page.waitForSelector("text=Activate combine CSS");
+                    await page.locator("text=Activate combine CSS").click();
+                }
             },
             rucss:{
                 checkbox: "#optimize_css_delivery",
@@ -52,12 +63,30 @@ export const selectors = {
             minifyJs: {
                 checkbox: "#minify_js",
                 target: "label[for=minify_js]",
-                activate: "text=Activate minify JavaScript"
+                after: async (page: Page, state: boolean): Promise<void> => {
+                    if (!state) {
+                        return;
+                    }
+
+                    await page.waitForSelector("text=Activate minify JavaScript");
+                    await page.locator("text=Activate minify JavaScript").click();
+                }
             },
             combineJs: {
                 checkbox: "#minify_concatenate_js",
                 target: "label[for=minify_concatenate_js]",
-                activate: "text=Activate combine JavaScript"
+                before: async (page: Page): Promise<boolean> => {
+                    await page.waitForSelector("#minify_concatenate_js");
+                    return await page.isEnabled("#minify_concatenate_js");
+                },
+                after: async (page: Page, state: boolean): Promise<void> => {
+                    if (!state) {
+                        return;
+                    }
+
+                    await page.waitForSelector("text=Activate combine JavaScript");
+                    await page.locator("text=Activate combine JavaScript").click();
+                }
             },
             deferJs: {
                 checkbox: "#defer_all_js",
