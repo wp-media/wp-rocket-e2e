@@ -111,7 +111,10 @@ export const selectors = {
             },
             lazyloadYoutube: {
                 checkbox: "#lazyload_youtube",
-                target: "label[for=lazyload_youtube]"
+                target: "label[for=lazyload_youtube]",
+                before: async (page: Page): Promise<boolean> => {
+                    return !await page.isHidden("#lazyload_youtube");
+                },
             },
             imageDimensions: {
                 checkbox: "#image_dimensions",
@@ -213,4 +216,25 @@ export const selectors = {
             }
         }
     },
+    addons: {
+        parent: "addons",
+        elements: {
+            varnishAutoPurge: {
+                checkbox: "#varnish_auto_purge",
+                target: "label[for=varnish_auto_purge]"
+            },
+            cacheWebp: {
+                checkbox: "#cache_webp",
+                target: "label[for=cache_webp]"
+            },
+            doCloudflare: {
+                checkbox: "#do_cloudflare",
+                target: "label[for=do_cloudflare]"
+            },
+            sucuryWafCacheSync: {
+                checkbox: "#sucury_waf_cache_sync",
+                target: "label[for=sucury_waf_cache_sync]"
+            }
+        }
+    }
 }
