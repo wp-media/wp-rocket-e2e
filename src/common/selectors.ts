@@ -203,5 +203,14 @@ export const selectors = {
                 }
             }
         }
-    }
+    },
+    heartbeat: {
+        parent: "heartbeat",
+        elements: {
+            controlHeartbeat: {
+                checkbox: "#control_heartbeat",
+                target: "label[for=control_heartbeat]"
+            }
+        }
+    },
 }
