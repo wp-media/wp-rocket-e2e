@@ -136,19 +136,19 @@ export const selectors = {
         parent: "advanced_cache",
         elements: {
             cacheRejectUri: {
-                target: "cache_reject_uri"
+                textbox: "#cache_reject_uri"
             },
             cacheRejectCookies: {
-                target: "cache_reject_cookies"
+                textbox: "#cache_reject_cookies"
             },
             cacheRejectUa: {
-                target: "cache_reject_ua"
+                textbox: "#cache_reject_ua"
             },
             cachePurgePages: {
-                target: "cache_purge_pages"
+                textbox: "#cache_purge_pages"
             },
             cacheQueryStrings: {
-                target: "cache_query_strings"
+                textbox: "#cache_query_strings"
             },
         }
     },
