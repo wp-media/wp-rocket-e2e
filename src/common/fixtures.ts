@@ -3,12 +3,12 @@ import { Sections } from './sections';
 import { selectors as pluginSelectors } from "./selectors";
 import { PageUtils } from '../../utils/page-utils';
 
-type WprFixtures = {
+type Fixtures = {
   sections: Sections;
   utils: PageUtils;
 };
 
-export const test = base.extend<WprFixtures>({
+export const test = base.extend<Fixtures>({
   sections: async ({ page }, use) => {
     // Set up the fixture.
     const sections = new Sections(page, pluginSelectors);
