@@ -85,7 +85,7 @@ export class Sections {
   }
 
   /**
-   * Performs a batch toggle action.
+   * Performs a mass toggle action.
    *
    * @return  {Promise<void>}
    */
@@ -114,7 +114,28 @@ export class Sections {
         return;
     }
 
-    await this.page.locator(this.getStringProperty(optionId, 'target')).fill(text);
+    await this.page.locator(this.getStringProperty(optionId, 'textbox')).fill(text);
+  }
+
+  /**
+   * Performs a mass fill on textboxes.
+   *
+   * @param text String or Array of texts.(Array must have a count equal to the numbers of textboxes to be filled)
+   *
+   * @return  {<Promise><void>}
+   */
+  public massFill = async(text: string | Array<string>): Promise<void> => {
+    this.canPerformAction();
+
+    let i = 0;
+
+    for (const key in this.elements) {
+        if(this.propertyExist(key, "textbox")){
+            await this.fill(key, Array.isArray(text) ? text[i] : text);
+        }
+
+        i++;
+    }
   }
 
   /**
