@@ -1,7 +1,6 @@
 import type { Page } from "@playwright/test";
 import type { Selectors } from "../../utils/types";
 import type { Role } from "../../utils/types";
-import { selectors as pluginSelectors } from "./selectors";
 
 export class Sections {
   public section: string = "";
@@ -16,9 +15,9 @@ export class Sections {
    *
    * @param page Page object.
    */
-  constructor(page: Page) {
+  constructor(page: Page, selectors: Selectors) {
     this.page = page;
-    this.selectors = pluginSelectors;
+    this.selectors = selectors;
   }
 
   /**
