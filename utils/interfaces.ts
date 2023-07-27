@@ -1,3 +1,3 @@
-export interface exportedSettings {
+export interface ExportedSettings {
     [key: string]: number;
 }
