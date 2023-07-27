@@ -9,6 +9,7 @@ export class Sections {
   private selectors: Selectors;
   protected page: Page;
   private elements: object;
+  public optionState: boolean = false;
 
   /**
    * Instatiate the class.
@@ -25,7 +26,7 @@ export class Sections {
    *
    * @param section Plugin Section ID
    *
-   * @return Instance of current class.
+   * @return Current object.
    */
   public set = (section: string): this => {
     this.section = section;
@@ -34,6 +35,18 @@ export class Sections {
 
     return this;
   };
+
+  /**
+   * Sets the state of option.
+   *
+   * @param state True if option should be checked; false otherwise.
+   *
+   * @return Current object.
+   */
+  public state = (state: boolean): this => {
+    this.optionState = state;
+    return this;
+  }
 
   /**
    * Visits plugin section.
@@ -53,23 +66,29 @@ export class Sections {
   *
   * @return  {Promise<void>}
   */
-  public toggle = async (optionId: string, state: boolean = false ): Promise<void> => {
+  public toggle = async (optionId: string): Promise<void> => {
     this.canPerformAction();
 
-    if (this.propertyExist(optionId, "checkbox") && state && await this.page.locator(this.getStringProperty(optionId, 'checkbox')).isChecked()) {
+    if (this.propertyExist(optionId, "checkbox") && this.optionState && await this.page.locator(this.getStringProperty(optionId, 'checkbox')).isChecked()) {
+        return;
+    }
+
+    if (this.propertyExist(optionId, "before") && !await this.elements[optionId].before(this.page)) {
         return;
     }
 
     await this.page.locator(this.getStringProperty(optionId, 'target')).click();
 
-    // console.log(this.elements);
-    // console.log(this.elements[optionId]);
-    // console.log("Option - " + optionId);
     if (this.propertyExist(optionId, "after")) {
-        await this.elements[optionId].after(this.page, state);
+        await this.elements[optionId].after(this.page, this.optionState);
     }
   }
 
+  /**
+   * Performs a batch toggle action.
+   *
+   * @return  {Promise<void>}
+   */
   public massToggle = async (): Promise<void> => {
     this.canPerformAction();
 
@@ -99,13 +118,13 @@ export class Sections {
   }
 
   /**
-   * Throws 
+   * Validates if actions can be performed.
    *
-   * @return  {void}    [return description]
+   * @return  {void}
    */
   private canPerformAction = (): void => {
     if (this.section === "") {
-        throw new Error("Section is not defined yet");
+        throw new Error("Section is not defined yet.");
     }
   }
 
