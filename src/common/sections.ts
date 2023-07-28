@@ -202,6 +202,25 @@ export class Sections {
     }
 
     /**
+     * Check filled state for textboxes in sections.
+     *
+     * @return True if all textboxes are not filled; otherwise false.
+     */
+    public areTextBoxesEmpty = async (): Promise<boolean> => {
+        this.canPerformAction();
+
+        for (const key in this.elements) {
+            if(this.propertyExist(key, "textbox")){
+                if (await this.page.locator(this.getStringProperty(key, 'textbox')).inputValue() !== '') {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Validates if actions can be performed.
      *
      * @return  {void}
