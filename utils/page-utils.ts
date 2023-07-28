@@ -237,6 +237,13 @@ export class PageUtils {
         await this.page.goto(WP_BASE_URL + '/wp-admin/tools.php?page=rocket_e2e_tests_helper');
     }
 
+    /**
+     * Performs upload new plugin action.
+     *
+     * @param file File to be uploaded.
+     *
+     * @return  {Promise<void>}
+     */
     public uploadNewPlugin = async (file: string): Promise<void> => {
         await this.page.goto(WP_BASE_URL + '/wp-admin/plugin-install.php');
         await this.page.locator('.upload-view-toggle').click();
@@ -245,12 +252,22 @@ export class PageUtils {
         await this.page.locator('#install-plugin-submit').click({ timeout: 120000 });
     }
 
+    /**
+     * Performs Wordpress logout action.
+     *
+     * @return  {Promise<void>}
+     */
     public wpAdminLogout = async (): Promise<void> => {
         await this.page.locator('#wp-admin-bar-my-account').hover();
         await this.page.waitForSelector('#wp-admin-bar-logout');
         await this.page.locator('#wp-admin-bar-logout a').click();
     }
 
+    /**
+     * Performs Wordpress login action.
+     *
+     * @return  {Promise<void>}
+     */
     public auth = async (): Promise<void> => {
         await this.visitPage('wp-admin');
         await this.wpAdminLogin();
@@ -258,6 +275,11 @@ export class PageUtils {
         await this.page.context().storageState({ path: './config/storageState.json' });
     }
 
+    /**
+     * Performs the disable all options action on WP Rocket.
+     *
+     * @return  {Promise<void>}
+     */
     public disableAllOptions = async (): Promise<void> => {
         await this.gotoWpr();
 
@@ -323,6 +345,86 @@ export class PageUtils {
         await this.sections.massToggle();
     }
 
+    /**
+     * Performs the enable all options action on WP Rocket.
+     *
+     * @return  {Promise<void>}
+     */
+    public enableAllOptions = async (): Promise<void> => {
+        await this.gotoWpr();
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Enable all settings for cache section.
+        await this.sections.set("cache").visit();
+        await this.sections.state(true).massToggle();
+        await this.saveSettings();
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Enable all settings for file optimization section.
+        await this.sections.set("fileOptimization").visit();
+        await this.sections.massToggle();
+        await this.saveSettings();
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Enable all settings for Media section.
+        await this.sections.set("media").visit();
+        await this.sections.massToggle();
+        await this.saveSettings();
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Enable all settings for Preload section.
+        await this.sections.set("preload").visit();
+        await this.sections.massToggle();
+        await this.saveSettings();
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+         // Advanced rules section.
+         await this.sections.set("advancedRules").visit();
+         const values: Array<string> = ['/test\n/.*\n/test2', 'woocommerce_items_in_cart', 'Mobile(.*)Safari(.*)', '/hello-world/', 'country'];
+         await this.sections.massFill(values);
+         await this.saveSettings();
+ 
+         await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Enable all settings for Database.
+        await this.sections.set("database").visit();
+        await this.sections.massToggle();
+        await this.page.getByRole('button', { name: 'Save Changes and Optimize' }).click();
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+         // Enable all settings for CDN.
+         await this.sections.set("cdn").visit();
+         await this.sections.toggle("cdn");
+         await this.sections.fill("cnames", "test.example.com");
+         await this.saveSettings();
+
+         await this.page.waitForLoadState('load', { timeout: 30000 });
+
+         // Enable all settings for Heartbeat.
+         await this.sections.set("heartbeat").visit();
+         await this.sections.toggle("controlHeartbeat");
+         await this.saveSettings();
+
+         await this.page.waitForLoadState('load', { timeout: 30000 });
+
+         // Enable all settings for Addons.
+         await this.sections.set("addons").visit();
+         await this.sections.massToggle();
+    }
+
+    /**
+     * Performs setting import action in WP Rocket.
+     *
+     * @param file file to be imported.
+     *
+     * @return  {Promise<void>}
+     */
     public importSettings = async (file: string): Promise<void> => {
         await this.gotoWpr();
         await this.page.locator('#wpr-nav-tools').click();
@@ -330,6 +432,11 @@ export class PageUtils {
         await this.page.locator('.wpr-tools:nth-child(3) button').click({ timeout: 120000 });
     }
 
+    /**
+     * Performs the save settings action on WP Rocket.
+     *
+     * @return  {Promise<void>}
+     */
     public saveSettings = async (): Promise<void> => {
         await this.page.waitForSelector('#wpr-options-submit');
         // save settings
