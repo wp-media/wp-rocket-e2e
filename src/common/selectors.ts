@@ -1,6 +1,12 @@
 import type { Page } from "@playwright/test";
 
 export const selectors = {
+    dashboard: {
+        parent: "dashboard",
+        elements: {
+            target: "div[role=\"main\"] >> text=Clear and preload cache"
+        }
+    },
     cache: {
         parent: "cache",
         elements: {
