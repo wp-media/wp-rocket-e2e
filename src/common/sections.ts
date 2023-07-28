@@ -229,6 +229,10 @@ export class Sections {
         if (this.section === "") {
             throw new Error("Section is not defined yet.");
         }
+
+        if (this.selectors[this.section] === undefined){
+            throw new Error("Section is invalid.");
+        }
     }
 
     /**
