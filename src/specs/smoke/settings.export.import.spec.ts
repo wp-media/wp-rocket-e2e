@@ -6,7 +6,7 @@ import type { ExportedSettings } from '../../../utils/types';
  * Local deps.
  */
 import { WP_BASE_URL } from '../../../config/wp.config';
-import { readAnyFile, is_exported_correctly } from '../../../utils/helpers';
+import { readAnyFile, isExportedCorrectly } from '../../../utils/helpers';
 import { diffChecker as diffCheckerExclusions } from '../../../utils/exclusions';
 
 
@@ -174,7 +174,7 @@ const checkExportedSettings = async (file: string): Promise<void> => {
     const jsonData = await readAnyFile(file);
     const exportedSettings: ExportedSettings = JSON.parse(jsonData);
 
-    const validatedExportedSettings = await is_exported_correctly(exportedSettings, 'lazyload');
+    const validatedExportedSettings = await isExportedCorrectly(exportedSettings, 'lazyload');
     expect(validatedExportedSettings, 'Settings was not exported correctly.').toBeTruthy();
 }
 
