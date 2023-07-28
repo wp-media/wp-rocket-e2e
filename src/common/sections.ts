@@ -73,7 +73,7 @@ export class Sections {
     /**
      * Sets the state of option.
      *
-     * @param state True if option should be checked; false otherwise.
+     * @param state True if option should be checked; otherwise false.
      *
      * @return Current object.
      */
@@ -183,6 +183,25 @@ export class Sections {
     }
 
     /**
+     * Check options state for a section.
+     *
+     * @return True if all options are disabled for current section; otherwise false.
+     */
+    public areOptionsDisabled = async (): Promise<boolean> => {
+        this.canPerformAction();
+
+        for (const key in this.elements) {
+            if(this.propertyExist(key, "checkbox")){
+                if (await this.page.locator(this.getStringProperty(key, 'checkbox')).isChecked()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Validates if actions can be performed.
      *
      * @return  {void}
@@ -199,7 +218,7 @@ export class Sections {
      * @param optionId Option ID
      * @param property Property name.
      *
-     * @return True if property exist; false otherwise.
+     * @return True if property exist; otherwise false.
      */
     private propertyExist = (optionId: string, property: string): boolean => {
         if (this.elements[optionId][property] !== undefined) {
