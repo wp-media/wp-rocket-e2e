@@ -255,7 +255,7 @@ export class Sections {
      *
      * @return Property value in string.
      */
-    private getStringProperty = (optionId: string, property: string): string => {
+    public getStringProperty = (optionId: string, property: string): string => {
         if (!this.propertyExist(optionId, property)) {
             throw new Error(property + ' does not exist for this option.');
         }
