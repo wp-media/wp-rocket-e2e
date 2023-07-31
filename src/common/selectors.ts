@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { isElementEnabled, activateFromPopUp } from "../../utils/helpers";
 
 export const selectors = {
     dashboard: {
@@ -31,29 +32,16 @@ export const selectors = {
                 checkbox: "#minify_css",
                 target: "label[for=minify_css]",
                 after: async (page: Page, state: boolean): Promise<void> => {
-                    if (!state) {
-                        return;
-                    }
-
-                    await page.waitForSelector("text=Activate minify CSS");
-                    await page.locator("text=Activate minify CSS").click();
+                     activateFromPopUp(page, state, "text=Activate minify CSS") 
                 }
             },
             combineCss: {
                 checkbox: "#minify_concatenate_css",
                 target: "label[for=minify_concatenate_css]",
-                before: async (page: Page): Promise<boolean> => {
-                    await page.waitForSelector("#minify_concatenate_css");
-                    return await page.isEnabled("#minify_concatenate_css");
-                },
+                before: async (page: Page): Promise<boolean> => { return isElementEnabled(page, "#minify_concatenate_css") },
                 after: async (page: Page, state: boolean): Promise<void> => {
-                    if (!state) {
-                        return;
-                    }
-
-                    await page.waitForSelector("text=Activate combine CSS");
-                    await page.locator("text=Activate combine CSS").click();
-                }
+                    activateFromPopUp(page, state, "text=Activate combine CSS") 
+               }
             },
             rucss:{
                 checkbox: "#optimize_css_delivery",
@@ -70,29 +58,16 @@ export const selectors = {
                 checkbox: "#minify_js",
                 target: "label[for=minify_js]",
                 after: async (page: Page, state: boolean): Promise<void> => {
-                    if (!state) {
-                        return;
-                    }
-
-                    await page.waitForSelector("text=Activate minify JavaScript");
-                    await page.locator("text=Activate minify JavaScript").click();
-                }
+                    activateFromPopUp(page, state, "Activate minify JavaScript") 
+               }
             },
             combineJs: {
                 checkbox: "#minify_concatenate_js",
                 target: "label[for=minify_concatenate_js]",
-                before: async (page: Page): Promise<boolean> => {
-                    await page.waitForSelector("#minify_concatenate_js");
-                    return await page.isEnabled("#minify_concatenate_js");
-                },
+                before: async (page: Page): Promise<boolean> => { return isElementEnabled(page, "#minify_concatenate_js") },
                 after: async (page: Page, state: boolean): Promise<void> => {
-                    if (!state) {
-                        return;
-                    }
-
-                    await page.waitForSelector("text=Activate combine JavaScript");
-                    await page.locator("text=Activate combine JavaScript").click();
-                }
+                    activateFromPopUp(page, state, "Activate combine JavaScript") 
+               }
             },
             deferJs: {
                 checkbox: "#defer_all_js",

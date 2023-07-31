@@ -1,6 +1,8 @@
 import os from 'os';
 import fs from 'fs/promises';
 
+import type { Page } from '@playwright/test';
+
 // Interfaces
 import { ExportedSettings } from '../utils/types';
 import { uiReflectedSettings } from './exclusions';
@@ -114,3 +116,33 @@ export const isExportedCorrectly = async (exportedSettings: ExportedSettings, ex
      return true;
 }
 
+/**
+ * Checks if an input element is enabled.
+ *
+ * @param page Page object.
+ * @param selector Element selector.
+ *
+ * @return True if input element is enabled; Otherwise false.
+ */
+export const isElementEnabled = async (page: Page, selector: string): Promise<boolean> => {
+    await page.waitForSelector(selector);
+    return await page.isEnabled(selector);
+}
+
+/**
+ * Performs the activation click action on WPR option popup.
+ *
+ * @param page Page object.
+ * @param state Parent element state.
+ * @param selector Element selector.
+ *
+ * @return  {Promise<void>}
+ */
+export const activateFromPopUp = async(page: Page, state: boolean, selector: string): Promise<void> => {
+    if (!state) {
+        return;
+    }
+
+    await page.waitForSelector(selector);
+    await page.locator(selector).click();
+}
