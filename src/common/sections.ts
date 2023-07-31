@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import type { Selectors } from "../../utils/types";
-import type { Role } from "../../utils/types";
+import type { Roles } from "../../utils/types";
 
 export class Sections {
     /**
@@ -104,16 +104,16 @@ export class Sections {
         this.canPerformAction();
 
         if(this.propertyExist(optionId, "checkbox")) {
-            if (this.optionState && await this.page.locator(this.getStringProperty(optionId, 'checkbox')).isChecked()) {
+            if (this.optionState && await this.page.locator(this.getElement(optionId, 'checkbox')).isChecked()) {
                 return;
             }
 
-            if (!this.optionState && !await this.page.locator(this.getStringProperty(optionId, 'checkbox')).isChecked()) {
+            if (!this.optionState && !await this.page.locator(this.getElement(optionId, 'checkbox')).isChecked()) {
                 return;
             }
         }
 
-        if (this.propertyExist(optionId, "checkbox") && this.optionState && await this.page.locator(this.getStringProperty(optionId, 'checkbox')).isChecked()) {
+        if (this.propertyExist(optionId, "checkbox") && this.optionState && await this.page.locator(this.getElement(optionId, 'checkbox')).isChecked()) {
             return;
         }
 
@@ -121,7 +121,7 @@ export class Sections {
             return;
         }
 
-        await this.page.locator(this.getStringProperty(optionId, 'target')).click();
+        await this.page.locator(this.getElement(optionId, 'target')).click();
 
         if (this.propertyExist(optionId, "after")) {
             await this.elements[optionId].after(this.page, this.optionState);
@@ -153,12 +153,12 @@ export class Sections {
      */
     public fill = async(optionId: string, text: string): Promise<void> => {
         if (this.propertyExist(optionId, "role")) {
-            await this.page.getByRole(this.getRoleProperty(optionId, 'role'), this.getObjectProperty(optionId, 'roleTarget')).fill(text);
+            await this.page.getByRole(this.getRole(optionId, 'role'), this.getRoleTarget(optionId, 'role')).fill(text);
 
             return;
         }
 
-        await this.page.locator(this.getStringProperty(optionId, 'textbox')).fill(text);
+        await this.page.locator(this.getElement(optionId, 'textbox')).fill(text);
     }
 
     /**
@@ -192,7 +192,7 @@ export class Sections {
 
         for (const key in this.elements) {
             if(this.propertyExist(key, "checkbox")){
-                if (await this.page.locator(this.getStringProperty(key, 'checkbox')).isChecked()) {
+                if (await this.page.locator(this.getElement(key, 'checkbox')).isChecked()) {
                     return false;
                 }
             }
@@ -211,7 +211,7 @@ export class Sections {
 
         for (const key in this.elements) {
             if(this.propertyExist(key, "textbox")){
-                if (await this.page.locator(this.getStringProperty(key, 'textbox')).inputValue() !== '') {
+                if (await this.page.locator(this.getElement(key, 'textbox')).inputValue() !== '') {
                     return false;
                 }
             }
@@ -252,19 +252,23 @@ export class Sections {
     }
 
     /**
-     * Gets the string property value.
+     * Gets the element value.
      *
      * @param optionId Option ID
      * @param property Property name.
      *
-     * @return Property value in string.
+     * @return Element value in string.
      */
-    public getStringProperty = (optionId: string, property: string): string => {
+    public getElement = (optionId: string, property: string): string => {
         if (!this.propertyExist(optionId, property)) {
             throw new Error(property + ' does not exist for this option.');
         }
 
-        return this.elements[optionId][property];
+        if (this.elements[optionId][property]["element"] === undefined) {
+            throw new Error('Element does not exist.');
+        }
+
+        return this.elements[optionId][property]["element"];
     }
 
     /**
@@ -275,27 +279,31 @@ export class Sections {
      *
      * @return Property value in Role.
      */
-    private getRoleProperty = (optionId: string, property: string): Role => {
+    private getRole = (optionId: string, property: string): Roles => {
         if (!this.propertyExist(optionId, property)) {
             throw new Error(property + ' does not exist for this option.');
         }
 
-        return this.elements[optionId][property];
+        if (this.elements[optionId][property]["name"] === undefined) {
+            throw new Error('Role does not exist.');
+        }
+
+        return this.elements[optionId][property]["name"];
     }
 
     /**
-     * Gets the object property value.
+     * Gets the role target value.
      *
      * @param optionId Option ID
      * @param property Property name.
      *
-     * @return Property value in object.
+     * @return Role target value in object.
      */
-    private getObjectProperty = (optionId: string, property: string): object => {
+    private getRoleTarget = (optionId: string, property: string): object => {
         if (!this.propertyExist(optionId, property)) {
             throw new Error(property + ' does not exist for this option.');
         }
 
-        return this.elements[optionId][property];
+        return this.elements[optionId][property]["roleTarget"];
     }
 }
