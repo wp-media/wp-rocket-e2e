@@ -8,3 +8,5 @@
 /plugin/exported_settings/settings_1.json
 /plugin/exported_settings/settings_2.json
 /plugin/exported_settings/settings_3.json
+/test-results
+@rerun.txt
