@@ -8,7 +8,8 @@ export const selectors: Selectors = {
         parent: "dashboard",
         elements: {
             clearCacheBtn: {
-                type: FieldType.textbox,
+                type: FieldType.button,
+                target: "div[role=\"main\"] >> text=Clear and preload cache",
             }
         }
     },
@@ -69,7 +70,7 @@ export const selectors: Selectors = {
                 element: "#minify_js",
                 target: "label[for=minify_js]",
                 after: async (page: Page, state: boolean): Promise<void> => {
-                    activateFromPopUp(page, state, "Activate minify JavaScript") 
+                    activateFromPopUp(page, state, "text=Activate minify JavaScript") 
                }
             },
             combineJs: {
@@ -78,7 +79,7 @@ export const selectors: Selectors = {
                 target: "label[for=minify_concatenate_js]",
                 before: async (page: Page): Promise<boolean> => { return isElementEnabled(page, "#minify_concatenate_js") },
                 after: async (page: Page, state: boolean): Promise<void> => {
-                    activateFromPopUp(page, state, "Activate combine JavaScript") 
+                    activateFromPopUp(page, state, "text=Activate combine JavaScript") 
                }
             },
             deferJs: {
