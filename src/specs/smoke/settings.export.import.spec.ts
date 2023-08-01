@@ -49,10 +49,10 @@ const settingsExportImport = (): void => {
          * Check that settings is imported correctly.
          */
         await sections.set("cache").visit();
-        await expect(page.locator(sections.getStringProperty("cacheLoggedUser", 'checkbox'))).toBeChecked();
-        const mobileDeviceCache = await page.locator(sections.getStringProperty("mobileDeviceCache", 'checkbox')).isChecked();
+        await expect(page.locator(sections.getStringProperty("cacheLoggedUser", "element"))).toBeChecked();
+        const mobileDeviceCache = await page.locator(sections.getStringProperty("mobileDeviceCache", "element")).isChecked();
         expect(mobileDeviceCache).toBeFalsy();
-        const separateMobileDeviceCache = await page.locator(sections.getStringProperty("mobileDeviceSeparateCache", 'checkbox')).isChecked();
+        const separateMobileDeviceCache = await page.locator(sections.getStringProperty("mobileDeviceSeparateCache", "element")).isChecked();
         expect(separateMobileDeviceCache).toBeFalsy();
 
         // No option is enabled in file optimization section.

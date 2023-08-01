@@ -103,7 +103,11 @@ export class Sections {
     public toggle = async (optionId: string): Promise<void> => {
         this.canPerformAction();
 
-        if(this.propertyExist(optionId, "checkbox")) {
+        if (!this.isType(optionId, "checkbox") && !this.isType(optionId, "button")) {
+            return;
+        }
+
+        if(this.isType(optionId, "checkbox")) {
             if (this.optionState && await this.page.locator(this.getElement(optionId, 'checkbox')).isChecked()) {
                 return;
             }
@@ -113,15 +117,11 @@ export class Sections {
             }
         }
 
-        if (this.propertyExist(optionId, "checkbox") && this.optionState && await this.page.locator(this.getElement(optionId, 'checkbox')).isChecked()) {
-            return;
-        }
-
         if (this.propertyExist(optionId, "before") && !await this.elements[optionId].before(this.page)) {
             return;
         }
 
-        await this.page.locator(this.getElement(optionId, 'target')).click();
+        await this.page.locator(this.getStringProperty(optionId, 'target')).click();
 
         if (this.propertyExist(optionId, "after")) {
             await this.elements[optionId].after(this.page, this.optionState);
@@ -137,7 +137,7 @@ export class Sections {
         this.canPerformAction();
 
         for (const key in this.elements) {
-            if(this.propertyExist(key, "checkbox")){
+            if(this.isType(key, "checkbox")){
                 await this.toggle(key);
             }
         }
@@ -152,7 +152,7 @@ export class Sections {
      * @return  {Promise<void>}
      */
     public fill = async(optionId: string, text: string): Promise<void> => {
-        if (this.propertyExist(optionId, "role")) {
+        if (this.isType(optionId, "role")) {
             await this.page.getByRole(this.getRole(optionId, 'role'), this.getRoleTarget(optionId, 'role')).fill(text);
 
             return;
@@ -174,7 +174,7 @@ export class Sections {
         let i = 0;
 
         for (const key in this.elements) {
-            if(this.propertyExist(key, "textbox")){
+            if(this.isType(key, "textbox")){
                 await this.fill(key, Array.isArray(text) ? text[i] : text);
             }
 
@@ -191,7 +191,7 @@ export class Sections {
         this.canPerformAction();
 
         for (const key in this.elements) {
-            if(this.propertyExist(key, "checkbox")){
+            if(this.isType(key, "checkbox")){
                 if (await this.page.locator(this.getElement(key, 'checkbox')).isChecked()) {
                     return false;
                 }
@@ -210,7 +210,7 @@ export class Sections {
         this.canPerformAction();
 
         for (const key in this.elements) {
-            if(this.propertyExist(key, "textbox")){
+            if(this.isType(key, "textbox")){
                 if (await this.page.locator(this.getElement(key, 'textbox')).inputValue() !== '') {
                     return false;
                 }
@@ -235,7 +235,23 @@ export class Sections {
         }
     }
 
-    /**
+     /**
+     * Checks if a type exist for the current option object literal.
+     *
+     * @param optionId Option ID
+     * @param type Type property.
+     *
+     * @return True if property exist; otherwise false.
+     */
+     private isType = (optionId: string, type: string): boolean => {
+        if (this.elements[optionId]["type"] === type) {
+            return true;
+        }
+
+        return false;
+    }
+
+   /**
      * Checks if a property exist for the current option object literal.
      *
      * @param optionId Option ID
@@ -243,7 +259,7 @@ export class Sections {
      *
      * @return True if property exist; otherwise false.
      */
-    private propertyExist = (optionId: string, property: string): boolean => {
+   private propertyExist = (optionId: string, property: string): boolean => {
         if (this.elements[optionId][property] !== undefined) {
             return true;
         }
@@ -252,58 +268,74 @@ export class Sections {
     }
 
     /**
+     * Gets the property value.
+     *
+     * @param optionId Option ID
+     * @param type Property name.
+     *
+     * @return Property value in string.
+     */
+    public getStringProperty = (optionId: string, property: string): string => {
+        if (!this.propertyExist(optionId, property)) {
+            throw new Error("Property " + property + " does not exist for this option " + optionId + ".");
+        }
+
+        return this.elements[optionId][property];
+    }
+
+    /**
      * Gets the element value.
      *
      * @param optionId Option ID
-     * @param property Property name.
+     * @param type Type property.
      *
      * @return Element value in string.
      */
-    public getElement = (optionId: string, property: string): string => {
-        if (!this.propertyExist(optionId, property)) {
-            throw new Error(property + ' does not exist for this option.');
+    private getElement = (optionId: string, type: string): string => {
+        if (!this.isType(optionId, type)) {
+            throw new Error("Type " + type + " does not exist for this option.");
         }
 
-        if (this.elements[optionId][property]["element"] === undefined) {
+        if (this.elements[optionId]["element"] === undefined) {
             throw new Error('Element does not exist.');
         }
 
-        return this.elements[optionId][property]["element"];
+        return this.elements[optionId]["element"];
     }
 
     /**
      * Gets the Role property value.
      *
      * @param optionId Option ID
-     * @param property Property name.
+     * @param type Type property.
      *
      * @return Property value in Role.
      */
-    private getRole = (optionId: string, property: string): Roles => {
-        if (!this.propertyExist(optionId, property)) {
-            throw new Error(property + ' does not exist for this option.');
+    private getRole = (optionId: string, type: string): Roles => {
+        if (!this.isType(optionId, type)) {
+            throw new Error("Type " + type + " does not exist for this option.");
         }
 
-        if (this.elements[optionId][property]["name"] === undefined) {
+        if (this.elements[optionId]["name"] === undefined) {
             throw new Error('Role does not exist.');
         }
 
-        return this.elements[optionId][property]["name"];
+        return this.elements[optionId]["name"];
     }
 
     /**
      * Gets the role target value.
      *
      * @param optionId Option ID
-     * @param property Property name.
+     * @param type Type property.
      *
      * @return Role target value in object.
      */
-    private getRoleTarget = (optionId: string, property: string): object => {
-        if (!this.propertyExist(optionId, property)) {
-            throw new Error(property + ' does not exist for this option.');
+    private getRoleTarget = (optionId: string, type: string): object => {
+        if (!this.isType(optionId, type)) {
+            throw new Error("Type " + type + " does not exist for this option.");
         }
 
-        return this.elements[optionId][property]["roleTarget"];
+        return this.elements[optionId]["roleTarget"];
     }
 }
