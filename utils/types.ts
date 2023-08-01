@@ -4,24 +4,49 @@ import type { Page } from "@playwright/test";
 /**
  * Start types for selectors.
  */
-type Checkbox = {
+export enum FieldType {
+    checkbox = 'checkbox',
+    textbox = 'textbox',
+    button = 'button',
+    role = 'role',
+}
+
+type Events = {
+    before?: (page: Page) => Promise<boolean>,
+    after?: (page: Page, state?: boolean) => Promise<void>,
+}
+
+type Checkbox =  Events & {
+    type: FieldType.checkbox,
     element: string,
     target: string,
 }
 
-type Textbox = {
-    element?: string,
+type Textbox = Events & {
+    type: FieldType.textbox,
+    element: string,
 }
 
-type Role = {
+type Button = Events & {
+    type: FieldType.button,
+    target: string
+}
+
+type Role = Events & {
+    type: FieldType.role,
     name: string,
     roleTarget: {
         [key: string]: string
     }
 }
 
-type Button = {
-    target: string
+export interface Selectors{
+    [key: string]: {
+        parent: string,
+        elements: {
+            [key: string]: Checkbox | Textbox | Button | Role
+        }
+    }
 }
 /**
  * End types for selectors.
@@ -29,22 +54,6 @@ type Button = {
 
 export interface ExportedSettings {
     [key: string]: number;
-}
-
-export interface Selectors{
-    [key: string]: {
-        parent: string,
-        elements: {
-            [key: string]: {
-                checkbox?: Checkbox,
-                textbox?: Textbox,
-                role?: Role,
-                button?: Button,
-                before?: (page: Page) => Promise<boolean>,
-                after?: (page: Page, state?: boolean) => Promise<void>
-            }
-        }
-    }
 }
 
 export interface Selector{
