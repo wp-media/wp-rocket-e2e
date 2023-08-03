@@ -1,46 +1,46 @@
-import playwright, {BrowserContext} from "playwright";
-import {After, AfterAll, Before, BeforeAll, Status} from "@cucumber/cucumber";
-import {Browser, Page} from "@playwright/test";
+import { ICustomWorld } from "../common/custom-world";
+import { ChromiumBrowser, chromium } from '@playwright/test';
+import { Sections } from './../common/sections';
+import { selectors as pluginSelectors } from "./../common/selectors";
+import { PageUtils } from "../../utils/page-utils";
+
+import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 import fs from "fs/promises";
-import {deleteTransient, resetWP} from "../../utils/commands";
-import {WP_BASE_URL} from "../../config/wp.config";
+// import { deleteTransient, resetWP } from "../../utils/commands";
+import { WP_BASE_URL } from "../../config/wp.config";
 
-let browser: Browser;
-let context: BrowserContext;
+let browser: ChromiumBrowser;
 
-type Context = {
-    page: Page
-}
-
-const world = { page: null } as Context;
+setDefaultTimeout(process.env.PWDEBUG ? -1 : 60 * 10000);
 
 BeforeAll(async function () {
-    browser = await playwright.chromium.launch({
-        headless: false,
-    });
-    context = await browser.newContext();
+    browser = await chromium.launch({ headless: false });
 });
 
-Before(async function ({ pickle }) {
-    const scenarioName = pickle.name + pickle.id
-    context = await browser.newContext({
+Before(async function (this: ICustomWorld) {
+    this.context = await browser.newContext({
         recordVideo: {
             dir: "test-results/videos",
         },
     });
-    world.page = await context.newPage();
-    await world.page.goto(WP_BASE_URL)
+    this.page = await this.context.newPage();
+    this.sections = new Sections(this.page, pluginSelectors);
+    this.utils = new PageUtils(this.page, this.sections);
+    
+    await this.page.goto(WP_BASE_URL);
 });
 
-After(async function ({ pickle, result }) {
+After(async function (this: ICustomWorld, { pickle, result }) {
     let videoPath: string;
     let img: Buffer;
     if (result?.status == Status.FAILED) {
-        img = await world.page.screenshot({ path: `./test-results/screenshots/${pickle.name}.png`, type: "png" })
-        videoPath = await world.page.video().path();
+        img = await this.page?.screenshot({ path: `./test-results/screenshots/${pickle.name}.png`, type: "png" })
+        videoPath = await this.page?.video().path();
     }
-    await world.page.close();
-    await context.close();
+
+    await this.page?.close()
+    await this.context?.close()
+
     if (result?.status == Status.FAILED) {
         await this.attach(
             img, "image/png"
@@ -52,16 +52,14 @@ After(async function ({ pickle, result }) {
         );
     }
 
-    resetWP();
+    // resetWP();
 
 });
 
-After(async function () {
-    deleteTransient('wp_rocket_customer_data')
-})
+// After(async function () {
+//     deleteTransient('wp_rocket_customer_data')
+// })
 
 AfterAll(async function () {
     await browser.close();
 })
-
-export default world
