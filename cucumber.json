@@ -9,8 +9,8 @@
     "publishQuiet": true,
     "dryRun": false,
     "require": [
-      "features/support/steps.ts",
-      "features/support/hooks.ts"
+      "src/support/steps/steps.ts",
+      "src/support/hooks.ts"
     ],
     "requireModule": [
       "ts-node/register"
@@ -30,8 +30,8 @@
     "publishQuiet": true,
     "dryRun": false,
     "require": [
-      "features/support/steps.ts",
-      "features/support/hooks.ts"
+      "src/support/steps/steps.ts",
+      "src/support/hooks.ts"
     ],
     "requireModule": [
       "ts-node/register"
