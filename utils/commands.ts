@@ -1,82 +1,81 @@
-import {
-    WP_DOCKER,
-    WP_ROOT_DIR,
-    WP_DOCKER_CONTAINER,
-    WP_ADMIN_USER,
-    WP_BASE_URL,
-    WP_DOCKER_ROOT_DIR
-} from "../config/wp.config";
+import {exec} from "shelljs";
+import {configurations, ServerType} from "./configurations";
 
-import { exec } from "shelljs";
-import * as stream from "stream";
-function wrap_prefix(command: string) {
-    if(WP_DOCKER) {
-        return `docker-compose exec -T ${WP_DOCKER_CONTAINER} ${command}`;
+function wrapPrefix(command: string): string {
+    if(configurations.type === ServerType.docker) {
+        return `docker-compose exec -T ${configurations.docker.container} ${command}`;
+    }
+    if(configurations.type === ServerType.external) {
+        return `ssh ${configurations.ssh.username}@${configurations.ssh.address} -i ${configurations.ssh.key} ${command}`;
     }
     return command;
 }
 
-async function wp(args: string) {
-    const root = WP_DOCKER ? ' --allow-root': '';
-    const cwd = WP_DOCKER ? WP_DOCKER_ROOT_DIR: WP_ROOT_DIR;
-    const command = wrap_prefix(`wp ${args}${root}`);
-    const output = exec(command, {
+async function wp(args: string): Promise<void> {
+    const root = configurations.type === ServerType.docker ? ' --allow-root': '';
+    const cwd = configurations.type === ServerType.docker ? configurations.docker.rootDir: configurations.rootDir;
+    const command = wrapPrefix(`wp ${args}${root}`);
+    exec(command, {
         cwd: cwd,
         async: false
     });
-    return output.stdout.trim();
 }
 
 export function resetWP(): void {
     wp('db reset --yes');
-    wp(`core install --url=${WP_BASE_URL} --title="test" --admin_user=${WP_ADMIN_USER.username} --admin_password=${WP_ADMIN_USER.password} --admin_email="admin@test.com" --skip-email`);
+    wp(`core install --url=${configurations.baseUrl} --title="test" --admin_user=${configurations.username} --admin_password=${configurations.password} --admin_email="admin@test.com" --skip-email`);
 }
 
-export async function cp(origin: string, destination: string) {
-    if(WP_DOCKER) {
+export async function cp(origin: string, destination: string): Promise<void> {
+    if(configurations.type === ServerType.docker) {
         await exec(`docker cp ${origin} $(docker-compose ps -q wp):${destination}`, {
-            cwd: WP_DOCKER_ROOT_DIR,
+            cwd: configurations.docker.rootDir,
             async: false
         });
         return;
     }
+
+    if(configurations.type === ServerType.external) {
+        await exec(`scp -i ${configurations.ssh.key} ${origin} ${configurations.ssh.username}@${configurations.ssh.address}:${destination}`);
+        return;
+    }
+
     exec(`cp ${origin} ${destination}`, {
-        cwd: WP_ROOT_DIR,
+        cwd: configurations.rootDir,
         async: false
     });
 }
 
-export async function rm(destination: string) {
-    const cwd = WP_DOCKER ? WP_DOCKER_ROOT_DIR: WP_ROOT_DIR;
-    const command = wrap_prefix(`rm -rf ${destination}`);
-    const output = exec(command, {
+export async function rm(destination: string): Promise<void> {
+    const cwd = configurations.type === ServerType.docker ? configurations.docker.rootDir: configurations.rootDir;
+    const command = wrapPrefix(`rm -rf ${destination}`);
+    exec(command, {
         cwd: cwd,
         async: false
     });
-    return output.stdout.trim();
 }
 
 
 
-export async function activatePlugin(name: string)  {
+export async function activatePlugin(name: string): Promise<void>  {
     wp(`plugin activate ${name}`)
 }
 
-export async function deactivatePlugin(name: string) {
+export async function deactivatePlugin(name: string): Promise<void> {
     wp(`plugin deactivate ${name}`)
 }
 
-export async function setTransient(name:string, value: string) {
+export async function setTransient(name:string, value: string): Promise<void> {
     wp( `transient set ${name} ${value}`)
 }
 
-export async function deleteTransient(name: string) {
+export async function deleteTransient(name: string): Promise<void> {
     wp(`transient delete ${name}`)
 }
 
-export async function generateUsers(users: Array<{name: string,email: string, role: string}>) {
+export async function generateUsers(users: Array<{email: string, role: string}>): Promise<void> {
     users.map(async user => {
-        await wp(`user create ${user.name} ${user.email} --role=${user.role} --user_pass=password`)
+        await wp(`user create ${user.role} ${user.email} --role=${user.role} --user_pass=password`)
     })
 }
 

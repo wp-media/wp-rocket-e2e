@@ -2,7 +2,6 @@
 /node_modules
 /reports
 /artifacts
-package-lock.json
 /plugin/new_release.zip
 /plugin/previous_stable.zip
 /plugin/wp-rocket_3.10.9.zip

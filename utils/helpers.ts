@@ -1,53 +1,37 @@
 import os from 'os';
 import fs from 'fs/promises';
 
-// Interfaces
-import { exportedSettings } from './interfaces';
-import { ui_reflected_settings } from './exclusions';
+import type { Page } from '@playwright/test';
 
-let home_dir: String, install_path: String;
-home_dir = os.homedir();
+// Interfaces
+import { ExportedSettings } from '../utils/types';
+import { uiReflectedSettings } from './exclusions';
+
+const homeDir: string = os.homedir();
+let installPath: string;
 
 switch(os.platform()) { 
     case 'linux': { 
-       install_path = 'wp-env';
+       installPath = 'wp-env';
        break; 
     } 
     default: { 
-       install_path = '.wp-env'; 
+       installPath = '.wp-env'; 
        break; 
     } 
-} 
-
-/**
- * 
- * @param err Error message.
- */
-export async function log_error(err, prefix = ''){
-    console.log(prefix != '' ? prefix + ' - ' : '', err);
 }
 
-/**
- * 
- * @param page Page Object.
- */
-export const save_settings = async ( page ) => {
-    await page.waitForSelector('#wpr-options-submit');
-    // save settings
-    await page.locator('#wpr-options-submit').click();
-}
-
-export const sleep = (ms:number) => new Promise(r => setTimeout(r, ms));
+export const sleep = async (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms));
 
 /**
  * 
  * @param file String File name.
  * @returns String Absolute path to give file from OS.
  */
-const get_dir = async (file: String) => {
-    let dir;
-    dir = (await fs.readdir(home_dir + '/' + install_path, { withFileTypes: true })).filter(dirent => dirent.isDirectory())[0].name;
-    dir = home_dir + '/' + install_path + '/' + dir + '/WordPress/' + file;
+const getDir = async (file: string): Promise<string> => {
+    let dir: string;
+    dir = (await fs.readdir(homeDir + '/' + installPath, { withFileTypes: true })).filter(dirent => dirent.isDirectory())[0].name;
+    dir = homeDir + '/' + installPath + '/' + dir + '/WordPress/' + file;
 
     return dir;
 }
@@ -57,8 +41,8 @@ const get_dir = async (file: String) => {
  * @param file Path to file to be read.
  * @returns String File content.
  */
-export const read_file = async (file) => {
-    return await fs.readFile(await get_dir(file), 'utf8');
+export const readFile = async (file: string): Promise<string> => {
+    return await fs.readFile(await getDir(file), 'utf8');
 }
 
 /**
@@ -66,8 +50,8 @@ export const read_file = async (file) => {
  * @param file Path to file to be written.
  * @param data Data to be written to file.
  */
-export const write_to_file = async (file: String, data: String) => {
-    await fs.writeFile(await get_dir(file), data);
+export const writeToFile = async (file: string, data: string): Promise<void> => {
+    await fs.writeFile(await getDir(file), data);
     await sleep(1000);
 }
 
@@ -76,9 +60,9 @@ export const write_to_file = async (file: String, data: String) => {
  * @param file Path to file.
  * @returns bool.
  */
-export const file_exist = async (file: String) => {
+export const fileExist = async (file: string): Promise<boolean> => {
     try {
-        await fs.access(await get_dir(file));
+        await fs.access(await getDir(file));
         return true;
     } catch {
         return false;
@@ -86,12 +70,15 @@ export const file_exist = async (file: String) => {
 }
 
 /**
+ * Checks if WP Rocket is active if config file exists.
+ * 
+ * Function to be removed.
  * 
  * @returns bool.
  */
-export const is_rocket_active = async () => {
+export const isRocketActive = async (): Promise<boolean> => {
     try {
-        await fs.access(await get_dir('wp-content/wp-rocket-config/localhost.php'));
+        await fs.access(await getDir('wp-content/wp-rocket-config/localhost.php'));
         return true;
     } catch {
         return false;
@@ -101,26 +88,26 @@ export const is_rocket_active = async () => {
 /**
  * Read file content
  */
-export const read_any_file = async (file) => {
+export const readAnyFile = async (file: string): Promise<string> => {
     return await fs.readFile(file, 'utf8');
 }
 
 /**
  * Check that settings is exported correctly.
  *
- * @param   {exportedSettings}  exported_settings  Object of exported settings.
- * @param   {string}            exception          Object key to exclude from check.
+ * @param exported_settings  Object of exported settings.
+ * @param exception          Object key to exclude from check.
  *
- * @return  {Promise<boolean>}                     Return bool.
+ * @return True if settings is exported correctly; Otherwise false.
  */
-export const is_exported_correctly = async (exported_settings: exportedSettings, exception: string): Promise< boolean > => {
-    for (let key in exported_settings) {
-        for (let option of ui_reflected_settings) {
+export const isExportedCorrectly = async (exportedSettings: ExportedSettings, exception: string): Promise< boolean > => {
+    for (const key in exportedSettings) {
+        for (const option of uiReflectedSettings) {
             if (key == exception) {
                 continue;
             }
 
-            if (key === option && exported_settings[key] !== 0) {
+            if (key === option && exportedSettings[key] !== 0) {
                 return false;
             }
         }
@@ -129,3 +116,33 @@ export const is_exported_correctly = async (exported_settings: exportedSettings,
      return true;
 }
 
+/**
+ * Checks if an input element is enabled.
+ *
+ * @param page Page object.
+ * @param selector Element selector.
+ *
+ * @return True if input element is enabled; Otherwise false.
+ */
+export const isElementEnabled = async (page: Page, selector: string): Promise<boolean> => {
+    await page.waitForSelector(selector);
+    return await page.isEnabled(selector);
+}
+
+/**
+ * Performs the activation click action on WPR option popup.
+ *
+ * @param page Page object.
+ * @param state Parent element state.
+ * @param selector Element selector.
+ *
+ * @return  {Promise<void>}
+ */
+export const activateFromPopUp = async(page: Page, state: boolean, selector: string): Promise<void> => {
+    if (!state) {
+        return;
+    }
+
+    await page.waitForSelector(selector);
+    await page.locator(selector).click();
+}

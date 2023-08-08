@@ -1,87 +1,78 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../../common/fixtures';
+import type { Page } from '@playwright/test';
+import type { Sections } from '../../common/sections';
 
-/**
- * Local deps.
- */
-import { pageUtils } from '../../utils/page.utils';
-import { fileOptimization } from '../common/sections/file.optimization';
-
-const upgradingPlugin = () => {
-    test('Shouldn\'t cause fatal error when upgrade from 3.10.9 to latest version while using PHP 8.1.6 while beacon is open', async ( { page } ) => {
-    
-        const page_utils = new pageUtils(page);
-        const fileOpt = new fileOptimization( page );
+const upgradingPlugin = (): void => {
+    test('Shouldn\'t cause fatal error when upgrade from 3.10.9 to latest version while using PHP 8.1.6 while beacon is open', async ( { page, utils, sections } ) => {
 
         // Upload WPR version 3.10.9
-        await page_utils.upload_new_plugin('./plugin/wp-rocket_3.10.9.zip');
-        await expect(page).toHaveURL(/action\=upload\-plugin/); 
+        await utils.uploadNewPlugin('./plugin/wp-rocket_3.10.9.zip');
+        await expect(page).toHaveURL(/action=upload-plugin/); 
 
         // Activate WPR
         await page.waitForSelector('a:has-text("Activate Plugin")');
         await page.locator('a:has-text("Activate Plugin")').click();
 
         // Visit WPR settings page.
-        await page_utils.goto_wpr();
+        await utils.gotoWpr();
 
         // Open RUCSS Beacon.
-        await openRucssBeacon(fileOpt, page);
+        await openRucssBeacon(sections, page);
 
         // Upgrade to the lastest WPR version.
-        await page_utils.upload_new_plugin('./plugin/new_release.zip');
+        await utils.uploadNewPlugin('./plugin/new_release.zip');
         await page.waitForLoadState('load', { timeout: 30000 });
-        await expect(page).toHaveURL(/action\=upload\-plugin/); 
+        await expect(page).toHaveURL(/action=upload-plugin/); 
         
         // Replace current with uploaded
         await page.locator('a:has-text("Replace current with uploaded")').click();
 
         await page.waitForLoadState('load', { timeout: 30000 });
-        await expect(page).toHaveURL(/overwrite\=update\-plugin/); 
+        await expect(page).toHaveURL(/overwrite=update-plugin/); 
 
         // Visit WPR settings page.
-        await page_utils.goto_wpr();
+        await utils.gotoWpr();
 
         // Open RUCSS Beacon.
-        await openRucssBeacon(fileOpt, page, true);
+        await openRucssBeacon(sections, page, true);
 
         // Go to plugin page.
-        await page_utils.goto_plugin();
+        await utils.gotoPlugin();
 
         // Assert that there is no WPR related error in debug.log
         await expect(page.locator('#wpr_debug_log_notice')).toBeHidden();
 
         // Downgrade to the previous stable version
-        await page_utils.upload_new_plugin('./plugin/previous_stable.zip');
+        await utils.uploadNewPlugin('./plugin/previous_stable.zip');
         await page.waitForLoadState('load', { timeout: 30000 });
-        await expect(page).toHaveURL(/action\=upload\-plugin/); 
+        await expect(page).toHaveURL(/action=upload-plugin/); 
 
         // Replace current with uploaded
         await page.locator('a:has-text("Replace current with uploaded")').click();
         await page.waitForLoadState('load', { timeout: 30000 });
 
         // Visit WPR settings page.
-        await page_utils.goto_wpr();
+        await utils.gotoWpr();
 
         // Open RUCSS Beacon.
-        await openRucssBeacon(fileOpt, page, true);
+        await openRucssBeacon(sections, page, true);
 
         // Go to plugin page.
-        await page_utils.goto_plugin();
+        await utils.gotoPlugin();
 
         // Assert that there is no WPR related error in debug.log
         await expect(page.locator('#wpr_debug_log_notice')).toBeHidden();
     });
 }
 
-const openRucssBeacon = async (fileOpt, page, ignore_wait = false) => {
+const openRucssBeacon = async (sections: Sections, page: Page, ignoreWait: boolean = false): Promise<void> => {
     // Open file optimization section.
-    await fileOpt.visit();
+    await sections.set("fileOptimization").visit();
 
     // Go through beacon.
-    if (!ignore_wait) {
+    if (!ignoreWait) {
         // Enable Optimize CSS delivery option.
-        await fileOpt.toggleOptimizeCssDelivery(true);
-        // Activate RUCSS
-        await fileOpt.enableRucss();
+        await sections.state(true).toggle("rucss");
 
         await page.waitForSelector('iframe[title="Help Scout Beacon - Open"]');
 
