@@ -3,7 +3,6 @@ import {
     WP_USERNAME,
     WP_ROOT_DIR,
     WP_DOCKER_CONTAINER,
-    WP_ADMIN_USER,
     WP_BASE_URL,
     WP_DOCKER_ROOT_DIR, WP_PASSWORD,
     WP_SSH_ADDRESS,
@@ -13,9 +12,9 @@ import {
 import {match} from "ts-pattern";
 
 export enum ServerType {
-    Docker = 'docker',
-    Local = 'localhost',
-    External = 'external'
+    docker = 'docker',
+    local = 'localhost',
+    external = 'external'
 }
 
 type GlobalConfigurations = {
@@ -27,11 +26,11 @@ type GlobalConfigurations = {
 };
 
 type LocalConfigurations = GlobalConfigurations & {
-    type: ServerType.Local;
+    type: ServerType.local;
 };
 
 type DockerConfigurations = GlobalConfigurations & {
-    type: ServerType.Docker;
+    type: ServerType.docker;
     docker: {
         container: string;
         rootDir: string;
@@ -39,7 +38,7 @@ type DockerConfigurations = GlobalConfigurations & {
 }
 
 type ExternalConfigurations = GlobalConfigurations & {
-    type: ServerType.External;
+    type: ServerType.external;
     ssh: {
         username: string,
         address: string,
@@ -50,8 +49,8 @@ type ExternalConfigurations = GlobalConfigurations & {
 type Configurations = DockerConfigurations | LocalConfigurations | ExternalConfigurations;
 
 export const configurations: Configurations = match(WP_ENV_TYPE)
-    .when(ServerType.Docker, () => ({
-        type: ServerType.Docker,
+    .when(ServerType.docker, () => ({
+        type: ServerType.docker,
         username: WP_USERNAME,
         password: WP_PASSWORD,
         baseUrl: WP_BASE_URL,
@@ -61,8 +60,8 @@ export const configurations: Configurations = match(WP_ENV_TYPE)
             rootDir: WP_DOCKER_ROOT_DIR,
         }
     }))
-    .when(ServerType.External, () => ({
-        type: ServerType.External,
+    .when(ServerType.external, () => ({
+        type: ServerType.external,
         username: WP_USERNAME,
         password: WP_PASSWORD,
         baseUrl: WP_BASE_URL,
@@ -74,7 +73,7 @@ export const configurations: Configurations = match(WP_ENV_TYPE)
         }
     }))
 .otherwise(() => ({
-    type: ServerType.Local,
+    type: ServerType.local,
     username: WP_USERNAME,
     password: WP_PASSWORD,
     baseUrl: WP_BASE_URL,
