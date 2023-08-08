@@ -1,24 +1,19 @@
-import {
-    WP_DOCKER,
-    WP_ROOT_DIR,
-    WP_DOCKER_CONTAINER,
-    WP_ADMIN_USER,
-    WP_BASE_URL,
-    WP_DOCKER_ROOT_DIR
-} from "../config/wp.config";
+import {exec} from "shelljs";
+import {configurations, ServerType} from "./configurations";
 
-import { exec } from "shelljs";
-import * as stream from "stream";
 function wrap_prefix(command: string) {
-    if(WP_DOCKER) {
-        return `docker-compose exec -T ${WP_DOCKER_CONTAINER} ${command}`;
+    if(configurations.type === ServerType.Docker) {
+        return `docker-compose exec -T ${configurations.docker.container} ${command}`;
+    }
+    if(configurations.type === ServerType.External) {
+        return `ssh ${configurations.ssh.username}@${configurations.ssh.address} -i ${configurations.ssh.key} ${command}`;
     }
     return command;
 }
 
 async function wp(args: string) {
-    const root = WP_DOCKER ? ' --allow-root': '';
-    const cwd = WP_DOCKER ? WP_DOCKER_ROOT_DIR: WP_ROOT_DIR;
+    const root = configurations.type === ServerType.Docker ? ' --allow-root': '';
+    const cwd = configurations.type === ServerType.Docker ? configurations.docker.rootDir: configurations.rootDir;
     const command = wrap_prefix(`wp ${args}${root}`);
     const output = exec(command, {
         cwd: cwd,
@@ -29,25 +24,31 @@ async function wp(args: string) {
 
 export function resetWP(): void {
     wp('db reset --yes');
-    wp(`core install --url=${WP_BASE_URL} --title="test" --admin_user=${WP_ADMIN_USER.username} --admin_password=${WP_ADMIN_USER.password} --admin_email="admin@test.com" --skip-email`);
+    wp(`core install --url=${configurations.baseUrl} --title="test" --admin_user=${configurations.username} --admin_password=${configurations.password} --admin_email="admin@test.com" --skip-email`);
 }
 
 export async function cp(origin: string, destination: string) {
-    if(WP_DOCKER) {
+    if(configurations.type === ServerType.Docker) {
         await exec(`docker cp ${origin} $(docker-compose ps -q wp):${destination}`, {
-            cwd: WP_DOCKER_ROOT_DIR,
+            cwd: configurations.docker.rootDir,
             async: false
         });
         return;
     }
+
+    if(configurations.type === ServerType.External) {
+        await exec(`scp -i ${configurations.ssh.key} ${origin} ${configurations.ssh.username}@${configurations.ssh.address}:${destination}`);
+        return;
+    }
+
     exec(`cp ${origin} ${destination}`, {
-        cwd: WP_ROOT_DIR,
+        cwd: configurations.rootDir,
         async: false
     });
 }
 
 export async function rm(destination: string) {
-    const cwd = WP_DOCKER ? WP_DOCKER_ROOT_DIR: WP_ROOT_DIR;
+    const cwd = configurations.type === ServerType.Docker ? configurations.docker.rootDir: configurations.rootDir;
     const command = wrap_prefix(`rm -rf ${destination}`);
     const output = exec(command, {
         cwd: cwd,
