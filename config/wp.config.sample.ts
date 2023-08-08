@@ -12,7 +12,7 @@ const {
 	WP_PASSWORD = process.env.CI ? WP_ADMIN_USER.localPassword : WP_ADMIN_USER.password,
 	WP_BASE_URL = 'https://example.org',
 	WP_ROOT_DIR = '',
-	WP_ENV_TYPE = ServerType.Local,
+	WP_ENV_TYPE = ServerType.local,
 	WP_DOCKER_CONTAINER = '',
 	WP_DOCKER_ROOT_DIR = '',
 	WP_SSH_USERNAME = '',
