@@ -8,6 +8,7 @@ import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@
 import fs from "fs/promises";
 // import { deleteTransient, resetWP } from "../../utils/commands";
 import { WP_BASE_URL } from "../../config/wp.config";
+import {deleteTransient, resetWP} from "../../utils/commands";
 
 let browser: ChromiumBrowser;
 
@@ -52,13 +53,13 @@ After(async function (this: ICustomWorld, { pickle, result }) {
         );
     }
 
-    // resetWP();
+     resetWP();
 
 });
 
-// After(async function () {
-//     deleteTransient('wp_rocket_customer_data')
-// })
+ After(async function () {
+     deleteTransient('wp_rocket_customer_data')
+ })
 
 AfterAll(async function () {
     await browser.close();

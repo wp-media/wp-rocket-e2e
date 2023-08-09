@@ -2,6 +2,7 @@ Feature: CPCSS Notice
 
   Background:
     Given plugin wp-rocket is activated
+    And I connect as 'admin'
     And I am on the page '/wp-admin/options-general.php?page=wprocket#file_optimization'
 
   Scenario: Unexpired account with CPCSS and click RUCSS

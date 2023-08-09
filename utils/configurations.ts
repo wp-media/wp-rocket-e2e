@@ -7,13 +7,14 @@ import {
     WP_DOCKER_ROOT_DIR, WP_PASSWORD,
     WP_SSH_ADDRESS,
     WP_SSH_KEY,
-    WP_SSH_USERNAME
+    WP_SSH_USERNAME, WP_SSH_ROOT_DIR
 } from "../config/wp.config";
+
 import {match} from "ts-pattern";
 
 export enum ServerType {
     docker = 'docker',
-    local = 'localhost',
+    localhost = 'localhost',
     external = 'external'
 }
 
@@ -26,7 +27,7 @@ type GlobalConfigurations = {
 };
 
 type LocalConfigurations = GlobalConfigurations & {
-    type: ServerType.local;
+    type: ServerType.localhost;
 };
 
 type DockerConfigurations = GlobalConfigurations & {
@@ -43,13 +44,14 @@ type ExternalConfigurations = GlobalConfigurations & {
         username: string,
         address: string,
         key: string,
+        rootDir: string;
     }
 }
 
 type Configurations = DockerConfigurations | LocalConfigurations | ExternalConfigurations;
 
 export const configurations: Configurations = match(WP_ENV_TYPE)
-    .when(ServerType.docker, () => ({
+    .with(ServerType.docker, () => ({
         type: ServerType.docker,
         username: WP_USERNAME,
         password: WP_PASSWORD,
@@ -59,8 +61,8 @@ export const configurations: Configurations = match(WP_ENV_TYPE)
             container: WP_DOCKER_CONTAINER,
             rootDir: WP_DOCKER_ROOT_DIR,
         }
-    }))
-    .when(ServerType.external, () => ({
+    }) as DockerConfigurations)
+    .with(ServerType.external, () => ({
         type: ServerType.external,
         username: WP_USERNAME,
         password: WP_PASSWORD,
@@ -69,13 +71,21 @@ export const configurations: Configurations = match(WP_ENV_TYPE)
         ssh: {
             username: WP_SSH_USERNAME,
             address: WP_SSH_ADDRESS,
-            key: WP_SSH_KEY
+            key: WP_SSH_KEY,
+            rootDir: WP_SSH_ROOT_DIR,
         }
-    }))
+    }) as ExternalConfigurations)
 .otherwise(() => ({
-    type: ServerType.local,
+    type: ServerType.localhost,
     username: WP_USERNAME,
     password: WP_PASSWORD,
     baseUrl: WP_BASE_URL,
     rootDir: WP_ROOT_DIR,
-}))
+}) as LocalConfigurations)
+
+export const getWPDir = (configurations: Configurations) => match(configurations)
+    .with({type: ServerType.docker}, (selections) => selections.docker.rootDir)
+    .with({type: ServerType.external}, (selections) => selections.ssh.rootDir)
+    .with({type: ServerType.localhost}, (selections) => selections.rootDir)
+    .exhaustive();
+
