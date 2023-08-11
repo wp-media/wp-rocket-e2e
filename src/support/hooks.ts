@@ -1,6 +1,6 @@
 import { ICustomWorld } from "../common/custom-world";
 import { ChromiumBrowser, chromium } from '@playwright/test';
-import { Sections } from './../common/sections';
+import { Sections } from '../common/sections';
 import { selectors as pluginSelectors } from "./../common/selectors";
 import { PageUtils } from "../../utils/page-utils";
 
@@ -8,7 +8,8 @@ import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@
 import fs from "fs/promises";
 // import { deleteTransient, resetWP } from "../../utils/commands";
 import { WP_BASE_URL } from "../../config/wp.config";
-import {deleteTransient, resetWP} from "../../utils/commands";
+import wp, {cp, deleteTransient, generateUsers, resetWP, rm} from "../../utils/commands";
+import {configurations, getWPDir} from "../../utils/configurations";
 
 let browser: ChromiumBrowser;
 
@@ -19,16 +20,56 @@ BeforeAll(async function () {
 });
 
 Before(async function (this: ICustomWorld) {
+
+    resetWP();
+    const wpDir = getWPDir(configurations);
+    rm(`${wpDir}/wp-content/plugins/wp-rocket`)
+    wp('rewrite structure /%year%/%monthnum%/%postname%/')
+
+    await  cp(`${process.env.PWD}/plugin/wp-rocket`, `${wpDir}/wp-content/plugins/wp-rocket`)
+
+    generateUsers([
+        {
+            name: 'admin2',
+            email: 'administrator@email.org',
+            role: 'administrator',
+        },
+        {
+            name: 'subscriber',
+            email: 'subscriber@email.org',
+            role: 'subscriber',
+        },
+        {
+            name: 'editor',
+            email: 'editor@email.org',
+            role: 'editor',
+        },
+        {
+            name: 'author',
+            email: 'author@email.org',
+            role: 'author',
+        },
+        {
+            name: 'contributor',
+            email: 'contributor@email.org',
+            role: 'contributor',
+        },
+    ])
+    await  cp(`${process.env.PWD}/plugin/wp-rocket`, `${wpDir}/wp-content/plugins/wp-rocket`)
+
+
     this.context = await browser.newContext({
         recordVideo: {
             dir: "test-results/videos",
         },
     });
     this.page = await this.context.newPage();
+    await this.page.setViewportSize({width: 2500, height: 2500})
     this.sections = new Sections(this.page, pluginSelectors);
     this.utils = new PageUtils(this.page, this.sections);
     
     await this.page.goto(WP_BASE_URL);
+
 });
 
 After(async function (this: ICustomWorld, { pickle, result }) {

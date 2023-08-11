@@ -1,13 +1,13 @@
 import {expect} from "@playwright/test";
 import {AfterAll, BeforeAll} from "@cucumber/cucumber";
-import wp, {activatePlugin, cp, generateUsers, rm, setTransient} from "../../../utils/commands";
+import wp, {activatePlugin, cp, generateUsers, resetWP, rm, setTransient} from "../../../utils/commands";
 import {configurations, getWPDir} from "../../../utils/configurations";
 
 const { Given, When, Then } = require("@cucumber/cucumber");
 Given('I have an {word} account', { timeout: 60 * 1000 }, async function (status) {
 
 
-    const expiration = "unexpired" === status ? Date.now() + 99999 : Date.now() - 99999;
+    const expiration = "unexpired" === status ? Date.now() + 9999999999 : Date.now() - 9999999999;
 
     if("unexpired" === status) {
         return
@@ -31,14 +31,17 @@ Given('I have an {word} account', { timeout: 60 * 1000 }, async function (status
         'upgrade_plus_url' : 'https://example.org/upgrade_plus_url',
         'upgrade_infinite_url' : 'https://example.org/upgrade_infinite_url'
     }))
+
+    this.page.reload();
 });
 
 Given('plugin {word} is activated', function (plugin) {
    activatePlugin(plugin)
 });
 Given(/^I have CPCSS turned on$/, async function () {
-    await this.page.click('label[for="optimize_css_delivery"]', {force: true})
-    await this.page.click('#wpr-radio-async_css', {force: true})
+    this.sections.set('fileOptimization');
+    await this.sections.state(true);
+    await this.sections.toggle('cpcss');
     await this.page.click('#wpr-options-submit', {force: true})
 });
 Then('I must see the banner {string}', async function (text) {
@@ -55,10 +58,11 @@ When(/^refresh the page$/, async function () {
     await this.page.reload();
 });
 When(/^turn on RUCSS$/, async function () {
-    if(! await this.page.locator('input#optimize_css_delivery').inputValue()) {
-        await this.page.click('label[for="optimize_css_delivery"]', {force: true})
-    }
-    await this.page.getByText('Activate Remove Unused CSS').click({force: true})
+    this.sections.set('fileOptimization');
+    await this.sections.state(true);
+    await this.sections.toggle('rucss');
+    await this.page.click('#wpr-options-submit', {force: true})
+
 });
 When(/^save the option$/, async function () {
     await this.page.click('#wpr-options-submit', {force: true})
@@ -74,45 +78,13 @@ When('I go {string}', async function (url) {
 });
 
 When('I connect as {string}', async function (user) {
+    await this.utils.wpAdminLogout();
     await this.utils.auth(user);
 });
 
 Given('I am on the page {string}', {timeout: 10 * 1000} , async function (url) {
     await this.page.goto(`${configurations.baseUrl}${url}`);
 });
-
-BeforeAll(async function () {
-    wp('rewrite structure /%year%/%monthnum%/%postname%/')
-    generateUsers([
-        {
-            name: 'admin2',
-            email: 'administrator@email.org',
-            role: 'administrator',
-        },
-        {
-            name: 'subscriber',
-            email: 'subscriber@email.org',
-            role: 'subscriber',
-        },
-        {
-            name: 'editor',
-            email: 'editor@email.org',
-            role: 'editor',
-        },
-        {
-            name: 'author',
-            email: 'author@email.org',
-            role: 'author',
-        },
-        {
-            name: 'contributor',
-            email: 'contributor@email.org',
-            role: 'contributor',
-        },
-    ])
-    const wpDir = getWPDir(configurations);
-    await cp(`${process.env.PWD}/plugin/wp-rocket`, `${wpDir}/wp-content/plugins/wp-rocket`)
-})
 
 AfterAll(function () {
     const wpDir = getWPDir(configurations);

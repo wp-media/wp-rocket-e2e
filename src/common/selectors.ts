@@ -53,6 +53,17 @@ export const selectors: Selectors = {
                     activateFromPopUp(page, state, "text=Activate combine CSS") 
                }
             },
+            cpcss:{
+                before: async (page: Page): Promise<boolean> => {
+                    if (! await page.locator("#wpr-radio-async_css").isHidden()) {
+                        return true;
+                    }
+                        page.locator("label[for=optimize_css_delivery]").click()
+                        return true;
+                    },
+                type: FieldType.button,
+                target: "#wpr-radio-async_css",
+            },
             rucss:{
                 type: FieldType.checkbox,
                 element: "#optimize_css_delivery",

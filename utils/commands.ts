@@ -6,7 +6,7 @@ function wrapPrefix(command: string): string {
         return `docker-compose exec -T ${configurations.docker.container} ${command}`;
     }
     if(configurations.type === ServerType.external) {
-        return `ssh ${configurations.ssh.username}@${configurations.ssh.address} -i ${configurations.ssh.key} ${command}`;
+        return `ssh ${configurations.ssh.username}@${configurations.ssh.address} -i ${configurations.ssh.key} ${command}`.replace('"', '"\\"');
     }
     return command;
 }
@@ -15,21 +15,22 @@ async function wp(args: string): Promise<void> {
     const root = configurations.type === ServerType.docker ? ' --allow-root': '';
     const cwd = getWPDir(configurations);
     const command = wrapPrefix(`wp ${args}${root} --path=${cwd}`);
-    await exec(command, {
+   await exec(command, {
         cwd: configurations.rootDir,
         async: false
     });
-}
+   }
 
 export function resetWP(): void {
     wp('db reset --yes');
-    wp(`core install --url=${configurations.baseUrl} --title="\\"test\\"" --admin_user="\\"${configurations.username}\\"" --admin_password="\\"${configurations.password}\\"" --admin_email="\\"admin@test.com\\"" --skip-email`);
+    wp(`core install --url=${configurations.baseUrl} --title="test" --admin_user="${configurations.username}" --admin_password="${configurations.password}" --admin_email="admin@test.com" --skip-email`);
+
 }
 
 export async function cp(origin: string, destination: string): Promise<void> {
     if(configurations.type === ServerType.docker) {
         await exec(`docker cp ${origin} $(docker-compose ps -q ${configurations.docker.container}):${destination}`, {
-            cwd: configurations.docker.rootDir,
+            cwd: configurations.rootDir,
             async: false
         });
 
@@ -40,6 +41,7 @@ export async function cp(origin: string, destination: string): Promise<void> {
         await exec(`zip -q -r ../rocket.zip .`, {
             cwd: origin
         })
+        await exec(wrapPrefix(`mkdir -p ${destination}`))
         await exec(`scp -r -i ${configurations.ssh.key} ${origin}/../rocket.zip ${configurations.ssh.username}@${configurations.ssh.address}:${destination}/..`);
         await exec(wrapPrefix(`unzip -q -o ${destination}/../rocket.zip -d ${destination}`))
         await rm(`${destination}/../rocket.zip`)
@@ -53,9 +55,9 @@ export async function cp(origin: string, destination: string): Promise<void> {
 }
 
 export async function rm(destination: string): Promise<void> {
-    const cwd = configurations.type === ServerType.docker ? configurations.docker.rootDir: configurations.rootDir;
+    const cwd = configurations.rootDir;
     const command = wrapPrefix(`rm -rf ${destination}`);
-    exec(command, {
+    await exec(command, {
         cwd: cwd,
         async: false
     });
@@ -69,6 +71,14 @@ export async function activatePlugin(name: string): Promise<void>  {
 
 export async function deactivatePlugin(name: string): Promise<void> {
     await wp(`plugin deactivate ${name}`)
+}
+
+export async function setOption(name:string, value: string): Promise<void> {
+    await wp(`option update ${name} ${value}`)
+}
+
+export async function deleteOption(name: string): Promise<void> {
+    await wp(`option delete ${name}`)
 }
 
 export async function setTransient(name:string, value: string): Promise<void> {

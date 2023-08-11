@@ -7,7 +7,7 @@ import {
     WP_DOCKER_ROOT_DIR, WP_PASSWORD,
     WP_SSH_ADDRESS,
     WP_SSH_KEY,
-    WP_SSH_USERNAME, WP_SSH_ROOT_DIR
+    WP_SSH_USERNAME, WP_SSH_ROOT_DIR,
 } from "../config/wp.config";
 
 import {match} from "ts-pattern";
