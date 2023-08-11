@@ -273,6 +273,7 @@ export class PageUtils {
      */
     public auth = async (): Promise<void> => {
         await this.visitPage('wp-admin');
+        await this.page.waitForTimeout(200);
         await this.wpAdminLogin();
         await this.page.waitForURL(WP_BASE_URL + '/wp-admin/');
         await this.page.context().storageState({ path: './config/storageState.json' });
