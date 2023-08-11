@@ -2,6 +2,7 @@ import {expect} from "@playwright/test";
 import {AfterAll, BeforeAll} from "@cucumber/cucumber";
 import wp, {activatePlugin, cp, generateUsers, resetWP, rm, setTransient} from "../../../utils/commands";
 import {configurations, getWPDir} from "../../../utils/configurations";
+import {match} from "ts-pattern";
 
 const { Given, When, Then } = require("@cucumber/cucumber");
 Given('I have an {word} account', { timeout: 60 * 1000 }, async function (status) {
@@ -38,12 +39,7 @@ Given('I have an {word} account', { timeout: 60 * 1000 }, async function (status
 Given('plugin {word} is activated', function (plugin) {
    activatePlugin(plugin)
 });
-Given(/^I have CPCSS turned on$/, async function () {
-    this.sections.set('fileOptimization');
-    await this.sections.state(true);
-    await this.sections.toggle('cpcss');
-    await this.page.click('#wpr-options-submit', {force: true})
-});
+
 Then('I must see the banner {string}', async function (text) {
     await expect(this.page.getByText(text)).toBeVisible();
 });
@@ -57,21 +53,20 @@ Then('I must not see the banner {string}', async function (text) {
 When(/^refresh the page$/, async function () {
     await this.page.reload();
 });
-When(/^turn on RUCSS$/, async function () {
-    this.sections.set('fileOptimization');
-    await this.sections.state(true);
-    await this.sections.toggle('rucss');
-    await this.page.click('#wpr-options-submit', {force: true})
 
-});
 When(/^save the option$/, async function () {
     await this.page.click('#wpr-options-submit', {force: true})
 });
-When(/^turn on CPCSS$/, async function () {
-    if(! await this.page.locator('input#optimize_css_delivery').inputValue()) {
-        await this.page.click('label[for="optimize_css_delivery"]', {force: true})
-    }
-    await this.page.click('#wpr-radio-async_css', {force: true})
+When('turn on {string}', async function (option) {
+
+    const optionName = match(option)
+        .with('CPCSS', () => 'cpcss')
+        .otherwise(() => 'rucss')
+
+    this.sections.set('fileOptimization');
+    await this.sections.state(true);
+    await this.sections.toggle(optionName);
+    await this.page.click('#wpr-options-submit', {force: true})
 });
 When('I go {string}', async function (url) {
     await this.page.goto(`${configurations.baseUrl}${url}`);
