@@ -1,12 +1,17 @@
 import {exec} from "shelljs";
 import {configurations, getWPDir, ServerType} from "./configurations";
 
+const {NodeSSH} = require('node-ssh')
 function wrapPrefix(command: string): string {
     if(configurations.type === ServerType.docker) {
         return `docker-compose exec -T ${configurations.docker.container} ${command}`;
     }
     if(configurations.type === ServerType.external) {
-        return `ssh ${configurations.ssh.username}@${configurations.ssh.address} -i ${configurations.ssh.key} ${command}`.replace('"', '"\\"');
+        return `ssh ${configurations.ssh.username}@${configurations.ssh.address} -i ${configurations.ssh.key} ${command}`
+            .replaceAll('"', '"\\"')
+            .replaceAll('}', '\\}')
+            .replaceAll('{', '\\{')
+            .replaceAll(',', '\\,');
     }
     return command;
 }
@@ -14,16 +19,29 @@ function wrapPrefix(command: string): string {
 async function wp(args: string): Promise<void> {
     const root = configurations.type === ServerType.docker ? ' --allow-root': '';
     const cwd = getWPDir(configurations);
+
+    if(configurations.type === ServerType.external) {
+        const client = new NodeSSH();
+        await client.connect({
+            host: configurations.ssh.address,
+            username: configurations.ssh.username,
+            privateKeyPath: configurations.ssh.key
+        })
+        const res = await client.execCommand(`wp ${args}${root} --path=${cwd}`);
+        return ;
+    }
     const command = wrapPrefix(`wp ${args}${root} --path=${cwd}`);
-   await exec(command, {
+
+    await exec(command, {
         cwd: configurations.rootDir,
         async: false
     });
+
    }
 
-export function resetWP(): void {
-    wp('db reset --yes');
-    wp(`core install --url=${configurations.baseUrl} --title="test" --admin_user="${configurations.username}" --admin_password="${configurations.password}" --admin_email="admin@test.com" --skip-email`);
+export async function resetWP(): Promise<void> {
+    await wp('db reset --yes');
+    await wp(`core install --url=${configurations.baseUrl} --title="test" --admin_user="${configurations.username}" --admin_password="${configurations.password}" --admin_email="admin@test.com" --skip-email`);
 
 }
 

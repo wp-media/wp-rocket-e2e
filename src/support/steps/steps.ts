@@ -14,7 +14,7 @@ Given('I have an {word} account', { timeout: 60 * 1000 }, async function (status
         return
     }
 
-    setTransient('wp_rocket_customer_data', JSON.stringify({
+    await setTransient('wp_rocket_customer_data', JSON.stringify({
         'ID' : 1,
         'firstname' : 'Rocket',
         'email' : 'example@example.org',
@@ -31,13 +31,14 @@ Given('I have an {word} account', { timeout: 60 * 1000 }, async function (status
         'renewal_url' : 'https://example.org/renewal',
         'upgrade_plus_url' : 'https://example.org/upgrade_plus_url',
         'upgrade_infinite_url' : 'https://example.org/upgrade_infinite_url'
-    }))
+    }).replaceAll('"', '\\"')
+        .replaceAll('}', '\\}'))
 
-    this.page.reload();
+    await this.page.reload();
 });
 
-Given('plugin {word} is activated', function (plugin) {
-   activatePlugin(plugin)
+Given('plugin {word} is activated', async function (plugin) {
+   await activatePlugin(plugin)
 });
 
 Then('I must see the banner {string}', async function (text) {

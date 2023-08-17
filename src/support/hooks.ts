@@ -21,14 +21,14 @@ BeforeAll(async function () {
 
 Before(async function (this: ICustomWorld) {
 
-    resetWP();
+    await resetWP();
     const wpDir = getWPDir(configurations);
-    rm(`${wpDir}/wp-content/plugins/wp-rocket`)
-    wp('rewrite structure /%year%/%monthnum%/%postname%/')
+    await rm(`${wpDir}/wp-content/plugins/wp-rocket`)
+    await wp('rewrite structure /%year%/%monthnum%/%postname%/')
 
-    await  cp(`${process.env.PWD}/plugin/wp-rocket`, `${wpDir}/wp-content/plugins/wp-rocket`)
+    await cp(`${process.env.PWD}/plugin/wp-rocket`, `${wpDir}/wp-content/plugins/wp-rocket`)
 
-    generateUsers([
+    await generateUsers([
         {
             name: 'admin2',
             email: 'administrator@email.org',
@@ -55,7 +55,6 @@ Before(async function (this: ICustomWorld) {
             role: 'contributor',
         },
     ])
-    await  cp(`${process.env.PWD}/plugin/wp-rocket`, `${wpDir}/wp-content/plugins/wp-rocket`)
 
 
     this.context = await browser.newContext({
@@ -94,7 +93,7 @@ After(async function (this: ICustomWorld, { pickle, result }) {
         );
     }
 
-     resetWP();
+     await resetWP();
 
 });
 
