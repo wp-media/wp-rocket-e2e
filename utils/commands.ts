@@ -56,18 +56,21 @@ export async function cp(origin: string, destination: string): Promise<void> {
     }
 
     if(configurations.type === ServerType.external) {
-        await exec(`zip -q -r ../rocket.zip .`, {
-            cwd: origin
-        })
-        await exec(wrapPrefix(`mkdir -p ${destination}`))
-        await exec(`scp -r -i ${configurations.ssh.key} ${origin}/../rocket.zip ${configurations.ssh.username}@${configurations.ssh.address}:${destination}/..`);
-        await exec(wrapPrefix(`unzip -q -o ${destination}/../rocket.zip -d ${destination}`))
-        await rm(`${destination}/../rocket.zip`)
+        await exec(`scp -r -i ${configurations.ssh.key} ${origin} ${configurations.ssh.username}@${configurations.ssh.address}:${destination}`);
         return;
     }
 
     exec(`cp ${origin} ${destination}`, {
         cwd: configurations.rootDir,
+        async: false
+    });
+}
+
+export async function unzip(file: string, destination: string): Promise<void> {
+    const cwd = configurations.rootDir;
+    const command = wrapPrefix(`unzip ${file} -q -d ${destination}`);
+    await exec(command, {
+        cwd: cwd,
         async: false
     });
 }

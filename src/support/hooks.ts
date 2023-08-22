@@ -8,7 +8,7 @@ import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@
 import fs from "fs/promises";
 // import { deleteTransient, resetWP } from "../../utils/commands";
 import { WP_BASE_URL } from "../../config/wp.config";
-import wp, {cp, deleteTransient, generateUsers, resetWP, rm} from "../../utils/commands";
+import wp, {cp, deleteTransient, generateUsers, resetWP, rm, unzip} from "../../utils/commands";
 import {configurations, getWPDir} from "../../utils/configurations";
 
 let browser: ChromiumBrowser;
@@ -27,8 +27,13 @@ Before(async function (this: ICustomWorld) {
     await rm(`${wpDir}/wp-content/plugins/wp-rocket-e2e-test-helper`)
     await wp('rewrite structure /%year%/%monthnum%/%postname%/')
 
-    await cp(`${process.env.PWD}/plugin/wp-rocket`, `${wpDir}/wp-content/plugins/wp-rocket`)
-    await cp(`${process.env.PWD}/plugin/wp-rocket-e2e-test-helper`, `${wpDir}/wp-content/plugins/wp-rocket-e2e-test-helper`)
+    await cp(`${process.env.PWD}/plugin/wp-rocket.zip`, `${wpDir}/wp-content/plugins/wp-rocket.zip`)
+    await unzip(`${wpDir}/wp-content/plugins/wp-rocket.zip`, `${wpDir}/wp-content/plugins/`)
+    await rm(`${wpDir}/wp-content/plugins/wp-rocket.zip`)
+
+    await cp(`${process.env.PWD}/plugin/wp-rocket-e2e-test-helper.zip`, `${wpDir}/wp-content/plugins/wp-rocket-e2e-test-helper.zip`)
+    await unzip(`${wpDir}/wp-content/plugins/wp-rocket-e2e-test-helper.zip`, `${wpDir}/wp-content/plugins/`)
+    await rm(`${wpDir}/wp-content/plugins/wp-rocket-e2e-test-helper.zip`)
 
     await generateUsers([
         {
