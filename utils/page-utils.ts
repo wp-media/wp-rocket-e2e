@@ -1,8 +1,9 @@
-import type { Page } from '@playwright/test';
-import type { Sections } from '../src/common/sections';
-import type { Selector, Locators } from './types';
+import type {Page} from '@playwright/test';
+import type {Sections} from '../src/common/sections';
+import type {Locators, Selector} from './types';
 
-import { WP_BASE_URL, WP_USERNAME, WP_PASSWORD } from '../config/wp.config';
+import {WP_BASE_URL, WP_PASSWORD, WP_USERNAME} from '../config/wp.config';
+import {configurations, ServerType} from "./configurations";
 
 export class PageUtils {
     /**
@@ -258,9 +259,16 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public wpAdminLogout = async (): Promise<void> => {
+        if(! await this.page.locator('#wp-admin-bar-my-account').isVisible()) {
+            return ;
+        }
         await this.page.locator('#wp-admin-bar-my-account').hover();
         await this.page.waitForSelector('#wp-admin-bar-logout');
         await this.page.locator('#wp-admin-bar-logout a').click();
+        if(configurations.type === ServerType.external) {
+            await this.page.waitForTimeout(3000);
+        }
+        await this.page.click('#user_login');
     }
 
     /**
@@ -268,8 +276,11 @@ export class PageUtils {
      *
      * @return  {Promise<void>}
      */
-    public auth = async (): Promise<void> => {
-        await this.visitPage('wp-admin');
+    public  auth = async (): Promise<void> => {
+        if(! this.page.url().includes('wp-login.php')) {
+            await this.visitPage('wp-admin');
+        }
+        await this.page.waitForTimeout(200);
         await this.wpAdminLogin();
         await this.page.waitForURL(WP_BASE_URL + '/wp-admin/');
         await this.page.context().storageState({ path: './config/storageState.json' });
