@@ -85,4 +85,5 @@ Given('I am on the page {string}', {timeout: 10 * 1000} , async function (url) {
 AfterAll(function () {
     const wpDir = getWPDir(configurations);
     rm(`${wpDir}/wp-content/plugins/wp-rocket`)
+    rm(`${wpDir}/wp-content/plugins/wp-rocket-e2e-test-helper`)
 })

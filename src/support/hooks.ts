@@ -24,9 +24,11 @@ Before(async function (this: ICustomWorld) {
     await resetWP();
     const wpDir = getWPDir(configurations);
     await rm(`${wpDir}/wp-content/plugins/wp-rocket`)
+    await rm(`${wpDir}/wp-content/plugins/wp-rocket-e2e-test-helper`)
     await wp('rewrite structure /%year%/%monthnum%/%postname%/')
 
     await cp(`${process.env.PWD}/plugin/wp-rocket`, `${wpDir}/wp-content/plugins/wp-rocket`)
+    await cp(`${process.env.PWD}/plugin/wp-rocket-e2e-test-helper`, `${wpDir}/wp-content/plugins/wp-rocket-e2e-test-helper`)
 
     await generateUsers([
         {
