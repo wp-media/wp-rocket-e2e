@@ -2,7 +2,6 @@ import type {Page} from '@playwright/test';
 import type {Sections} from '../src/common/sections';
 import type {Locators, Selector} from './types';
 
-import {WP_BASE_URL, WP_PASSWORD, WP_USERNAME} from '../config/wp.config';
 import {configurations, ServerType} from "./configurations";
 
 export class PageUtils {
@@ -62,9 +61,9 @@ export class PageUtils {
     public wpAdminLogin = async (): Promise<void> => {
         // Fill username & password.
         await this.page.click('#user_login');
-        await this.page.fill('#user_login', WP_USERNAME);
+        await this.page.fill('#user_login', configurations.username);
         await this.page.click('#user_pass');
-        await this.page.fill('#user_pass', WP_PASSWORD);
+        await this.page.fill('#user_pass', configurations.password);
 
         // Click login.
         await this.page.click('#wp-submit');
@@ -78,7 +77,7 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public visitPage = async ( pageUrl: string ): Promise<void> => {
-        await this.page.goto(WP_BASE_URL + '/' + pageUrl);
+        await this.page.goto(configurations.baseUrl + '/' + pageUrl);
     }
 
     /**
@@ -87,7 +86,7 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public gotoPlugin = async (): Promise<void> => {
-        await this.page.goto(WP_BASE_URL + '/wp-admin/plugins.php');
+        await this.page.goto(configurations.baseUrl + '/wp-admin/plugins.php');
     }
 
     /**
@@ -96,7 +95,7 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public gotoWpr = async (): Promise<void> => {
-        await this.page.goto(WP_BASE_URL + '/wp-admin/options-general.php?page=wprocket#dashboard');
+        await this.page.goto(configurations.baseUrl + '/wp-admin/options-general.php?page=wprocket#dashboard');
     }
 
     /**
@@ -105,7 +104,7 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public gotoNewPost = async (): Promise<void> => {
-        await this.page.goto(WP_BASE_URL + '/wp-admin/post-new.php');
+        await this.page.goto(configurations.baseUrl + '/wp-admin/post-new.php');
     }
 
     /**
@@ -159,7 +158,7 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public draftPosts = async (): Promise<void> => {
-        await this.page.goto(WP_BASE_URL + '/wp-admin/edit.php?post_status=draft&post_type=post');
+        await this.page.goto(configurations.baseUrl + '/wp-admin/edit.php?post_status=draft&post_type=post');
     }
 
     /**
@@ -217,7 +216,7 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public gotoThemes = async (): Promise<void> => {
-        await this.page.goto(WP_BASE_URL + '/wp-admin/themes.php');
+        await this.page.goto(configurations.baseUrl + '/wp-admin/themes.php');
     }
 
     /**
@@ -226,7 +225,7 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public gotoSiteHealth = async (): Promise<void> => {
-        await this.page.goto(WP_BASE_URL + '/wp-admin/site-health.php');
+        await this.page.goto(configurations.baseUrl + '/wp-admin/site-health.php');
     }
 
     /**
@@ -235,7 +234,7 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public gotoHelper = async (): Promise<void> => {
-        await this.page.goto(WP_BASE_URL + '/wp-admin/tools.php?page=rocket_e2e_tests_helper');
+        await this.page.goto(configurations.baseUrl + '/wp-admin/tools.php?page=rocket_e2e_tests_helper');
     }
 
     /**
@@ -246,7 +245,7 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public uploadNewPlugin = async (file: string): Promise<void> => {
-        await this.page.goto(WP_BASE_URL + '/wp-admin/plugin-install.php');
+        await this.page.goto(configurations.baseUrl + '/wp-admin/plugin-install.php');
         await this.page.locator('.upload-view-toggle').click();
         await this.page.locator('#pluginzip').setInputFiles(file);
         await this.page.waitForSelector('#install-plugin-submit');
@@ -282,7 +281,7 @@ export class PageUtils {
         }
         await this.page.waitForTimeout(200);
         await this.wpAdminLogin();
-        await this.page.waitForURL(WP_BASE_URL + '/wp-admin/');
+        await this.page.waitForURL(configurations.baseUrl + '/wp-admin/');
         await this.page.context().storageState({ path: './config/storageState.json' });
     }
 

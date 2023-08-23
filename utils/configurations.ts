@@ -1,16 +1,21 @@
-import {
-    WP_ENV_TYPE,
-    WP_USERNAME,
-    WP_ROOT_DIR,
-    WP_DOCKER_CONTAINER,
-    WP_BASE_URL,
-    WP_DOCKER_ROOT_DIR, WP_PASSWORD,
-    WP_SSH_ADDRESS,
-    WP_SSH_KEY,
-    WP_SSH_USERNAME, WP_SSH_ROOT_DIR,
-} from "../config/wp.config";
-
 import {match} from "ts-pattern";
+import {config} from "dotenv";
+
+config();
+
+const {
+    WP_ENV_TYPE = '',
+    WP_USERNAME = '',
+    WP_ROOT_DIR = '',
+    WP_DOCKER_CONTAINER = '',
+    WP_BASE_URL = '',
+    WP_DOCKER_ROOT_DIR = '',
+    WP_PASSWORD = '',
+    WP_SSH_ADDRESS = '',
+    WP_SSH_KEY = '',
+    WP_SSH_USERNAME = '',
+    WP_SSH_ROOT_DIR = '',
+} = process.env;
 
 export enum ServerType {
     docker = 'docker',

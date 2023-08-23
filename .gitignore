@@ -10,3 +10,4 @@
 /plugin/exported_settings/settings_3.json
 /test-results
 @rerun.txt
+.env

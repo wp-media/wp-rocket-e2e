@@ -3,7 +3,7 @@ import { test, expect } from '../../common/fixtures';
 /**
  * Local deps.
  */
-import { WP_BASE_URL } from '../../../config/wp.config';
+import {configurations} from "../../../utils/configurations";
 
 const enableAllFeatures = (): void => {
     test('Enabling all WP Rocket features should not throw any fatal errors', async ( { page, utils } ) => {
@@ -36,7 +36,7 @@ const enableAllFeatures = (): void => {
             expect(response.status()).not.toEqual(404);
         });
 
-        await page.goto(WP_BASE_URL);
+        await page.goto(configurations.baseUrl);
         await utils.auth();
 
          // Navigate to helper plugin.

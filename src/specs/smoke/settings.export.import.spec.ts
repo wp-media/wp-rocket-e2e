@@ -5,9 +5,9 @@ import type { ExportedSettings } from '../../../utils/types';
 /**
  * Local deps.
  */
-import { WP_BASE_URL } from '../../../config/wp.config';
 import { readAnyFile, isExportedCorrectly } from '../../../utils/helpers';
 import { diffChecker as diffCheckerExclusions } from '../../../utils/exclusions';
+import {configurations} from "../../../utils/configurations";
 
 
 const settingsExportImport = (): void => {
@@ -157,8 +157,8 @@ const settingsExportImport = (): void => {
         await page.waitForLoadState('load', { timeout: 30000 });
 
         // Navigate to pages.
-        await page.goto(WP_BASE_URL);
-        await page.goto(WP_BASE_URL + '/hello-world');
+        await page.goto(configurations.baseUrl);
+        await page.goto(configurations.baseUrl + '/hello-world');
 
         await utils.auth();
 

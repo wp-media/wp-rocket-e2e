@@ -3,7 +3,7 @@ import { defineConfig } from '@playwright/test';
 import { devices } from '@playwright/test';
 
 // Internal dependencies
-import { WP_BASE_URL } from './config/wp.config';
+import {configurations} from "./utils/configurations";
 
 export default defineConfig({
 	testMatch: 'test.list.ts',
@@ -24,7 +24,7 @@ export default defineConfig({
 	outputDir: path.join( process.cwd(), 'artifacts' ),
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 	use: {
-		baseURL: WP_BASE_URL,
+		baseURL: configurations.baseUrl,
 		headless: true,
 		viewport: {
 			width: 960,

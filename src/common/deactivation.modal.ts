@@ -3,8 +3,8 @@ import { expect, Page } from '@playwright/test';
 /**
  * Local deps.
  */
-import { WP_BASE_URL } from '../../config/wp.config';
 import { pageUtils } from '../../utils/page.utils';
+import {configurations} from "../../utils/configurations";
 
 export const deactivationModal = async ( page: Page ) => {
   const page_utils = new pageUtils( page );
@@ -22,7 +22,7 @@ export const deactivationModal = async ( page: Page ) => {
 
   // Navigate to plugins page.
   await page_utils.goto_plugin();
-  await expect( page ).toHaveURL( WP_BASE_URL + '/wp-admin/plugins.php' );
+  await expect( page ).toHaveURL( configurations.baseUrl + '/wp-admin/plugins.php' );
 
   // Expect WPR to be active: Deactivate link to be visible.
   await expect( locator.deactivate ).toBeVisible();
