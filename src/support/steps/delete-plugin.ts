@@ -1,26 +1,6 @@
 import {expect} from "@playwright/test";
-import { Given, When, Then } from '@cucumber/cucumber';
+import { When, Then } from '@cucumber/cucumber';
 import { Dialog } from "playwright";
-
-Given('I login', async function () {
-    await this.utils.auth();
-});
-
-Given('plugin is installed', async function () {
-    await this.utils.uploadNewPlugin('./plugin/new_release.zip');
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-    await expect(this.page).toHaveURL(/action=upload-plugin/); 
-});
-
-Given('plugin is activated', async function () {
-     // Activate WPR
-     await this.page.waitForSelector('a:has-text("Activate Plugin")');
-     await this.page.locator('a:has-text("Activate Plugin")').click();
-});
-
-When('I go to {string}', async function (page) {
-    await this.utils.visitPage(page);
-});
 
 When('all settings is enabled', async function () {
     /**
@@ -66,9 +46,4 @@ Then('plugin should delete successfully', async function () {
     // Assert that WPR is deleted successfully
     await this.page.waitForSelector('#wp-rocket-deleted');
     await expect(this.page.locator('#wp-rocket-deleted')).toBeVisible(); 
-});
-
-Then('no error in debug.log', async function (){
-    // Assert that there is no related error in debug.log
-    await expect(this.page.locator('#wpr_debug_log_notice')).toBeHidden();
 });
