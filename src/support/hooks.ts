@@ -71,7 +71,6 @@ Before(async function (this: ICustomWorld) {
         },
     });
     this.page = await this.context.newPage();
-    await this.page.setViewportSize({width: 2500, height: 2500})
     this.sections = new Sections(this.page, pluginSelectors);
     this.utils = new PageUtils(this.page, this.sections);
     
