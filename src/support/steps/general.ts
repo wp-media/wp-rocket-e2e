@@ -1,5 +1,6 @@
 import {expect} from "@playwright/test";
 import { Given, When, Then } from '@cucumber/cucumber';
+import { WP_BASE_URL } from '../../../config/wp.config';
 
 Given('I am logged in', async function () {
     await this.utils.auth();
@@ -61,4 +62,8 @@ Then('I should see {string}', async function (text) {
 Then('I must not see any error in debug.log', async function (){
     // Assert that there is no related error in debug.log
     await expect(this.page.locator('#wpr_debug_log_notice')).toBeHidden();
+});
+
+When('I visit site url', async function () {
+    await this.page.goto(WP_BASE_URL);
 });
