@@ -58,7 +58,7 @@ Then('I should see {string}', async function (text) {
     await expect(this.page.getByText(text)).toBeVisible();
 });
 
-Then('no error in debug.log', async function (){
+Then('I must not see any error in debug.log', async function (){
     // Assert that there is no related error in debug.log
     await expect(this.page.locator('#wpr_debug_log_notice')).toBeHidden();
 });
