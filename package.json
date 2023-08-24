@@ -20,6 +20,7 @@
     "@cucumber/cucumber": "^9.1.2",
     "@playwright/test": "^1.32.3",
     "@types/cucumber": "^7.0.0",
+    "@types/json-diff": "^1.0.0",
     "@types/shelljs": "^0.8.12",
     "@typescript-eslint/eslint-plugin": "^6.1.0",
     "@typescript-eslint/parser": "^6.1.0",
@@ -36,6 +37,7 @@
   "homepage": "https://github.com/wp-media/wp-rocket-e2e#readme",
   "dependencies": {
     "@types/ssh2": "^1.11.13",
+    "json-diff": "^1.0.6",
     "node-ssh": "^13.1.0",
     "node-zip": "^1.1.1",
     "playwright": "^1.34.3",
