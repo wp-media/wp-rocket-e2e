@@ -45,7 +45,6 @@ When('I click on {string}', async function (button) {
 When('I enable all settings', async function () {
     /**
      * Enable all settings and save, 
-     * then deactivate.
      */
     await this.utils.enableAllOptions();
 });
