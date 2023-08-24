@@ -49,6 +49,11 @@ When('all settings is enabled', async function () {
     await this.utils.enableAllOptions();
 });
 
+When('I log out', async function () {
+    await this.utils.wpAdminLogout();
+    await this.page.waitForLoadState('load', { timeout: 30000 });
+});
+
 Then('I should see {string}', async function (text) {
     await expect(this.page.getByText(text)).toBeVisible();
 });
