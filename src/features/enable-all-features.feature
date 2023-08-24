@@ -5,7 +5,7 @@ Feature: Enabling all WP Rocket features should not throw any fatal errors
         And plugin is installed
         And plugin is activated
 
-    Scenario: WP Rocket is installed but not activated
+    Scenario: Enable all features
         When I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And all settings is enabled
         And I log out
