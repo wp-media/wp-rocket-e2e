@@ -1,7 +1,7 @@
 Feature: Should successfully delete the plugin
 
     Background:
-        Given I login
+        Given I am logged in
 
     Scenario: WP Rocket is installed but not activated
         Given plugin is installed
