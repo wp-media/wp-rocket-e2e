@@ -14,7 +14,7 @@ let browser: ChromiumBrowser;
 setDefaultTimeout(process.env.PWDEBUG ? -1 : 60 * 10000);
 
 BeforeAll(async function (this: ICustomWorld) {
-    browser = await chromium.launch({ headless: true });
+    browser = await chromium.launch({ headless: false });
 });
 
 Before(async function (this: ICustomWorld) {
