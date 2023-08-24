@@ -41,7 +41,7 @@ When('I click on {string}', async function (button) {
     await this.page.waitForLoadState('load', { timeout: 100000 });
 });
 
-When('all settings is enabled', async function () {
+When('I enable all settings', async function () {
     /**
      * Enable all settings and save, 
      * then deactivate.
