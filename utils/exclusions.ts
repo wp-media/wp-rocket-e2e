@@ -31,8 +31,8 @@ export const uiReflectedSettings = [
 ];
 
 export const diffChecker = [
-    "\"version\":",
-    "\"delay_js\":",
-    "\"delay_js_exclusions_selected\":",
-    "\"delay_js_exclusions_selected_exclusions\":"
+    "version",
+    "delay_js",
+    "delay_js_exclusions_selected",
+    "delay_js_exclusions_selected_exclusions"
 ];
