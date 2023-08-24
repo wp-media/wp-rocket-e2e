@@ -2,14 +2,6 @@ import {expect} from "@playwright/test";
 import { When, Then } from '@cucumber/cucumber';
 import { Dialog } from "playwright";
 
-When('all settings is enabled', async function () {
-    /**
-     * Enable all settings and save, 
-     * then deactivate.
-     */
-    await this.utils.enableAllOptions();
-});
-
 When('I delete plugin', async function () {
     // Confirm Dialog Box.
     this.page.on('dialog', async(dialog: Dialog) => {

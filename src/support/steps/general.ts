@@ -41,6 +41,14 @@ When('I click on {string}', async function (button) {
     await this.page.waitForLoadState('load', { timeout: 100000 });
 });
 
+When('all settings is enabled', async function () {
+    /**
+     * Enable all settings and save, 
+     * then deactivate.
+     */
+    await this.utils.enableAllOptions();
+});
+
 Then('I should see {string}', async function (text) {
     await expect(this.page.getByText(text)).toBeVisible();
 });
