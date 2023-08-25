@@ -1,8 +1,9 @@
 import {expect} from "@playwright/test";
 import { When, Then } from '@cucumber/cucumber';
-import { Dialog } from "playwright";
+import type { Dialog } from "playwright";
 
 When('I delete plugin', async function () {
+
     // Confirm Dialog Box.
     this.page.on('dialog', async(dialog: Dialog) => {
         expect(dialog.type()).toContain('confirm');
