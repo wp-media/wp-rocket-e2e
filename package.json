@@ -10,6 +10,7 @@
     "test:cucumber": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default",
     "test:smoke": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags @smoke",
     "test:local": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags @local",
+    "test:online": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags @online",
     "wp-env": "wp-env"
   },
   "repository": {
