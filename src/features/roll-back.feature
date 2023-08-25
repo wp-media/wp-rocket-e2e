@@ -1,4 +1,4 @@
-@smoke @local @test
+@smoke @local
 Feature: Should roll back to the last previous major version when using the roll back functionality
 
     Background:
