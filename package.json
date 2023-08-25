@@ -8,6 +8,7 @@
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint  . --ext .ts --fix",
     "test:cucumber": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default",
+    "test:smoke": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags @smoke",
     "wp-env": "wp-env"
   },
   "repository": {
