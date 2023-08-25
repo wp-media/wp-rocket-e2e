@@ -5,8 +5,8 @@
 /plugin/new_release.zip
 /plugin/previous_stable.zip
 /plugin/wp-rocket_3.10.9.zip
-/plugin/exported_settings/settings_1.json
-/plugin/exported_settings/settings_2.json
-/plugin/exported_settings/settings_3.json
+/plugin/exported_settings/wp-rocket-settings-test-2023-00-01-64e7ada0d3b70.json
+/plugin/exported_settings/wp-rocket-settings-test-2023-00-02-64e7ada0d3b70.json
+/plugin/exported_settings/wp-rocket-settings-test-2023-00-03-64e7ada0d3b70.json
 /test-results
 @rerun.txt
