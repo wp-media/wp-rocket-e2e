@@ -1,3 +1,4 @@
+@smoke @online
 Feature: Should not cause fatal error when upgrade from 3.10.9 to latest version while using PHP 8.1.6 while beacon is open
 
     Background:
@@ -20,3 +21,4 @@ Feature: Should not cause fatal error when upgrade from 3.10.9 to latest version
         And rucss beacon is opened
         And I go through rucss beacon
         Then I must not see any error in debug.log
+        Then clean up

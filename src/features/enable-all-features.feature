@@ -1,3 +1,4 @@
+@smoke @local
 Feature: Enabling all WP Rocket features should not throw any fatal errors
 
     Background:
@@ -11,4 +12,5 @@ Feature: Enabling all WP Rocket features should not throw any fatal errors
         And I log out
         And I visit site url
         Then page loads successfully
-        But I must not see any error in debug.log
+        Then I must not see any error in debug.log
+        Then clean up

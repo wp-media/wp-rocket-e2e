@@ -1,3 +1,4 @@
+@smoke @local
 Feature: Should not change the content of existing fields
 
     Background:
@@ -26,11 +27,13 @@ Feature: Should not change the content of existing fields
         When I export data '3'
         Then data '3' is exported correctly
 
-    Scenario: Compare both files in diffchecker
+    Scenario: Compare exported data
         Then I must not see changes in exported files
     
     Scenario: Visit homepage and other page
         When I log out
         And I visit site url
         And I go to 'hello-world'
+        And I log in
         Then I must not see any error in debug.log
+        Then clean up

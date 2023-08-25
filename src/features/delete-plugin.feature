@@ -1,3 +1,4 @@
+@smoke @local
 Feature: Should successfully delete the plugin
 
     Background:
@@ -16,4 +17,5 @@ Feature: Should successfully delete the plugin
         And I enable all settings
         And I delete plugin
         Then plugin should delete successfully
-        But I must not see any error in debug.log
+        Then I must not see any error in debug.log
+        

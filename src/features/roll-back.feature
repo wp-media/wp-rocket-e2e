@@ -1,3 +1,4 @@
+@smoke @local @test
 Feature: Should roll back to the last previous major version when using the roll back functionality
 
     Background:
@@ -11,4 +12,5 @@ Feature: Should roll back to the last previous major version when using the roll
         And I click on '.wpr-tools:nth-child(4) a'
         Then I should see 'Plugin updated successfully.'
         Then rollback version must be the same as in the button
-        But no error in debug.log
+        Then I must not see any error in debug.log
+        Then clean up
