@@ -9,6 +9,7 @@
     "lint:fix": "eslint  . --ext .ts --fix",
     "test:cucumber": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default",
     "test:smoke": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags @smoke",
+    "test:local": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags @local",
     "wp-env": "wp-env"
   },
   "repository": {
