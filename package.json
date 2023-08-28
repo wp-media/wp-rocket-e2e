@@ -6,7 +6,12 @@
   "scripts": {
     "test:e2e": "playwright test --config playwright.config.ts",
     "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint  . --ext .ts --fix"
+    "lint:fix": "eslint  . --ext .ts --fix",
+    "test:cucumber": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default",
+    "test:smoke": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags @smoke",
+    "test:local": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags @local",
+    "test:online": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags @online",
+    "wp-env": "wp-env"
   },
   "repository": {
     "type": "git",
@@ -15,15 +20,32 @@
   "author": "WP Media",
   "license": "ISC",
   "devDependencies": {
+    "@cucumber/cucumber": "^9.1.2",
     "@playwright/test": "^1.32.3",
+    "@types/cucumber": "^7.0.0",
+    "@types/json-diff": "^1.0.0",
+    "@types/shelljs": "^0.8.12",
     "@typescript-eslint/eslint-plugin": "^6.1.0",
     "@typescript-eslint/parser": "^6.1.0",
+    "@wordpress/env": "^8.4.0",
     "eslint": "^8.45.0",
     "eslint-plugin-es5": "^1.5.0",
+    "multiple-cucumber-html-reporter": "^3.4.0",
+    "ts-node": "^10.9.1",
     "typescript": "^5.1.6"
   },
   "bugs": {
     "url": "https://github.com/wp-media/wp-rocket-e2e/issues"
   },
-  "homepage": "https://github.com/wp-media/wp-rocket-e2e#readme"
+  "homepage": "https://github.com/wp-media/wp-rocket-e2e#readme",
+  "dependencies": {
+    "@types/ssh2": "^1.11.13",
+    "json-diff": "^1.0.6",
+    "node-ssh": "^13.1.0",
+    "node-zip": "^1.1.1",
+    "playwright": "^1.34.3",
+    "shelljs": "^0.8.5",
+    "ssh2": "^1.14.0",
+    "ts-pattern": "^5.0.5"
+  }
 }

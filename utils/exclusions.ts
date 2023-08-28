@@ -1,4 +1,4 @@
-export const ui_reflected_settings = [
+export const uiReflectedSettings = [
     'lazyload',
     'remove_unused_css',
     'async_css',
@@ -30,9 +30,9 @@ export const ui_reflected_settings = [
     'delay_js', 
 ];
 
-export const diff_checker = [
-    "\"version\":",
-    "\"delay_js\":",
-    "\"delay_js_exclusions_selected\":",
-    "\"delay_js_exclusions_selected_exclusions\":"
+export const diffChecker = [
+    "version",
+    "delay_js",
+    "delay_js_exclusions_selected",
+    "delay_js_exclusions_selected_exclusions"
 ];

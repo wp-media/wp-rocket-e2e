@@ -1,14 +1,36 @@
+import {ServerType} from "../utils/configurations";
+
 const WP_ADMIN_USER = {
 	username: 'live_username',
 	password: 'live_password',
-	local_username: 'admin',
-	local_password: 'password'
+	localUsername: 'admin',
+	localPassword: 'password'
 } as const;
 
 const {
-	WP_USERNAME = process.env.CI ? WP_ADMIN_USER.local_username : WP_ADMIN_USER.username,
-	WP_PASSWORD = process.env.CI ? WP_ADMIN_USER.local_password : WP_ADMIN_USER.password,
-	WP_BASE_URL = 'https://example.org'
+	WP_USERNAME = process.env.CI ? WP_ADMIN_USER.localUsername : WP_ADMIN_USER.username,
+	WP_PASSWORD = process.env.CI ? WP_ADMIN_USER.localPassword : WP_ADMIN_USER.password,
+	WP_BASE_URL = 'https://example.org',
+	WP_ROOT_DIR = '',
+	WP_ENV_TYPE = ServerType.localhost,
+	WP_DOCKER_CONTAINER = '',
+	WP_DOCKER_ROOT_DIR = '',
+	WP_SSH_USERNAME = '',
+	WP_SSH_ADDRESS = '',
+	WP_SSH_KEY = '',
+	WP_SSH_ROOT_DIR = ''
 } = process.env;
 
-export { WP_USERNAME, WP_PASSWORD, WP_BASE_URL };
+export { 
+	WP_USERNAME,
+	WP_PASSWORD,
+	WP_BASE_URL,
+	WP_ROOT_DIR,
+	WP_ENV_TYPE,
+	WP_DOCKER_CONTAINER,
+	WP_DOCKER_ROOT_DIR,
+	WP_SSH_USERNAME,
+	WP_SSH_ADDRESS,
+	WP_SSH_KEY,
+	WP_SSH_ROOT_DIR,
+};
