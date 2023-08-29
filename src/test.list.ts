@@ -16,11 +16,12 @@ import { test } from '@playwright/test';
 // import deactivation from './admin/rocket.deactivation.spec';
 // import wpCache from './admin/wp.cache.constant.spec';
 
-import enableAllFeatures from './smoke/enable.all.features.spec';
-import deletePlugin from './smoke/delete.plugin.spec';
-import upgradingPlugin from './smoke/upgrading.plugin.spec';
-import rollBack from './smoke/roll.back.spec';
-import settingsExportImport from './smoke/settings.export.import.spec';
+import enableAllFeatures from './specs/smoke/enable.all.features.spec';
+import deletePlugin from './specs/smoke/delete.plugin.spec';
+import upgradingPlugin from './specs/smoke/upgrading.plugin.spec';
+import rollBack from './specs/smoke/roll.back.spec';
+import settingsExportImport from './specs/smoke/settings.export.import.spec';
+import tests from './specs/smoke/test.spec';
 
 // Test list.
 // test.describe('Rocket License', rocketLicense);
@@ -37,8 +38,9 @@ import settingsExportImport from './smoke/settings.export.import.spec';
 // test.describe('WP Cache Constant', wpCache);
 
 // Smoke Tests
-test.describe('Enable all features', enableAllFeatures);
-test.describe('Delete Plugin', deletePlugin);
-test.describe('Upgrading Plugin', upgradingPlugin);
-test.describe('Roll Back Plugin', rollBack);
-test.describe('Settings Export', settingsExportImport);
+// test.describe('Enable all features', enableAllFeatures);
+// test.describe('Delete Plugin', deletePlugin);
+// test.describe('Upgrading Plugin', upgradingPlugin);
+// test.describe('Roll Back Plugin', rollBack);
+// test.describe('Settings Export', settingsExportImport);
+test.describe('tests', tests);
