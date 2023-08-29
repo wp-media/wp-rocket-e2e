@@ -4,10 +4,9 @@
   "description": "WP Rocket E2E Tests with Playwright",
   "main": "playwright.config.ts",
   "scripts": {
-    "test:e2e": "playwright test --config playwright.config.ts",
+    "test:e2e": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint  . --ext .ts --fix",
-    "test:cucumber": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default",
     "test:smoke": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags @smoke",
     "test:local": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags @local",
     "test:online": "node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags @online",
