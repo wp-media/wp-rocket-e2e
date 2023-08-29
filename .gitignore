@@ -1,6 +1,5 @@
 /config/wp.config.ts
 /node_modules
-/reports
 /artifacts
 /plugin/new_release.zip
 /plugin/previous_stable.zip
