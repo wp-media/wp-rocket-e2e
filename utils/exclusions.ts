@@ -7,7 +7,6 @@ export const uiReflectedSettings = [
     'do_caching_mobile_files',
     'minify_css',
     'minify_js',
-    'minify_concatenate_css',
     'minify_concatenate_js',
     'defer_all_js',
     'lazyload_iframes',
@@ -33,6 +32,7 @@ export const uiReflectedSettings = [
 export const diffChecker = [
     "version",
     "delay_js",
+    "minify_concatenate_css",
     "delay_js_exclusions_selected",
     "delay_js_exclusions_selected_exclusions"
 ];
