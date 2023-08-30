@@ -111,6 +111,10 @@ export class Sections {
             return;
         }
 
+        if (await this.page.locator(this.getStringProperty(optionId, 'target')).isDisabled()) {
+            return;
+        }
+
         if(this.isType(optionId, "checkbox")) {
             if (this.optionState && await this.page.locator(this.getElement(optionId, 'checkbox')).isChecked()) {
                 return;
