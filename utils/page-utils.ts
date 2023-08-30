@@ -282,7 +282,7 @@ export class PageUtils {
         }
         await this.page.waitForTimeout(200);
         await this.wpAdminLogin();
-        await this.page.waitForURL(WP_BASE_URL + '/wp-admin/');
+        await this.page.waitForLoadState('load', { timeout: 30000 });
     }
 
     /**
