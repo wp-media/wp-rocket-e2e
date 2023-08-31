@@ -1,6 +1,5 @@
 import type { Page } from "@playwright/test";
-import type { Selectors } from "../../utils/types";
-import type { Roles } from "../../utils/types";
+import type { Selectors, Roles, Section, SectionId  } from "../../utils/types";
 
 export class Sections {
     /**
@@ -8,14 +7,14 @@ export class Sections {
      *
      * @property {string}
      */
-    public section: string = "";
+    public section: Section;
 
     /**
      * Section ID.
      *
      * @property {string}
      */
-    private sectionId: string = "";
+    private sectionId: SectionId;
 
     /**
      * Element selectors.
@@ -62,7 +61,7 @@ export class Sections {
      *
      * @return Current object.
      */
-    public set = (section: string): this => {
+    public set = (section: Section): this => {
         this.section = section;
         this.sectionId = this.selectors[section]["parent"];
         this.elements = this.selectors[section]["elements"];
@@ -234,10 +233,6 @@ export class Sections {
      * @return  {void}
      */
     private canPerformAction = (): void => {
-        if (this.section === "") {
-            throw new Error("Section is not defined yet.");
-        }
-
         if (this.selectors[this.section] === undefined){
             throw new Error("Section is invalid.");
         }
