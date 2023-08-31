@@ -11,6 +11,10 @@ export enum FieldType {
     role = 'role',
 }
 
+export type Section = "dashboard"|"cache"|"fileOptimization"|"media"|"preload"|"advancedRules"|"database"|"cdn"|"heartbeat"|"addons";
+
+export type SectionId = "dashboard"|"cache"|"file_optimization"|"media"|"preload"|"advanced_cache"|"database"|"page_cdn"|"heartbeat"|"addons";
+
 type Events = {
     before?: (page: Page) => Promise<boolean>,
     after?: (page: Page, state?: boolean) => Promise<void>,
@@ -42,7 +46,7 @@ type Role = Events & {
 
 export interface Selectors{
     [key: string]: {
-        parent: string,
+        parent: SectionId,
         elements: {
             [key: string]: Checkbox | Textbox | Button | Role
         }
