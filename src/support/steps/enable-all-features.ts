@@ -1,11 +1,11 @@
+import { ICustomWorld } from "../../common/custom-world";
 import {expect} from "@playwright/test";
-import { Response } from "playwright";
 import { Then } from '@cucumber/cucumber';
 
 import { WP_BASE_URL } from '../../../config/wp.config';
 
-Then('page loads successfully', async function () {
-    this.page.on('response', async (response: Response) => {
+Then('page loads successfully', async function (this: ICustomWorld) {
+    this.page.on('response', async (response) => {
         expect(response.status()).not.toEqual(500);
         expect(response.status()).not.toEqual(404);
     });

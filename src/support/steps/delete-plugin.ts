@@ -1,11 +1,11 @@
+import { ICustomWorld } from "../../common/custom-world";
 import {expect} from "@playwright/test";
 import { When, Then } from '@cucumber/cucumber';
-import type { Dialog } from "playwright";
 
-When('I delete plugin', async function () {
+When('I delete plugin', async function (this: ICustomWorld) {
 
     // Confirm Dialog Box.
-    this.page.on('dialog', async(dialog: Dialog) => {
+    this.page.on('dialog', async(dialog) => {
         expect(dialog.type()).toContain('confirm');
         expect(dialog.message()).toContain('Are you sure you want to delete WP Rocket and its data?');
         await dialog.accept();
@@ -35,7 +35,7 @@ When('I delete plugin', async function () {
     }  
 });
 
-Then('plugin should delete successfully', async function () {
+Then('plugin should delete successfully', async function (this: ICustomWorld) {
     // Assert that WPR is deleted successfully
     await this.page.waitForSelector('#wp-rocket-deleted');
     await expect(this.page.locator('#wp-rocket-deleted')).toBeVisible(); 
