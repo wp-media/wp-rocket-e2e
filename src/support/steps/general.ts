@@ -1,34 +1,35 @@
 import {expect} from "@playwright/test";
+import { ICustomWorld } from "../../common/custom-world";
+
 import { Given, When, Then } from '@cucumber/cucumber';
 import { WP_BASE_URL } from '../../../config/wp.config';
-import type { Dialog } from "playwright";
 
-Given('I am logged in', async function () {
+Given('I am logged in', async function (this: ICustomWorld) {
     await this.utils.auth();
 });
 
-Given('plugin is installed', async function () {
+Given('plugin is installed', async function (this: ICustomWorld) {
     await this.utils.uploadNewPlugin('./plugin/new_release.zip');
     await this.page.waitForLoadState('load', { timeout: 30000 });
     await expect(this.page).toHaveURL(/action=upload-plugin/); 
 });
 
-Given('plugin is activated', async function () {
+Given('plugin is activated', async function (this: ICustomWorld) {
     // Activate WPR
     await this.page.waitForSelector('a:has-text("Activate Plugin")');
     await this.page.locator('a:has-text("Activate Plugin")').click();
 });
 
-When('I log in', async function () {
+When('I log in', async function (this: ICustomWorld) {
     await this.utils.auth();
 });
 
-When('I go to {string}', async function (page) {
+When('I go to {string}', async function (this: ICustomWorld, page) {
     await this.utils.visitPage(page);
     await this.page.waitForLoadState('load', { timeout: 100000 });
 });
 
-When('I click on {string}', async function (button) {
+When('I click on {string}', async function (this: ICustomWorld, button) {
     if (button === '.wpr-tools:nth-child(4) a') {
         /**
          * Save WP Rocket last major version.
@@ -47,35 +48,35 @@ When('I click on {string}', async function (button) {
     await this.page.waitForLoadState('load', { timeout: 100000 });
 });
 
-When('I enable all settings', async function () {
+When('I enable all settings', async function (this: ICustomWorld) {
     /**
      * Enable all settings and save, 
      */
     await this.utils.enableAllOptions();
 });
 
-When('I log out', async function () {
+When('I log out', async function (this: ICustomWorld) {
     await this.utils.wpAdminLogout();
     await this.page.waitForLoadState('load', { timeout: 30000 });
 });
 
-When('I visit site url', async function () {
+When('I visit site url', async function (this: ICustomWorld) {
     await this.page.goto(WP_BASE_URL);
 });
 
-Then('I should see {string}', async function (text) {
+Then('I should see {string}', async function (this: ICustomWorld, text) {
     await expect(this.page.getByText(text)).toBeVisible();
 });
 
-Then('I must not see any error in debug.log', async function (){
+Then('I must not see any error in debug.log', async function (this: ICustomWorld){
     // Assert that there is no related error in debug.log
     await expect(this.page.locator('#wpr_debug_log_notice')).toBeHidden();
 });
 
-Then('clean up', async function () {
+Then('clean up', async function (this: ICustomWorld) {
 
     // Confirm Dialog Box.
-    await this.page.on('dialog', async(dialog: Dialog) => {
+    this.page.on('dialog', async(dialog) => {
         expect(dialog.type()).toContain('confirm');
         expect(dialog.message()).toContain('Are you sure you want to delete WP Rocket and its data?');
         await dialog.accept();

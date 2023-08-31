@@ -1,15 +1,16 @@
+import { ICustomWorld } from "../../common/custom-world";
 import {expect} from "@playwright/test";
 import { Given, When } from '@cucumber/cucumber';
 
-Given('plugin 3.10.9 is installed', async function () {
+Given('plugin 3.10.9 is installed', async function (this: ICustomWorld) {
     // Upload WPR version 3.10.9
     await this.utils.uploadNewPlugin('./plugin/wp-rocket_3.10.9.zip');
     await expect(this.page).toHaveURL(/action=upload-plugin/); 
 });
 
-Given('rucss beacon is opened', async function () {
+Given('rucss beacon is opened', async function (this: ICustomWorld) {
     // Open file optimization section.
-    await this.sections.set("fileOptimization");
+    this.sections.set("fileOptimization");
 
     // Enable Optimize CSS delivery option.
     await this.sections.state(true).toggle("rucss");
@@ -21,7 +22,7 @@ Given('rucss beacon is opened', async function () {
     await this.page.waitForSelector('iframe[title="Help Scout Beacon - Live Chat, Contact Form, and Knowledge Base"]');
 });
 
-When('I update to latest version', async function () {
+When('I update to latest version', async function (this: ICustomWorld) {
     await this.utils.uploadNewPlugin('./plugin/new_release.zip');
     await this.page.waitForLoadState('load', { timeout: 30000 });
     await expect(this.page).toHaveURL(/action=upload-plugin/); 
@@ -33,7 +34,7 @@ When('I update to latest version', async function () {
     await expect(this.page).toHaveURL(/overwrite=update-plugin/); 
 });
 
-When('I go through rucss beacon', async function () {
+When('I go through rucss beacon', async function (this: ICustomWorld) {
     const iframe = this.page.frameLocator('iframe[title="Help Scout Beacon - Live Chat, Contact Form, and Knowledge Base"]');
 
     await iframe.locator('#fullArticle').getByRole('link', { name: 'Feature benefits' }).click();
@@ -46,7 +47,7 @@ When('I go through rucss beacon', async function () {
     await this.page.waitForLoadState('load', { timeout: 30000 });
 });
 
-When('I downgrade to the last stable version', async function () {
+When('I downgrade to the last stable version', async function (this: ICustomWorld) {
     await this.utils.uploadNewPlugin('./plugin/previous_stable.zip');
     await this.page.waitForLoadState('load', { timeout: 30000 });
     await expect(this.page).toHaveURL(/action=upload-plugin/); 
