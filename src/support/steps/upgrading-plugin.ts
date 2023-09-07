@@ -8,14 +8,6 @@ Given('plugin 3.10.9 is installed', async function (this: ICustomWorld) {
     await expect(this.page).toHaveURL(/action=upload-plugin/); 
 });
 
-Given('rucss beacon is open', async function (this: ICustomWorld) {
-    // Open file optimization section.
-    this.sections.set("fileOptimization");
-
-    // Enable Optimize CSS delivery option.
-    await this.sections.state(true).toggle("rucss");
-});
-
 Given('rucss beacon is opened', async function (this: ICustomWorld) {
     // Open file optimization section.
     this.sections.set("fileOptimization");
@@ -23,10 +15,9 @@ Given('rucss beacon is opened', async function (this: ICustomWorld) {
     // Enable Optimize CSS delivery option.
     await this.sections.state(true).toggle("rucss");
 
-    await this.page.waitForSelector('iframe[title="Help Scout Beacon - Open"]');
-
-    // Click the RUCSS Beacon
+    await this.page.locator('iframe[title="Help Scout Beacon - Open"]').waitFor();
     await this.page.locator('a[data-beacon-article="6076083ff8c0ef2d98df1f97"]').click();
+
     await this.page.waitForSelector('iframe[title="Help Scout Beacon - Live Chat, Contact Form, and Knowledge Base"]');
 });
 
