@@ -8,6 +8,14 @@ Given('plugin 3.10.9 is installed', async function (this: ICustomWorld) {
     await expect(this.page).toHaveURL(/action=upload-plugin/); 
 });
 
+Given('rucss beacon is open', async function (this: ICustomWorld) {
+    // Open file optimization section.
+    this.sections.set("fileOptimization");
+
+    // Enable Optimize CSS delivery option.
+    await this.sections.state(true).toggle("rucss");
+});
+
 Given('rucss beacon is opened', async function (this: ICustomWorld) {
     // Open file optimization section.
     this.sections.set("fileOptimization");

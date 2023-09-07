@@ -11,7 +11,7 @@ Feature: Should not cause fatal error when upgrade from 3.10.9 to latest version
         And rucss beacon is opened
         When I update to latest version
         And I go to 'wp-admin/options-general.php?page=wprocket#file_optimization'
-        And rucss beacon is opened
+        And rucss beacon is open
         And I go through rucss beacon
         Then I must not see any error in debug.log
 
