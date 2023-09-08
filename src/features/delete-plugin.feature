@@ -1,5 +1,5 @@
 @smoke @local
-Feature: Should successfully delete the plugin
+Feature: C4466 - Should successfully delete the plugin
 
     Background:
         Given I am logged in

@@ -1,5 +1,5 @@
 @smoke @local
-Feature: Enabling all WP Rocket features should not throw any fatal errors
+Feature: C1205 - Enabling all WP Rocket features should not throw any fatal errors
 
     Background:
         Given I am logged in

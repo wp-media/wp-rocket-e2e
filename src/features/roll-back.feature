@@ -1,5 +1,5 @@
 @smoke @local
-Feature: Should roll back to the last previous major version when using the roll back functionality
+Feature: C11856 - Should roll back to the last previous major version when using the roll back functionality
 
     Background:
         Given I am logged in

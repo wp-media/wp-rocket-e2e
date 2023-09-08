@@ -1,5 +1,5 @@
 @smoke @online
-Feature: Should not cause fatal error when upgrade from 3.10.9 to latest version while using PHP 8.1.6 while beacon is open
+Feature: C11513 - Should not cause fatal error when upgrade from 3.10.9 to latest version while using PHP 8.1.6 while beacon is open
 
     Background:
         Given I am logged in
