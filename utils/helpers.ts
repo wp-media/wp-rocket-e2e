@@ -183,10 +183,10 @@ const updateVRTestUrl = async(url: string = ''): Promise<void> => {
  * @return  {Promise<void>}
  */
 export const createReference = async(url: string): Promise<void> => {
-    url = url.replace(/http.*\/\/|www\.|\//g, '');
+    url = url.replace(/http.*\/\/|www\./g, '');
 
     try {
-        updateVRTestUrl(`https://${url}?nowprocket`);
+        await updateVRTestUrl(`https://${url}?nowprocket`);
 
         // Use BackstopJS to capture a snapshot of the webpage.
         await backstop('reference')
@@ -202,7 +202,7 @@ export const createReference = async(url: string): Promise<void> => {
  */
 export const compareReference = async(): Promise<void> => {
     try {
-        updateVRTestUrl();
+        await updateVRTestUrl();
     
         // Use BackstopJS to compare snapshots.
         await backstop('test')
