@@ -1,8 +1,9 @@
-import {expect} from "@playwright/test";
+import { expect } from "@playwright/test";
 import { ICustomWorld } from "../../common/custom-world";
 
 import { Given, When, Then } from '@cucumber/cucumber';
 import { WP_BASE_URL } from '../../../config/wp.config';
+import { createReference, compareReference } from "../../../utils/helpers";
 
 Given('I am logged in', async function (this: ICustomWorld) {
     await this.utils.auth();
@@ -64,6 +65,14 @@ When('I visit site url', async function (this: ICustomWorld) {
     await this.page.goto(WP_BASE_URL);
 });
 
+When('I create reference', async function (this:ICustomWorld) {
+    if (process.env.npm_config_url === undefined) {
+        return;
+    }
+
+    await createReference(process.env.npm_config_url);
+});
+
 Then('I should see {string}', async function (this: ICustomWorld, text) {
     await expect(this.page.getByText(text)).toBeVisible();
 });
@@ -111,4 +120,8 @@ Then('clean up', async function (this: ICustomWorld) {
     // Assert that WPR is deleted successfully
     await this.page.waitForSelector('#wp-rocket-deleted');
     await expect(this.page.locator('#wp-rocket-deleted')).toBeVisible(); 
+});
+
+Then('I must not see any visual regression', async function (this: ICustomWorld) {
+    await compareReference();
 });
