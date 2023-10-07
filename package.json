@@ -14,6 +14,7 @@
     "test:smoke": "$npm_package_config_testCommand --tags @smoke",
     "test:local": "$npm_package_config_testCommand --tags @local",
     "test:online": "$npm_package_config_testCommand --tags @online",
+    "test:vr": "$npm_package_config_testCommand --tags @vr",
     "wp-env": "wp-env"
   },
   "repository": {
@@ -25,6 +26,7 @@
   "devDependencies": {
     "@cucumber/cucumber": "^9.1.2",
     "@playwright/test": "^1.32.3",
+    "@types/backstopjs": "^6.1.1",
     "@types/cucumber": "^7.0.0",
     "@types/json-diff": "^1.0.0",
     "@types/shelljs": "^0.8.12",
@@ -43,6 +45,7 @@
   "homepage": "https://github.com/wp-media/wp-rocket-e2e#readme",
   "dependencies": {
     "@types/ssh2": "^1.11.13",
+    "backstopjs": "^6.2.2",
     "json-diff": "^1.0.6",
     "node-ssh": "^13.1.0",
     "node-zip": "^1.1.1",
