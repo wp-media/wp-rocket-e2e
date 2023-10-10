@@ -2,7 +2,7 @@ module.exports = async (page, scenario) => {
     await page.evaluate(async () => {
         await new Promise((resolve, reject) => {
             var totalHeight = 0;
-            var distance = 200;
+            var distance = 100;
             var timer = setInterval(() => {
             var scrollHeight = document.body.scrollHeight;
             window.scrollBy(0, distance);
@@ -12,8 +12,8 @@ module.exports = async (page, scenario) => {
                 clearInterval(timer);
                 resolve();
             }
-            }, 100);
+            }, 500);
         });
     });
-    await page.waitForTimeout(10000); 
+    await page.waitForTimeout(5000); 
   };
