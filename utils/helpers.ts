@@ -191,7 +191,7 @@ export const createReference = async(url: string): Promise<void> => {
         // Use BackstopJS to capture a snapshot of the webpage.
         await backstop('reference')
     } catch (error) {
-        console.error(`Error editing JSON file: ${error}`);
+        console.error(error);
     }
 }
 
@@ -207,6 +207,6 @@ export const compareReference = async(): Promise<void> => {
         // Use BackstopJS to compare snapshots.
         await backstop('test')
     } catch (error) {
-        console.error(`Error editing JSON file: ${error}`);
+        console.error(error);
     }
 }
