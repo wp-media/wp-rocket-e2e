@@ -1,14 +1,19 @@
 module.exports = async (page, scenario) => {
-    // Calculate the total height of the page
-    const bodyHandle = await page.$('body');
-    const { height } = await bodyHandle.boundingBox();
-    await bodyHandle.dispose();
+    await page.evaluate(async () => {
+        await new Promise((resolve, reject) => {
+            var totalHeight = 0;
+            var distance = 200;
+            var timer = setInterval(() => {
+            var scrollHeight = document.body.scrollHeight;
+            window.scrollBy(0, distance);
+            totalHeight += distance;
 
-    // Scroll to the bottom of the page
-    await page.evaluate((scrollHeight) => {
-      window.scrollTo(0, scrollHeight);
-    }, height);
-
-    // Wait for a moment to ensure the scroll completes
-    await page.waitForTimeout(3000); 
+            if(totalHeight >= scrollHeight){
+                clearInterval(timer);
+                resolve();
+            }
+            }, 100);
+        });
+    });
+    await page.waitForTimeout(10000); 
   };
