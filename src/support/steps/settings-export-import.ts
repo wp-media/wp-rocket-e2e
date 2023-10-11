@@ -19,14 +19,6 @@ Given('I disabled all settings', async function (this: ICustomWorld) {
     await this.utils.disableAllOptions();
 });
 
-Given('I saved specific settings {string} {string}', async function (this: ICustomWorld, section: Section, element: string) {
-    await this.sections.set(section).visit();
-    await this.sections.state(true).toggle(element);
-    await this.utils.saveSettings();
-
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-});
-
 Given('I updated to latest version', async function (this: ICustomWorld) {
     await this.utils.uploadNewPlugin('./plugin/new_release.zip');
     await this.page.waitForLoadState('load', { timeout: 30000 });
