@@ -4,6 +4,7 @@ import { ICustomWorld } from "../../common/custom-world";
 import { Given, When, Then } from '@cucumber/cucumber';
 import { WP_BASE_URL } from '../../../config/wp.config';
 import { createReference, compareReference } from "../../../utils/helpers";
+import type { Section } from "../../../utils/types";
 
 /**
  * Performs a WordPress precondition login action.
@@ -44,6 +45,24 @@ Given('plugin is activated', async function (this: ICustomWorld) {
     // Activate WPR
     await this.page.waitForSelector('a:has-text("Activate Plugin")');
     await this.page.locator('a:has-text("Activate Plugin")').click();
+});
+
+/**
+ * Performs an action to save a specific WP Rocket setting/option.
+ * 
+ * @step
+ * @param {string} section - WP Rocket Section.
+ * @param {string} element - Element attributes from selectors object.
+ * 
+ * @example
+ * Given plugin is installed
+ */
+Given('I save settings {string} {string}', async function (this: ICustomWorld, section: Section, element: string) {
+    await this.sections.set(section).visit();
+    await this.sections.state(true).toggle(element);
+    await this.utils.saveSettings();
+
+    await this.page.waitForLoadState('load', { timeout: 30000 });
 });
 
 
