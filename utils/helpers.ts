@@ -1,7 +1,7 @@
 import os from 'os';
 import fs from 'fs/promises';
-
 import type { Page } from '@playwright/test';
+import backstop from 'backstopjs';
 
 // Interfaces
 import { ExportedSettings } from '../utils/types';
@@ -145,4 +145,68 @@ export const activateFromPopUp = async(page: Page, state: boolean, selector: str
 
     await page.waitForSelector(selector);
     await page.locator(selector).click();
+}
+
+/**
+ * Update backstopjs scenario url.
+ *
+ * @param   {string}   url  Updated url.
+ *
+ * @return  {Promise<void>}
+ */
+const updateVRTestUrl = async(url: string = ''): Promise<void> => {
+    const fileName = './backstop.json';
+
+    // Read the JSON file
+    const data = await fs.readFile(fileName, 'utf8');
+    const jsonData = JSON.parse(data);
+
+    if (url === '') {
+        url = jsonData.scenarios[0].url.replace(/\?nowprocket/g, '');
+    }
+
+    // Modify the JSON object
+    jsonData.scenarios[0].url = url;
+
+    // Convert the modified object back to JSON
+    const updatedJsonData = JSON.stringify(jsonData, null, 2);
+
+    // Write the updated JSON back to the file
+    await fs.writeFile(fileName, updatedJsonData, 'utf8');
+}
+
+/**
+ * Create reference snapshot for backstopjs to use during test.
+ *
+ * @param   {string}   url  Page url to create reference.
+ *
+ * @return  {Promise<void>}
+ */
+export const createReference = async(url: string): Promise<void> => {
+    url = url.replace(/http.*\/\/|www\./g, '');
+
+    try {
+        await updateVRTestUrl(`https://${url}?nowprocket`);
+
+        // Use BackstopJS to capture a snapshot of the webpage.
+        await backstop('reference')
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+/**
+ * Compare reference snapshot with latest snapshot.
+ *
+ * @return  {<Promise><void>}
+ */
+export const compareReference = async(): Promise<void> => {
+    try {
+        await updateVRTestUrl();
+    
+        // Use BackstopJS to compare snapshots.
+        await backstop('test')
+    } catch (error) {
+        console.error(error);
+    }
 }
