@@ -2,7 +2,7 @@ import { ICustomWorld } from "../../common/custom-world";
 import {expect} from "@playwright/test";
 import { Given, When, Then } from '@cucumber/cucumber';
 
-import type { ExportedSettings, Section } from '../../../utils/types';
+import type { ExportedSettings} from '../../../utils/types';
 import { readAnyFile, isExportedCorrectly } from '../../../utils/helpers';
 import { diffChecker as diffCheckerExclusions } from '../../../utils/exclusions';
 
