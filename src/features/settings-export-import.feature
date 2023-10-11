@@ -8,7 +8,7 @@ Feature: C2148 - Should not change the content of existing fields
         Given a previous version of plugin is installed
         And plugin is activated
         And I disabled all settings
-        And I saved specific settings 'cache' 'cacheLoggedUser'
+        And I saved settings 'cache' 'cacheLoggedUser'
         And I export data '1'
         And I enable all settings
         When I import data
@@ -16,14 +16,14 @@ Feature: C2148 - Should not change the content of existing fields
 
     Scenario: Data exported correctly on previous version
         Given I disabled all settings
-        And I saved specific settings 'media' 'lazyload'
+        And I saved settings 'media' 'lazyload'
         When I export data '2'
         Then data '2' is exported correctly
 
     Scenario: Data exported correctly on latest version
         Given I updated to latest version
         And I disabled all settings
-        And I saved specific settings 'media' 'lazyload'
+        And I saved settings 'media' 'lazyload'
         When I export data '3'
         Then data '3' is exported correctly
 
