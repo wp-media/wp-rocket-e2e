@@ -1,18 +1,19 @@
-import {ServerType} from "../utils/configurations";
-
 const WP_ADMIN_USER = {
 	username: 'live_username',
 	password: 'live_password',
 	localUsername: 'admin',
-	localPassword: 'password'
+	localPassword: 'password',
+	local: 'http://localhost',
+	live: 'https://example.org'
+	
 } as const;
 
 const {
-	WP_USERNAME = process.env.CI ? WP_ADMIN_USER.localUsername : WP_ADMIN_USER.username,
-	WP_PASSWORD = process.env.CI ? WP_ADMIN_USER.localPassword : WP_ADMIN_USER.password,
-	WP_BASE_URL = 'https://example.org',
+	WP_USERNAME = process.env.npm_config_env !== undefined ? WP_ADMIN_USER.localUsername : WP_ADMIN_USER.username,
+	WP_PASSWORD = process.env.npm_config_env !== undefined ? WP_ADMIN_USER.localPassword : WP_ADMIN_USER.password,
+	WP_BASE_URL = process.env.npm_config_env !== undefined ? WP_ADMIN_USER.local : WP_ADMIN_USER.live,
 	WP_ROOT_DIR = '',
-	WP_ENV_TYPE = ServerType.localhost,
+	WP_ENV_TYPE = '',
 	WP_DOCKER_CONTAINER = '',
 	WP_DOCKER_ROOT_DIR = '',
 	WP_SSH_USERNAME = '',
@@ -20,6 +21,10 @@ const {
 	WP_SSH_KEY = '',
 	WP_SSH_ROOT_DIR = ''
 } = process.env;
+
+const SCENARIO_URLS = {
+	llcss: 'url_path_to_lazyload_css_background_images_template'
+}
 
 export { 
 	WP_USERNAME,
@@ -33,4 +38,5 @@ export {
 	WP_SSH_ADDRESS,
 	WP_SSH_KEY,
 	WP_SSH_ROOT_DIR,
+	SCENARIO_URLS
 };
