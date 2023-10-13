@@ -4,9 +4,11 @@ import type { Page } from '@playwright/test';
 import backstop from 'backstopjs';
 
 // Interfaces
-import { ExportedSettings } from '../utils/types';
+import { ExportedSettings, VRurlConfig } from '../utils/types';
 import { uiReflectedSettings } from './exclusions';
+import { WP_BASE_URL } from '../config/wp.config';
 
+const backstopConfig = './backstop.json';
 const homeDir: string = os.homedir();
 let installPath: string;
 
@@ -155,24 +157,75 @@ export const activateFromPopUp = async(page: Page, state: boolean, selector: str
  * @return  {Promise<void>}
  */
 const updateVRTestUrl = async(url: string = ''): Promise<void> => {
-    const fileName = './backstop.json';
-
     // Read the JSON file
-    const data = await fs.readFile(fileName, 'utf8');
+    const data = await fs.readFile(backstopConfig, 'utf8');
     const jsonData = JSON.parse(data);
 
     if (url === '') {
         url = jsonData.scenarios[0].url.replace(/\?nowprocket/g, '');
+        jsonData.scenarios[0].url = url;
     }
-
-    // Modify the JSON object
-    jsonData.scenarios[0].url = url;
+    else {
+        // Modify the JSON object
+        jsonData.scenarios.push({
+            label: "general",
+            url: url,
+            referenceUrl: "",
+            readyEvent: "",
+            readySelector: "",
+            delay: 0,
+            hideSelectors: [],
+            removeSelectors: [],
+            hoverSelector: "",
+            clickSelector: "",
+            postInteractionWait: 0,
+            selectors: [],
+            selectorExpansion: true,
+            expect: 0,
+            misMatchThreshold: 0.1,
+            requireSameDimensions: true,
+            onReadyScript: "scrollToBottom.js"
+        });
+    }
 
     // Convert the modified object back to JSON
     const updatedJsonData = JSON.stringify(jsonData, null, 2);
 
     // Write the updated JSON back to the file
-    await fs.writeFile(fileName, updatedJsonData, 'utf8');
+    await fs.writeFile(backstopConfig, updatedJsonData, 'utf8');
+}
+
+export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> => {
+    // Read the JSON file
+    const data = await fs.readFile(backstopConfig, 'utf8');
+    const jsonData = JSON.parse(data);
+
+    jsonData.scenarios.forEach((scenario: {[key: string]: string | number}) => {
+        if (scenario.label === 'general') {
+            return;
+        }
+
+        scenario.url = scenario.url.toString().replace(/\?nowprocket/g, '');
+        
+        if (!config.optimize) {
+            switch(scenario.label) { 
+                case 'llcss': { 
+                    scenario.url = `${WP_BASE_URL}/${config.url.llcss}?nowprocket`
+                   break; 
+                } 
+                default: { 
+                    scenario.url = `${WP_BASE_URL}?nowprocket`
+                   break; 
+                } 
+             } 
+        }
+    });
+
+    // Convert the modified object back to JSON
+    const updatedJsonData = JSON.stringify(jsonData, null, 2);
+
+    // Write the updated JSON back to the file
+    await fs.writeFile(backstopConfig, updatedJsonData, 'utf8');
 }
 
 /**
@@ -182,14 +235,19 @@ const updateVRTestUrl = async(url: string = ''): Promise<void> => {
  *
  * @return  {Promise<void>}
  */
-export const createReference = async(url: string): Promise<void> => {
-    url = url.replace(/http.*\/\/|www\./g, '');
+export const createReference = async(url: string = ''): Promise<void> => {
+    url = url !== '' ? url.replace(/http.*\/\/|www\./g, '') : url;
 
     try {
-        await updateVRTestUrl(`https://${url}?nowprocket`);
+        if (url !== '') {
+            // Update test url to use nowprocket query string.
+            await updateVRTestUrl(`https://${url}?nowprocket`);
+            // Update test url request page with wprocket optimizations.
+            await updateVRTestUrl();
+        }
 
         // Use BackstopJS to capture a snapshot of the webpage.
-        await backstop('reference')
+        await backstop('reference');
     } catch (error) {
         console.error(error);
     }
@@ -198,14 +256,16 @@ export const createReference = async(url: string): Promise<void> => {
 /**
  * Compare reference snapshot with latest snapshot.
  *
+ * @param {string} label Scenario label. 
+ * 
  * @return  {<Promise><void>}
  */
-export const compareReference = async(): Promise<void> => {
+export const compareReference = async(label: string = ''): Promise<void> => {
     try {
-        await updateVRTestUrl();
-    
         // Use BackstopJS to compare snapshots.
-        await backstop('test')
+        await backstop('test', {
+            filter: label
+        });
     } catch (error) {
         console.error(error);
     }
