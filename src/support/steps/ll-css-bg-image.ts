@@ -4,7 +4,7 @@ import { WP_BASE_URL } from '../../../config/wp.config';
 import { SCENARIO_URLS } from "../../../config/wp.config";
 import { expect } from "@playwright/test";
 
-Then('no error in the console different than ?nowprocket page', async function (this: ICustomWorld) {
+Then('no error in the console different than nowprocket page', async function (this: ICustomWorld) {
     let consoleMsg1: string, consoleMsg2: string, i: number = 0;
 
     await this.page.route('**', (route) => {
@@ -30,6 +30,6 @@ Then('no error in the console different than ?nowprocket page', async function (
       await this.page.waitForLoadState('load', { timeout: 50000 });
       await this.page.goto(`${WP_BASE_URL}/${SCENARIO_URLS.llcss}`);
       await this.page.waitForLoadState('load', { timeout: 50000 });
-      
+
       expect(consoleMsg1 === consoleMsg2).toBeTruthy();
 });
