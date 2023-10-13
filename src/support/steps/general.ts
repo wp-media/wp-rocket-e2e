@@ -255,10 +255,10 @@ Then('clean up', async function (this: ICustomWorld) {
  * Asserts that there is no visual regression.
  * 
  * @step
- * 
+ * @param {string} label Scenario label.
  * @example
  * Then I must not see any visual regression
  */
-Then('I must not see any visual regression', async function (this: ICustomWorld) {
-    await compareReference();
+Then('I must not see any visual regression {string}', async function (this: ICustomWorld, label: string) {
+    await compareReference(label);
 });
