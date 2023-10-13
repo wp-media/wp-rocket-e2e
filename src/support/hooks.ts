@@ -3,6 +3,9 @@ import { ChromiumBrowser, chromium } from '@playwright/test';
 import { Sections } from '../common/sections';
 import { selectors as pluginSelectors } from "./../common/selectors";
 import { PageUtils } from "../../utils/page-utils";
+import { batchUpdateVRTestUrl } from "../../utils/helpers";
+import { createReference } from "../../utils/helpers";
+import { SCENARIO_URLS } from "../../config/wp.config";
 
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 import fs from "fs/promises";
@@ -15,6 +18,14 @@ setDefaultTimeout(process.env.PWDEBUG ? -1 : 60 * 10000);
 
 BeforeAll(async function (this: ICustomWorld) {
     browser = await chromium.launch({ headless: false });
+
+    await batchUpdateVRTestUrl({
+        optimize: false,
+        url: SCENARIO_URLS
+    });
+    await createReference();
+    // Update test url request page with wprocket optimizations.
+    await batchUpdateVRTestUrl({optimize: true});
 });
 
 Before(async function (this: ICustomWorld) {
