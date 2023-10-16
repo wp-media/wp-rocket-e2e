@@ -200,25 +200,32 @@ export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> =>
     const data = await fs.readFile(backstopConfig, 'utf8');
     const jsonData = JSON.parse(data);
 
+    // Empty scenario.
+    jsonData.scenarios = [];
+
     let optimize: string = '?nowprocket';
-    let path: string = '';
+    let path: string;
     let beforeScript = '';
 
     if (config.optimize) {
         optimize = '';
-
-        jsonData.scenarios = [];
     }
 
     const urls = config.urls;
     for (const key in urls) {
         // Check that path is not empty(meaning home);
         if (urls[key] !== '') {
-            path = urls[key]
+            path = urls[key];
+        }
+        else {
+            path = '';
         }
 
         if(key.includes('NoJs')) {
             beforeScript = 'disableJavascript.js';
+        }
+        else{
+            beforeScript = '';
         }
 
         jsonData.scenarios.push({
