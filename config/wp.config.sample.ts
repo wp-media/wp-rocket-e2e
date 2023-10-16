@@ -23,7 +23,13 @@ const {
 } = process.env;
 
 const SCENARIO_URLS = {
-	llcss: 'url_path_to_lazyload_css_background_images_template'
+	/**
+	 * The value will hold the url paths
+	 */
+	home: '',
+	llcss: '',
+	llcssNoJs: '',
+	llcssElementor: ''
 }
 
 export { 
