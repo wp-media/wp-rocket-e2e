@@ -21,11 +21,14 @@ BeforeAll(async function (this: ICustomWorld) {
 
     await batchUpdateVRTestUrl({
         optimize: false,
-        url: SCENARIO_URLS
+        urls: SCENARIO_URLS
     });
     await createReference();
     // Update test url request page with wprocket optimizations.
-    await batchUpdateVRTestUrl({optimize: true});
+    await batchUpdateVRTestUrl({
+        optimize: true,
+        urls: SCENARIO_URLS
+    });
 });
 
 Before(async function (this: ICustomWorld) {
