@@ -72,7 +72,7 @@ export type Roles = "alert"|"alertdialog"|"application"|"article"|"banner"|"bloc
 
 export interface VRurlConfig {
     optimize: boolean,
-    url?: {
+    urls?: {
         llcss: string
     }
 }
