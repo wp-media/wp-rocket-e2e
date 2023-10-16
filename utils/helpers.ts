@@ -200,26 +200,48 @@ export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> =>
     const data = await fs.readFile(backstopConfig, 'utf8');
     const jsonData = JSON.parse(data);
 
-    jsonData.scenarios.forEach((scenario: {[key: string]: string | number}) => {
-        if (scenario.label === 'general') {
-            return;
+    let optimize: string = '?nowprocket';
+    let path: string = '';
+    let beforeScript = '';
+
+    if (config.optimize) {
+        optimize = '';
+
+        jsonData.scenarios = [];
+    }
+
+    const urls = config.urls;
+    for (const key in urls) {
+        // Check that path is not empty(meaning home);
+        if (urls[key] !== '') {
+            path = urls[key]
         }
 
-        scenario.url = scenario.url.toString().replace(/\?nowprocket/g, '');
-        
-        if (!config.optimize) {
-            switch(scenario.label) { 
-                case 'llcss': { 
-                    scenario.url = `${WP_BASE_URL}/${config.url.llcss}?nowprocket`
-                   break; 
-                } 
-                default: { 
-                    scenario.url = `${WP_BASE_URL}?nowprocket`
-                   break; 
-                } 
-             } 
+        if(key.includes('NoJs')) {
+            beforeScript = 'disableJavascript.js';
         }
-    });
+
+        jsonData.scenarios.push({
+            label: key,
+            url: `${WP_BASE_URL}/${path}${optimize}`,
+            referenceUrl: "",
+            readyEvent: "",
+            readySelector: "",
+            delay: 0,
+            hideSelectors: [],
+            removeSelectors: [],
+            hoverSelector: "",
+            clickSelector: "",
+            postInteractionWait: 0,
+            selectors: [],
+            selectorExpansion: true,
+            expect: 0,
+            misMatchThreshold: 0.1,
+            requireSameDimensions: true,
+            onReadyScript: "scrollToBottom.js",
+            onBeforeScript: beforeScript
+        });
+    }
 
     // Convert the modified object back to JSON
     const updatedJsonData = JSON.stringify(jsonData, null, 2);
