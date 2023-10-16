@@ -34,7 +34,7 @@ Then('no error in the console different than nowprocket page', async function (t
       expect(consoleMsg1 === consoleMsg2).toBeTruthy();
 });
 
-Then('I must see the correct style in the head.', async function (this: ICustomWorld) {
+Then('I must see the correct style in the head', async function (this: ICustomWorld) {
   const html = await this.page.evaluate(async () => {
     // Scroll to the bottom of page.
     const scrollPage: Promise<void> = new Promise((resolve) => {
