@@ -10,4 +10,5 @@ Feature: C14412 - Should be compatible with Elementor background
         Then I must not see any visual regression 'llcssElementor'
         When I log out
         Then no error in the console different than nowprocket page 'llcssElementor'
+        When I log in
         Then clean up

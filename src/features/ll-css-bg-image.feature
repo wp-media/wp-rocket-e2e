@@ -14,4 +14,5 @@ Feature: C13969 - Should lazyload CSS background images inside internal, and ext
     Scenario: Inspect the element that loads the background image
         When I go to 'lazyload_css_background_images'
         Then I must see the correct style in the head
+        When I log in
         Then clean up
