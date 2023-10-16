@@ -3,6 +3,7 @@ import { ICustomWorld } from "../../common/custom-world";
 
 import { Given, When, Then } from '@cucumber/cucumber';
 import { WP_BASE_URL } from '../../../config/wp.config';
+import { SCENARIO_URLS } from "../../../config/wp.config";
 import { createReference, compareReference } from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
 
@@ -264,4 +265,34 @@ Then('clean up', async function (this: ICustomWorld) {
  */
 Then('I must not see any visual regression {string}', async function (this: ICustomWorld, label: string) {
     await compareReference(label);
+});
+
+Then('no error in the console different than nowprocket page {string}', async function (this: ICustomWorld, label: string) {
+    let consoleMsg1: string, consoleMsg2: string, i: number = 0;
+
+    await this.page.route('**', (route) => {
+        route.continue();
+      });
+    
+      // Listen for console messages
+      this.page.on('console', (msg) => {
+        i += 1;
+        const text = msg.text();
+
+        switch (i) {
+            case 1:
+                consoleMsg1 = text;
+                break;
+            case 2:
+                consoleMsg2 = text;
+                break;
+        }
+      });
+    
+      await this.page.goto(`${WP_BASE_URL}/${SCENARIO_URLS[label]}?nowprocket`);
+      await this.page.waitForLoadState('load', { timeout: 50000 });
+      await this.page.goto(`${WP_BASE_URL}/${SCENARIO_URLS.llcss}`);
+      await this.page.waitForLoadState('load', { timeout: 50000 });
+
+      expect(consoleMsg1 === consoleMsg2).toBeTruthy();
 });
