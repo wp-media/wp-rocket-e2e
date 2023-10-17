@@ -4,7 +4,7 @@ import { Sections } from '../common/sections';
 import { selectors as pluginSelectors } from "./../common/selectors";
 import { PageUtils } from "../../utils/page-utils";
 import { batchUpdateVRTestUrl } from "../../utils/helpers";
-import { createReference } from "../../utils/helpers";
+import { createReference, deleteFolder } from "../../utils/helpers";
 import { SCENARIO_URLS } from "../../config/wp.config";
 
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
@@ -130,6 +130,7 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 
 AfterAll(async function () {
     await browser.close();
+    await deleteFolder('./backstop_data/bitmaps_test');
 });
 
 After({tags: '@llcssbg'}, async function(this: ICustomWorld) {
