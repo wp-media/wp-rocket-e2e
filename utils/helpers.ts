@@ -206,6 +206,7 @@ export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> =>
     let optimize: string = '?nowprocket';
     let path: string;
     let beforeScript = '';
+    let readyScript = '';
 
     if (config.optimize) {
         optimize = '';
@@ -223,9 +224,11 @@ export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> =>
 
         if(key.includes('NoJs')) {
             beforeScript = 'disableJavascript.js';
+            readyScript = '';
         }
         else{
             beforeScript = '';
+            readyScript = config.optimize ? 'scrollToBottom.js' : '';
         }
 
         jsonData.scenarios.push({
@@ -245,7 +248,7 @@ export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> =>
             expect: 0,
             misMatchThreshold: 0.1,
             requireSameDimensions: true,
-            onReadyScript: "scrollToBottom.js",
+            onReadyScript: readyScript,
             onBeforeScript: beforeScript
         });
     }
