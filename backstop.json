@@ -22,7 +22,9 @@
   "engineOptions": {
     "args": [
       "--no-sandbox"
-    ]
+    ],
+    "headless": false,
+    "timeout": 0
   },
   "asyncCaptureLimit": 5,
   "asyncCompareLimit": 50,
