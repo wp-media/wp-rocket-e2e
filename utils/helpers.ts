@@ -224,7 +224,7 @@ export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> =>
 
         if(key.includes('NoJs')) {
             beforeScript = 'disableJavascript.js';
-            readyScript = '';
+            readyScript = 'wait.js';
         }
         else{
             beforeScript = '';
@@ -300,5 +300,21 @@ export const compareReference = async(label: string = ''): Promise<void> => {
         });
     } catch (error) {
         console.error(error);
+    }
+}
+
+/**
+ * Delete a folder.
+ *
+ * @param   {string}   folderPath  Path to folder
+ *
+ * @return  {Promise<void>}
+ */
+export const deleteFolder = async(folderPath: string): Promise<void> => {
+    try {
+        await fs.rmdir(folderPath, { recursive: true });
+        console.log(`Folder "${folderPath}" deleted successfully.`);
+    } catch (error) {
+        console.error(`Error deleting folder "${folderPath}": ${error.message}`);
     }
 }
