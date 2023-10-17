@@ -4,7 +4,8 @@ import { Sections } from '../common/sections';
 import { selectors as pluginSelectors } from "./../common/selectors";
 import { PageUtils } from "../../utils/page-utils";
 import { batchUpdateVRTestUrl } from "../../utils/helpers";
-import { createReference, deleteFolder } from "../../utils/helpers";
+import { deleteFolder } from "../../utils/helpers";
+import backstop from 'backstopjs';
 import { SCENARIO_URLS } from "../../config/wp.config";
 
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
@@ -17,18 +18,21 @@ let browser: ChromiumBrowser;
 setDefaultTimeout(process.env.PWDEBUG ? -1 : 60 * 10000);
 
 BeforeAll(async function (this: ICustomWorld) {
+    await deleteFolder('./backstop_data/bitmaps_test');
     browser = await chromium.launch({ headless: false });
 
-    await batchUpdateVRTestUrl({
-        optimize: false,
-        urls: SCENARIO_URLS
-    });
-    await createReference();
-    // Update test url request page with wprocket optimizations.
-    await batchUpdateVRTestUrl({
-        optimize: true,
-        urls: SCENARIO_URLS
-    });
+    if (process.env.npm_config_vrurl === undefined) {
+        await batchUpdateVRTestUrl({
+            optimize: false,
+            urls: SCENARIO_URLS
+        });
+        await backstop('reference');
+        // Update test url request page with wprocket optimizations.
+        await batchUpdateVRTestUrl({
+            optimize: true,
+            urls: SCENARIO_URLS
+        });
+    }
 });
 
 Before(async function (this: ICustomWorld) {
@@ -130,7 +134,6 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 
 AfterAll(async function () {
     await browser.close();
-    await deleteFolder('./backstop_data/bitmaps_test');
 });
 
 After({tags: '@llcssbg'}, async function(this: ICustomWorld) {
