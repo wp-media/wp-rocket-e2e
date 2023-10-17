@@ -130,4 +130,11 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 
 AfterAll(async function () {
     await browser.close();
-})
+});
+
+After({tags: '@llcssbg'}, async function(this: ICustomWorld) {
+    await this.utils.cleanUp();
+
+    await this.page?.close()
+    await this.context?.close()
+});
