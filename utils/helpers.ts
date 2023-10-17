@@ -156,37 +156,40 @@ export const activateFromPopUp = async(page: Page, state: boolean, selector: str
  *
  * @return  {Promise<void>}
  */
-const updateVRTestUrl = async(url: string = ''): Promise<void> => {
+const updateVRTestUrl = async(url: string): Promise<void> => {
     // Read the JSON file
     const data = await fs.readFile(backstopConfig, 'utf8');
     const jsonData = JSON.parse(data);
 
-    if (url === '') {
-        url = jsonData.scenarios[0].url.replace(/\?nowprocket/g, '');
-        jsonData.scenarios[0].url = url;
+    // Empty scenario.
+    jsonData.scenarios = [];
+
+    let readyScript = '';
+
+    if (!url.includes('nowprocket')) {
+        readyScript = 'scrollToBottom.js';
     }
-    else {
-        // Modify the JSON object
-        jsonData.scenarios.push({
-            label: "general",
-            url: url,
-            referenceUrl: "",
-            readyEvent: "",
-            readySelector: "",
-            delay: 0,
-            hideSelectors: [],
-            removeSelectors: [],
-            hoverSelector: "",
-            clickSelector: "",
-            postInteractionWait: 0,
-            selectors: [],
-            selectorExpansion: true,
-            expect: 0,
-            misMatchThreshold: 0.1,
-            requireSameDimensions: true,
-            onReadyScript: "scrollToBottom.js"
-        });
-    }
+
+    // Modify the JSON object
+    jsonData.scenarios.push({
+        label: "general",
+        url: url,
+        referenceUrl: "",
+        readyEvent: "",
+        readySelector: "",
+        delay: 0,
+        hideSelectors: [],
+        removeSelectors: [],
+        hoverSelector: "",
+        clickSelector: "",
+        postInteractionWait: 0,
+        selectors: [],
+        selectorExpansion: true,
+        expect: 0,
+        misMatchThreshold: 0.1,
+        requireSameDimensions: true,
+        onReadyScript: readyScript
+    });
 
     // Convert the modified object back to JSON
     const updatedJsonData = JSON.stringify(jsonData, null, 2);
@@ -267,19 +270,22 @@ export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> =>
  *
  * @return  {Promise<void>}
  */
-export const createReference = async(url: string = ''): Promise<void> => {
-    url = url !== '' ? url.replace(/http.*\/\/|www\./g, '') : url;
+export const createReference = async(url: string): Promise<void> => {
+    if (url === '') {
+        return;
+    }
+
+    url = url.replace(/http.*\/\/|www\./g, '');
 
     try {
-        if (url !== '') {
-            // Update test url to use nowprocket query string.
-            await updateVRTestUrl(`https://${url}?nowprocket`);
-            // Update test url request page with wprocket optimizations.
-            await updateVRTestUrl();
-        }
+        // Update test url to use nowprocket query string.
+        await updateVRTestUrl(`https://${url}?nowprocket`);
 
         // Use BackstopJS to capture a snapshot of the webpage.
         await backstop('reference');
+
+         // Update test url request page with wprocket optimizations.
+         await updateVRTestUrl(`https://${url}`);
     } catch (error) {
         console.error(error);
     }
@@ -312,7 +318,7 @@ export const compareReference = async(label: string = ''): Promise<void> => {
  */
 export const deleteFolder = async(folderPath: string): Promise<void> => {
     try {
-        await fs.rmdir(folderPath, { recursive: true });
+        await fs.rm(folderPath, { recursive: true });
         console.log(`Folder "${folderPath}" deleted successfully.`);
     } catch (error) {
         console.error(`Error deleting folder "${folderPath}": ${error.message}`);
