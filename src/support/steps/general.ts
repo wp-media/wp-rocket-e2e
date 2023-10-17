@@ -171,11 +171,11 @@ When('I visit site url', async function (this: ICustomWorld) {
  * When I create reference
  */
 When('I create reference', async function (this:ICustomWorld) {
-    if (process.env.npm_config_url === undefined) {
+    if (process.env.npm_config_vrurl === undefined) {
         return;
     }
 
-    await createReference(process.env.npm_config_url);
+    await createReference(process.env.npm_config_vrurl);
 });
 
 /**
