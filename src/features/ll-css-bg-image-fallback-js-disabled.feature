@@ -8,5 +8,3 @@ Feature: C13977 - Should have a fallback for browsers where JavaScript is disabl
         When I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And I save settings 'media' 'lazyloadCssBgImg'
         Then I must not see any visual regression 'llcssNoJs'
-        When I log in
-        Then clean up
