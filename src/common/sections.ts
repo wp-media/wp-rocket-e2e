@@ -199,6 +199,14 @@ export class Sections {
 
         for (const key in this.elements) {
             if(this.isType(key, "checkbox")){
+                if (! await this.page.locator(this.getStringProperty(key, 'target')).isVisible()) {
+                    continue;
+                }
+        
+                if (await this.page.locator(this.getStringProperty(key, 'target')).isDisabled()) {
+                    continue;
+                }
+
                 if (await this.page.locator(this.getElement(key, 'checkbox')).isChecked()) {
                     return false;
                 }
