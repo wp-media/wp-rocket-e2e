@@ -8,13 +8,6 @@ import { diffChecker as diffCheckerExclusions } from '../../../utils/exclusions'
 
 import { diff } from 'json-diff';
 
-
-Given('a previous version of plugin is installed', async function (this: ICustomWorld) {
-    await this.utils.uploadNewPlugin('./plugin/previous_stable.zip');
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-    await expect(this.page).toHaveURL(/action=upload-plugin/); 
-});
-
 Given('I disabled all settings', async function (this: ICustomWorld) {
     await this.utils.disableAllOptions();
 });
