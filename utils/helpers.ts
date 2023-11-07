@@ -225,7 +225,7 @@ export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> =>
             path = '';
         }
 
-        if(key.includes('NoJs')) {
+        if(key.includes('noJs')) {
             beforeScript = 'disableJavascript.js';
             readyScript = 'wait.js';
         }
