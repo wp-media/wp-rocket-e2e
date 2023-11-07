@@ -28,8 +28,8 @@ const SCENARIO_URLS = {
 	 */
 	home: '',
 	llcss: '',
-	llcssNoJs: '',
-	llcssElementor: ''
+	noJsLlcss: '',
+	elementorLlcss: ''
 }
 
 export { 
