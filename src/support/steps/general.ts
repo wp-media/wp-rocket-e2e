@@ -6,6 +6,7 @@ import { WP_BASE_URL } from '../../../config/wp.config';
 import { SCENARIO_URLS } from "../../../config/wp.config";
 import { createReference, compareReference } from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
+import { Page } from '@playwright/test';
 
 /**
  * Performs a WordPress precondition login action.
@@ -232,31 +233,36 @@ Then('I must not see any visual regression {string}', async function (this: ICus
 });
 
 Then('no error in the console different than nowprocket page {string}', async function (this: ICustomWorld, label: string) {
-    let consoleMsg1: string, consoleMsg2: string, i: number = 0;
+    const consoleMsg1 = await getConsoleMsg(this.page, `${WP_BASE_URL}/${SCENARIO_URLS[label]}?nowprocket`);
+    const consoleMsg2 = await getConsoleMsg(this.page, `${WP_BASE_URL}/${SCENARIO_URLS[label]}`);
 
-    await this.page.route('**', (route) => {
-        route.continue();
-      });
-    
-      // Listen for console messages
-      this.page.on('console', (msg) => {
-        i += 1;
-        const text = msg.text();
-
-        switch (i) {
-            case 1:
-                consoleMsg1 = text;
-                break;
-            case 2:
-                consoleMsg2 = text;
-                break;
-        }
-      });
-    
-      await this.page.goto(`${WP_BASE_URL}/${SCENARIO_URLS[label]}?nowprocket`);
-      await this.page.waitForLoadState('load', { timeout: 50000 });
-      await this.page.goto(`${WP_BASE_URL}/${SCENARIO_URLS[label]}`);
-      await this.page.waitForLoadState('load', { timeout: 50000 });
-
-      expect(consoleMsg1 === consoleMsg2).toBeTruthy();
+    if (consoleMsg2.length !== 0) {
+        expect(consoleMsg2).toEqual(consoleMsg1);
+    }
 });
+
+const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> => {
+    const consoleMsg: string[] = [];
+
+    const consoleHandler = (msg): void => {
+        consoleMsg.push(msg.text());
+    };
+
+    const pageErrorHandler = (error: Error): void => {
+        consoleMsg.push(error.message);
+    };
+
+    // Listen for console messages.
+    page.on('console', consoleHandler);
+
+    // Listen for page errors.
+    page.on('pageerror', pageErrorHandler);
+
+    await page.goto(url);
+
+    // Remove the event listeners to prevent duplicate messages.
+    page.off('console', consoleHandler);
+    page.off('pageerror', pageErrorHandler);
+
+    return consoleMsg;
+}
