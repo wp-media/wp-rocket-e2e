@@ -7,6 +7,6 @@ Feature: C14412 - Should be compatible with Elementor background
         And plugin is activated
         When I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And I save settings 'media' 'lazyloadCssBgImg'
-        Then I must not see any visual regression 'llcssElementor'
+        Then I must not see any visual regression 'elementorLlcss'
         When I log out
-        Then no error in the console different than nowprocket page 'llcssElementor'
+        Then no error in the console different than nowprocket page 'elementorLlcss'
