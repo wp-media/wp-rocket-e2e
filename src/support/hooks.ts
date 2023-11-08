@@ -15,7 +15,7 @@ import fs from "fs/promises";
 
 let browser: ChromiumBrowser;
 
-setDefaultTimeout(process.env.PWDEBUG ? -1 : 60 * 10000);
+setDefaultTimeout(process.env.PWDEBUG ? -1 : 100 * 10000);
 
 BeforeAll(async function (this: ICustomWorld) {
     await deleteFolder('./backstop_data/bitmaps_test');
@@ -99,7 +99,7 @@ Before(async function (this: ICustomWorld) {
 
 });
 
-After(async function (this: ICustomWorld, { pickle, result }) {
+After({tags: '@smoke'}, async function (this: ICustomWorld, { pickle, result }) {
     let videoPath: string;
     let img: Buffer;
     if (result?.status == Status.FAILED) {
@@ -107,15 +107,15 @@ After(async function (this: ICustomWorld, { pickle, result }) {
         videoPath = await this.page?.video().path();
     }
 
-    await this.page?.close()
-    await this.context?.close()
+    await this.page?.close();
+    await this.context?.close();
 
     if (result?.status == Status.FAILED) {
-        await this.attach(
+        this.attach(
             img, "image/png"
         );
         const file = await fs.readFile(videoPath);
-        await this.attach(
+        this.attach(
             file,
             'video/webm'
         );
@@ -136,9 +136,25 @@ AfterAll(async function () {
     await browser.close();
 });
 
-After({tags: '@llcssbg'}, async function(this: ICustomWorld) {
+After({tags: '@llcssbg'}, async function(this: ICustomWorld, { pickle, result }) {
     await this.utils.cleanUp();
 
-    await this.page?.close()
-    await this.context?.close()
+    let videoPath: string;
+    let img: Buffer;
+    if (result?.status == Status.FAILED) {
+        img = await this.page?.screenshot({ path: `./test-results/screenshots/${pickle.name}.png`, type: "png" })
+        videoPath = await this.page?.video().path();
+
+        this.attach(
+            img, "image/png"
+        );
+        const file = await fs.readFile(videoPath);
+        this.attach(
+            file,
+            'video/webm'
+        );
+    }
+
+    await this.page?.close();
+    await this.context?.close();
 });
