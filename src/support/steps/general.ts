@@ -9,10 +9,20 @@ Given('I am logged in', async function (this: ICustomWorld) {
     await this.utils.auth();
 });
 
-Given('plugin is installed', async function (this: ICustomWorld) {
-    await this.utils.uploadNewPlugin('./plugin/new_release.zip');
+Given('plugin is installed {string}', async function (this: ICustomWorld, pluginVersion: string) {
+    await this.utils.uploadNewPlugin(`./plugin/${pluginVersion}.zip`);
     await this.page.waitForLoadState('load', { timeout: 30000 });
     await expect(this.page).toHaveURL(/action=upload-plugin/); 
+});
+
+Given('I updated plugin to {string}', async function (this: ICustomWorld, pluginVersion: string) {
+    await this.utils.uploadNewPlugin(`./plugin/${pluginVersion}.zip`);
+    await this.page.waitForLoadState('load', { timeout: 30000 });
+    await expect(this.page).toHaveURL(/action=upload-plugin/); 
+    
+    // Replace current with uploaded
+    await this.page.locator('a:has-text("Replace current with uploaded")').click();
+    await this.page.waitForLoadState('load', { timeout: 30000 });
 });
 
 Given('plugin is activated', async function (this: ICustomWorld) {

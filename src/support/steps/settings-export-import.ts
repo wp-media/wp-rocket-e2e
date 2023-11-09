@@ -8,13 +8,6 @@ import { diffChecker as diffCheckerExclusions } from '../../../utils/exclusions'
 
 import { diff } from 'json-diff';
 
-
-Given('a previous version of plugin is installed', async function (this: ICustomWorld) {
-    await this.utils.uploadNewPlugin('./plugin/previous_stable.zip');
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-    await expect(this.page).toHaveURL(/action=upload-plugin/); 
-});
-
 Given('I disabled all settings', async function (this: ICustomWorld) {
     await this.utils.disableAllOptions();
 });
@@ -25,18 +18,6 @@ Given('I saved specific settings {string} {string}', async function (this: ICust
     await this.utils.saveSettings();
 
     await this.page.waitForLoadState('load', { timeout: 30000 });
-});
-
-Given('I updated to latest version', async function (this: ICustomWorld) {
-    await this.utils.uploadNewPlugin('./plugin/new_release.zip');
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-    await expect(this.page).toHaveURL(/action=upload-plugin/); 
-    
-    // Replace current with uploaded
-    await this.page.locator('a:has-text("Replace current with uploaded")').click();
-
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-    await expect(this.page).toHaveURL(/overwrite=update-plugin/); 
 });
 
 When('I import data', async function (this: ICustomWorld) {

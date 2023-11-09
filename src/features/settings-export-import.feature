@@ -1,11 +1,11 @@
-@smoke @local
+@smoke @local @export
 Feature: C2148 - Should not change the content of existing fields
 
     Background:
         Given I am logged in
 
     Scenario: Data imported correctly
-        Given a previous version of plugin is installed
+        Given plugin is installed 'previous_stable'
         And plugin is activated
         And I disabled all settings
         And I saved specific settings 'cache' 'cacheLoggedUser'
@@ -21,7 +21,7 @@ Feature: C2148 - Should not change the content of existing fields
         Then data '2' is exported correctly
 
     Scenario: Data exported correctly on latest version
-        Given I updated to latest version
+        Given I updated plugin to 'new_release'
         And I disabled all settings
         And I saved specific settings 'media' 'lazyload'
         When I export data '3'

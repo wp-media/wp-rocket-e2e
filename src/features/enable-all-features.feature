@@ -3,7 +3,7 @@ Feature: C1205 - Enabling all WP Rocket features should not throw any fatal erro
 
     Background:
         Given I am logged in
-        And plugin is installed
+        And plugin is installed 'new_release'
         And plugin is activated
 
     Scenario: Enable all features
