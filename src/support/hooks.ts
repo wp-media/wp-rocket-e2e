@@ -5,7 +5,6 @@ import { selectors as pluginSelectors } from "./../common/selectors";
 import { PageUtils } from "../../utils/page-utils";
 
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
-import fs from "fs/promises";
 // import wp, {cp, deleteTransient, generateUsers, resetWP, rm, unzip} from "../../utils/commands";
 // import {configurations, getWPDir} from "../../utils/configurations";
 
@@ -81,29 +80,27 @@ Before(async function (this: ICustomWorld) {
 
 });
 
-After(async function (this: ICustomWorld, { pickle, result }) {
-    let videoPath: string;
-    let img: Buffer;
+After({tags: '@general'}, async function (this: ICustomWorld, { pickle, result }) {
     if (result?.status == Status.FAILED) {
-        img = await this.page?.screenshot({ path: `./test-results/screenshots/${pickle.name}.png`, type: "png" })
-        videoPath = await this.page?.video().path();
+        await this.utils.createScreenShot(this, pickle);
     }
 
     await this.page?.close()
     await this.context?.close()
 
+    //  await resetWP();
+
+});
+
+After({tags: '@cleanup'}, async function (this: ICustomWorld, { pickle, result }) {
+    await this.utils.cleanUp();
+
     if (result?.status == Status.FAILED) {
-        await this.attach(
-            img, "image/png"
-        );
-        const file = await fs.readFile(videoPath);
-        await this.attach(
-            file,
-            'video/webm'
-        );
+        await this.utils.createScreenShot(this, pickle);
     }
 
-    //  await resetWP();
+    await this.page?.close()
+    await this.context?.close()
 
 });
 
