@@ -1,4 +1,4 @@
-@smoke @local
+@smoke @local @cleanup
 Feature: C1205 - Enabling all WP Rocket features should not throw any fatal errors
 
     Background:
@@ -10,7 +10,6 @@ Feature: C1205 - Enabling all WP Rocket features should not throw any fatal erro
         When I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And I enable all settings
         And I log out
-        And I visit site url
         Then page loads successfully
+        When I log in
         Then I must not see any error in debug.log
-        Then clean up

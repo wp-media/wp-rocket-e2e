@@ -1,4 +1,4 @@
-@smoke @local
+@smoke @local @cleanup
 Feature: C11856 - Should roll back to the last previous major version when using the roll back functionality
 
     Background:
@@ -13,4 +13,3 @@ Feature: C11856 - Should roll back to the last previous major version when using
         Then I should see 'Plugin updated successfully.'
         Then rollback version must be the same as in the button
         Then I must not see any error in debug.log
-        Then clean up
