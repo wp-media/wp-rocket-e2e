@@ -51,42 +51,42 @@ Then('data is imported correctly', async function (this: ICustomWorld) {
     // No option is enabled in file optimization section.
     await this.sections.set("fileOptimization").visit();
     const fileOptOptions = await this.sections.areOptionsDisabled();
-    expect(fileOptOptions).toBeTruthy();
+    expect(fileOptOptions, 'File Optimization: All options are not disabled').toBeTruthy();
 
     // No option is enabled in media section.
     await this.sections.set("media").visit();
     const mediaOptions = await this.sections.areOptionsDisabled();
-    expect(mediaOptions).toBeTruthy();
+    expect(mediaOptions, 'Media: All options are not disabled').toBeTruthy();
 
     // No option is enabled in preload section.
     await this.sections.set("preload").visit();
     const preloadOptions = await this.sections.areOptionsDisabled();
-    expect(preloadOptions).toBeTruthy();
+    expect(preloadOptions, 'Preload: All options are not disabled').toBeTruthy();
 
     // No rule is set in advanced rules section.
     await this.sections.set("advancedRules").visit();
     const advancedRulesOptions = await this.sections.areTextBoxesEmpty();
-    expect(advancedRulesOptions).toBeTruthy();
+    expect(advancedRulesOptions, 'Advanced Rules: All textboxes are not empty').toBeTruthy();
 
     // No option is enabled in database section.
     await this.sections.set("database").visit();
     const databaseOptions = await this.sections.areOptionsDisabled();
-    expect(databaseOptions).toBeTruthy();
+    expect(databaseOptions, 'Database: All options are not disabled').toBeTruthy();
 
     // No option is enabled in cdn section.
     await this.sections.set("cdn").visit();
     const cdnOptions = await this.sections.areOptionsDisabled();
-    expect(cdnOptions).toBeTruthy();
+    expect(cdnOptions, 'CDN: All options are not disabled').toBeTruthy();
 
     // No option is enabled in heartbeat section.
     await this.sections.set("heartbeat").visit();
     const heartbeatOptions = await this.sections.areOptionsDisabled();
-    expect(heartbeatOptions).toBeTruthy();
+    expect(heartbeatOptions, 'Heartbeat: All options are not disabled').toBeTruthy();
 
     // No option is enabled in addons section.
     await this.sections.set("addons").visit();
     const addonsOptions = await this.sections.areOptionsDisabled();
-    expect(addonsOptions).toBeTruthy();
+    expect(addonsOptions, 'Add-ons: All options are not disabled').toBeTruthy();
 });
 
 Then('data {string} is exported correctly', async function (fileNo: string) {
