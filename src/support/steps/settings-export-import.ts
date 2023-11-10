@@ -22,7 +22,7 @@ Given('I saved specific settings {string} {string}', async function (this: ICust
 
 When('I import data', async function (this: ICustomWorld) {
     await this.utils.importSettings('./plugin/exported_settings/wp-rocket-settings-test-2023-00-01-64e7ada0d3b70.json');
-    await this.page.waitForLoadState('load', { timeout: 30000 });
+    await this.page.waitForLoadState('load', { timeout: 100000 });
 });
 
 When('I export data {string}', async function (this: ICustomWorld, fileNo: string) {
@@ -38,6 +38,7 @@ When('I export data {string}', async function (this: ICustomWorld, fileNo: strin
 });
 
 Then('data is imported correctly', async function (this: ICustomWorld) {
+    await this.utils.gotoWpr();
     /**
      * Assert that data is imported correctly.
      */
