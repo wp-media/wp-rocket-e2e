@@ -1,9 +1,11 @@
 import type {Page} from '@playwright/test';
 import type {Sections} from '../src/common/sections';
-import type {Locators, Selector} from './types';
+import type {Locators, Selector, Pickle} from './types';
+import {expect} from "@playwright/test";
+import { ICustomWorld } from '../src/common/custom-world';
+import fs from "fs/promises";
 
 import {WP_BASE_URL, WP_PASSWORD, WP_USERNAME} from '../config/wp.config';
-import {configurations, ServerType} from "./configurations";
 
 export class PageUtils {
     /**
@@ -265,10 +267,9 @@ export class PageUtils {
         await this.page.locator('#wp-admin-bar-my-account').hover();
         await this.page.waitForSelector('#wp-admin-bar-logout');
         await this.page.locator('#wp-admin-bar-logout a').click();
-        if(configurations.type === ServerType.external) {
-            await this.page.waitForTimeout(3000);
-        }
-        await this.page.click('#user_login');
+  
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+        await this.page.waitForTimeout(3000);
     }
 
     /**
@@ -279,6 +280,10 @@ export class PageUtils {
     public  auth = async (): Promise<void> => {
         if(! this.page.url().includes('wp-login.php')) {
             await this.visitPage('wp-admin');
+        }
+
+        if(! await this.page.locator('#user_login').isVisible()) {
+            return ;
         }
         await this.page.waitForTimeout(200);
         await this.wpAdminLogin();
@@ -451,5 +456,76 @@ export class PageUtils {
         await this.page.waitForSelector('#wpr-options-submit');
         // save settings
         await this.page.locator('#wpr-options-submit').click();
+    }
+
+    /**
+     * Performs a clean up(Remove WP Rocket and maybe resetting the test env)
+     *
+     * @return  {Promise<void>}
+     */
+    public cleanUp = async (): Promise<void> => {
+        await this.visitPage('wp-admin');
+        await this.wpAdminLogout();
+        await this.auth();
+
+        // Confirm Dialog Box.
+        this.page.on('dialog', async(dialog) => {
+            expect(dialog.type()).toContain('confirm');
+            expect(dialog.message()).toContain('Are you sure you want to delete WP Rocket and its data?');
+            await dialog.accept();
+        });
+
+        // Goto plugins page.
+        await this.gotoPlugin();
+
+        if (!await this.page.getByRole('cell', { name: 'WP Rocket Settings | FAQ | Docs | Support | Deactivate WP Rocket' }).getByRole('strong').isVisible() && !await this.page.getByRole('cell', { name: 'Activate WP Rocket | Delete WP Rocket' }).getByRole('strong').isVisible()) {
+            return;
+        }
+
+        // Ensure WPR is deactivated.
+        await this.togglePluginActivation('wp-rocket', false);
+
+        // Check for deactivation modal.
+        if (await this.page.locator('label[for=deactivate]').isVisible()) {
+            await this.page.locator('label[for=deactivate]').click();
+            await this.page.locator('text=Confirm').click();
+        }
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Delete WPR.
+        await this.page.locator( '#delete-wp-rocket' ).click();
+
+        if (await this.page.getByRole('button', { name: 'Yes, delete these files and data' }).isVisible()) {
+            await this.page.getByRole('button', { name: 'Yes, delete these files and data' }).click();
+            await expect(this.page.locator('#activate-wp-rocket')).toBeHidden();
+        }  
+
+        // Assert that WPR is deleted successfully
+        await this.page.waitForSelector('#wp-rocket-deleted');
+        await expect(this.page.locator('#wp-rocket-deleted')).toBeVisible(); 
+    }
+
+    /**
+     * Create cucumber screenshot.
+     *
+     * @param   {ICustomWorld}     world   ICustomWorld Interface
+     * @param   {Pickle}  pickle  Pickle Object.
+     *
+     * @return  {Promise<void>}
+     */
+    public async createScreenShot(world: ICustomWorld, pickle: Pickle): Promise<void> {        
+        const img: Buffer = await this.page?.screenshot({ path: `./test-results/screenshots/${pickle.name}.png`, type: "png" })
+        const videoPath: string = await this.page?.video().path();
+
+        world.attach(
+            img, "image/png"
+        );
+
+        const file = await fs.readFile(videoPath);
+        world.attach(
+            file,
+            'video/webm'
+        );
     }
 }
