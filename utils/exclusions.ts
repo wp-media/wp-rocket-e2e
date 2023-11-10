@@ -34,5 +34,10 @@ export const diffChecker = [
     "delay_js",
     "minify_concatenate_css",
     "delay_js_exclusions_selected",
-    "delay_js_exclusions_selected_exclusions"
+    "delay_js_exclusions_selected_exclusions",
+    "license",
+    "secret_cache_key",
+    "minify_css_key",
+    "minify_js_key",
+    "version",
 ];
