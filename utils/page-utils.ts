@@ -465,7 +465,6 @@ export class PageUtils {
      */
     public cleanUp = async (): Promise<void> => {
         await this.visitPage('wp-admin');
-        await this.wpAdminLogout();
         await this.auth();
 
         // Confirm Dialog Box.
