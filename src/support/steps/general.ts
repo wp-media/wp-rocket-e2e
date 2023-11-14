@@ -261,6 +261,26 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
     await page.goto(url);
     await page.waitForLoadState('load', { timeout: 30000 });
 
+    await page.evaluate(async () => {
+        // Scroll to the bottom of page.
+        const scrollPage: Promise<void> = new Promise((resolve) => {
+            let totalHeight = 0;
+            const distance = 100;
+            const timer = setInterval(() => {
+            const scrollHeight = document.body.scrollHeight;
+            window.scrollBy(0, distance);
+            totalHeight += distance;
+    
+            if(totalHeight >= scrollHeight){
+                clearInterval(timer);
+                resolve();
+            }
+            }, 500);
+        });
+    
+        await scrollPage;
+      });
+
     // Remove the event listeners to prevent duplicate messages.
     page.off('console', consoleHandler);
     page.off('pageerror', pageErrorHandler);
