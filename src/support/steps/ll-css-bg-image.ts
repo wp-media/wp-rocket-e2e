@@ -55,5 +55,7 @@ Then('I must see the correct style in the head', async function (this: ICustomWo
     console.log("No matching style");
   }
 
+  console.log(failMessage);
+
   expect(isMatch, failMessage).toBeTruthy();
 });
