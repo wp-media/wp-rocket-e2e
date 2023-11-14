@@ -38,12 +38,15 @@ Then('I must see the correct style in the head', async function (this: ICustomWo
   const matches = rocketPairs.match(regex);
   
   let isMatch = true;
+  let failMessage: string = '';
+
   if (matches) {
     for (const match of matches) {
       let unescapedString = match.replace(/\\\//g, '/');
       unescapedString = JSON.parse(`"${unescapedString}"`);
       // Check if Image is LL'ed
       if (!styles.includes(unescapedString)) {
+          failMessage = `The variable: ${unescapedString} is not lazy loaded in wpr-lazyload-bg`
           isMatch = false;
           break;
       }
@@ -52,5 +55,5 @@ Then('I must see the correct style in the head', async function (this: ICustomWo
     console.log("No matching style");
   }
 
-  expect(isMatch).toBeTruthy();
+  expect(isMatch, failMessage).toBeTruthy();
 });
