@@ -99,32 +99,6 @@ Before(async function (this: ICustomWorld) {
 
 });
 
-After({tags: '@smoke'}, async function (this: ICustomWorld, { pickle, result }) {
-    let videoPath: string;
-    let img: Buffer;
-    if (result?.status == Status.FAILED) {
-        img = await this.page?.screenshot({ path: `./test-results/screenshots/${pickle.name}.png`, type: "png" })
-        videoPath = await this.page?.video().path();
-    }
-
-    await this.page?.close();
-    await this.context?.close();
-
-    if (result?.status == Status.FAILED) {
-        this.attach(
-            img, "image/png"
-        );
-        const file = await fs.readFile(videoPath);
-        this.attach(
-            file,
-            'video/webm'
-        );
-    }
-
-    //  await resetWP();
-
-});
-
 /**
  * To uncomment during implementation of cli
  */
