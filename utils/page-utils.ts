@@ -1,3 +1,13 @@
+/**
+ * @fileoverview
+ * This module provides utility functions for interacting with Playwright's Page class in the context of WordPress testing.
+ *
+ * @requires {@link @playwright/test}
+ * @requires {@link ../src/common/sections}
+ * @requires {@link ./types}
+ * @requires {@link ../config/wp.config}
+ * @requires {@link ./configurations}
+ */
 import type {Page} from '@playwright/test';
 import type {Sections} from '../src/common/sections';
 import type {Locators, Selector} from './types';
@@ -5,11 +15,14 @@ import type {Locators, Selector} from './types';
 import {WP_BASE_URL, WP_PASSWORD, WP_USERNAME} from '../config/wp.config';
 import {configurations, ServerType} from "./configurations";
 
+/**
+ * Utility class for interacting with a Playwright Page instance in WordPress testing.
+ */
 export class PageUtils {
     /**
      * Page instance
-     * 
-     * @property Page
+     *
+     * @property {Page}
      */
 	readonly page: Page;
 
@@ -35,10 +48,10 @@ export class PageUtils {
     private sections: Sections;
 
     /**
-     * Instatiate the class.
+     * Instantiate the class.
      *
-     * @param page Page instance.
-     * @param sections Sections instance.
+     * @param {Page} page - Page instance.
+     * @param {Sections} sections - Sections instance.
      */
     constructor( page: Page, sections: Sections ){
         this.page = page;
@@ -55,9 +68,9 @@ export class PageUtils {
     }
 
     /**
-     * Performs a Login action on Wordpress.
+     * Performs a Login action on WordPress.
      *
-     * @return  {Promise<void>}
+     * @return {Promise<void>}
      */
     public wpAdminLogin = async (): Promise<void> => {
         // Fill username & password.
@@ -73,7 +86,7 @@ export class PageUtils {
     /**
      * Performs a goto action on parsed url.
      *
-     * @param pageUrl Page url.
+     * @param {string} pageUrl Page url.
      *
      * @return  {Promise<void>}
      */
@@ -431,7 +444,7 @@ export class PageUtils {
     /**
      * Performs setting import action in WP Rocket.
      *
-     * @param file file to be imported.
+     * @param {string} file file to be imported.
      *
      * @return  {Promise<void>}
      */
@@ -445,7 +458,7 @@ export class PageUtils {
     /**
      * Performs the save settings action on WP Rocket.
      *
-     * @return  {Promise<void>}
+     * @return {Promise<void>}
      */
     public saveSettings = async (): Promise<void> => {
         await this.page.waitForSelector('#wpr-options-submit');

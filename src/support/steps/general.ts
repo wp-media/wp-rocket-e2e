@@ -1,3 +1,15 @@
+/**
+ * @fileoverview
+ * This module contains Cucumber step definitions using Playwright for various actions and assertions related to WP Rocket.
+ * It includes steps for logging in, installing, activating, logging out, visiting pages, clicking buttons, enabling settings,
+ * creating references, checking for specific text, debugging, and cleaning up.
+ *
+ * @requires {@link ../../common/custom-world}
+ * @requires {@link @playwright/test}
+ * @requires {@link @cucumber/cucumber}
+ * @requires {@link ../../../config/wp.config}
+ * @requires {@link ../../../utils/helpers}
+ */
 import { expect } from "@playwright/test";
 import { ICustomWorld } from "../../common/custom-world";
 
@@ -5,31 +17,49 @@ import { Given, When, Then } from '@cucumber/cucumber';
 import { WP_BASE_URL } from '../../../config/wp.config';
 import { createReference, compareReference } from "../../../utils/helpers";
 
+/**
+ * Executes the step to log in.
+ */
 Given('I am logged in', async function (this: ICustomWorld) {
     await this.utils.auth();
 });
 
+/**
+ * Executes the step to install the WP Rocket plugin.
+ */
 Given('plugin is installed', async function (this: ICustomWorld) {
     await this.utils.uploadNewPlugin('./plugin/new_release.zip');
     await this.page.waitForLoadState('load', { timeout: 30000 });
     await expect(this.page).toHaveURL(/action=upload-plugin/); 
 });
 
+/**
+ * Executes the step to activate the WP Rocket plugin.
+ */
 Given('plugin is activated', async function (this: ICustomWorld) {
     // Activate WPR
     await this.page.waitForSelector('a:has-text("Activate Plugin")');
     await this.page.locator('a:has-text("Activate Plugin")').click();
 });
 
+/**
+ * Executes the step to log in.
+ */
 When('I log in', async function (this: ICustomWorld) {
     await this.utils.auth();
 });
 
+/**
+ * Executes the step to visit a specific page.
+ */
 When('I go to {string}', async function (this: ICustomWorld, page) {
     await this.utils.visitPage(page);
     await this.page.waitForLoadState('load', { timeout: 100000 });
 });
 
+/**
+ * Executes the step to click on a specific button.
+ */
 When('I click on {string}', async function (this: ICustomWorld, button) {
     if (button === '.wpr-tools:nth-child(4) a') {
         /**
@@ -49,6 +79,9 @@ When('I click on {string}', async function (this: ICustomWorld, button) {
     await this.page.waitForLoadState('load', { timeout: 100000 });
 });
 
+/**
+ * Executes the step to enable all settings.
+ */
 When('I enable all settings', async function (this: ICustomWorld) {
     /**
      * Enable all settings and save, 
@@ -56,15 +89,24 @@ When('I enable all settings', async function (this: ICustomWorld) {
     await this.utils.enableAllOptions();
 });
 
+/**
+ * Executes the step to log out.
+ */
 When('I log out', async function (this: ICustomWorld) {
     await this.utils.wpAdminLogout();
     await this.page.waitForLoadState('load', { timeout: 30000 });
 });
 
+/**
+ * Executes the step to visit the site URL.
+ */
 When('I visit site url', async function (this: ICustomWorld) {
     await this.page.goto(WP_BASE_URL);
 });
 
+/**
+ * Executes the step to create a reference.
+ */
 When('I create reference', async function (this:ICustomWorld) {
     if (process.env.npm_config_url === undefined) {
         return;
@@ -73,14 +115,24 @@ When('I create reference', async function (this:ICustomWorld) {
     await createReference(process.env.npm_config_url);
 });
 
+/**
+ * Executes the step to assert the presence of specific text.
+ */
 Then('I should see {string}', async function (this: ICustomWorld, text) {
     await expect(this.page.getByText(text)).toBeVisible();
 });
 
+/**
+ * Executes the step to check for errors in debug.log.
+ */
 Then('I must not see any error in debug.log', async function (this: ICustomWorld){
     // Assert that there is no related error in debug.log
     await expect(this.page.locator('#wpr_debug_log_notice')).toBeHidden();
 });
+
+/**
+ * Executes the step to clean up WP Rocket.
+ */
 
 Then('clean up', async function (this: ICustomWorld) {
 
@@ -122,6 +174,9 @@ Then('clean up', async function (this: ICustomWorld) {
     await expect(this.page.locator('#wp-rocket-deleted')).toBeVisible(); 
 });
 
+/**
+ * Executes the step to check for visual regression.
+ */
 Then('I must not see any visual regression', async function (this: ICustomWorld) {
     await compareReference();
 });

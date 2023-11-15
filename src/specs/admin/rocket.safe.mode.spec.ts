@@ -1,14 +1,33 @@
+/**
+ * @fileOverview Safe Mode Test Suite
+ * @module SafeMode
+ * @requires {@link https://github.com/microsoft/playwright/blob/main/docs/test.md @playwright/test}
+ * @requires ../common/safe.mode.disabled.options
+ * @requires ../common/deactivation.modal
+ * @requires ../common/safe.mode.disabled.options.check
+ */
+
 import { test, expect } from '@playwright/test';
 
 /**
- * Local deps.
+ * Local dependencies.
  */
 import { toggleSafeModeDisabledOptions } from '../common/safe.mode.disabled.options';
 import { deactivationModal } from '../common/deactivation.modal';
 import { checkDisabledOptions } from '../common/safe.mode.disabled.options.check';
 
+/**
+ * Represents the Safe Mode test suite.
+ * @function
+ */
 const safeMode = () => {
     test('should disable specific options on safe mode', async ( { page } ) => {
+    /**
+     * Test case to disable specific options on safe mode.
+     * @memberOf SafeMode
+     * @async
+     * @param {Object} context - Playwright browser context.
+     */
 
         await page.goto('/wp-admin/options-general.php?page=wprocket#dashboard');
 

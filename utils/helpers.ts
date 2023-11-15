@@ -1,3 +1,15 @@
+/**
+ * @fileoverview
+ * This module provides utility functions for file operations, sleep, and interaction with Playwright for testing.
+ * It includes functions for reading, writing, and checking the existence of files, as well as functions related to UI interactions.
+ *
+ * @requires {@link os}
+ * @requires {@link fs/promises}
+ * @requires {@link @playwright/test}
+ * @requires {@link backstopjs}
+ * @requires {@link ../utils/types}
+ * @requires {@link ./exclusions}
+ */
 import os from 'os';
 import fs from 'fs/promises';
 import type { Page } from '@playwright/test';
@@ -7,9 +19,18 @@ import backstop from 'backstopjs';
 import { ExportedSettings } from '../utils/types';
 import { uiReflectedSettings } from './exclusions';
 
+/**
+ * The user's home directory.
+ *
+ * @type {string}
+ * @constant
+ */
 const homeDir: string = os.homedir();
 let installPath: string;
 
+/**
+ * Determine the installation path based on the operating system.
+ */
 switch(os.platform()) { 
     case 'linux': { 
        installPath = 'wp-env';
@@ -21,12 +42,19 @@ switch(os.platform()) {
     } 
 }
 
+/**
+ * Pause execution for the specified duration.
+ *
+ * @param {number} ms - The duration to sleep in milliseconds.
+ * @returns {Promise<void>} - A Promise that resolves after sleeping for the specified duration.
+ */
 export const sleep = async (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms));
 
 /**
- * 
- * @param file String File name.
- * @returns String Absolute path to give file from OS.
+ * Get the absolute path to a file in the user's home directory.
+ *
+ * @param {string} file - The file name.
+ * @returns {Promise<string>} - A Promise that resolves to the absolute path of the file.
  */
 const getDir = async (file: string): Promise<string> => {
     let dir: string;
@@ -37,18 +65,21 @@ const getDir = async (file: string): Promise<string> => {
 }
 
 /**
- * 
- * @param file Path to file to be read.
- * @returns String File content.
+ * Read the content of a file.
+ *
+ * @param {string} file - The path to the file to be read.
+ * @returns {Promise<string>} - A Promise that resolves to the content of the file.
  */
 export const readFile = async (file: string): Promise<string> => {
     return await fs.readFile(await getDir(file), 'utf8');
 }
 
 /**
- * 
- * @param file Path to file to be written.
- * @param data Data to be written to file.
+ * Write data to a file.
+ *
+ * @param {string} file - The path to the file to be written.
+ * @param {string} data - The data to be written to the file.
+ * @returns {Promise<void>} - A Promise that resolves after writing to the file.
  */
 export const writeToFile = async (file: string, data: string): Promise<void> => {
     await fs.writeFile(await getDir(file), data);
@@ -56,9 +87,10 @@ export const writeToFile = async (file: string, data: string): Promise<void> => 
 }
 
 /**
- * 
- * @param file Path to file.
- * @returns bool.
+ * Check if a file exists.
+ *
+ * @param {string} file - The path to the file.
+ * @returns {Promise<boolean>} - A Promise that resolves to true if the file exists, false otherwise.
  */
 export const fileExist = async (file: string): Promise<boolean> => {
     try {
@@ -70,11 +102,11 @@ export const fileExist = async (file: string): Promise<boolean> => {
 }
 
 /**
- * Checks if WP Rocket is active if config file exists.
- * 
- * Function to be removed.
- * 
- * @returns bool.
+ * Check if WP Rocket is active by verifying the existence of the configuration file.
+ *
+ * @deprecated This function is intended to be removed.
+ *
+ * @returns {Promise<boolean>} - A Promise that resolves to true if WP Rocket is active, false otherwise.
  */
 export const isRocketActive = async (): Promise<boolean> => {
     try {
@@ -86,19 +118,21 @@ export const isRocketActive = async (): Promise<boolean> => {
 }
 
 /**
- * Read file content
+ * Read the content of any file.
+ *
+ * @param {string} file - The path to the file to be read.
+ * @returns {Promise<string>} - A Promise that resolves to the content of the file.
  */
 export const readAnyFile = async (file: string): Promise<string> => {
     return await fs.readFile(file, 'utf8');
 }
 
 /**
- * Check that settings is exported correctly.
+ * Check that settings are exported correctly, excluding a specified option.
  *
- * @param exported_settings  Object of exported settings.
- * @param exception          Object key to exclude from check.
- *
- * @return True if settings is exported correctly; Otherwise false.
+ * @param {ExportedSettings} exportedSettings - Object of exported settings.
+ * @param {string} exception - Object key to exclude from the check.
+ * @returns {Promise<boolean>} - A Promise that resolves to true if settings are exported correctly, false otherwise.
  */
 export const isExportedCorrectly = async (exportedSettings: ExportedSettings, exception: string): Promise< boolean > => {
     for (const key in exportedSettings) {
@@ -117,26 +151,24 @@ export const isExportedCorrectly = async (exportedSettings: ExportedSettings, ex
 }
 
 /**
- * Checks if an input element is enabled.
+ * Check if an input element is enabled.
  *
- * @param page Page object.
- * @param selector Element selector.
- *
- * @return True if input element is enabled; Otherwise false.
+ * @param {Page} page - The Page object.
+ * @param {string} selector - The element selector.
+ * @returns {Promise<boolean>} - A Promise that resolves to true if the input element is enabled, false otherwise.
  */
+await page.waitForSelector(selector);
 export const isElementEnabled = async (page: Page, selector: string): Promise<boolean> => {
-    await page.waitForSelector(selector);
     return await page.isEnabled(selector);
 }
 
 /**
- * Performs the activation click action on WPR option popup.
+ * Perform the activation click action on WPR option popup.
  *
- * @param page Page object.
- * @param state Parent element state.
- * @param selector Element selector.
- *
- * @return  {Promise<void>}
+ * @param {Page} page - The Page object.
+ * @param {boolean} state - Parent element state.
+ * @param {string} selector - The element selector.
+ * @returns {Promise<void>} - A Promise that resolves after performing the activation click action.
  */
 export const activateFromPopUp = async(page: Page, state: boolean, selector: string): Promise<void> => {
     if (!state) {
@@ -148,11 +180,10 @@ export const activateFromPopUp = async(page: Page, state: boolean, selector: str
 }
 
 /**
- * Update backstopjs scenario url.
+ * Update backstopjs scenario URL.
  *
- * @param   {string}   url  Updated url.
- *
- * @return  {Promise<void>}
+ * @param {string} url - Updated URL.
+ * @returns {Promise<void>} - A Promise that resolves after updating the backstopjs scenario URL.
  */
 const updateVRTestUrl = async(url: string = ''): Promise<void> => {
     const fileName = './backstop.json';
@@ -176,11 +207,10 @@ const updateVRTestUrl = async(url: string = ''): Promise<void> => {
 }
 
 /**
- * Create reference snapshot for backstopjs to use during test.
+ * Create a reference snapshot for backstopjs to use during testing.
  *
- * @param   {string}   url  Page url to create reference.
- *
- * @return  {Promise<void>}
+ * @param {string} url - Page URL to create a reference.
+ * @returns {Promise<void>} - A Promise that resolves after creating a reference snapshot.
  */
 export const createReference = async(url: string): Promise<void> => {
     url = url.replace(/http.*\/\/|www\./g, '');
@@ -196,9 +226,9 @@ export const createReference = async(url: string): Promise<void> => {
 }
 
 /**
- * Compare reference snapshot with latest snapshot.
+ * Compare a reference snapshot with the latest snapshot.
  *
- * @return  {<Promise><void>}
+ * @returns {Promise<void>} - A Promise that resolves after comparing snapshots.
  */
 export const compareReference = async(): Promise<void> => {
     try {
