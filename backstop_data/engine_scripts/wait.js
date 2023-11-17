@@ -1,3 +1,3 @@
 module.exports = async (page) => {
-    await page.waitForTimeout(10000); 
+    await page.waitForTimeout(15000); 
 };
