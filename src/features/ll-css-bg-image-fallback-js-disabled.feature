@@ -1,4 +1,4 @@
-@llcssbg
+@llcssbg @setup
 Feature: C13977 - Should have a fallback for browsers where JavaScript is disabled
 
     Scenario: Open the page template and compare to nowprocket with javascript disabled

@@ -1,4 +1,4 @@
-@llcssbg
+@llcssbg @setup
 Feature: C13969 - Should lazyload CSS background images inside internal, and external CSS
     Background:
         Given I am logged in

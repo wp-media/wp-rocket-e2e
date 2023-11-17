@@ -1,4 +1,4 @@
-@llcssbg
+@llcssbg @setup
 Feature: C14412 - Should be compatible with Elementor background
 
     Scenario: Enable LL BG Images and check page template
