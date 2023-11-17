@@ -1,3 +1,15 @@
+/**
+ * @fileoverview
+ * This module contains Cucumber step definitions using Playwright for various actions and assertions related to WP Rocket.
+ * It includes steps for logging in, installing, activating, logging out, visiting pages, clicking buttons, enabling settings,
+ * creating references, checking for specific text, debugging, and cleaning up.
+ *
+ * @requires {@link ../../common/custom-world}
+ * @requires {@link @playwright/test}
+ * @requires {@link @cucumber/cucumber}
+ * @requires {@link ../../../config/wp.config}
+ * @requires {@link ../../../utils/helpers}
+ */
 import { expect } from "@playwright/test";
 import { ICustomWorld } from "../../common/custom-world";
 
@@ -9,24 +21,14 @@ import type { Section } from "../../../utils/types";
 import { Page } from '@playwright/test';
 
 /**
- * Performs a WordPress precondition login action.
- * 
- * @step
- * 
- * @example
- * Given I am logged in
+ * Executes the step to log in.
  */
 Given('I am logged in', async function (this: ICustomWorld) {
     await this.utils.auth();
 });
 
 /**
- * Performs an action to install WP Rocket Current Version.
- * 
- * @step
- * 
- * @example
- * Given plugin is installed
+ * Executes the step to install the WP Rocket plugin.
  */
 Given('plugin is installed', async function (this: ICustomWorld) {
     await this.utils.uploadNewPlugin('./plugin/new_release.zip');
@@ -34,14 +36,8 @@ Given('plugin is installed', async function (this: ICustomWorld) {
     await expect(this.page).toHaveURL(/action=upload-plugin/); 
 });
 
-
 /**
- * Performs an action to activate WP Rocket after installation.
- * 
- * @step
- * 
- * @example
- * Given plugin is installed
+ * Executes the step to activate the WP Rocket plugin.
  */
 Given('plugin is activated', async function (this: ICustomWorld) {
     // Activate WPR
@@ -69,26 +65,14 @@ Given('I save settings {string} {string}', async function (this: ICustomWorld, s
 
 
 /**
- * Performs a WordPress login action.
- * 
- * @step
- * 
- * @example
- * Given I am logged in
+ * Executes the step to log in.
  */
 When('I log in', async function (this: ICustomWorld) {
     await this.utils.auth();
 });
 
-
 /**
- * Performs an action to navigate to specific page.
- * 
- * @step
- * @param {string} page - The page to be visited.
- * 
- * @example
- * When I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
+ * Executes the step to visit a specific page.
  */
 When('I go to {string}', async function (this: ICustomWorld, page) {
     await this.utils.visitPage(page);
@@ -96,13 +80,7 @@ When('I go to {string}', async function (this: ICustomWorld, page) {
 });
 
 /**
- * Performs an action to navigate to specific page.
- * 
- * @step
- * @param {string} selector - The selector to be clicked on.
- * 
- * @example
- * When I click on '.wpr-tools:nth-child(4) a'
+ * Executes the step to click on a specific button.
  */
 When('I click on {string}', async function (this: ICustomWorld, selector) {
     if (selector === '.wpr-tools:nth-child(4) a') {
@@ -124,12 +102,7 @@ When('I click on {string}', async function (this: ICustomWorld, selector) {
 });
 
 /**
- * Performs an action to enable all WP Rocket settings.
- * 
- * @step
- * 
- * @example
- * When I enable all settings
+ * Executes the step to enable all settings.
  */
 When('I enable all settings', async function (this: ICustomWorld) {
     /**
@@ -139,12 +112,7 @@ When('I enable all settings', async function (this: ICustomWorld) {
 });
 
 /**
- * Performs an action to log out of WordPress.
- * 
- * @step
- * 
- * @example
- * When I log out
+ * Executes the step to log out.
  */
 When('I log out', async function (this: ICustomWorld) {
     await this.utils.wpAdminLogout();
@@ -152,24 +120,14 @@ When('I log out', async function (this: ICustomWorld) {
 });
 
 /**
- * Performs an action to visit site homepage.
- * 
- * @step
- * 
- * @example
- * When I visit site url
+ * Executes the step to visit the site URL.
  */
 When('I visit site url', async function (this: ICustomWorld) {
     await this.page.goto(WP_BASE_URL);
 });
 
 /**
- * Performs an action to create Backstop reference for specific url parsed via the cli.
- * 
- * @step
- * 
- * @example
- * When I create reference
+ * Executes the step to create a reference.
  */
 When('I create reference', async function (this:ICustomWorld) {
     if (process.env.npm_config_vrurl === undefined) {
@@ -180,25 +138,14 @@ When('I create reference', async function (this:ICustomWorld) {
 });
 
 /**
- * Asserts that a string of text must be visible.
- * 
- * @step
- * @param {string} text - String of text.
- * 
- * @example
- * Then I should see 'hello'
+ * Executes the step to assert the presence of specific text.
  */
 Then('I should see {string}', async function (this: ICustomWorld, text) {
     await expect(this.page.getByText(text)).toBeVisible();
 });
 
 /**
- * Asserts that there must be no error in Wordpress debug.log.
- * 
- * @step
- * 
- * @example
- * Then I must not see any error in debug.log
+ * Executes the step to check for errors in debug.log.
  */
 Then('I must not see any error in debug.log', async function (this: ICustomWorld){
     // Goto WP Rocket dashboard
@@ -209,29 +156,23 @@ Then('I must not see any error in debug.log', async function (this: ICustomWorld
 });
 
 /**
- * Performs an action to clean up test site.
- * 
- * @step
- * 
- * @example
- * Then clean up
+ * Executes the step to clean up WP Rocket.
  */
+
 Then('clean up', async function (this: ICustomWorld) {
     await this.utils.cleanUp();
 });
 
 /**
- * Asserts that there is no visual regression.
- * 
- * @step
- * @param {string} label Scenario label.
- * @example
- * Then I must not see any visual regression
+ * Executes the step to check for visual regression.
  */
 Then('I must not see any visual regression {string}', async function (this: ICustomWorld, label: string) {
     await compareReference(label);
 });
 
+/**
+ * Executes the step to check for that there is no console error different from the nowprocket page version.
+ */
 Then('no error in the console different than nowprocket page {string}', async function (this: ICustomWorld, label: string) {
     const consoleMsg1 = await getConsoleMsg(this.page, `${WP_BASE_URL}/${SCENARIO_URLS[label]}?nowprocket`);
     const consoleMsg2 = await getConsoleMsg(this.page, `${WP_BASE_URL}/${SCENARIO_URLS[label]}`);

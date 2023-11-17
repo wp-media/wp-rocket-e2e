@@ -56,14 +56,23 @@ export interface Selectors{
  * End types for selectors.
  */
 
+/**
+ * Interface defining exported settings.
+ */
 export interface ExportedSettings {
     [key: string]: number;
 }
 
+/**
+ * Interface defining a simple key-value pair for selectors.
+ */
 export interface Selector{
     [key: string]: string;
 }
 
+/**
+ * Interface defining a key-value pair of locators.
+ */
 export interface Locators{
     [key: string]: Locator;
 }

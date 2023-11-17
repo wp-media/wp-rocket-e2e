@@ -1,7 +1,22 @@
+/**
+ * @fileoverview
+ * This file contains a Playwright test script for toggling safe mode and enabling options in WP Rocket settings.
+ * It utilizes Playwright's testing framework and interacts with various sections like file optimization,
+ * media, and CDN to enable specific options. It also saves the settings using a helper function.
+ *
+ * @typedef {import('@playwright/test').Page} Page
+ * @typedef {import('./sections/file.optimization').fileOptimization} fileOptimization
+ * @typedef {import('./sections/media').media} Media
+ * @typedef {import('./sections/cdn').cdn} CDN
+ * @typedef {import('../../utils/helpers').save_settings} save_settings
+ *
+ * @param {Page} page - The Playwright page instance.
+ * @returns {Promise<void>}
+ */
 import { Page } from '@playwright/test';
 
 /**
- * Local deps.
+ * Local dependencies.
  */
 import { fileOptimization } from './sections/file.optimization';
 import { media as Media } from './sections/media';
@@ -10,6 +25,14 @@ import { save_settings } from '../../utils/helpers';
 
 export const toggleSafeModeDisabledOptions = async ( page: Page ) => {
 
+/**
+ * Function to toggle safe mode and enable options in WP Rocket settings.
+ *
+ * @function
+ * @async
+ * @param {Page} page - The Playwright page instance.
+ * @returns {Promise<void>}
+ */
     /**
      * File Optimization section
      */
