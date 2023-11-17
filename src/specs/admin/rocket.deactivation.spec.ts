@@ -1,18 +1,38 @@
+/**
+ * @fileoverview
+ * This file defines Playwright test cases for deactivating WP Rocket in WP admin.
+ *
+ * @typedef {import('@playwright/test').Page} Page - Playwright Page type.
+ * @typedef {import('@playwright/test').TestArgs} TestArgs - Playwright TestArgs type.
+ *
+ * @function
+ * @name deactivation
+ * @description Test case to ensure successful deactivation of WP Rocket.
+ */
+
 import { test, expect } from '@playwright/test';
 
 /**
- * Local deps.
+ * Local dependencies.
  */
 import { file_exist } from '../../utils/helpers';
 import { pageUtils } from '../../utils/page.utils';
 
 let config_file_exist:boolean = false;
 
+/**
+ * Test case: Should deactivate WP Rocket successfully.
+ */
 const deactivation = () => {
     test('should deactivate WP Rocket successfully', async ( { page } ) => {
     
         const page_utils = new pageUtils( page );
  
+    /**
+     * @function
+     * @name deactivation.ShouldDeactivateWPRSuccessfully
+     * @description Test case to ensure successful deactivation of WP Rocket.
+     */
         await page_utils.visit_page('wp-admin');
         await page_utils.goto_plugin();
 
@@ -32,7 +52,7 @@ const deactivation = () => {
             await page.locator('a:has-text("Force deactivation")').click();
         }
 
-        // check deactivation notification
+        // Check deactivation notification.
         await expect(page.locator('text=Plugin deactivated.')).toBeVisible();
 
         config_file_exist = await file_exist('wp-content/wp-rocket-config/localhost.php');

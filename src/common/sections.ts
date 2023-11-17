@@ -1,6 +1,31 @@
+/**
+ * @fileoverview
+ * This file defines a class representing sections in WP Rocket settings for Playwright tests.
+ * It includes methods for interacting with different sections, toggling options, filling textboxes,
+ * performing mass actions, and checking option states.
+ *
+ * @typedef {import('@playwright/test').Page} Page
+ * @typedef {import('../../utils/types').Selectors} Selectors
+ * @typedef {import('../../utils/types').Roles} Roles
+ * @typedef {import('../../utils/types').Section} Section
+ * @typedef {import('../../utils/types').SectionId} SectionId
+ *
+ * @class Sections
+ * @property {Section} section - The current plugin section.
+ * @property {SectionId} sectionId - The ID of the current plugin section.
+ * @property {Selectors} selectors - Element selectors.
+ * @property {Page} page - The Playwright page instance.
+ * @property {object} elements - Section element selectors.
+ * @property {boolean} optionState - Option state (enabled or disabled).
+ */
 import type { Page } from "@playwright/test";
 import type { Selectors, Roles, Section, SectionId  } from "../../utils/types";
 
+/**
+ * Class representing sections in WP Rocket settings for Playwright tests.
+ *
+ * @class
+ */
 export class Sections {
     /**
      * Plugin section.
@@ -45,9 +70,11 @@ export class Sections {
     public optionState: boolean = false;
 
     /**
-     * Instatiate the class.
+     * Constructor for Sections class.
      *
-     * @param page Page object.
+     * @constructor
+     * @param {Page} page - The Playwright page instance.
+     * @param {Selectors} selectors - Element selectors.
      */
     constructor(page: Page, selectors: Selectors) {
         this.page = page;
@@ -55,11 +82,12 @@ export class Sections {
     }
 
     /**
-     * Sets the plugin section tests will run on.
+     * Sets the plugin section on which tests will run.
      *
-     * @param section Plugin Section ID
-     *
-     * @return Current object.
+     * @method
+     * @param {Section} section - The Plugin Section ID.
+     * @returns {this} - The current object for method chaining.
+     * @throws {Error} - Throws an error if the provided section is invalid.
      */
     public set = (section: Section): this => {
         this.section = section;
@@ -70,11 +98,11 @@ export class Sections {
     };
 
     /**
-     * Sets the state of option.
+     * Sets the state of an option.
      *
-     * @param state True if option should be checked; otherwise false.
-     *
-     * @return Current object.
+     * @method
+     * @param {boolean} state - True if the option should be checked; otherwise false.
+     * @returns {this} - The current object for method chaining.
      */
     public state = (state: boolean): this => {
         this.optionState = state;
@@ -82,9 +110,11 @@ export class Sections {
     }
 
     /**
-     * Visits plugin section.
+     * Visits the plugin section on the current page.
      *
-     * @return  {Promise<void>}
+     * @method
+     * @async
+     * @return {Promise<void>} - A promise that resolves once the visit operation is complete.
      */
     public visit = async (): Promise<void> => {
         this.canPerformAction();
@@ -93,11 +123,14 @@ export class Sections {
     };
 
     /**
-     * Toggle option
+     * Toggles the state of an option identified by the provided option ID.
+     * If the option is a checkbox or a button, and it is visible and not disabled, the state will be toggled.
      *
-     * @param {string} optionId Option ID
-     *
-     * @return  {Promise<void>}
+     * @method
+     * @async
+     * @param {string} optionId - The ID of the option to be toggled.
+     * @return {Promise<void>} - A promise that resolves once the toggle operation is complete.
+     * if the target element is not visible or is disabled, or if there is an issue with performing the action.
      */
     public toggle = async (optionId: string): Promise<void> => {
         this.canPerformAction();
@@ -136,9 +169,12 @@ export class Sections {
     }
 
     /**
-     * Performs a mass toggle action.
+     * Performs a mass toggle action on all checkboxes in the current section.
+     * If the checkboxes are visible and not disabled, their state will be toggled.
      *
-     * @return  {Promise<void>}
+     * @method
+     * @async
+     * @return {Promise<void>} - A promise that resolves once the mass toggle operation is complete.
      */
     public massToggle = async (): Promise<void> => {
         this.canPerformAction();
@@ -151,12 +187,14 @@ export class Sections {
     }
 
     /**
-     * Fill a textarea or text input.
+     * Fills a textarea or text input identified by the provided option ID with the specified text.
+     * If the option is of type 'role', it uses Playwright's `getByRole` method to fill the role-targeted element.
      *
-     * @param optionId Option ID.
-     * @param text Text to input.
-     *
-     * @return  {Promise<void>}
+     * @method
+     * @async
+     * @param {string} optionId - The ID of the option to be filled.
+     * @param {string} text - The text to input.
+     * @return {Promise<void>} - A promise that resolves once the fill operation is complete.
      */
     public fill = async(optionId: string, text: string): Promise<void> => {
         if (this.isType(optionId, "role")) {
@@ -169,11 +207,14 @@ export class Sections {
     }
 
     /**
-     * Performs a mass fill on textboxes.
+     * Performs a mass fill operation on textboxes in the current section.
+     * If the 'text' parameter is a string, it will be applied to all textboxes.
+     * If it is an array of strings, each element of the array will be applied to the corresponding textbox.
      *
-     * @param text String or Array of texts.(Array must have a count equal to the numbers of textboxes to be filled)
-     *
-     * @return  {Promise<void>}
+     * @method
+     * @async
+     * @param {string | Array<string>} text - The text or array of texts to be filled in textboxes.
+     * @return {Promise<void>} - A promise that resolves once the mass fill operation is complete.
      */
     public massFill = async(text: string | Array<string>): Promise<void> => {
         this.canPerformAction();
@@ -190,9 +231,12 @@ export class Sections {
     }
 
     /**
-     * Check options state for a section.
+     * Checks the state of checkboxes in the current section to determine if all options are disabled.
+     * If any checkbox is visible, not disabled, and checked, the method returns false; otherwise, it returns true.
      *
-     * @return True if all options are disabled for current section; otherwise false.
+     * @method
+     * @async
+     * @return {Promise<boolean>} - A promise that resolves with true if all options are disabled; otherwise, resolves with false.
      */
     public areOptionsDisabled = async (): Promise<boolean> => {
         this.canPerformAction();
@@ -217,9 +261,12 @@ export class Sections {
     }
 
     /**
-     * Check filled state for textboxes in sections.
+     * Checks the filled state of textboxes in the current section to determine if all textboxes are not filled.
+     * If any textbox has a non-empty input value, the method returns false; otherwise, it returns true.
      *
-     * @return True if all textboxes are not filled; otherwise false.
+     * @method
+     * @async
+     * @return {Promise<boolean>} - A promise that resolves with true if all textboxes are empty; otherwise, resolves with false.
      */
     public areTextBoxesEmpty = async (): Promise<boolean> => {
         this.canPerformAction();
@@ -236,9 +283,11 @@ export class Sections {
     }
 
     /**
-     * Validates if actions can be performed.
+     * Validates if actions can be performed by checking if the current section is valid.
      *
-     * @return  {void}
+     * @private
+     * @method
+     * @return {void}
      */
     private canPerformAction = (): void => {
         if (this.selectors[this.section] === undefined){
@@ -247,12 +296,13 @@ export class Sections {
     }
 
      /**
-     * Checks if a type exist for the current option object literal.
+     * Checks if a specific type exists for the current option in the object literal.
      *
-     * @param optionId Option ID
-     * @param type Type property.
-     *
-     * @return True if property exist; otherwise false.
+     * @private
+     * @method
+     * @param {string} optionId - The ID of the option to check.
+     * @param {string} type - The type property to compare.
+     * @return {boolean} - Returns true if the specified type property exists for the given option; otherwise, returns false.
      */
      private isType = (optionId: string, type: string): boolean => {
         if (this.elements[optionId]["type"] === type) {
@@ -262,13 +312,14 @@ export class Sections {
         return false;
     }
 
-   /**
-     * Checks if a property exist for the current option object literal.
+    /**
+     * Checks if a specific property exists for the current option in the object literal.
      *
-     * @param optionId Option ID
-     * @param property Property name.
-     *
-     * @return True if property exist; otherwise false.
+     * @private
+     * @method
+     * @param {string} optionId - The ID of the option to check.
+     * @param {string} property - The property name to check for existence.
+     * @return {boolean} - Returns true if the specified property exists for the given option; otherwise, returns false.
      */
    private propertyExist = (optionId: string, property: string): boolean => {
         if (this.elements[optionId][property] !== undefined) {
@@ -279,12 +330,12 @@ export class Sections {
     }
 
     /**
-     * Gets the property value.
+     * Gets the string value of a specific property for the current option in the object literal.
      *
-     * @param optionId Option ID
-     * @param type Property name.
-     *
-     * @return Property value in string.
+     * @method
+     * @param {string} optionId - The ID of the option to retrieve the property from.
+     * @param {string} property - The property name to retrieve.
+     * @return {string} - Returns the string value of the specified property for the given option.
      */
     public getStringProperty = (optionId: string, property: string): string => {
         if (!this.propertyExist(optionId, property)) {
@@ -295,12 +346,13 @@ export class Sections {
     }
 
     /**
-     * Gets the element value.
+     * Gets the element value for the specified type of the current option in the object literal.
      *
-     * @param optionId Option ID
-     * @param type Type property.
-     *
-     * @return Element value in string.
+     * @private
+     * @method
+     * @param {string} optionId - The ID of the option to retrieve the element from.
+     * @param {string} type - The type property to validate.
+     * @return {string} - Returns the string value of the element property for the given option.
      */
     private getElement = (optionId: string, type: string): string => {
         if (!this.isType(optionId, type)) {
@@ -315,12 +367,13 @@ export class Sections {
     }
 
     /**
-     * Gets the Role property value.
+     * Gets the Role property value for the specified type of the current option in the object literal.
      *
-     * @param optionId Option ID
-     * @param type Type property.
-     *
-     * @return Property value in Role.
+     * @private
+     * @method
+     * @param {string} optionId - The ID of the option to retrieve the Role from.
+     * @param {string} type - The type property to validate.
+     * @return {Roles} - Returns the Role property value for the given option.
      */
     private getRole = (optionId: string, type: string): Roles => {
         if (!this.isType(optionId, type)) {
@@ -335,12 +388,13 @@ export class Sections {
     }
 
     /**
-     * Gets the role target value.
+     * Gets the role target value for the specified type of the current option in the object literal.
      *
-     * @param optionId Option ID
-     * @param type Type property.
-     *
-     * @return Role target value in object.
+     * @private
+     * @method
+     * @param {string} optionId - The ID of the option to retrieve the role target from.
+     * @param {string} type - The type property to validate.
+     * @return {object} - Returns the role target value in an object for the given option.
      */
     private getRoleTarget = (optionId: string, type: string): object => {
         if (!this.isType(optionId, type)) {

@@ -1,7 +1,20 @@
+/**
+ * @fileoverview
+ * This module contains Cucumber step definitions using Playwright for deleting the WP Rocket plugin.
+ * It includes steps for confirming the deletion, navigating to the plugins page, deactivating the plugin,
+ * handling deactivation modal, initiating the deletion process, and asserting successful deletion.
+ *
+ * @requires {@link ../../common/custom-world}
+ * @requires {@link @playwright/test}
+ * @requires {@link @cucumber/cucumber}
+ */
 import { ICustomWorld } from "../../common/custom-world";
 import {expect} from "@playwright/test";
 import { When, Then } from '@cucumber/cucumber';
 
+/**
+ * Executes the step to delete the WP Rocket plugin.
+ */
 When('I delete plugin', async function (this: ICustomWorld) {
 
     // Confirm Dialog Box.
@@ -35,6 +48,9 @@ When('I delete plugin', async function (this: ICustomWorld) {
     }  
 });
 
+/**
+ * Executes the step to assert successful deletion of the WP Rocket plugin.
+ */
 Then('plugin should delete successfully', async function (this: ICustomWorld) {
     // Assert that WPR is deleted successfully
     await this.page.waitForSelector('#wp-rocket-deleted');
