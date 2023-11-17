@@ -1,13 +1,33 @@
+/**
+ * @fileoverview
+ * This file contains a Playwright test script for deactivating WP Rocket in a WordPress admin environment.
+ * It utilizes Playwright's testing framework and custom utility functions.
+ *
+ * @typedef {import('@playwright/test').expect} expect
+ * @typedef {import('@playwright/test').Page} Page
+ * @typedef {import('../../config/wp.config').WP_BASE_URL} WP_BASE_URL
+ * @typedef {import('../../utils/page.utils').pageUtils} pageUtils
+ *
+ * @param {Page} page - The Playwright page instance.
+ */
 import { expect, Page } from '@playwright/test';
 
 /**
- * Local deps.
+ * Local dependencies.
  */
 import { WP_BASE_URL } from '../../config/wp.config';
 import { pageUtils } from '../../utils/page.utils';
 
-export const deactivationModal = async ( page: Page ) => {
-  const page_utils = new pageUtils( page );
+/**
+ * Function to handle deactivation modal for WP Rocket.
+ *
+ * @function
+ * @async
+ * @param {Page} page - The Playwright page instance.
+ * @returns {Promise<void>}
+ */
+export const deactivationModal = async (page: Page) => {
+  const page_utils = new pageUtils(page);
 
   const locator = {
       'deactivate': page.locator( '[aria-label="Deactivate WP Rocket"]' ),

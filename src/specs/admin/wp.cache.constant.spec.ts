@@ -1,26 +1,60 @@
+/**
+ * @fileoverview
+ * This module contains Playwright tests for configuring and testing WP_CACHE settings in wp-config.php.
+ * It focuses on scenarios involving multiple PHP tags, activation, deactivation, and site health checks.
+ *
+ * @requires {@link https://github.com/microsoft/playwright-test}
+ * @requires {@link ../../utils/helpers}
+ * @requires {@link ../../utils/page.utils}
+ */
 import { test, expect, Page } from '@playwright/test';
 
 /**
- * Local deps.
+ * Local dependencies.
  */
 import { read_file, write_to_file, file_exist } from '../../utils/helpers';
 import { pageUtils } from '../../utils/page.utils';
 
-let page: Page;
-let page_utils: pageUtils;
-let wp_config:string = '';
-let file_content:string = '';
-let reg: RegExp;
-let debug_log_content:string = '';
-let config_file_exist:boolean = false;
-let advanced_cache:string = '';
-let theme:string = '';
-let match:boolean = false;
+/** @type {Page} */
+let page;
 
+/** @type {pageUtils} */
+let page_utils;
+
+/** @type {string} */
+let wp_config = '';
+
+/** @type {string} */
+let file_content = '';
+
+/** @type {RegExp} */
+let reg;
+
+/** @type {string} */
+let debug_log_content = '';
+
+/** @type {boolean} */
+let config_file_exist = false;
+
+/** @type {string} */
+let advanced_cache = '';
+
+/** @type {string} */
+let theme = '';
+
+/** @type {boolean} */
+let match = false;
+
+/** @type {string} */
 const debug_log = 'wp-content/debug.log';
 
 const wpCache = async () => {
-    
+    /**
+     * Sets up the Playwright context and page before running tests.
+     *
+     * @param {Object} params - Playwright test parameters.
+     * @param {Browser} params.browser - Playwright browser instance.
+     */
     test.beforeAll(async ({ browser }) => {
         const context = await browser.newContext();
         page = await context.newPage();
@@ -28,12 +62,21 @@ const wpCache = async () => {
         page_utils = new pageUtils(page);
     });
 
+    /**
+     * Closes the browser after all tests are executed.
+     *
+     * @param {Object} params - Playwright test parameters.
+     * @param {Browser} params.browser - Playwright browser instance.
+     */
     test.afterAll(async ({ browser }) => {
 
         browser.close;
     });
 
-    
+
+    /**
+     * Test suite for configuring WP_CACHE in wp-config.php with multiple active PHP tags.
+     */
     test('Should add WP_CACHE in wp-config.php single time while having multiple active php tags', async () => {
     
         /**
@@ -52,6 +95,9 @@ const wpCache = async () => {
         await editWpConfig('?>\n<?php', '', true);
     });
 
+    /**
+     * Test suite for configuring WP_CACHE in wp-config.php with active and commented PHP tags.
+     */
     test('Should add WP_CACHE in wp-config .php single time while having active and commented php tags', async () => {
         /**
          * PRECONDITIONS
@@ -74,6 +120,9 @@ const wpCache = async () => {
         await editWpConfig('//<?php\n// echo \'test <?php\';', '', true);
     });
 
+    /**
+     * Test suite for adding/updating WP_CACHE in wp-config.php with a single PHP tag.
+     */
     test('Should add/update WP_CACHE in wp-config while having single php tag', async () => {
         /**
         * PRECONDITIONS
@@ -91,6 +140,9 @@ const wpCache = async () => {
         await deactivateWPR();
     });
 
+    /**
+     * Test suite for not displaying warnings in site health for hosts with wp-cache set to false.
+     */
     test('Should not display warning in site health for those hosts where we set wp-cache to false', async () => {
         /**
          * PRECONDITIONS
@@ -130,6 +182,13 @@ const wpCache = async () => {
     });
 }
 
+/**
+ * Edits the wp-config.php file based on provided parameters.
+ *
+ * @param {string|boolean} needle - The search string or pattern to identify the portion of the file to be replaced.
+ * @param {string|boolean} replacement - The replacement string or pattern for the identified portion of the file.
+ * @param {boolean} [revert=false] - Flag to indicate whether to revert the changes made.
+ */
 const editWpConfig = async (needle, replacement, revert = false) => {
     wp_config = await read_file('wp-config.php');
 
@@ -146,6 +205,9 @@ const editWpConfig = async (needle, replacement, revert = false) => {
     await write_to_file('wp-config.php', wp_config);
 }
 
+/**
+ * Activates WP Rocket plugin and performs associated checks.
+ */
 const activateWPR = async () => {
 
     // Activate WPR
@@ -178,6 +240,9 @@ const activateWPR = async () => {
     }
 }
 
+/**
+ * Deactivates WP Rocket plugin and performs associated checks.
+ */
 const deactivateWPR = async () => {
     // Remove the define( 'WP_CACHE', true ); // Added by WP Rocket line from the wp-config.php and save then deactivate plugin.
     wp_config = await read_file('wp-config.php');

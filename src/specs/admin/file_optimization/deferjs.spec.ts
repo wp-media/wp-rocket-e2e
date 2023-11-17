@@ -1,17 +1,38 @@
+/**
+ * @fileoverview Test for displaying the Defer JS UI.
+ * @requires {@link @playwright/test}
+ * @requires {@link ../../../utils/page.utils}
+ * @requires {@link ../../common/sections/file.optimization}
+ */
 import { test, expect } from '@playwright/test';
 
 /**
- * Local deps.
+ * Local dependencies.
  */
 import { pageUtils } from '../../../utils/page.utils';
 import { fileOptimization } from '../../common/sections/file.optimization';
 
+/**
+ * Test for displaying the Defer JS UI.
+ */
 const deferJs = () => {
     test('Should display the Defer JS UI', async ( { page } ) => {
-
+        /**
+         * Utility instance for page operations.
+         * @type {pageUtils}
+         */
         const page_utils = new pageUtils( page );
+
+        /**
+         * Instance for file optimization section.
+         * @type {fileOptimization}
+         */
         const fileOpt = new fileOptimization( page );
 
+        /**
+         * Text area selector for defer JS exclusion.
+         * @type {string}
+         */
         let txtarea = '#exclude_defer_js';
 
         // Visit WPR settings

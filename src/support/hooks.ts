@@ -1,3 +1,19 @@
+/**
+ * @fileoverview
+ * This file contains Playwright tests using Cucumber for the specified project.
+ * It includes setup and cleanup functions, as well as test-specific configurations.
+ * The tests focus on interactions with a Chromium browser and involve scenarios
+ * related to WordPress plugins and sections.
+ *
+ * @requires {@link ../common/custom-world} - Provides the ICustomWorld interface for Playwright tests.
+ * @requires {@link @playwright/test} - Utilizes the Playwright testing framework for browser automation.
+ * @requires {@link @cucumber/cucumber} - Integrates Cucumber for behavior-driven development (BDD) testing.
+ * @requires {@link ../common/sections} - Defines Sections class for interacting with plugin sections.
+ * @requires {@link ../common/selectors} - Provides selectors for interacting with elements in the plugin.
+ * @requires {@link ../../utils/page-utils} - Utilizes PageUtils for common page-related utilities.
+ * @requires {@link fs/promises} - Utilizes the Node.js file system promises module for file-related operations.
+ *
+ */
 import { ICustomWorld } from "../common/custom-world";
 import { ChromiumBrowser, chromium } from '@playwright/test';
 import { Sections } from '../common/sections';
@@ -9,14 +25,27 @@ import fs from "fs/promises";
 // import wp, {cp, deleteTransient, generateUsers, resetWP, rm, unzip} from "../../utils/commands";
 // import {configurations, getWPDir} from "../../utils/configurations";
 
+/**
+ * The Playwright Chromium browser instance used for testing.
+ */
 let browser: ChromiumBrowser;
 
+/**
+ * Sets the default timeout for Playwright tests.
+ * If PWDEBUG environment variable is set, timeout is infinite (-1); otherwise, it's 10 seconds.
+ */
 setDefaultTimeout(process.env.PWDEBUG ? -1 : 60 * 10000);
 
+/**
+ * Before all tests, launches the Chromium browser.
+ */
 BeforeAll(async function (this: ICustomWorld) {
     browser = await chromium.launch({ headless: false });
 });
 
+/**
+ * Before each test scenario, performs setup tasks.
+ */
 Before(async function (this: ICustomWorld) {
 
     /**
@@ -64,7 +93,9 @@ Before(async function (this: ICustomWorld) {
     //     },
     // ])
 
-
+    /**
+     * Creates a new Playwright context and page for each test scenario.
+     */
     this.context = await browser.newContext({
         recordVideo: {
             dir: "test-results/videos",
@@ -81,6 +112,9 @@ Before(async function (this: ICustomWorld) {
 
 });
 
+/**
+ * After each test scenario, performs cleanup tasks and captures screenshots and videos in case of failure.
+ */
 After(async function (this: ICustomWorld, { pickle, result }) {
     let videoPath: string;
     let img: Buffer;
@@ -114,6 +148,9 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 //      deleteTransient('wp_rocket_customer_data')
 //  })
 
+/**
+ * After all tests, closes the Chromium browser.
+ */
 AfterAll(async function () {
     await browser.close();
 })
