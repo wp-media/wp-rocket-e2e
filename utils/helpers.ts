@@ -157,8 +157,8 @@ export const isExportedCorrectly = async (exportedSettings: ExportedSettings, ex
  * @param {string} selector - The element selector.
  * @returns {Promise<boolean>} - A Promise that resolves to true if the input element is enabled, false otherwise.
  */
-await page.waitForSelector(selector);
 export const isElementEnabled = async (page: Page, selector: string): Promise<boolean> => {
+    await page.waitForSelector(selector);
     return await page.isEnabled(selector);
 }
 
