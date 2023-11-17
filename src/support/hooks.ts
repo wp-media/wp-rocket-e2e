@@ -35,7 +35,7 @@ BeforeAll(async function (this: ICustomWorld) {
     }
 });
 
-Before(async function (this: ICustomWorld) {
+Before({tags: 'not @setup'}, async function (this: ICustomWorld) {
 
     /**
      * To uncomment during implementation of cli
@@ -99,6 +99,19 @@ Before(async function (this: ICustomWorld) {
 
 });
 
+Before({tags: '@setup'}, async function(this: ICustomWorld) {
+    this.context = await browser.newContext({
+        recordVideo: {
+            dir: "test-results/videos",
+        },
+    });
+    this.page = await this.context.newPage();
+    this.sections = new Sections(this.page, pluginSelectors);
+    this.utils = new PageUtils(this.page, this.sections);
+
+    await this.utils.cleanUp();
+});
+
 /**
  * To uncomment during implementation of cli
  */
@@ -110,9 +123,7 @@ AfterAll(async function () {
     await browser.close();
 });
 
-After({tags: '@llcssbg'}, async function(this: ICustomWorld, { pickle, result }) {
-    await this.utils.cleanUp();
-
+After(async function(this: ICustomWorld, { pickle, result }) {
     let videoPath: string;
     let img: Buffer;
     if (result?.status == Status.FAILED) {
