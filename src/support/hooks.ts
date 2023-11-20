@@ -158,16 +158,6 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 
 });
 
-After({tags: '@cleanup'}, async function (this: ICustomWorld, { pickle, result }) {
-    await this.utils.cleanUp();
-
-    if (result?.status == Status.FAILED) {
-        await this.utils.createScreenShot(this, pickle);
-    }
-
-    //  await resetWP();
-});
-
 /**
  * To uncomment during implementation of cli
  */
