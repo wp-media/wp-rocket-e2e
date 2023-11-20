@@ -1,13 +1,30 @@
+/**
+ * @fileOverview Rocket License Test Suite
+ * @module RocketLicense
+ * @requires {@link https://github.com/microsoft/playwright/blob/main/docs/test.md @playwright/test}
+ * @requires {@link ../../utils/page.utils pageUtils}
+ */
+
 import { test, expect } from '@playwright/test';
 
 /**
- * Local deps.
+ * Local dependencies.
  */
  import { pageUtils } from '../../utils/page.utils';
 
+/**
+ * Represents the Rocket License test suite.
+ * @function
+ */
 const rocketLicense = () => {
     let page;
-    
+
+    /**
+     * Test setup before all tests in the suite.
+     * @memberOf RocketLicense
+     * @async
+     * @param {Object} context - Playwright browser context.
+     */
     test.beforeAll(async ({ browser }) => {
         const context = await browser.newContext();
         page = await context.newPage();
@@ -24,12 +41,23 @@ const rocketLicense = () => {
         await page_utils.goto_wpr();
     });
 
+    /**
+     * Test cleanup after all tests in the suite.
+     * @memberOf RocketLicense
+     * @async
+     * @param {Object} context - Playwright browser context.
+     */
     test.afterAll(async ({ browser }) => {
         browser.close;
     });
 
     test( 'should validate license if customer key is correct', async () => {
 
+    /**
+     * Test case to validate license if the customer key is correct.
+     * @memberOf RocketLicense
+     * @async
+     */
         const validate_btn = 'text=Validate License';
 
         const locator = {
@@ -53,6 +81,11 @@ const rocketLicense = () => {
     });
 
     test( 'Should display preload trigger message on first activation', async () => {
+    /**
+     * Test case to display preload trigger message on the first activation.
+     * @memberOf RocketLicense
+     * @async
+     */
         await expect(page.locator('#rocket-notice-preload-processing')).toContainText('The preload service is now active');
     });
 }

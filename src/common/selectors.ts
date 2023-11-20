@@ -1,8 +1,20 @@
+/**
+ * @fileoverview This module defines selectors for different sections in the application settings.
+ * @module selectors
+ * @typedef {import("../../utils/types").Selectors} Selectors
+ */
 import type { Page } from "@playwright/test";
 import { isElementEnabled, activateFromPopUp } from "../../utils/helpers";
 import type { Selectors } from "../../utils/types";
 import { FieldType } from "../../utils/types";
 
+/**
+ * The selectors object contains structured definitions for different sections and their elements in the application settings.
+ *
+ * @constant
+ * @type {Selectors}
+ * @see {@link Selectors}
+ */
 export const selectors: Selectors = {
     dashboard: {
         parent: "dashboard",
@@ -112,6 +124,11 @@ export const selectors: Selectors = {
                 type: FieldType.checkbox,
                 element: "#lazyload",
                 target: "label[for=lazyload]"
+            },
+            lazyloadCssBgImg: {
+                type: FieldType.checkbox,
+                element: "#lazyload_css_bg_img",
+                target: "label[for=lazyload_css_bg_img]"
             },
             lazyloadIframes: {
                 type: FieldType.checkbox,

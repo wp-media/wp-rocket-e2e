@@ -1,6 +1,18 @@
+/**
+ * @fileoverview
+ * This module contains Cucumber step definitions using Playwright for various actions related to updating and downgrading the WP Rocket plugin.
+ * It includes steps for installing a specific plugin version, opening a beacon, updating to the latest version, going through the beacon, and downgrading to the last stable version.
+ *
+ * @requires {@link ../../common/custom-world}
+ * @requires {@link @playwright/test}
+ * @requires {@link @cucumber/cucumber}
+ */
 import { ICustomWorld } from "../../common/custom-world";
 import { Given, When } from '@cucumber/cucumber';
 
+/**
+ * Executes the step to open the RUCSS beacon.
+ */
 Given('rucss beacon is opened', async function (this: ICustomWorld) {
     // Open file optimization section.
     this.sections.set("fileOptimization");
@@ -14,6 +26,9 @@ Given('rucss beacon is opened', async function (this: ICustomWorld) {
     await this.page.waitForSelector('iframe[title="Help Scout Beacon - Live Chat, Contact Form, and Knowledge Base"]');
 });
 
+/**
+ * Executes the step to go through the RUCSS beacon.
+ */
 When('I go through rucss beacon', async function (this: ICustomWorld) {
     const iframe = this.page.frameLocator('iframe[title="Help Scout Beacon - Live Chat, Contact Form, and Knowledge Base"]');
 

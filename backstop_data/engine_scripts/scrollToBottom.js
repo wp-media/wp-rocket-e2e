@@ -15,5 +15,5 @@ module.exports = async (page, scenario) => {
             }, 500);
         });
     });
-    await page.waitForTimeout(5000); 
+    await page.waitForTimeout(10000); 
   };

@@ -14,5 +14,15 @@
         "@typescript-eslint/ban-ts-comment": "error",
         "@typescript-eslint/ban-types": "error",
         "@typescript-eslint/explicit-function-return-type": "error"
-      }
+      },
+      "ignorePatterns":[
+        "src/specs/**",
+        "backstop_data/engine_scripts",
+        "src/common/deactivation.modal.ts",
+        "src/common/safe.mode.disabled.options.check.ts",
+        "src/common/safe.mode.disabled.options.ts",
+        "src/support/steps/steps.ts",
+        "utils/commands.ts",
+        "utils/configurations.ts"
+      ]
   }

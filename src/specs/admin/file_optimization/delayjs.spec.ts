@@ -1,13 +1,32 @@
+/**
+ * @fileoverview
+ * This file defines Playwright test cases for handling the Delay JS functionality in WP Rocket settings.
+ *
+ * @typedef {import('@playwright/test').Page} Page - Playwright Page type.
+ * @typedef {import('@playwright/test').TestArgs} TestArgs - Playwright TestArgs type.
+ *
+ * @function
+ * @name delayJs
+ * @description Test cases for handling the Delay JS functionality in WP Rocket settings.
+ */
 import { test, expect } from '@playwright/test';
 
 /**
- * Local deps.
+ * Local dependencies.
  */
 import { pageUtils } from '../../../utils/page.utils';
 import { save_settings } from '../../../utils/helpers';
 import { fileOptimization } from '../../common/sections/file.optimization';
 
+/**
+ * Test case: Should not activate DelayJS automatically and not exclude any patterns for the new installs.
+ */
 const delayJs = () => {
+    /**
+     * @function
+     * @name delayJs.ShouldNotActivateDelayJsAutomatically
+     * @description Test case to ensure that DelayJS is not activated automatically and no patterns are excluded for new installs.
+     */
     test('Should not activate DelayJS automatically and not exclude any patterns for the new installs', async ( { page } ) => {
 
         const page_utils = new pageUtils( page );
@@ -34,7 +53,12 @@ const delayJs = () => {
         // Assert that there is still no exclusion after refresh.
         await checkForNoExclusion(page, fileOpt);
     });
-    
+
+    /**
+     * @function
+     * @name delayJs.ShouldNotDisplayExplanatoryTextIfAlreadyThere
+     * @description Test case to ensure that explanatory text about default exclusion is not displayed if it was already present.
+     */
     test('Should not display explanatory text about default exclusion if it was already there', async ( { page } ) => {
 
         const config = {
@@ -70,6 +94,11 @@ const delayJs = () => {
         await removeExclusion(page, config);
     });
 
+    /**
+     * @function
+     * @name delayJs.ShouldHandleFieldSanitizationCorrectly
+     * @description Test case to ensure that the field sanitization is handled correctly.
+     */
     test('Should handle the field sanitization correctly', async ( { page } ) => {
         const config = {
             'exclusions': 'https://www.wp-media.me \nhttps://newer.rocketlabsqa.ovh/ \nhttps://newer.rocketlabsqa.ovh/wp-content/js.css \nc \n\n/wp-content/js.css',
@@ -97,8 +126,8 @@ const delayJs = () => {
 
 /**
  * Add default exclusions.
- * @param page Object
- * @param config Object
+ * @param {import('@playwright/test').Page} page - Playwright Page object.
+ * @param {Object} config - Configuration object.
  */
 const addDefaultExclusions = async (page, config) => {
     // Add default exclusions
@@ -113,8 +142,8 @@ const addDefaultExclusions = async (page, config) => {
 
 /**
  * Add to the default exclusions.
- * @param page Object
- * @param config Object
+ * @param {import('@playwright/test').Page} page - Playwright Page object.
+ * @param {Object} config - Configuration object.
  */
 const addToDefaultExclusions = async (page, config) => {
     // Add default exclusions
@@ -129,8 +158,8 @@ const addToDefaultExclusions = async (page, config) => {
 
 /**
  * Reload page.
- * @param page Object
- * @param config Object
+ * @param {import('@playwright/test').Page} page - Playwright Page object.
+ * @param {Object} config - Configuration object.
  */
 const reloadpage = async (page, config) => {
     await page.reload();
@@ -141,8 +170,8 @@ const reloadpage = async (page, config) => {
 
 /**
  * Remove exclusions.
- * @param page Object
- * @param config Object
+ * @param {import('@playwright/test').Page} page - Playwright Page object.
+ * @param {Object} config - Configuration object.
  */
 const removeExclusion = async (page, config) => {
 
@@ -158,8 +187,8 @@ const removeExclusion = async (page, config) => {
 
 /**
  * Assert that there is no exclusion
- * @param page Object
- * @param fileOpt Object
+ * @param {import('@playwright/test').Page} page - Playwright Page object.
+ * @param {Object} fileOpt - FileOptimization object.
  */
 const checkForNoExclusion = async (page, fileOpt) => {
     // Check delayjs

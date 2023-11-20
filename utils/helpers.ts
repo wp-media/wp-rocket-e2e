@@ -1,15 +1,38 @@
+/**
+ * @fileoverview
+ * This module provides utility functions for file operations, sleep, and interaction with Playwright for testing.
+ * It includes functions for reading, writing, and checking the existence of files, as well as functions related to UI interactions.
+ *
+ * @requires {@link os}
+ * @requires {@link fs/promises}
+ * @requires {@link @playwright/test}
+ * @requires {@link backstopjs}
+ * @requires {@link ../utils/types}
+ * @requires {@link ./exclusions}
+ */
 import os from 'os';
 import fs from 'fs/promises';
 import type { Page } from '@playwright/test';
 import backstop from 'backstopjs';
 
 // Interfaces
-import { ExportedSettings } from '../utils/types';
+import { ExportedSettings, VRurlConfig } from '../utils/types';
 import { uiReflectedSettings } from './exclusions';
+import { WP_BASE_URL } from '../config/wp.config';
 
+const backstopConfig = './backstop.json';
+/**
+ * The user's home directory.
+ *
+ * @type {string}
+ * @constant
+ */
 const homeDir: string = os.homedir();
 let installPath: string;
 
+/**
+ * Determine the installation path based on the operating system.
+ */
 switch(os.platform()) { 
     case 'linux': { 
        installPath = 'wp-env';
@@ -21,12 +44,19 @@ switch(os.platform()) {
     } 
 }
 
+/**
+ * Pause execution for the specified duration.
+ *
+ * @param {number} ms - The duration to sleep in milliseconds.
+ * @returns {Promise<void>} - A Promise that resolves after sleeping for the specified duration.
+ */
 export const sleep = async (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms));
 
 /**
- * 
- * @param file String File name.
- * @returns String Absolute path to give file from OS.
+ * Get the absolute path to a file in the user's home directory.
+ *
+ * @param {string} file - The file name.
+ * @returns {Promise<string>} - A Promise that resolves to the absolute path of the file.
  */
 const getDir = async (file: string): Promise<string> => {
     let dir: string;
@@ -37,18 +67,21 @@ const getDir = async (file: string): Promise<string> => {
 }
 
 /**
- * 
- * @param file Path to file to be read.
- * @returns String File content.
+ * Read the content of a file.
+ *
+ * @param {string} file - The path to the file to be read.
+ * @returns {Promise<string>} - A Promise that resolves to the content of the file.
  */
 export const readFile = async (file: string): Promise<string> => {
     return await fs.readFile(await getDir(file), 'utf8');
 }
 
 /**
- * 
- * @param file Path to file to be written.
- * @param data Data to be written to file.
+ * Write data to a file.
+ *
+ * @param {string} file - The path to the file to be written.
+ * @param {string} data - The data to be written to the file.
+ * @returns {Promise<void>} - A Promise that resolves after writing to the file.
  */
 export const writeToFile = async (file: string, data: string): Promise<void> => {
     await fs.writeFile(await getDir(file), data);
@@ -56,9 +89,10 @@ export const writeToFile = async (file: string, data: string): Promise<void> => 
 }
 
 /**
- * 
- * @param file Path to file.
- * @returns bool.
+ * Check if a file exists.
+ *
+ * @param {string} file - The path to the file.
+ * @returns {Promise<boolean>} - A Promise that resolves to true if the file exists, false otherwise.
  */
 export const fileExist = async (file: string): Promise<boolean> => {
     try {
@@ -70,11 +104,11 @@ export const fileExist = async (file: string): Promise<boolean> => {
 }
 
 /**
- * Checks if WP Rocket is active if config file exists.
- * 
- * Function to be removed.
- * 
- * @returns bool.
+ * Check if WP Rocket is active by verifying the existence of the configuration file.
+ *
+ * @deprecated This function is intended to be removed.
+ *
+ * @returns {Promise<boolean>} - A Promise that resolves to true if WP Rocket is active, false otherwise.
  */
 export const isRocketActive = async (): Promise<boolean> => {
     try {
@@ -86,19 +120,21 @@ export const isRocketActive = async (): Promise<boolean> => {
 }
 
 /**
- * Read file content
+ * Read the content of any file.
+ *
+ * @param {string} file - The path to the file to be read.
+ * @returns {Promise<string>} - A Promise that resolves to the content of the file.
  */
 export const readAnyFile = async (file: string): Promise<string> => {
     return await fs.readFile(file, 'utf8');
 }
 
 /**
- * Check that settings is exported correctly.
+ * Check that settings are exported correctly, excluding a specified option.
  *
- * @param exported_settings  Object of exported settings.
- * @param exception          Object key to exclude from check.
- *
- * @return True if settings is exported correctly; Otherwise false.
+ * @param {ExportedSettings} exportedSettings - Object of exported settings.
+ * @param {string} exception - Object key to exclude from the check.
+ * @returns {Promise<boolean>} - A Promise that resolves to true if settings are exported correctly, false otherwise.
  */
 export const isExportedCorrectly = async (exportedSettings: ExportedSettings, exception: string): Promise< boolean > => {
     for (const key in exportedSettings) {
@@ -117,12 +153,11 @@ export const isExportedCorrectly = async (exportedSettings: ExportedSettings, ex
 }
 
 /**
- * Checks if an input element is enabled.
+ * Check if an input element is enabled.
  *
- * @param page Page object.
- * @param selector Element selector.
- *
- * @return True if input element is enabled; Otherwise false.
+ * @param {Page} page - The Page object.
+ * @param {string} selector - The element selector.
+ * @returns {Promise<boolean>} - A Promise that resolves to true if the input element is enabled, false otherwise.
  */
 export const isElementEnabled = async (page: Page, selector: string): Promise<boolean> => {
     await page.waitForSelector(selector);
@@ -130,13 +165,12 @@ export const isElementEnabled = async (page: Page, selector: string): Promise<bo
 }
 
 /**
- * Performs the activation click action on WPR option popup.
+ * Perform the activation click action on WPR option popup.
  *
- * @param page Page object.
- * @param state Parent element state.
- * @param selector Element selector.
- *
- * @return  {Promise<void>}
+ * @param {Page} page - The Page object.
+ * @param {boolean} state - Parent element state.
+ * @param {string} selector - The element selector.
+ * @returns {Promise<void>} - A Promise that resolves after performing the activation click action.
  */
 export const activateFromPopUp = async(page: Page, state: boolean, selector: string): Promise<void> => {
     if (!state) {
@@ -148,65 +182,175 @@ export const activateFromPopUp = async(page: Page, state: boolean, selector: str
 }
 
 /**
- * Update backstopjs scenario url.
+ * Update backstopjs scenario URL.
  *
- * @param   {string}   url  Updated url.
- *
- * @return  {Promise<void>}
+ * @param {string} url - Updated URL.
+ * @returns {Promise<void>} - A Promise that resolves after updating the backstopjs scenario URL.
  */
-const updateVRTestUrl = async(url: string = ''): Promise<void> => {
-    const fileName = './backstop.json';
-
+const updateVRTestUrl = async(url: string): Promise<void> => {
     // Read the JSON file
-    const data = await fs.readFile(fileName, 'utf8');
+    const data = await fs.readFile(backstopConfig, 'utf8');
     const jsonData = JSON.parse(data);
 
-    if (url === '') {
-        url = jsonData.scenarios[0].url.replace(/\?nowprocket/g, '');
+    // Empty scenario.
+    jsonData.scenarios = [];
+
+    let readyScript = '';
+
+    if (!url.includes('nowprocket')) {
+        readyScript = 'scrollToBottom.js';
     }
 
     // Modify the JSON object
-    jsonData.scenarios[0].url = url;
+    jsonData.scenarios.push({
+        label: "general",
+        url: url,
+        referenceUrl: "",
+        readyEvent: "",
+        readySelector: "",
+        delay: 0,
+        hideSelectors: [],
+        removeSelectors: [],
+        hoverSelector: "",
+        clickSelector: "",
+        postInteractionWait: 0,
+        selectors: [],
+        selectorExpansion: true,
+        expect: 0,
+        misMatchThreshold: 0.1,
+        requireSameDimensions: true,
+        onReadyScript: readyScript
+    });
 
     // Convert the modified object back to JSON
     const updatedJsonData = JSON.stringify(jsonData, null, 2);
 
     // Write the updated JSON back to the file
-    await fs.writeFile(fileName, updatedJsonData, 'utf8');
+    await fs.writeFile(backstopConfig, updatedJsonData, 'utf8');
+}
+
+export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> => {
+    // Read the JSON file
+    const data = await fs.readFile(backstopConfig, 'utf8');
+    const jsonData = JSON.parse(data);
+
+    // Empty scenario.
+    jsonData.scenarios = [];
+
+    let optimize: string = '?nowprocket';
+    let path: string;
+    let beforeScript = '';
+    let readyScript = '';
+
+    if (config.optimize) {
+        optimize = '';
+    }
+
+    const urls = config.urls;
+    for (const key in urls) {
+        // Check that path is not empty(meaning home);
+        if (urls[key] !== '') {
+            path = urls[key];
+        }
+        else {
+            path = '';
+        }
+
+        if(key.includes('noJs')) {
+            beforeScript = 'disableJavascript.js';
+            readyScript = 'wait.js';
+        }
+        else{
+            beforeScript = '';
+            readyScript = config.optimize ? 'scrollToBottom.js' : '';
+        }
+
+        jsonData.scenarios.push({
+            label: key,
+            url: `${WP_BASE_URL}/${path}${optimize}`,
+            referenceUrl: "",
+            readyEvent: "",
+            readySelector: "",
+            delay: 0,
+            hideSelectors: [],
+            removeSelectors: [],
+            hoverSelector: "",
+            clickSelector: "",
+            postInteractionWait: 0,
+            selectors: [],
+            selectorExpansion: true,
+            expect: 0,
+            misMatchThreshold: 0.1,
+            requireSameDimensions: true,
+            onReadyScript: readyScript,
+            onBeforeScript: beforeScript
+        });
+    }
+
+    // Convert the modified object back to JSON
+    const updatedJsonData = JSON.stringify(jsonData, null, 2);
+
+    // Write the updated JSON back to the file
+    await fs.writeFile(backstopConfig, updatedJsonData, 'utf8');
 }
 
 /**
- * Create reference snapshot for backstopjs to use during test.
+ * Create a reference snapshot for backstopjs to use during testing.
  *
- * @param   {string}   url  Page url to create reference.
- *
- * @return  {Promise<void>}
+ * @param {string} url - Page URL to create a reference.
+ * @returns {Promise<void>} - A Promise that resolves after creating a reference snapshot.
  */
 export const createReference = async(url: string): Promise<void> => {
+    if (url === '') {
+        return;
+    }
+
     url = url.replace(/http.*\/\/|www\./g, '');
 
     try {
+        // Update test url to use nowprocket query string.
         await updateVRTestUrl(`https://${url}?nowprocket`);
 
         // Use BackstopJS to capture a snapshot of the webpage.
-        await backstop('reference')
+        await backstop('reference');
+
+         // Update test url request page with wprocket optimizations.
+         await updateVRTestUrl(`https://${url}`);
     } catch (error) {
         console.error(error);
     }
 }
 
 /**
- * Compare reference snapshot with latest snapshot.
+ * Compare a reference snapshot with the latest snapshot.
  *
- * @return  {<Promise><void>}
+ * @param {string} label Scenario label. 
+ * 
+ * @returns {Promise<void>} - A Promise that resolves after comparing snapshots.
  */
-export const compareReference = async(): Promise<void> => {
+export const compareReference = async(label: string = ''): Promise<void> => {
     try {
-        await updateVRTestUrl();
-    
         // Use BackstopJS to compare snapshots.
-        await backstop('test')
+        await backstop('test', {
+            filter: label
+        });
     } catch (error) {
         console.error(error);
+    }
+}
+
+/**
+ * Delete a folder.
+ *
+ * @param   {string}   folderPath  Path to folder
+ *
+ * @return  {Promise<void>}
+ */
+export const deleteFolder = async(folderPath: string): Promise<void> => {
+    try {
+        await fs.rm(folderPath, { recursive: true });
+        console.log(`Folder "${folderPath}" deleted successfully.`);
+    } catch (error) {
+        console.error(`Error deleting folder "${folderPath}": ${error.message}`);
     }
 }

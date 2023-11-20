@@ -56,20 +56,35 @@ export interface Selectors{
  * End types for selectors.
  */
 
+/**
+ * Interface defining exported settings.
+ */
 export interface ExportedSettings {
     [key: string]: number;
 }
 
+/**
+ * Interface defining a simple key-value pair for selectors.
+ */
 export interface Selector{
     [key: string]: string;
 }
 
+/**
+ * Interface defining a key-value pair of locators.
+ */
 export interface Locators{
     [key: string]: Locator;
 }
 
 export type Roles = "alert"|"alertdialog"|"application"|"article"|"banner"|"blockquote"|"button"|"caption"|"cell"|"checkbox"|"code"|"columnheader"|"combobox"|"complementary"|"contentinfo"|"definition"|"deletion"|"dialog"|"directory"|"document"|"emphasis"|"feed"|"figure"|"form"|"generic"|"grid"|"gridcell"|"group"|"heading"|"img"|"insertion"|"link"|"list"|"listbox"|"listitem"|"log"|"main"|"marquee"|"math"|"meter"|"menu"|"menubar"|"menuitem"|"menuitemcheckbox"|"menuitemradio"|"navigation"|"none"|"note"|"option"|"paragraph"|"presentation"|"progressbar"|"radio"|"radiogroup"|"region"|"row"|"rowgroup"|"rowheader"|"scrollbar"|"search"|"searchbox"|"separator"|"slider"|"spinbutton"|"status"|"strong"|"subscript"|"superscript"|"switch"|"tab"|"table"|"tablist"|"tabpanel"|"term"|"textbox"|"time"|"timer"|"toolbar"|"tooltip"|"tree"|"treegrid"|"treeitem";
 
+export interface VRurlConfig {
+    optimize: boolean,
+    urls?: {
+        llcss: string
+    }
+}
 export interface Pickle {
     name: string;
 }

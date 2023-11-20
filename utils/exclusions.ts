@@ -1,3 +1,15 @@
+/**
+ * @fileoverview
+ * This module exports arrays representing UI-reflected settings and a diff checker.
+ * It includes settings related to performance optimization, caching, database cleanup, and various features.
+ */
+
+/**
+ * Array representing UI-reflected settings for performance optimization and feature toggles.
+ *
+ * @type {string[]}
+ * @constant
+ */
 export const uiReflectedSettings = [
     'lazyload',
     'remove_unused_css',
@@ -29,6 +41,12 @@ export const uiReflectedSettings = [
     'delay_js', 
 ];
 
+/**
+ * Array representing settings used for diff checking.
+ *
+ * @type {string[]}
+ * @constant
+ */
 export const diffChecker = [
     "version",
     "delay_js",

@@ -1,29 +1,59 @@
+/**
+ * @fileoverview
+ * This module contains Cucumber step definitions using Playwright for various actions and assertions related to data import and export.
+ * It includes steps for installing a previous version of the plugin, disabling settings, saving specific settings, updating to the latest version,
+ * importing and exporting data, and asserting the correctness of imported/exported data.
+ *
+ * @requires {@link ../../common/custom-world}
+ * @requires {@link @playwright/test}
+ * @requires {@link @cucumber/cucumber}
+ * @requires {@link ../../../utils/types}
+ * @requires {@link ../../../utils/helpers}
+ * @requires {@link ../../../utils/exclusions}
+ */
 import { ICustomWorld } from "../../common/custom-world";
 import {expect} from "@playwright/test";
 import { Given, When, Then } from '@cucumber/cucumber';
 
-import type { ExportedSettings, Section } from '../../../utils/types';
+import type { ExportedSettings} from '../../../utils/types';
 import { readAnyFile, isExportedCorrectly } from '../../../utils/helpers';
 import { diffChecker as diffCheckerExclusions } from '../../../utils/exclusions';
 
 import { diff } from 'json-diff';
 
+/**
+ * Executes the step to disable all settings.
+ */
 Given('I disabled all settings', async function (this: ICustomWorld) {
     await this.utils.disableAllOptions();
 });
 
-Given('I saved specific settings {string} {string}', async function (this: ICustomWorld, section: Section, element: string) {
-    await this.sections.set(section).visit();
-    await this.sections.state(true).toggle(element);
-    await this.utils.saveSettings();
+/**
+ * Executes the step to update to the latest version of the WP Rocket plugin.
+ */
+Given('I updated to latest version', async function (this: ICustomWorld) {
+    await this.utils.uploadNewPlugin('./plugin/new_release.zip');
+    await this.page.waitForLoadState('load', { timeout: 30000 });
+    await expect(this.page).toHaveURL(/action=upload-plugin/); 
+    
+    // Replace current with uploaded
+    await this.page.locator('a:has-text("Replace current with uploaded")').click();
 
     await this.page.waitForLoadState('load', { timeout: 30000 });
+    await expect(this.page).toHaveURL(/overwrite=update-plugin/); 
 });
 
+/**
+ * Executes the step to import data.
+ */
 When('I import data', async function (this: ICustomWorld) {
     await this.utils.importSettings('./plugin/exported_settings/wp-rocket-settings-test-2023-00-01-64e7ada0d3b70.json');
     await this.page.waitForLoadState('load', { timeout: 100000 });
 });
+
+/**
+ * Executes the step to export data.
+ */
 
 When('I export data {string}', async function (this: ICustomWorld, fileNo: string) {
     await this.page.locator('#wpr-nav-tools').click();
@@ -37,6 +67,9 @@ When('I export data {string}', async function (this: ICustomWorld, fileNo: strin
     await download.saveAs(`./plugin/exported_settings/wp-rocket-settings-test-2023-00-0${fileNo}-64e7ada0d3b70.json`);
 });
 
+/**
+ * Executes the step to assert that data is imported correctly.
+ */
 Then('data is imported correctly', async function (this: ICustomWorld) {
     await this.utils.gotoWpr();
     /**
@@ -90,6 +123,9 @@ Then('data is imported correctly', async function (this: ICustomWorld) {
     expect(addonsOptions, 'Add-ons: All options are not disabled').toBeTruthy();
 });
 
+/**
+ * Executes the step to assert that exported data is correct.
+ */
 Then('data {string} is exported correctly', async function (fileNo: string) {
     const jsonData = await readAnyFile(`./plugin/exported_settings/wp-rocket-settings-test-2023-00-0${fileNo}-64e7ada0d3b70.json`);
     const exportedSettings: ExportedSettings = JSON.parse(jsonData);
@@ -98,6 +134,9 @@ Then('data {string} is exported correctly', async function (fileNo: string) {
     expect(validatedExportedSettings, 'Settings was not exported correctly.').toBeTruthy();
 });
 
+/**
+ * Executes the step to assert that there are no changes in exported files.
+ */
 Then('I must not see changes in exported files', async function () {
     // Get exported settings data.
     const jsonData1 = await readAnyFile('./plugin/exported_settings/wp-rocket-settings-test-2023-00-02-64e7ada0d3b70.json');
