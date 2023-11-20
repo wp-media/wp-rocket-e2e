@@ -1,4 +1,4 @@
-@smoke @local @cleanup
+@smoke @local @setup
 Feature: C11856 - Should roll back to the last previous major version when using the roll back functionality
 
     Background:

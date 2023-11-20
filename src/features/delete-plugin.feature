@@ -1,4 +1,4 @@
-@smoke @local @general
+@smoke @local @setup
 Feature: C4466 - Should successfully delete the plugin
 
     Background:

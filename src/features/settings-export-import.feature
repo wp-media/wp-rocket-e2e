@@ -1,4 +1,4 @@
-@smoke @local @export @cleanup
+@smoke @local @export @setup
 Feature: C2148 - Should not change the content of existing fields
 
     Background:
