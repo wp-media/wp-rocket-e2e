@@ -15,7 +15,7 @@ import { ICustomWorld } from "../../common/custom-world";
 import {expect} from "@playwright/test";
 import { Given, When, Then } from '@cucumber/cucumber';
 
-import type { ExportedSettings, Section } from '../../../utils/types';
+import type { ExportedSettings} from '../../../utils/types';
 import { readAnyFile, isExportedCorrectly } from '../../../utils/helpers';
 import { diffChecker as diffCheckerExclusions } from '../../../utils/exclusions';
 
@@ -29,14 +29,18 @@ Given('I disabled all settings', async function (this: ICustomWorld) {
 });
 
 /**
- * Executes the step to save specific settings.
+ * Executes the step to update to the latest version of the WP Rocket plugin.
  */
-Given('I saved specific settings {string} {string}', async function (this: ICustomWorld, section: Section, element: string) {
-    await this.sections.set(section).visit();
-    await this.sections.state(true).toggle(element);
-    await this.utils.saveSettings();
+Given('I updated to latest version', async function (this: ICustomWorld) {
+    await this.utils.uploadNewPlugin('./plugin/new_release.zip');
+    await this.page.waitForLoadState('load', { timeout: 30000 });
+    await expect(this.page).toHaveURL(/action=upload-plugin/); 
+    
+    // Replace current with uploaded
+    await this.page.locator('a:has-text("Replace current with uploaded")').click();
 
     await this.page.waitForLoadState('load', { timeout: 30000 });
+    await expect(this.page).toHaveURL(/overwrite=update-plugin/); 
 });
 
 /**

@@ -19,6 +19,10 @@ import { ChromiumBrowser, chromium } from '@playwright/test';
 import { Sections } from '../common/sections';
 import { selectors as pluginSelectors } from "./../common/selectors";
 import { PageUtils } from "../../utils/page-utils";
+import { batchUpdateVRTestUrl } from "../../utils/helpers";
+import { deleteFolder } from "../../utils/helpers";
+import backstop from 'backstopjs';
+import { SCENARIO_URLS } from "../../config/wp.config";
 
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 import fs from "fs/promises";
@@ -29,10 +33,9 @@ import fs from "fs/promises";
  * The Playwright Chromium browser instance used for testing.
  */
 let browser: ChromiumBrowser;
-
 /**
  * Sets the default timeout for Playwright tests.
- * If PWDEBUG environment variable is set, timeout is infinite (-1); otherwise, it's 10 seconds.
+ * If PWDEBUG environment variable is set, timeout is infinite (-1).
  */
 setDefaultTimeout(process.env.PWDEBUG ? -1 : 60 * 10000);
 
@@ -40,14 +43,27 @@ setDefaultTimeout(process.env.PWDEBUG ? -1 : 60 * 10000);
  * Before all tests, launches the Chromium browser.
  */
 BeforeAll(async function (this: ICustomWorld) {
+    await deleteFolder('./backstop_data/bitmaps_test');
     browser = await chromium.launch({ headless: false });
+
+    if (process.env.npm_config_vrurl === undefined) {
+        await batchUpdateVRTestUrl({
+            optimize: false,
+            urls: SCENARIO_URLS
+        });
+        await backstop('reference');
+        // Update test url request page with wprocket optimizations.
+        await batchUpdateVRTestUrl({
+            optimize: true,
+            urls: SCENARIO_URLS
+        });
+    }
 });
 
 /**
- * Before each test scenario, performs setup tasks.
+ * Before each test scenario without the @setup tag, performs setup tasks.
  */
-Before(async function (this: ICustomWorld) {
-
+Before({tags: 'not @setup'}, async function (this: ICustomWorld) {
     /**
      * To uncomment during implementation of cli
      */
@@ -113,6 +129,22 @@ Before(async function (this: ICustomWorld) {
 });
 
 /**
+ * Before each test scenario with the @setup tag, performs setup tasks.
+ */
+Before({tags: '@setup'}, async function(this: ICustomWorld) {
+    this.context = await browser.newContext({
+        recordVideo: {
+            dir: "test-results/videos",
+        },
+    });
+    this.page = await this.context.newPage();
+    this.sections = new Sections(this.page, pluginSelectors);
+    this.utils = new PageUtils(this.page, this.sections);
+
+    await this.utils.cleanUp();
+});
+
+/**
  * After each test scenario, performs cleanup tasks and captures screenshots and videos in case of failure.
  */
 After(async function (this: ICustomWorld, { pickle, result }) {
@@ -138,7 +170,6 @@ After(async function (this: ICustomWorld, { pickle, result }) {
     }
 
     //  await resetWP();
-
 });
 
 /**
@@ -153,4 +184,4 @@ After(async function (this: ICustomWorld, { pickle, result }) {
  */
 AfterAll(async function () {
     await browser.close();
-})
+});

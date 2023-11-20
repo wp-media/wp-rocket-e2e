@@ -1,21 +1,16 @@
 /**
- * @fileoverview This module defines configuration settings for the WordPress environment.
- * It includes default values and environment variable overrides for various parameters.
- * @module wp.config.sample
- * @see {@link ServerType} for possible values of WP_ENV_TYPE.
- */
-import {ServerType} from "../utils/configurations";
-
-/**
  * The default WordPress admin user configuration for both local and live environments.
  * @constant
- * @type {{ username: string; password: string; localUsername: string; localPassword: string }}
+ * @type {{ username: string; password: string; localUsername: string; localPassword: string; local: string; live: string }}
  */
 const WP_ADMIN_USER = {
 	username: 'live_username',
 	password: 'live_password',
 	localUsername: 'admin',
-	localPassword: 'password'
+	localPassword: 'password',
+	local: 'http://localhost',
+	live: 'https://example.org'
+	
 } as const;
 
 /**
@@ -37,11 +32,11 @@ const WP_ADMIN_USER = {
  * }}
  */
 const {
-	WP_USERNAME = process.env.CI ? WP_ADMIN_USER.localUsername : WP_ADMIN_USER.username,
-	WP_PASSWORD = process.env.CI ? WP_ADMIN_USER.localPassword : WP_ADMIN_USER.password,
-	WP_BASE_URL = 'https://example.org',
+	WP_USERNAME = process.env.npm_config_env !== undefined ? WP_ADMIN_USER.localUsername : WP_ADMIN_USER.username,
+	WP_PASSWORD = process.env.npm_config_env !== undefined ? WP_ADMIN_USER.localPassword : WP_ADMIN_USER.password,
+	WP_BASE_URL = process.env.npm_config_env !== undefined ? WP_ADMIN_USER.local : WP_ADMIN_USER.live,
 	WP_ROOT_DIR = '',
-	WP_ENV_TYPE = ServerType.localhost,
+	WP_ENV_TYPE = '',
 	WP_DOCKER_CONTAINER = '',
 	WP_DOCKER_ROOT_DIR = '',
 	WP_SSH_USERNAME = '',
@@ -49,6 +44,26 @@ const {
 	WP_SSH_KEY = '',
 	WP_SSH_ROOT_DIR = ''
 } = process.env;
+
+/**
+ * Exported Scenario urls to be used for visual regression testing with backstopjs
+ * @exports
+ * @type {{
+* 	home: string;
+* 	llcss: string;	
+* 	noJsLlcss: string;
+* 	elementorLlcss: string;
+* }}
+*/
+const SCENARIO_URLS = {
+	/**
+	 * The value will hold the url paths
+	 */
+	home: '',
+	llcss: '',
+	noJsLlcss: '',
+	elementorLlcss: ''
+}
 
 /**
  * Exported WordPress environment configuration.
@@ -65,6 +80,12 @@ const {
  *   WP_SSH_ADDRESS: string;
  *   WP_SSH_KEY: string;
  *   WP_SSH_ROOT_DIR: string;
+ * 	 SCENARIO_URLS: {
+ * 		home: string;
+ * 		llcss: string;	
+ * 		noJsLlcss: string;
+ * 		elementorLlcss: string;
+ * 	 }
  * }}
  */
 export { 
@@ -79,4 +100,5 @@ export {
 	WP_SSH_ADDRESS,
 	WP_SSH_KEY,
 	WP_SSH_ROOT_DIR,
+	SCENARIO_URLS
 };

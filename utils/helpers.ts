@@ -16,9 +16,11 @@ import type { Page } from '@playwright/test';
 import backstop from 'backstopjs';
 
 // Interfaces
-import { ExportedSettings } from '../utils/types';
+import { ExportedSettings, VRurlConfig } from '../utils/types';
 import { uiReflectedSettings } from './exclusions';
+import { WP_BASE_URL } from '../config/wp.config';
 
+const backstopConfig = './backstop.json';
 /**
  * The user's home directory.
  *
@@ -185,25 +187,111 @@ export const activateFromPopUp = async(page: Page, state: boolean, selector: str
  * @param {string} url - Updated URL.
  * @returns {Promise<void>} - A Promise that resolves after updating the backstopjs scenario URL.
  */
-const updateVRTestUrl = async(url: string = ''): Promise<void> => {
-    const fileName = './backstop.json';
-
+const updateVRTestUrl = async(url: string): Promise<void> => {
     // Read the JSON file
-    const data = await fs.readFile(fileName, 'utf8');
+    const data = await fs.readFile(backstopConfig, 'utf8');
     const jsonData = JSON.parse(data);
 
-    if (url === '') {
-        url = jsonData.scenarios[0].url.replace(/\?nowprocket/g, '');
+    // Empty scenario.
+    jsonData.scenarios = [];
+
+    let readyScript = '';
+
+    if (!url.includes('nowprocket')) {
+        readyScript = 'scrollToBottom.js';
     }
 
     // Modify the JSON object
-    jsonData.scenarios[0].url = url;
+    jsonData.scenarios.push({
+        label: "general",
+        url: url,
+        referenceUrl: "",
+        readyEvent: "",
+        readySelector: "",
+        delay: 0,
+        hideSelectors: [],
+        removeSelectors: [],
+        hoverSelector: "",
+        clickSelector: "",
+        postInteractionWait: 0,
+        selectors: [],
+        selectorExpansion: true,
+        expect: 0,
+        misMatchThreshold: 0.1,
+        requireSameDimensions: true,
+        onReadyScript: readyScript
+    });
 
     // Convert the modified object back to JSON
     const updatedJsonData = JSON.stringify(jsonData, null, 2);
 
     // Write the updated JSON back to the file
-    await fs.writeFile(fileName, updatedJsonData, 'utf8');
+    await fs.writeFile(backstopConfig, updatedJsonData, 'utf8');
+}
+
+export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> => {
+    // Read the JSON file
+    const data = await fs.readFile(backstopConfig, 'utf8');
+    const jsonData = JSON.parse(data);
+
+    // Empty scenario.
+    jsonData.scenarios = [];
+
+    let optimize: string = '?nowprocket';
+    let path: string;
+    let beforeScript = '';
+    let readyScript = '';
+
+    if (config.optimize) {
+        optimize = '';
+    }
+
+    const urls = config.urls;
+    for (const key in urls) {
+        // Check that path is not empty(meaning home);
+        if (urls[key] !== '') {
+            path = urls[key];
+        }
+        else {
+            path = '';
+        }
+
+        if(key.includes('noJs')) {
+            beforeScript = 'disableJavascript.js';
+            readyScript = 'wait.js';
+        }
+        else{
+            beforeScript = '';
+            readyScript = config.optimize ? 'scrollToBottom.js' : '';
+        }
+
+        jsonData.scenarios.push({
+            label: key,
+            url: `${WP_BASE_URL}/${path}${optimize}`,
+            referenceUrl: "",
+            readyEvent: "",
+            readySelector: "",
+            delay: 0,
+            hideSelectors: [],
+            removeSelectors: [],
+            hoverSelector: "",
+            clickSelector: "",
+            postInteractionWait: 0,
+            selectors: [],
+            selectorExpansion: true,
+            expect: 0,
+            misMatchThreshold: 0.1,
+            requireSameDimensions: true,
+            onReadyScript: readyScript,
+            onBeforeScript: beforeScript
+        });
+    }
+
+    // Convert the modified object back to JSON
+    const updatedJsonData = JSON.stringify(jsonData, null, 2);
+
+    // Write the updated JSON back to the file
+    await fs.writeFile(backstopConfig, updatedJsonData, 'utf8');
 }
 
 /**
@@ -213,13 +301,21 @@ const updateVRTestUrl = async(url: string = ''): Promise<void> => {
  * @returns {Promise<void>} - A Promise that resolves after creating a reference snapshot.
  */
 export const createReference = async(url: string): Promise<void> => {
+    if (url === '') {
+        return;
+    }
+
     url = url.replace(/http.*\/\/|www\./g, '');
 
     try {
+        // Update test url to use nowprocket query string.
         await updateVRTestUrl(`https://${url}?nowprocket`);
 
         // Use BackstopJS to capture a snapshot of the webpage.
-        await backstop('reference')
+        await backstop('reference');
+
+         // Update test url request page with wprocket optimizations.
+         await updateVRTestUrl(`https://${url}`);
     } catch (error) {
         console.error(error);
     }
@@ -228,15 +324,33 @@ export const createReference = async(url: string): Promise<void> => {
 /**
  * Compare a reference snapshot with the latest snapshot.
  *
+ * @param {string} label Scenario label. 
+ * 
  * @returns {Promise<void>} - A Promise that resolves after comparing snapshots.
  */
-export const compareReference = async(): Promise<void> => {
+export const compareReference = async(label: string = ''): Promise<void> => {
     try {
-        await updateVRTestUrl();
-    
         // Use BackstopJS to compare snapshots.
-        await backstop('test')
+        await backstop('test', {
+            filter: label
+        });
     } catch (error) {
         console.error(error);
+    }
+}
+
+/**
+ * Delete a folder.
+ *
+ * @param   {string}   folderPath  Path to folder
+ *
+ * @return  {Promise<void>}
+ */
+export const deleteFolder = async(folderPath: string): Promise<void> => {
+    try {
+        await fs.rm(folderPath, { recursive: true });
+        console.log(`Folder "${folderPath}" deleted successfully.`);
+    } catch (error) {
+        console.error(`Error deleting folder "${folderPath}": ${error.message}`);
     }
 }
