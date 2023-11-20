@@ -125,6 +125,11 @@ export const selectors: Selectors = {
                 element: "#lazyload",
                 target: "label[for=lazyload]"
             },
+            lazyloadCssBgImg: {
+                type: FieldType.checkbox,
+                element: "#lazyload_css_bg_img",
+                target: "label[for=lazyload_css_bg_img]"
+            },
             lazyloadIframes: {
                 type: FieldType.checkbox,
                 element: "#lazyload_iframes",

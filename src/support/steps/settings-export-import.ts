@@ -15,7 +15,7 @@ import { ICustomWorld } from "../../common/custom-world";
 import {expect} from "@playwright/test";
 import { Given, When, Then } from '@cucumber/cucumber';
 
-import type { ExportedSettings, Section } from '../../../utils/types';
+import type { ExportedSettings} from '../../../utils/types';
 import { readAnyFile, isExportedCorrectly } from '../../../utils/helpers';
 import { diffChecker as diffCheckerExclusions } from '../../../utils/exclusions';
 
@@ -35,17 +35,6 @@ Given('a previous version of plugin is installed', async function (this: ICustom
  */
 Given('I disabled all settings', async function (this: ICustomWorld) {
     await this.utils.disableAllOptions();
-});
-
-/**
- * Executes the step to save specific settings.
- */
-Given('I saved specific settings {string} {string}', async function (this: ICustomWorld, section: Section, element: string) {
-    await this.sections.set(section).visit();
-    await this.sections.state(true).toggle(element);
-    await this.utils.saveSettings();
-
-    await this.page.waitForLoadState('load', { timeout: 30000 });
 });
 
 /**

@@ -7,27 +7,7 @@
       "height": 1080
     }
   ],
-  "scenarios": [
-    {
-      "label": "General",
-      "url": "",
-      "referenceUrl": "",
-      "readyEvent": "",
-      "readySelector": "",
-      "delay": 0,
-      "hideSelectors": [],
-      "removeSelectors": [],
-      "hoverSelector": "",
-      "clickSelector": "",
-      "postInteractionWait": 0,
-      "selectors": [],
-      "selectorExpansion": true,
-      "expect": 0,
-      "misMatchThreshold": 0.1,
-      "requireSameDimensions": true,
-      "onReadyScript": "scrollToBottom.js"
-    }
-  ],
+  "scenarios": [],
   "paths": {
     "bitmaps_reference": "backstop_data/bitmaps_reference",
     "bitmaps_test": "backstop_data/bitmaps_test",
@@ -38,15 +18,16 @@
   "report": [
     "browser"
   ],
-  "engine": "playwright",
+  "engine": "puppeteer",
   "engineOptions": {
     "args": [
       "--no-sandbox"
-    ]
+    ],
+    "headless": false,
+    "timeout": 0
   },
   "asyncCaptureLimit": 5,
   "asyncCompareLimit": 50,
   "debug": false,
-  "debugWindow": false,
-  "headless": false
+  "debugWindow": false
 }
