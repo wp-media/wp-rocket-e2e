@@ -8,17 +8,7 @@
  * @requires {@link @cucumber/cucumber}
  */
 import { ICustomWorld } from "../../common/custom-world";
-import {expect} from "@playwright/test";
 import { Given, When } from '@cucumber/cucumber';
-
-/**
- * Executes the step to install a specific version of the WP Rocket plugin.
- */
-Given('plugin 3.10.9 is installed', async function (this: ICustomWorld) {
-    // Upload WPR version 3.10.9
-    await this.utils.uploadNewPlugin('./plugin/wp-rocket_3.10.9.zip');
-    await expect(this.page).toHaveURL(/action=upload-plugin/); 
-});
 
 /**
  * Executes the step to open the RUCSS beacon.
@@ -37,21 +27,6 @@ Given('rucss beacon is opened', async function (this: ICustomWorld) {
 });
 
 /**
- * Executes the step to update the WP Rocket plugin to the latest version.
- */
-When('I update to latest version', async function (this: ICustomWorld) {
-    await this.utils.uploadNewPlugin('./plugin/new_release.zip');
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-    await expect(this.page).toHaveURL(/action=upload-plugin/); 
-    
-    // Replace current with uploaded
-    await this.page.locator('a:has-text("Replace current with uploaded")').click();
-
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-    await expect(this.page).toHaveURL(/overwrite=update-plugin/); 
-});
-
-/**
  * Executes the step to go through the RUCSS beacon.
  */
 When('I go through rucss beacon', async function (this: ICustomWorld) {
@@ -64,18 +39,5 @@ When('I go through rucss beacon', async function (this: ICustomWorld) {
     await iframe.locator('#fullArticle').getByRole('link', { name: 'How to exclude files from this optimization / retain selected CSS rules' }).click();
 
     await this.utils.gotoWpr();
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-});
-
-/**
- * Executes the step to downgrade the WP Rocket plugin to the last stable version.
- */
-When('I downgrade to the last stable version', async function (this: ICustomWorld) {
-    await this.utils.uploadNewPlugin('./plugin/previous_stable.zip');
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-    await expect(this.page).toHaveURL(/action=upload-plugin/); 
-
-    // Replace current with uploaded
-    await this.page.locator('a:has-text("Replace current with uploaded")').click();
     await this.page.waitForLoadState('load', { timeout: 30000 });
 });

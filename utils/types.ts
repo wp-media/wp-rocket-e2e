@@ -85,3 +85,6 @@ export interface VRurlConfig {
         llcss: string
     }
 }
+export interface Pickle {
+    name: string;
+}

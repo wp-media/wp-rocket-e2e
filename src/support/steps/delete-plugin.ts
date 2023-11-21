@@ -17,13 +17,6 @@ import { When, Then } from '@cucumber/cucumber';
  */
 When('I delete plugin', async function (this: ICustomWorld) {
 
-    // Confirm Dialog Box.
-    this.page.on('dialog', async(dialog) => {
-        expect(dialog.type()).toContain('confirm');
-        expect(dialog.message()).toContain('Are you sure you want to delete WP Rocket and its data?');
-        await dialog.accept();
-    });
-
     // Goto plugins page.
     await this.utils.gotoPlugin();
 
