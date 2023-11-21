@@ -10,11 +10,12 @@
  */
 import type {Page} from '@playwright/test';
 import type {Sections} from '../src/common/sections';
-import type {Locators, Selector} from './types';
+import type {Locators, Selector, Pickle} from './types';
 import {expect} from "@playwright/test";
+import { ICustomWorld } from '../src/common/custom-world';
+import fs from "fs/promises";
 
 import {WP_BASE_URL, WP_PASSWORD, WP_USERNAME} from '../config/wp.config';
-import {configurations, ServerType} from "./configurations";
 
 /**
  * Utility class for interacting with a Playwright Page instance in WordPress testing.
@@ -279,10 +280,9 @@ export class PageUtils {
         await this.page.locator('#wp-admin-bar-my-account').hover();
         await this.page.waitForSelector('#wp-admin-bar-logout');
         await this.page.locator('#wp-admin-bar-logout a').click();
-        if(configurations.type === ServerType.external) {
-            await this.page.waitForTimeout(3000);
-        }
-        await this.page.click('#user_login');
+  
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+        await this.page.waitForTimeout(3000);
     }
 
     /**
@@ -477,7 +477,7 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public cleanUp = async (): Promise<void> => {
-        await this.wpAdminLogout();
+        await this.visitPage('wp-admin');
         await this.auth();
 
         // Confirm Dialog Box.
@@ -516,5 +516,28 @@ export class PageUtils {
         // Assert that WPR is deleted successfully
         await this.page.waitForSelector('#wp-rocket-deleted');
         await expect(this.page.locator('#wp-rocket-deleted')).toBeVisible(); 
+    }
+
+    /**
+     * Create cucumber screenshot.
+     *
+     * @param   {ICustomWorld}     world   ICustomWorld Interface
+     * @param   {Pickle}  pickle  Pickle Object.
+     *
+     * @return  {Promise<void>}
+     */
+    public async createScreenShot(world: ICustomWorld, pickle: Pickle): Promise<void> {        
+        const img: Buffer = await this.page?.screenshot({ path: `./test-results/screenshots/${pickle.name}.png`, type: "png" })
+        const videoPath: string = await this.page?.video().path();
+
+        world.attach(
+            img, "image/png"
+        );
+
+        const file = await fs.readFile(videoPath);
+        world.attach(
+            file,
+            'video/webm'
+        );
     }
 }

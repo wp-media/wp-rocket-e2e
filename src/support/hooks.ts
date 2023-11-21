@@ -25,7 +25,6 @@ import backstop from 'backstopjs';
 import { SCENARIO_URLS } from "../../config/wp.config";
 
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
-import fs from "fs/promises";
 // import wp, {cp, deleteTransient, generateUsers, resetWP, rm, unzip} from "../../utils/commands";
 // import {configurations, getWPDir} from "../../utils/configurations";
 
@@ -148,28 +147,15 @@ Before({tags: '@setup'}, async function(this: ICustomWorld) {
  * After each test scenario, performs cleanup tasks and captures screenshots and videos in case of failure.
  */
 After(async function (this: ICustomWorld, { pickle, result }) {
-    let videoPath: string;
-    let img: Buffer;
     if (result?.status == Status.FAILED) {
-        img = await this.page?.screenshot({ path: `./test-results/screenshots/${pickle.name}.png`, type: "png" })
-        videoPath = await this.page?.video().path();
+        await this.utils.createScreenShot(this, pickle);
     }
 
     await this.page?.close()
     await this.context?.close()
 
-    if (result?.status == Status.FAILED) {
-        await this.attach(
-            img, "image/png"
-        );
-        const file = await fs.readFile(videoPath);
-        await this.attach(
-            file,
-            'video/webm'
-        );
-    }
-
     //  await resetWP();
+
 });
 
 /**

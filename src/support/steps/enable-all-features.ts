@@ -25,5 +25,4 @@ Then('page loads successfully', async function (this: ICustomWorld) {
     });
     await this.page.goto(WP_BASE_URL);
     await this.page.waitForLoadState('load', { timeout: 30000 });
-    await this.utils.auth();
 });
