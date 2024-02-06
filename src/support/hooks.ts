@@ -22,7 +22,7 @@ import { PageUtils } from "../../utils/page-utils";
 import { batchUpdateVRTestUrl } from "../../utils/helpers";
 import { deleteFolder } from "../../utils/helpers";
 import backstop from 'backstopjs';
-import { SCENARIO_URLS } from "../../config/wp.config";
+import { SCENARIO_URLS, E2E_HEADLESS } from "../../config/wp.config";
 
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 // import wp, {cp, deleteTransient, generateUsers, resetWP, rm, unzip} from "../../utils/commands";
@@ -43,7 +43,7 @@ setDefaultTimeout(process.env.PWDEBUG ? -1 : 60 * 10000);
  */
 BeforeAll(async function (this: ICustomWorld) {
     await deleteFolder('./backstop_data/bitmaps_test');
-    browser = await chromium.launch({ headless: false });
+    browser = await chromium.launch({ headless: !!E2E_HEADLESS });
 
     if (process.env.npm_config_vrurl === undefined) {
         await batchUpdateVRTestUrl({

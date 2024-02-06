@@ -42,7 +42,8 @@ const {
 	WP_SSH_USERNAME = '',
 	WP_SSH_ADDRESS = '',
 	WP_SSH_KEY = '',
-	WP_SSH_ROOT_DIR = ''
+	WP_SSH_ROOT_DIR = '',
+	E2E_HEADLESS= true
 } = process.env;
 
 /**
@@ -100,5 +101,6 @@ export {
 	WP_SSH_ADDRESS,
 	WP_SSH_KEY,
 	WP_SSH_ROOT_DIR,
-	SCENARIO_URLS
+	SCENARIO_URLS,
+	E2E_HEADLESS
 };
