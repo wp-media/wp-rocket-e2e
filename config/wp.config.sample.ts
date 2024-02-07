@@ -48,6 +48,14 @@ const {
 /**
  * Exported Scenario urls to be used for visual regression testing with backstopjs
  * @exports
+ * @type {{
+ * [key: string]: {
+ *	 path?: string,
+ *	 disableJs?: boolean,
+ *	 theme?: string,
+ *	 mobile?: boolean
+ *	}
+ * }}
 */
 const SCENARIO_URLS = {
 	/**
