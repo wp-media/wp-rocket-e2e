@@ -48,21 +48,31 @@ const {
 /**
  * Exported Scenario urls to be used for visual regression testing with backstopjs
  * @exports
- * @type {{
-* 	home: string;
-* 	llcss: string;	
-* 	noJsLlcss: string;
-* 	elementorLlcss: string;
-* }}
 */
 const SCENARIO_URLS = {
 	/**
 	 * The value will hold the url paths
 	 */
-	home: '',
-	llcss: '',
-	noJsLlcss: '',
-	elementorLlcss: ''
+	home: {
+		path: ''
+	},
+	llcss: {
+		path: 'lazyload_css_background_images'
+	},
+	noJsLlcss: {
+		path: 'lazyload_css_background_images',
+		disableJs: true
+	},
+	elementorLlcss: {
+		path: 'elementor-overlay'
+	},
+	delayJs: {
+		path: ''
+	},
+	delayJsMobile: {
+		path: '',
+		mobile: true,
+	},
 }
 
 /**
