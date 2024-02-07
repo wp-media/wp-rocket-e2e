@@ -32,7 +32,7 @@ export interface ICustomWorld extends World {
 	context?: BrowserContext;
 	page?: Page;
     sections?: Sections;
-    utils?: PageUtils
+    utils?: PageUtils;
 }
 
 export class CustomWorld extends World implements ICustomWorld {
