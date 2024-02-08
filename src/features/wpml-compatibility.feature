@@ -17,5 +17,11 @@ Feature: C14655 - Should LL Background work on main/sub language
       Then no error in the console different than nowprocket page 'llcss'
       Then switch to another language
       Then I must not see any error in debug.log
-      #When I log out
+
+    Scenario: Change WPML to query string option
+      Given wpml query string is enabled
+      Then no error in the console different than nowprocket page 'llcss'
+      Then switch to another language
+      Then I must not see any error in debug.log
+
 
