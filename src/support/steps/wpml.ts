@@ -9,14 +9,7 @@
  * @requires {@link ../../../utils/commands}
  * @requires {@link ../../../utils/configurations}
  */
-import {expect} from "@playwright/test";
-import {AfterAll, BeforeAll} from "@cucumber/cucumber";
-import wp, {activatePlugin, cp, generateUsers, resetWP, rm, setTransient} from "../../../utils/commands";
-import {configurations, getWPDir} from "../../../utils/configurations";
-import {match} from "ts-pattern";
-import {WP_BASE_URL} from "../../../config/wp.config";
-
-const { Given, When, Then } = require("@cucumber/cucumber");
+import { Given, Then } from '@cucumber/cucumber';
 
 /**
  * Save directory for wpml language setting

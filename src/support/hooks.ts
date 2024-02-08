@@ -45,7 +45,7 @@ BeforeAll(async function (this: ICustomWorld) {
     await deleteFolder('./backstop_data/bitmaps_test');
     browser = await chromium.launch({ headless: false });
 
-    /*if (process.env.npm_config_vrurl === undefined) {
+    if (process.env.npm_config_vrurl === undefined) {
         await batchUpdateVRTestUrl({
             optimize: false,
             urls: SCENARIO_URLS
@@ -56,7 +56,7 @@ BeforeAll(async function (this: ICustomWorld) {
             optimize: true,
             urls: SCENARIO_URLS
         });
-    }*/
+    }
 });
 
 /**
