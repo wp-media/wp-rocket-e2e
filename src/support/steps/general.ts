@@ -59,6 +59,22 @@ Given('plugin is activated', async function (this: ICustomWorld) {
 });
 
 /**
+ * Executes the step to activate the WP plugin.
+ */
+Given('activate {string} plugin', async function (plugin) {
+    await this.utils.gotoPlugin();
+    await this.utils.togglePluginActivation(plugin, true);
+});
+
+/**
+ * Enable multiple languages
+ */
+Given('activate {string} plugin', async function (plugin) {
+    await this.utils.gotoPlugin();
+    await this.utils.togglePluginActivation(plugin, true);
+});
+
+/**
  * Performs an action to save a specific WP Rocket setting/option.
  * 
  * @step

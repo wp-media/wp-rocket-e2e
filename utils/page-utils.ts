@@ -254,6 +254,15 @@ export class PageUtils {
     }
 
     /**
+     * Navigates to e2e helper plugin.
+     *
+     * @return  {Promise<void>}
+     */
+    public gotoPage = async (url: string): Promise<void> => {
+        await this.page.goto(WP_BASE_URL + url);
+    }
+
+    /**
      * Performs upload new plugin action.
      *
      * @param file File to be uploaded.
