@@ -87,16 +87,15 @@ Then('switch to another language', async function () {
     const consoleHandler = (msg): void => {
         consoleMsg.push(msg.text());
     };
-
     const pageErrorHandler = (error: Error): void => {
         consoleMsg.push(error.message);
     };
-
+    await this.page.pause();
     await this.page.evaluate(async () => {
         // Scroll to the bottom of page.
         const scrollPage: Promise<void> = new Promise((resolve) => {
             let totalHeight = 0;
-            const distance = 100;
+            const distance = 150;
             const timer = setInterval(() => {
                 const scrollHeight = document.body.scrollHeight;
                 window.scrollBy(0, distance);

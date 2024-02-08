@@ -8,8 +8,7 @@ Feature: C14655 - Should LL Background work on main/sub language
       And I save settings 'media' 'lazyloadCssBgImg'
 
     Scenario: Check multiple languages are set for wpml directory check
-      Given I am logged in
-      #Given activate 'wpml-multilingual-cms' plugin
+      Given activate 'wpml-multilingual-cms' plugin
       Given wpml has more than one languages
       #And I save wpml language settings
       Given wpml directory is enabled
@@ -17,6 +16,6 @@ Feature: C14655 - Should LL Background work on main/sub language
     Scenario: Open the page template and compare to nowprocket
       Then no error in the console different than nowprocket page 'llcss'
       Then switch to another language
-      #Then I must not see any error in debug.log
+      Then I must not see any error in debug.log
       #When I log out
 
