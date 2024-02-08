@@ -21,3 +21,7 @@ When('move the mouse', async function (this: ICustomWorld) {
 When('switch language', async function (this:ICustomWorld) {
     await this.page.getByRole('link', { name: 'العربية (Arabic)' }).click();
 });
+
+When('I click on link', async function (this:ICustomWorld) {
+    await this.page.getByRole('link', { name: 'About Us' }).click()
+});

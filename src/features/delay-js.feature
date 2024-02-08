@@ -34,7 +34,7 @@ Feature: No Regression with delayjs script udpate
         And I log out
         And visit page '' in mobile view
         And expand mobile menu 
-        And I click on 'a[href="https://e2e.rocketlabsqa.ovh/about-us/"]'
+        And I click on link
         Then page navigated to the new page 'https://e2e.rocketlabsqa.ovh/about-us'
 
     Scenario: Shouldn't cause console error when enabling Delay JS with WPML
