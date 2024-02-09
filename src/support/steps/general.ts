@@ -61,9 +61,9 @@ Given('plugin is activated', async function (this: ICustomWorld) {
 /**
  * Executes the step to activate the WP plugin.
  */
-Given('activate {string} plugin', async function (plugin) {
+Given('activate {string} plugin', async function (this:ICustomWorld, plugin) {
     await this.utils.gotoPlugin();
-    await this.utils.togglePluginActivation(plugin, true);
+    await this.utils.togglePluginActivation(plugin);
 });
 
 /**
