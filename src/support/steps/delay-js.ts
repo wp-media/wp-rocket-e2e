@@ -8,7 +8,7 @@
  * @requires {@link @cucumber/cucumber}
  */
 import { ICustomWorld } from "../../common/custom-world";
-import { When } from '@cucumber/cucumber';
+import { When, Given } from '@cucumber/cucumber';
 
 /**
  * Executes the step to move the mouse.
@@ -26,9 +26,13 @@ When('I click on link', async function (this:ICustomWorld) {
 });
 
 /**
- * Executes the step to save url format to directory for wpml.
+ * Save directory for wpml language setting
  */
-When('save directory url format', async function (this:ICustomWorld) {
-    await this.page.getByText('Different languages in directories ( (https://e2e.rocketlabsqa.ovh/ - English, h').click();
-    await this.page.locator('#icl_save_language_negotiation_type').getByRole('button', { name: 'Save' }).click();
+Given('wpml directory is enabled', async function(this:ICustomWorld) {
+    await this.page.waitForSelector('#lang-sec-2');
+    await this.page.locator('input[name="icl_language_negotiation_type"]').nth(0).check()
+
+    await this.page.locator('input[type="submit"]').nth(0).click();
+
+    await this.page.waitForLoadState('load', { timeout: 30000 });
 });

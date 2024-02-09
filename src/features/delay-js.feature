@@ -33,7 +33,7 @@ Feature: No Regression with delayjs script udpate
         When I go to 'wp-admin/plugins.php'
         And plugin is activated 'wpml-multilingual-cms'
         And I go to 'wp-admin/admin.php?page=sitepress-multilingual-cms/menu/languages.php'
-        And save directory url format
+        And wpml directory is enabled
         And I log out
         And I visit site url
         Then no error in the console different than nowprocket page 'ar'
