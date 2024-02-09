@@ -18,10 +18,17 @@ When('move the mouse', async function (this: ICustomWorld) {
     await this.page.mouse.up();
 });
 
-When('switch language', async function (this:ICustomWorld) {
-    await this.page.getByRole('link', { name: 'العربية (Arabic)' }).click();
-});
-
+/**
+ * Executes the step to click on about us link.
+ */
 When('I click on link', async function (this:ICustomWorld) {
     await this.page.getByRole('link', { name: 'About Us' }).click()
+});
+
+/**
+ * Executes the step to save url format to directory for wpml.
+ */
+When('save directory url format', async function (this:ICustomWorld) {
+    await this.page.getByText('Different languages in directories ( (https://e2e.rocketlabsqa.ovh/ - English, h').click();
+    await this.page.locator('#icl_save_language_negotiation_type').getByRole('button', { name: 'Save' }).click();
 });
