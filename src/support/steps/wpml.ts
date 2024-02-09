@@ -29,7 +29,6 @@ Given('wpml directory is enabled', async function() {
 Given('wpml query string is enabled', async function () {
     await this.utils.gotoPage('/wp-admin/admin.php?page=sitepress-multilingual-cms%2Fmenu%2Flanguages.php');
     await this.page.getByRole('link', {name: 'Language URL format'}).click()
-    await this.page.pause()
 
     await this.page.locator('input[name="icl_language_negotiation_type"]').nth(2).check()
     await this.page.locator('input[type="submit"]').nth(0).click();
@@ -87,9 +86,11 @@ Given('wpml has more than one languages', async function () {
  * Switch to another language
  */
 Then('switch to another language', async function () {
-    const element = this.page.locator('.wpml-ls-slot-footer:not(.wpml-ls-current-language)').first()
+    const getNextLanguageAnchor = await this.page.locator('.wpml-ls-slot-footer a:not(.wpml-ls-current-language)').first()
+    const getLink = await getNextLanguageAnchor.getAttribute('href');
+    await this.page.goto(getLink)
 
-    element.click()
+    await this.page.waitForLoadState('load', { timeout: 30000 });
 
     const consoleMsg: string[] = [];
     const consoleHandler = (msg): void => {
@@ -118,6 +119,7 @@ Then('switch to another language', async function () {
 
         await scrollPage;
     });
+    this.page.pause();
 
     // Remove the event listeners to prevent duplicate messages.
     this.page.off('console', consoleHandler);

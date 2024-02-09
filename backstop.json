@@ -10,7 +10,7 @@
   "scenarios": [
     {
       "label": "home",
-      "url": "https://e2e.rocketlabsqa.ovh/?nowprocket",
+      "url": "https://e2e.rocketlabsqa.ovh/",
       "referenceUrl": "",
       "readyEvent": "",
       "readySelector": "",
@@ -25,12 +25,12 @@
       "expect": 0,
       "misMatchThreshold": 0.1,
       "requireSameDimensions": true,
-      "onReadyScript": "",
+      "onReadyScript": "scrollToBottom.js",
       "onBeforeScript": ""
     },
     {
       "label": "llcss",
-      "url": "https://e2e.rocketlabsqa.ovh/lazyload_css_background_images?nowprocket",
+      "url": "https://e2e.rocketlabsqa.ovh/lazyload_css_background_images",
       "referenceUrl": "",
       "readyEvent": "",
       "readySelector": "",
@@ -45,12 +45,12 @@
       "expect": 0,
       "misMatchThreshold": 0.1,
       "requireSameDimensions": true,
-      "onReadyScript": "",
+      "onReadyScript": "scrollToBottom.js",
       "onBeforeScript": ""
     },
     {
       "label": "noJsLlcss",
-      "url": "https://e2e.rocketlabsqa.ovh/lazyload_css_background_images?nowprocket",
+      "url": "https://e2e.rocketlabsqa.ovh/lazyload_css_background_images",
       "referenceUrl": "",
       "readyEvent": "",
       "readySelector": "",
@@ -70,7 +70,7 @@
     },
     {
       "label": "elementorLlcss",
-      "url": "https://e2e.rocketlabsqa.ovh/elementor-overlay?nowprocket",
+      "url": "https://e2e.rocketlabsqa.ovh/elementor-overlay",
       "referenceUrl": "",
       "readyEvent": "",
       "readySelector": "",
@@ -85,7 +85,7 @@
       "expect": 0,
       "misMatchThreshold": 0.1,
       "requireSameDimensions": true,
-      "onReadyScript": "",
+      "onReadyScript": "scrollToBottom.js",
       "onBeforeScript": ""
     }
   ],

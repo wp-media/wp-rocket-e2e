@@ -46,7 +46,7 @@ BeforeAll(async function (this: ICustomWorld) {
     browser = await chromium.launch({ headless: false });
 
     if (process.env.npm_config_vrurl === undefined) {
-        await batchUpdateVRTestUrl({
+        /*await batchUpdateVRTestUrl({
             optimize: false,
             urls: SCENARIO_URLS
         });
@@ -55,7 +55,7 @@ BeforeAll(async function (this: ICustomWorld) {
         await batchUpdateVRTestUrl({
             optimize: true,
             urls: SCENARIO_URLS
-        });
+        });*/
     }
 });
 
