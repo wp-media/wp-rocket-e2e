@@ -10,6 +10,7 @@
  * @requires {@link ../../../utils/configurations}
  */
 import { Given, Then } from '@cucumber/cucumber';
+import {expect} from "@playwright/test";
 
 /**
  * Save directory for wpml language setting
@@ -125,5 +126,5 @@ Then('switch to another language', async function () {
     this.page.off('console', consoleHandler);
     this.page.off('pageerror', pageErrorHandler);
 
-    console.log(consoleMsg.length)
+    expect(consoleMsg.length).toEqual(0);
 });
