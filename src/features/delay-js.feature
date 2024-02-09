@@ -24,7 +24,7 @@ Feature: No Regression with delayjs script udpate
         Then I must not see any visual regression 'delayJsMobile'
 
     Scenario: Should links be clickable While Delay JS is enabled
-         Given plugin is installed 'new_release'
+        Given plugin is installed 'new_release'
         And plugin is activated
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And I save settings 'fileOptimization' 'delayJs'
@@ -42,9 +42,10 @@ Feature: No Regression with delayjs script udpate
         And plugin is activated
         And I go to 'wp-admin/plugins.php'
         And plugin is activated 'wpml-multilingual-cms'
+        And I go to 'wp-admin/admin.php?page=sitepress-multilingual-cms/menu/languages.php'
+        And save directory url format
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         When I save settings 'fileOptimization' 'delayJs'
         And I log out
         And I visit site url
-        And switch language
         Then no error in the console different than nowprocket page 'ar'
