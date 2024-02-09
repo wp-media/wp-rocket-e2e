@@ -31,7 +31,7 @@ Feature: No Regression with delayjs script udpate
 
     Scenario: Shouldn't cause console error when enabling Delay JS with WPML
         When I go to 'wp-admin/plugins.php'
-        And plugin is activated 'wpml-multilingual-cms'
+        And activate 'wpml-multilingual-cms' plugin
         And I go to 'wp-admin/admin.php?page=sitepress-multilingual-cms/menu/languages.php'
         And wpml directory is enabled
         And I log out

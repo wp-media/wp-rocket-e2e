@@ -76,13 +76,13 @@ Given('I save settings {string} {string}', async function (this: ICustomWorld, s
 });
 
 /**
- * Executes the step to activate a plugin.
+/**
+ * Executes the step to activate the WP plugin.
  */
-Given('plugin is activated {string}', async function (this: ICustomWorld, plugin) {
-    // Activate plugin
+Given('activate {string} plugin', async function (this: ICustomWorld, plugin) {
+    await this.utils.gotoPlugin();
     await this.utils.togglePluginActivation(plugin);
 });
-
 
 /**
  * Executes the step to log in.
