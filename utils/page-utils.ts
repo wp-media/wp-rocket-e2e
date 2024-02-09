@@ -562,7 +562,7 @@ export class PageUtils {
         // Hover and activate theme.
         await filteredTheme.hover();
 
-        const activate = this.page.locator('.theme-actions .activate');
+        const activate = this.page.locator(`[data-slug="${theme}"] .theme-actions .activate`);
         if (! await activate.isVisible()) {
             return;
         }   
