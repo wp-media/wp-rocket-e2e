@@ -55,7 +55,7 @@ Given('wpml has more than one languages', async function (this:ICustomWorld) {
     await this.utils.visitPage('wp-admin/admin.php?page=sitepress-multilingual-cms%2Fmenu%2Flanguages.php');
     const languages = await this.page.locator('.enabled-languages li').all()
 
-    if(languages.length >= 5) {
+    if(languages.length >= 3) {
         return
     }
 
@@ -63,20 +63,15 @@ Given('wpml has more than one languages', async function (this:ICustomWorld) {
 
     await this.page.locator( '#icl_add_remove_button' ).click();
     let count = 0;
-    const checkboxes = this.page.locator('.available-languages li input[type=checkbox]')
 
     for (let i = 0; i < checkBoxesLength.length; ++i) {
         const randomNumber = Math.floor(Math.random() * checkBoxesLength.length)
-
-        if((await this.page.locator(checkboxes[randomNumber]).isChecked() ) ) {
-            continue;
-        }
 
         if(count > 3) {
             break;
         }
 
-        checkboxes[randomNumber].check()
+        await this.page.locator('.available-languages li input[type=checkbox]').nth(randomNumber).check()
         count++;
     }
 
@@ -120,7 +115,6 @@ When('switch to another language', async function () {
 
         await scrollPage;
     });
-    this.page.pause();
 
     // Remove the event listeners to prevent duplicate messages.
     this.page.off('console', consoleHandler);
