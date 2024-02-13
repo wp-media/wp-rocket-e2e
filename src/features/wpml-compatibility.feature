@@ -7,8 +7,8 @@ Feature: C14655 - Should LL Background work on main/sub language
       When I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
       And I save settings 'media' 'lazyloadCssBgImg'
       Given activate 'wpml-multilingual-cms' plugin
-      Given wpml has more than one languages
-      Given wpml directory is enabled
+      And wpml has more than one languages
+      And wpml directory is enabled
 
     Scenario: Open the page with directory lanaguage
       Then no error in the console different than nowprocket page 'llcss'

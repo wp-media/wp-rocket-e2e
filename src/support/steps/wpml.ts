@@ -81,8 +81,8 @@ Given('wpml has more than one languages', async function (this:ICustomWorld) {
 /**
  * Switch to another language
  */
-When('switch to another language', async function () {
-    const getNextLanguageAnchor = await this.page.locator('.wpml-ls-slot-footer a:not(.wpml-ls-current-language)').first()
+When('switch to another language', async function (this:ICustomWorld) {
+    const getNextLanguageAnchor = this.page.locator('.wpml-ls-slot-footer a:not(.wpml-ls-current-language)').first()
     const getLink = await getNextLanguageAnchor.getAttribute('href');
     await this.page.goto(getLink)
 
