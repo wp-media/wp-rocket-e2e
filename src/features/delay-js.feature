@@ -8,7 +8,7 @@ Feature: No Regression with delayjs script udpate
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And I save settings 'fileOptimization' 'delayJs'
 
-    Scenario: Shouldn't cause console error when enabling Delay JS with genesis theme
+    Scenario: Shouldn't cause console error when enabling Delay JS with theme
         When theme is activated
         And I log out
         And I visit site url
