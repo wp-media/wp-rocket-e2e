@@ -82,9 +82,20 @@ export type Roles = "alert"|"alertdialog"|"application"|"article"|"banner"|"bloc
 export interface VRurlConfig {
     optimize: boolean,
     urls?: {
-        llcss: string
+        [key: string]: {
+            path?: string,
+            disableJs?: boolean,
+            theme?: string,
+            mobile?: boolean
+        }
     }
 }
 export interface Pickle {
     name: string;
 }
+
+export type Viewport = {
+    name: string;
+    width: number;
+    height: number;
+};

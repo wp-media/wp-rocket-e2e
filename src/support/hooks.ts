@@ -45,6 +45,26 @@ BeforeAll(async function (this: ICustomWorld) {
     await deleteFolder('./backstop_data/bitmaps_test');
     browser = await chromium.launch({ headless: false });
 
+    const theme = process.env.THEME ? process.env.THEME : '';
+
+    if (theme !== '') {
+        const context = await browser.newContext({
+            recordVideo: {
+                dir: "test-results/videos",
+            },
+        });
+    
+        const page = await context.newPage();
+        const sections = new Sections(page, pluginSelectors);
+        const utils = new PageUtils(page, sections);
+    
+        await utils.auth();
+        await utils.switchTheme(theme);
+    
+        await page?.close();
+        await context?.close();
+    }
+
     if (process.env.npm_config_vrurl === undefined) {
         await batchUpdateVRTestUrl({
             optimize: false,
