@@ -275,7 +275,7 @@ export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> =>
         }
 
         viewports = 'mobile' in urls[key] && urls[key].mobile ? mobileViewport : [];
-        readyScript = 'mobile' in urls[key] && urls[key].mobile ? 'mobileMenuThemeSwitch.js' : config.optimize ? 'scrollToBottom.js' : '';
+        readyScript = 'mobile' in urls[key] && urls[key].mobile ? 'mobileMenuThemeSwitch.js' : readyScript;
 
         jsonData.scenarios.push({
             label: key,
