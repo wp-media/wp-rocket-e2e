@@ -15,7 +15,6 @@ import { ICustomWorld } from "../../common/custom-world";
 
 import { Given, When, Then } from '@cucumber/cucumber';
 import { WP_BASE_URL } from '../../../config/wp.config';
-import { SCENARIO_URLS } from "../../../config/wp.config";
 import { createReference, compareReference } from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
 import { Page } from '@playwright/test';
@@ -84,6 +83,14 @@ Given('I save settings {string} {string}', async function (this: ICustomWorld, s
     await this.page.waitForLoadState('load', { timeout: 30000 });
 });
 
+/**
+/**
+ * Executes the step to activate the WP plugin.
+ */
+Given('activate {string} plugin', async function (this: ICustomWorld, plugin) {
+    await this.utils.gotoPlugin();
+    await this.utils.togglePluginActivation(plugin);
+});
 
 /**
  * Executes the step to log in.
@@ -158,6 +165,68 @@ When('I create reference', async function (this:ICustomWorld) {
     await createReference(process.env.npm_config_vrurl);
 });
 
+
+/**
+ * Executes the step to activate a theme.
+ */
+When('theme {string} is activated', async function (this:ICustomWorld, theme) {
+    await this.utils.switchTheme(theme);
+});
+
+/**
+ * Executes the step to activate a theme set from the CLI.
+ */
+When('theme is activated', async function (this:ICustomWorld) {
+    const theme = process.env.THEME ? process.env.THEME : '';
+
+    if (theme === '') {
+        return;
+    }
+
+    await this.utils.switchTheme(theme);
+});
+
+/**
+ * Executes the step visit a page in mobile view.
+ */
+When('visit page {string} in mobile view', async function (this:ICustomWorld, page) {
+    await this.page.setViewportSize({
+        width: 500,
+        height: 480,
+    });
+
+    await this.utils.visitPage(page);
+});
+
+/**
+ * Executes the step to expand the mobile menu.
+ */
+When('expand mobile menu', async function (this:ICustomWorld) {
+    let target: string;
+    const theme = process.env.THEME ? process.env.THEME : '';
+
+    if (theme === '') {
+        return;
+    }
+
+    switch (theme) {
+        case 'genesis-sample-develop':
+            target = '#genesis-mobile-nav-primary';
+            break;
+        case 'flatsome':
+            target = '[data-open="#main-menu"]';
+            break;
+        case 'Divi':
+            target = '#et_mobile_nav_menu';
+            break;
+        case 'astra':
+            target = '.ast-mobile-menu-trigger-minimal';
+            break;
+    }
+
+    await this.page.locator(target).click();
+});
+
 /**
  * Executes the step to assert the presence of specific text.
  */
@@ -194,9 +263,9 @@ Then('I must not see any visual regression {string}', async function (this: ICus
 /**
  * Executes the step to check for that there is no console error different from the nowprocket page version.
  */
-Then('no error in the console different than nowprocket page {string}', async function (this: ICustomWorld, label: string) {
-    const consoleMsg1 = await getConsoleMsg(this.page, `${WP_BASE_URL}/${SCENARIO_URLS[label]}?nowprocket`);
-    const consoleMsg2 = await getConsoleMsg(this.page, `${WP_BASE_URL}/${SCENARIO_URLS[label]}`);
+Then('no error in the console different than nowprocket page {string}', async function (this: ICustomWorld, path: string) {
+    const consoleMsg1 = await getConsoleMsg(this.page, `${WP_BASE_URL}/${path}?nowprocket`);
+    const consoleMsg2 = await getConsoleMsg(this.page, `${WP_BASE_URL}/${path}`);
 
     if (consoleMsg2.length !== 0) {
         expect(consoleMsg2).toEqual(consoleMsg1);
@@ -249,3 +318,11 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
 
     return consoleMsg;
 }
+
+/**
+ * Executes the step to assert that page navigation.
+ */
+Then('page navigated to the new page {string}', async function (this: ICustomWorld, url) {
+    const regex = new RegExp(url);
+    await expect(this.page).toHaveURL(regex);
+});

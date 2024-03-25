@@ -540,4 +540,33 @@ export class PageUtils {
             'video/webm'
         );
     }
+
+    /**
+     * Switch theme.
+     *
+     * @param   {string}  theme  Theme to activate.
+     *
+     * @return  {Promise<void>}
+     */
+    public async switchTheme(theme: string): Promise<void> {
+        await this.visitPage('wp-admin/themes.php');
+        await this.page.locator('#wp-filter-search-input').fill(theme);
+        // Wait for filtered theme to be displayed.
+        await this.page.waitForTimeout(2000);
+
+        const filteredTheme = this.page.locator(`[data-slug="${theme}"]`);
+        if (! await filteredTheme.isVisible()) {
+            return;
+        }
+
+        // Hover and activate theme.
+        await filteredTheme.hover();
+
+        const activate = this.page.locator(`[data-slug="${theme}"] .theme-actions .activate`);
+        if (! await activate.isVisible()) {
+            return;
+        }   
+
+        await activate.click();
+    }
 }

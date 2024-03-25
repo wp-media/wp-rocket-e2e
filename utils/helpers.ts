@@ -16,7 +16,7 @@ import type { Page } from '@playwright/test';
 import backstop from 'backstopjs';
 
 // Interfaces
-import { ExportedSettings, VRurlConfig } from '../utils/types';
+import { ExportedSettings, VRurlConfig, Viewport } from '../utils/types';
 import { uiReflectedSettings } from './exclusions';
 import { WP_BASE_URL } from '../config/wp.config';
 
@@ -241,6 +241,15 @@ export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> =>
     let path: string;
     let beforeScript = '';
     let readyScript = '';
+    let viewports: Viewport[];
+
+    const mobileViewport: Viewport[] = [
+        {
+            "name": "mobile",
+            "width": 500,
+            "height": 480
+        }
+    ];
 
     if (config.optimize) {
         optimize = '';
@@ -249,14 +258,14 @@ export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> =>
     const urls = config.urls;
     for (const key in urls) {
         // Check that path is not empty(meaning home);
-        if (urls[key] !== '') {
-            path = urls[key];
+        if (urls[key].path !== '') {
+            path = urls[key].path;
         }
         else {
             path = '';
         }
 
-        if(key.includes('noJs')) {
+        if ( 'disableJs' in urls[key] && urls[key].disableJs ) {
             beforeScript = 'disableJavascript.js';
             readyScript = 'wait.js';
         }
@@ -264,6 +273,9 @@ export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> =>
             beforeScript = '';
             readyScript = config.optimize ? 'scrollToBottom.js' : '';
         }
+
+        viewports = 'mobile' in urls[key] && urls[key].mobile ? mobileViewport : [];
+        readyScript = 'mobile' in urls[key] && urls[key].mobile ? 'mobileMenuThemeSwitch.js' : readyScript;
 
         jsonData.scenarios.push({
             label: key,
@@ -283,7 +295,8 @@ export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> =>
             misMatchThreshold: 0.1,
             requireSameDimensions: true,
             onReadyScript: readyScript,
-            onBeforeScript: beforeScript
+            onBeforeScript: beforeScript,
+            viewports: viewports
         });
     }
 

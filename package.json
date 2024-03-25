@@ -17,6 +17,11 @@
     "test:vr": "$npm_package_config_testCommand --tags @vr",
     "test:llcssbg": "$npm_package_config_testCommand --tags @llcssbg",
     "test:wpml": "$npm_package_config_testCommand --tags @wpml",
+    "test:delayjs:genesis": "THEME=genesis-sample-develop $npm_package_config_testCommand --tags @delayjs",
+    "test:delayjs:flatsome": "THEME=flatsome $npm_package_config_testCommand --tags @delayjs",
+    "test:delayjs:divi": "THEME=Divi $npm_package_config_testCommand --tags @delayjs",
+    "test:delayjs:astra": "THEME=astra $npm_package_config_testCommand --tags @delayjs",
+    "test:test": "$npm_package_config_testCommand --tags @test",
     "wp-env": "wp-env"
   },
   "repository": {
@@ -50,7 +55,7 @@
     "backstopjs": "^6.2.2",
     "json-diff": "^1.0.6",
     "node-ssh": "^13.1.0",
-    "node-zip": "^1.1.1",
+    "node-zip": "^1.0.1",
     "playwright": "^1.34.3",
     "shelljs": "^0.8.5",
     "ssh2": "^1.14.0",
