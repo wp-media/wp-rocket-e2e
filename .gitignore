@@ -12,3 +12,6 @@
 /backstop_data/bitmaps_reference
 /backstop_data/bitmaps_test
 /backstop_data/html_report
+.DS_Store
+.idea
+backstop.json
