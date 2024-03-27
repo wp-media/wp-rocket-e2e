@@ -81,6 +81,12 @@ const SCENARIO_URLS = {
 		path: '',
 		mobile: true,
 	},
+	doubleColon: {
+		path: 'll_bg_css_double_colon'
+	},
+	singleColon: {
+		path: 'll_bg_css_single_colon'
+	}
 }
 
 /**
