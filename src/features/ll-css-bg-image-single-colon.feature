@@ -1,5 +1,5 @@
 @llcssbg @setup
-Feature: C14626 - Should lazyload CSS background images inside internal, and external CSS - Simple colon
+Feature: C14626 - Should lazyload CSS background images inside internal, and external CSS - Single colon
     Background:
         Given I am logged in
         And plugin is installed 'new_release'
