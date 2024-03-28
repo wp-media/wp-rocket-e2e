@@ -22,16 +22,23 @@ import { PageUtils } from "../../utils/page-utils";
 import { batchUpdateVRTestUrl } from "../../utils/helpers";
 import { deleteFolder } from "../../utils/helpers";
 import backstop from 'backstopjs';
-import { SCENARIO_URLS } from "../../config/wp.config";
+import {SCENARIO_URLS, WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
-// import wp, {cp, deleteTransient, generateUsers, resetWP, rm, unzip} from "../../utils/commands";
+import {rename, exists, rm} from "../../utils/commands";
 // import {configurations, getWPDir} from "../../utils/configurations";
 
 /**
  * The Playwright Chromium browser instance used for testing.
  */
 let browser: ChromiumBrowser;
+
+/**
+ * Stores the name of the previous test scenario.
+ * It is initially undefined until it is assigned a value in the `After` hook.
+ * @type {string}
+ */
+let previousScenarioName: string;
 /**
  * Sets the default timeout for Playwright tests.
  * If PWDEBUG environment variable is set, timeout is infinite (-1).
@@ -42,6 +49,13 @@ setDefaultTimeout(process.env.PWDEBUG ? -1 : 60 * 10000);
  * Before all tests, launches the Chromium browser.
  */
 BeforeAll(async function (this: ICustomWorld) {
+    const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
+    const debugLogExists = await exists(debugLogPath);
+
+    if (debugLogExists) {
+        await rm(debugLogPath);
+    }
+
     await deleteFolder('./backstop_data/bitmaps_test');
     browser = await chromium.launch({ headless: false });
 
@@ -77,12 +91,21 @@ BeforeAll(async function (this: ICustomWorld) {
             urls: SCENARIO_URLS
         });
     }
+
 });
 
 /**
  * Before each test scenario without the @setup tag, performs setup tasks.
  */
 Before({tags: 'not @setup'}, async function (this: ICustomWorld) {
+    const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
+    const debugLogExists = await exists(debugLogPath);
+
+    if (debugLogExists && previousScenarioName) {
+        const newDebugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug-${previousScenarioName}.log`;
+        await rename(debugLogPath, newDebugLogPath);
+    }
+
     /**
      * To uncomment during implementation of cli
      */
@@ -139,7 +162,7 @@ Before({tags: 'not @setup'}, async function (this: ICustomWorld) {
     this.page = await this.context.newPage();
     this.sections = new Sections(this.page, pluginSelectors);
     this.utils = new PageUtils(this.page, this.sections);
-    
+
     /**
      * To uncomment during implementation of cli
      */
@@ -167,6 +190,8 @@ Before({tags: '@setup'}, async function(this: ICustomWorld) {
  * After each test scenario, performs cleanup tasks and captures screenshots and videos in case of failure.
  */
 After(async function (this: ICustomWorld, { pickle, result }) {
+    previousScenarioName = pickle.name
+
     if (result?.status == Status.FAILED) {
         await this.utils.createScreenShot(this, pickle);
     }
