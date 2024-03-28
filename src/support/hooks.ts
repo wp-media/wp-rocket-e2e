@@ -49,12 +49,8 @@ setDefaultTimeout(process.env.PWDEBUG ? -1 : 60 * 10000);
  * Before all tests, launches the Chromium browser.
  */
 BeforeAll(async function (this: ICustomWorld) {
-    const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
-    const debugLogExists = await exists(debugLogPath);
-
-    if (debugLogExists) {
-        await rm(debugLogPath);
-    }
+    const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/*.log`;
+    await rm(debugLogPath);
 
     await deleteFolder('./backstop_data/bitmaps_test');
     browser = await chromium.launch({ headless: false });
