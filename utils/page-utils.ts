@@ -373,6 +373,16 @@ export class PageUtils {
         await this.sections.massToggle();
     }
 
+    public clearWPRCache = async(): Promise<void> => {
+        await this.gotoWpr();
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        const clearCacheURL = await this.page.locator('.wpr-button.wpr-button--icon.wpr-icon-trash').first().getAttribute('href');
+
+        await this.page.goto(clearCacheURL);
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+    }
+
     /**
      * Performs the enable all options action on WP Rocket.
      *
