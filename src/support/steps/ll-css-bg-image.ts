@@ -1,6 +1,7 @@
-import { Then } from '@cucumber/cucumber';
+import { When, Then } from '@cucumber/cucumber';
 import { ICustomWorld } from "../../common/custom-world";
 import { expect } from "@playwright/test";
+import { LL_BACKGROUND_IMAGES } from '../../../config/wp.config';
 
 Then('I must see the correct style in the head', async function (this: ICustomWorld) {
   const html = await this.page.evaluate(async () => {
@@ -58,4 +59,37 @@ Then('I must see the correct style in the head', async function (this: ICustomWo
   console.log(failMessage);
 
   expect(isMatch, failMessage).toBeTruthy();
+});
+
+When('I go to {string} Check initial image loaded', async function (this: ICustomWorld, page) {
+    const images = [];
+
+    this.page.on('request', request => {
+        if (request.resourceType() === 'image') {
+            images[0] = request.url();
+            expect(images).not.toContain(LL_BACKGROUND_IMAGES.templateOne.onLoad)
+        }
+    });
+
+    await this.utils.visitPage(page);
+    await this.page.waitForLoadState('load', { timeout: 100000 });
+});
+
+Then('I must see other lazyloaded images', async function (this: ICustomWorld) {
+    const scrollPage: Promise<void> = new Promise((resolve) => {
+        let totalHeight = 0;
+        const distance = 100;
+        const timer = setInterval(() => {
+            const scrollHeight = document.body.scrollHeight;
+            window.scrollBy(0, distance);
+            totalHeight += distance;
+
+            if(totalHeight >= scrollHeight){
+                clearInterval(timer);
+                resolve();
+            }
+        }, 700);
+    });
+
+    await scrollPage;
 });
