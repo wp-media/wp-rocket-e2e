@@ -76,20 +76,35 @@ When('I go to {string} Check initial image loaded', async function (this: ICusto
 });
 
 Then('I must see other lazyloaded images', async function (this: ICustomWorld) {
-    const scrollPage: Promise<void> = new Promise((resolve) => {
-        let totalHeight = 0;
-        const distance = 100;
-        const timer = setInterval(() => {
-            const scrollHeight = document.body.scrollHeight;
-            window.scrollBy(0, distance);
-            totalHeight += distance;
+    await this.page.evaluate(async () => {
+        const scrollPage: Promise<void> = new Promise((resolve) => {
+            let totalHeight = 0;
+            const distance = 100;
+            const timer = setInterval(() => {
+                const scrollHeight = document.body.scrollHeight;
+                window.scrollBy(0, distance);
+                totalHeight += distance;
 
-            if(totalHeight >= scrollHeight){
-                clearInterval(timer);
-                resolve();
+                if (totalHeight >= scrollHeight) {
+                    clearInterval(timer);
+                    resolve();
+                }
+            }, 700);
+        });
+
+        await scrollPage;
+        this.page.on('request', request => {
+            if (request.resourceType() === 'image') {
+                console.log(request.url());
+                //expect(images).not.toContain(LL_BACKGROUND_IMAGES.templateOne.onLoad)
             }
-        }, 700);
+        });
     });
 
-    await scrollPage;
+    this.page.on('request', request => {
+        if (request.resourceType() === 'image') {
+            console.log(request.url());
+            //expect(images).not.toContain(LL_BACKGROUND_IMAGES.templateOne.onLoad)
+        }
+    });
 });
