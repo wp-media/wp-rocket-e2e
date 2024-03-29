@@ -155,19 +155,19 @@ export async function exists(filePath: string): Promise<boolean> {
     let command: string;
 
     if(configurations.type === ServerType.docker) {
-        command = `docker exec -T ${configurations.docker.container} test -f ${filePath}`;
+        command = `docker exec -T ${configurations.docker.container} test -f ${filePath}; echo $?`;
     } else if(configurations.type === ServerType.external) {
-        command = `ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "test -f ${filePath}"`;
+        command = `ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} 'test -f ${filePath}; echo $?'`;
     } else {
-        command = `test -f ${filePath}`;
+        command = `test -f ${filePath}; echo $?`;
     }
 
     try {
-        await exec(command, {
+        const result = await exec(command, {
             cwd: configurations.rootDir,
             async: false
         });
-        return true;
+        return result.stdout.trim() === '0';
     } catch (error) {
         return false;
     }
@@ -222,6 +222,19 @@ export async function rm(destination: string): Promise<void> {
  */
 export async function activatePlugin(name: string): Promise<void>  {
      await wp(`plugin activate ${name}`)
+}
+
+/**
+ * Executes a SQL query on the WordPress database using WP-CLI.
+ *
+ * @function
+ * @name query
+ * @async
+ * @param {string} query - The SQL query to be executed.
+ * @returns {Promise<void>} - A Promise that resolves when the query is executed.
+ */
+export async function query(query: string): Promise<void> {
+    await wp(`db query "${query}"`)
 }
 
 /**

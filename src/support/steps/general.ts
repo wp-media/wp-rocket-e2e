@@ -18,6 +18,8 @@ import { WP_BASE_URL } from '../../../config/wp.config';
 import { createReference, compareReference } from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
 import { Page } from '@playwright/test';
+import { exists } from "../../../utils/commands";
+import { WP_SSH_ROOT_DIR } from "../../../config/wp.config";
 
 /**
  * Executes the step to log in.
@@ -230,11 +232,13 @@ Then('I should see {string}', async function (this: ICustomWorld, text) {
  * Executes the step to check for errors in debug.log.
  */
 Then('I must not see any error in debug.log', async function (this: ICustomWorld){
-    // Goto WP Rocket dashboard
-    await this.utils.gotoWpr();
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-    // Assert that there is no related error in debug.log
-    await expect(this.page.locator('#wpr_debug_log_notice')).toBeHidden();
+    // Define the path to debug.log
+    const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
+
+    // Check if debug.log exists
+    const debugLogExists = await exists(debugLogPath);
+
+    await expect(debugLogExists).toBe(false);
 });
 
 /**
