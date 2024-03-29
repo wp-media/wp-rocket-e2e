@@ -72,7 +72,7 @@ When('I go to {string} Check initial image loaded', async function (this: ICusto
     await this.utils.visitPage(page);
     await this.page.waitForLoadState('load', { timeout: 100000 });
 
-    expect(images).toEqual(LL_BACKGROUND_IMAGES.templateOne.initialImages)
+    expect(images).toEqual(LL_BACKGROUND_IMAGES.lazyLoadCSSTemplate.initialImages)
 });
 
 Then('I must see other lazyloaded images', async function (this: ICustomWorld) {
@@ -102,5 +102,5 @@ Then('I must see other lazyloaded images', async function (this: ICustomWorld) {
         await scrollPage;
     });
 
-    expect(images).toEqual(LL_BACKGROUND_IMAGES.templateOne.lazyLoadedImages)
+    expect(images).toEqual(LL_BACKGROUND_IMAGES.lazyLoadCSSTemplate.lazyLoadedImages)
 });

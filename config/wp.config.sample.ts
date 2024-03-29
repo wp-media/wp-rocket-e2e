@@ -46,6 +46,70 @@ const {
 } = process.env;
 
 /**
+ * Lazy load template images
+ */
+const LL_BACKGROUND_IMAGES = {
+	lazyLoadCSSTemplate: {
+		initialImages: [
+			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test.png',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/image-insidescript.jpeg',
+			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/paper.jpeg',
+			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_inline1.jpeg',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_inline2.jpeg',
+			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/flowers.jpg',
+			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/mountain.webp',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/painting-mountain-lake.avif',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_internal0.webp'
+		],
+		lazyLoadedImages: [
+			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/image/test3.webp',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/image/file_example_JPG_100kB.jpg',
+			'https://rocketlabsqa.ovh/wp-content/rocket-test-data/images/Spain.PNG',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/paper.jpeg',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_internal4.jpg',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/testnotExist.png',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/wp-rocket.svg',
+			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/butterfly.avif',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/file_example_TIFF_1MB.tiff',
+			'https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8',
+			'https://rocketlabsqa.ovh/wp-content/rocket-test-data/images/fixtheissue.jpg',
+			'https://mega.wp-rocket.me/avada/wp-content/rocket-test-data/prague-conference-center-1056491.jpg',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/butterfly%202.avif',
+			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/paper%C3%A9quipesTest.jpeg',
+			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_internal2.jpg',
+			'https://e2e.rocketlabsqa.ovh/wp-content/plugins/revslidertest/public/assets/assets/test_internal3.jpg',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test.png',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/image/test3.gif',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_external1.jpeg',
+			'https://e2e.rocketlabsqa.ovh/test.png',
+			'https://upload.wikimedia.org/wikipedia/commons/1/11/Test-Logo.svg',
+			'https://e2e.rocketlabsqa.ovh/kot%C5%82.png',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/styles/assets/images/relative1.jpeg',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/styles/assets/images/relative2.jpg',
+			'https://new.rocketlabsqa.ovh//wp-content/rocket-test-data/images/wp-rocket.svg',
+			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/nature.jpeg'
+		]
+	},
+	singleColonTemplate: {
+		initialImages: [
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/fabio-sasso-UgpCjt4XLTY-unsplash.jpg',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/underline.png',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/maxime-lebrun-6g3Akg708E0-unsplash.jpg'
+		],
+		lazyLoadedImages: [
+		]
+	},
+	doubleColonTemplate:{
+		initialImages: [
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/fabio-sasso-UgpCjt4XLTY-unsplash.jpg',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/underline.png',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/maxime-lebrun-6g3Akg708E0-unsplash.jpg'
+		],
+	}
+};
+
+
+/**
  * Exported Scenario urls to be used for visual regression testing with backstopjs
  * @exports
  * @type {{
@@ -118,5 +182,6 @@ export {
 	WP_SSH_ADDRESS,
 	WP_SSH_KEY,
 	WP_SSH_ROOT_DIR,
-	SCENARIO_URLS
+	SCENARIO_URLS,
+	LL_BACKGROUND_IMAGES
 };
