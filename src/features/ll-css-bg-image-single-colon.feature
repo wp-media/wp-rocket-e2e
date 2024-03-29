@@ -8,7 +8,7 @@ Feature: C14626 - Should lazyload CSS background images inside internal, and ext
         And I save settings 'media' 'lazyloadCssBgImg'
 
     Scenario: Open the page template and compare to nowprocket
-        Then I must not see any visual regression 'llcssSingleColon'
+        Then I must not see any visual regression 'singleColon'
         Then I must not see any error in debug.log
         When I log out
         Then no error in the console different than nowprocket page 'll_bg_css_single_colon'
