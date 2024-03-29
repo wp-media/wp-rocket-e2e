@@ -76,9 +76,10 @@ When('I go to {string} Check initial image loaded', async function (this: ICusto
 });
 
 Then('I must see other lazyloaded images', async function (this: ICustomWorld) {
+    const images = [];
     this.page.on('request', request => {
         if (request.resourceType() === 'image') {
-            console.log(request.url());
+            images.push(request.url());
         }
     });
     await this.page.evaluate(async () => {
@@ -101,10 +102,5 @@ Then('I must see other lazyloaded images', async function (this: ICustomWorld) {
         await scrollPage;
     });
 
-    this.page.on('request', request => {
-        if (request.resourceType() === 'image') {
-            console.log(request.url());
-            //expect(images).not.toContain(LL_BACKGROUND_IMAGES.templateOne.onLoad)
-        }
-    });
+    expect(images).toEqual(LL_BACKGROUND_IMAGES.templateOne.lazyLoadedImages)
 });
