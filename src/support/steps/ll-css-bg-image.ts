@@ -1,7 +1,7 @@
 import { When, Then } from '@cucumber/cucumber';
 import { ICustomWorld } from "../../common/custom-world";
 import { expect } from "@playwright/test";
-import {LL_BACKGROUND_IMAGES, WP_USERNAME} from '../../../config/wp.config';
+import {LL_BACKGROUND_IMAGES} from '../../../config/wp.config';
 
 Then('I must see the correct style in the head', async function (this: ICustomWorld) {
   const html = await this.page.evaluate(async () => {
@@ -111,10 +111,12 @@ Then('Check {string} inputs for background images', async function (this: ICusto
         }
     });
     await this.page.locator('input[name="lastName"]').nth(1).fill('Random text')
-
-    await this.page.locator('input#fileUpload').hover()
+    //await this.page.locator('#fileUpload').hover()
+    //await this.page.getByText('Choose file').click();
 
     await this.utils.scrollDownBottomOfAPage();
+
+    await this.page.locator('#fileUpload').click()
 
     expect(images).toEqual(LL_BACKGROUND_IMAGES[page].lazyLoadedImages)
 });
