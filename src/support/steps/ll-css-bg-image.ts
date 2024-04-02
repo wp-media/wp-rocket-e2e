@@ -1,7 +1,7 @@
 import { When, Then } from '@cucumber/cucumber';
 import { ICustomWorld } from "../../common/custom-world";
 import { expect } from "@playwright/test";
-import { LL_BACKGROUND_IMAGES } from '../../../config/wp.config';
+import {LL_BACKGROUND_IMAGES, WP_USERNAME} from '../../../config/wp.config';
 
 Then('I must see the correct style in the head', async function (this: ICustomWorld) {
   const html = await this.page.evaluate(async () => {
@@ -61,7 +61,7 @@ Then('I must see the correct style in the head', async function (this: ICustomWo
   expect(isMatch, failMessage).toBeTruthy();
 });
 
-When('I go to {string} Check initial image loaded', async function (this: ICustomWorld, page) {
+When('I go to {string} check initial image loaded', async function (this: ICustomWorld, page) {
     const images = [];
 
     this.page.on('request', request => {
@@ -71,36 +71,50 @@ When('I go to {string} Check initial image loaded', async function (this: ICusto
     });
     await this.utils.visitPage(page);
     await this.page.waitForLoadState('load', { timeout: 100000 });
+    const template = LL_BACKGROUND_IMAGES[page].initialImages
 
-    expect(images).toEqual(LL_BACKGROUND_IMAGES.lazyLoadCSSTemplate.initialImages)
+    expect(images).toEqual(template)
 });
 
-Then('I must see other lazyloaded images', async function (this: ICustomWorld) {
+Then('I must see other {string} images', async function (this: ICustomWorld, page) {
     const images = [];
     this.page.on('request', request => {
         if (request.resourceType() === 'image') {
             images.push(request.url());
         }
     });
-    await this.page.evaluate(async () => {
-        const scrollPage: Promise<void> = new Promise((resolve) => {
+    await this.utils.scrollDownBottomOfAPage();
 
-            let totalHeight = 0;
-            const distance = 100;
-            const timer = setInterval(() => {
-                const scrollHeight = document.body.scrollHeight;
-                window.scrollBy(0, distance);
-                totalHeight += distance;
+    expect(images).toEqual(LL_BACKGROUND_IMAGES[page].lazyLoadedImages)
+});
 
-                if (totalHeight >= scrollHeight) {
-                    clearInterval(timer);
-                    resolve();
-                }
-            }, 700);
-        });
-
-        await scrollPage;
+Then('Check {string} input for background images', async function (this: ICustomWorld, page) {
+    const images = [];
+    this.page.on('request', request => {
+        if (request.resourceType() === 'image') {
+            images.push(request.url());
+        }
     });
 
-    expect(images).toEqual(LL_BACKGROUND_IMAGES.lazyLoadCSSTemplate.lazyLoadedImages)
+    await this.page.locator('input[name="lastName"]').nth(1).fill('Random text')
+
+    await this.utils.scrollDownBottomOfAPage();
+
+    expect(images).toEqual(LL_BACKGROUND_IMAGES[page].lazyLoadedImages)
+});
+
+Then('Check {string} inputs for background images', async function (this: ICustomWorld, page) {
+    const images = [];
+    this.page.on('request', request => {
+        if (request.resourceType() === 'image') {
+            images.push(request.url());
+        }
+    });
+    await this.page.locator('input[name="lastName"]').nth(1).fill('Random text')
+
+    await this.page.locator('input#fileUpload').hover()
+
+    await this.utils.scrollDownBottomOfAPage();
+
+    expect(images).toEqual(LL_BACKGROUND_IMAGES[page].lazyLoadedImages)
 });

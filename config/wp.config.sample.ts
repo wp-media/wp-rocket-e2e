@@ -49,16 +49,14 @@ const {
  * Lazy load template images
  */
 const LL_BACKGROUND_IMAGES = {
-	lazyLoadCSSTemplate: {
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	lazyload_css_background_images: {
 		initialImages: [
 			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test.png',
 			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/image-insidescript.jpeg',
 			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/paper.jpeg',
 			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_inline1.jpeg',
 			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_inline2.jpeg',
-			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/flowers.jpg',
-			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/mountain.webp',
-			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/painting-mountain-lake.avif',
 			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_internal0.webp'
 		],
 		lazyLoadedImages: [
@@ -77,34 +75,44 @@ const LL_BACKGROUND_IMAGES = {
 			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/butterfly%202.avif',
 			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/paper%C3%A9quipesTest.jpeg',
 			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_internal2.jpg',
-			'https://e2e.rocketlabsqa.ovh/wp-content/plugins/revslidertest/public/assets/assets/test_internal3.jpg',
+			'https://e2e.rocketlabsqa.ovh/wp-content/plugins/revslidertest1/public/assets/assets/test_internal3.jpg',
 			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test.png',
 			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/image/test3.gif',
 			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_external1.jpeg',
 			'https://e2e.rocketlabsqa.ovh/test.png',
 			'https://upload.wikimedia.org/wikipedia/commons/1/11/Test-Logo.svg',
 			'https://e2e.rocketlabsqa.ovh/kot%C5%82.png',
-			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/styles/assets/images/relative1.jpeg',
-			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/styles/assets/images/relative2.jpg',
+			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/styles/assets/images/relative1.jpeg',
+			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/styles/assets/images/relative2.jpg',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testsvg.svg',
 			'https://new.rocketlabsqa.ovh//wp-content/rocket-test-data/images/wp-rocket.svg',
+			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/wp-rocket2.svg',
+			'https://e2e.rocketlabsqa.ovh/new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_internal2.jpg',
 			'https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/nature.jpeg'
 		]
 	},
-	singleColonTemplate: {
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	ll_bg_css_single_colon: {
 		initialImages: [
 			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/fabio-sasso-UgpCjt4XLTY-unsplash.jpg',
 			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/underline.png',
 			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/maxime-lebrun-6g3Akg708E0-unsplash.jpg'
 		],
 		lazyLoadedImages: [
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/miguel-luis-6wxFtwSuXHQ-unsplash.jpg'
 		]
 	},
-	doubleColonTemplate:{
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	ll_bg_css_double_colon:{
 		initialImages: [
 			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/fabio-sasso-UgpCjt4XLTY-unsplash.jpg',
 			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/underline.png',
 			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/maxime-lebrun-6g3Akg708E0-unsplash.jpg'
 		],
+		lazyLoadedImages: [
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/miguel-luis-6wxFtwSuXHQ-unsplash.jpg',
+			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/Przechwytywanie.PNG'
+		]
 	}
 };
 

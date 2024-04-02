@@ -579,4 +579,26 @@ export class PageUtils {
 
         await activate.click();
     }
+
+    public scrollDownBottomOfAPage = async (): Promise<void> => {
+        await this.page.evaluate(async () => {
+            const scrollPage: Promise<void> = new Promise((resolve) => {
+
+                let totalHeight = 0;
+                const distance = 150;
+                const timer = setInterval(() => {
+                    const scrollHeight = document.body.scrollHeight;
+                    window.scrollBy(0, distance);
+                    totalHeight += distance;
+
+                    if (totalHeight >= scrollHeight) {
+                        clearInterval(timer);
+                        resolve();
+                    }
+                }, 700);
+            });
+
+            await scrollPage;
+        });
+    }
 }
