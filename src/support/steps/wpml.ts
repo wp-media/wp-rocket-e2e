@@ -14,18 +14,6 @@ import {expect} from "@playwright/test";
 import {ICustomWorld} from "../../common/custom-world";
 
 /**
- * Save directory for wpml language setting
- */
-Given('wpml directory is enabled', async function(this:ICustomWorld) {
-    await this.page.waitForSelector('#lang-sec-2');
-    await this.page.locator('input[name="icl_language_negotiation_type"]').nth(0).check()
-
-    await this.page.locator('input[type="submit"]').nth(0).click();
-
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-});
-
-/**
  * Save query string for wpml language setting
  */
 Given('wpml query string is enabled', async function (this:ICustomWorld) {

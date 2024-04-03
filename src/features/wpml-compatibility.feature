@@ -6,7 +6,8 @@ Feature: C14655 - Should LL Background work on main/sub language
       And plugin is activated
       When I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
       And I save settings 'media' 'lazyloadCssBgImg'
-      Given activate 'wpml-multilingual-cms' plugin
+      When I go to 'wp-admin/plugins.php'
+      And activate 'wpml-multilingual-cms' plugin
       And wpml has more than one languages
       And wpml directory is enabled
 
