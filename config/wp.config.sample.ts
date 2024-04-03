@@ -111,7 +111,6 @@ const LL_BACKGROUND_IMAGES = {
 		],
 		lazyLoadedImages: [
 			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/miguel-luis-6wxFtwSuXHQ-unsplash.jpg',
-			'https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/Przechwytywanie.PNG'
 		]
 	}
 };

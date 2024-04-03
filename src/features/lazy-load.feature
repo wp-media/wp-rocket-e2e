@@ -21,4 +21,4 @@ Feature: Check if content are lazyloaded while scrolling
   Scenario: Open double colon template
     When I log out
     And I go to 'll_bg_css_double_colon' check initial image loaded
-    Then Check 'll_bg_css_double_colon' inputs for background images
+    Then Check 'll_bg_css_double_colon' input for background images

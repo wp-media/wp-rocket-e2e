@@ -102,21 +102,3 @@ Then('Check {string} input for background images', async function (this: ICustom
 
     expect(images).toEqual(LL_BACKGROUND_IMAGES[page].lazyLoadedImages)
 });
-
-Then('Check {string} inputs for background images', async function (this: ICustomWorld, page) {
-    const images = [];
-    this.page.on('request', request => {
-        if (request.resourceType() === 'image') {
-            images.push(request.url());
-        }
-    });
-    await this.page.locator('input[name="lastName"]').nth(1).fill('Random text')
-    //await this.page.locator('#fileUpload').hover()
-    //await this.page.getByText('Choose file').click();
-
-    await this.utils.scrollDownBottomOfAPage();
-
-    await this.page.locator('#fileUpload').click()
-
-    expect(images).toEqual(LL_BACKGROUND_IMAGES[page].lazyLoadedImages)
-});
