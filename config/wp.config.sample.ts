@@ -45,7 +45,6 @@ const {
 	WP_SSH_ROOT_DIR = ''
 } = process.env;
 
-
 /**
  * Exported Scenario urls to be used for visual regression testing with backstopjs
  * @exports
@@ -119,5 +118,5 @@ export {
 	WP_SSH_ADDRESS,
 	WP_SSH_KEY,
 	WP_SSH_ROOT_DIR,
-	SCENARIO_URLS,
+	SCENARIO_URLS
 };
