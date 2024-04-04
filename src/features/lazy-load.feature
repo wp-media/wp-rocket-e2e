@@ -1,4 +1,4 @@
-@llimg @setup
+@llcssbg @setup
 Feature: Check if content are lazyloaded while scrolling
   Background:
     Given I am logged in

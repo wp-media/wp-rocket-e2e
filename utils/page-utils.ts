@@ -375,6 +375,11 @@ export class PageUtils {
         await this.sections.massToggle();
     }
 
+    /**
+     * Performs to clear all cache action on WP Rocket.
+     *
+     * @return  {Promise<void>}
+     */
     public clearWPRCache = async(): Promise<void> => {
         await this.gotoWpr();
         await this.page.waitForLoadState('load', { timeout: 30000 });
@@ -582,6 +587,11 @@ export class PageUtils {
         await activate.click();
     }
 
+    /**
+     * Scroll down to the bottom of a page
+     *
+     * @return  {Promise<void>}
+     */
     public scrollDownBottomOfAPage = async (): Promise<void> => {
         await this.page.evaluate(async () => {
             const scrollPage: Promise<void> = new Promise((resolve) => {
