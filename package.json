@@ -20,7 +20,7 @@
     "test:delayjs:flatsome": "THEME=flatsome $npm_package_config_testCommand --tags @delayjs",
     "test:delayjs:divi": "THEME=Divi $npm_package_config_testCommand --tags @delayjs",
     "test:delayjs:astra": "THEME=astra $npm_package_config_testCommand --tags @delayjs",
-    "test:lcpbeacon": "$npm_package_config_testCommand --tags @lcpbeacon",
+    "test:lcp": "$npm_package_config_testCommand --tags @lcp",
     "test:test": "$npm_package_config_testCommand --tags @test",
     "wp-env": "wp-env"
   },

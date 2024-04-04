@@ -1,4 +1,4 @@
-@lcp @setup @lcpbeacon
+@lcp @setup
 Feature: Beacon script captures the right images.
 
     Background:
