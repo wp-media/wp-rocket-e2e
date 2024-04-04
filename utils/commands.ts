@@ -131,7 +131,6 @@ export async function rename(oldName: string, newName: string): Promise<void> {
     }
 
     if(configurations.type === ServerType.external) {
-        console.log(`ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "mv ${oldName} ${newName}"`);
         await exec(`ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "mv ${oldName} ${newName}"`);
         return;
     }
