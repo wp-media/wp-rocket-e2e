@@ -242,4 +242,50 @@ export async function generateUsers(users: Array<{name: string, email: string, r
     })
 }
 
+function wrapSSHPrefix(command: string): string {
+    const cwd = getWPDir(configurations);
+
+    if(configurations.type === ServerType.external) {
+        return `ssh ${configurations.ssh.username}@${configurations.ssh.address} -i ${configurations.ssh.key} -t "cd ${cwd} && ${command}"`;
+    }
+}
+
+/**
+ * Performs a sql query using wp cli.
+ *
+ * @param   {string}   sql  SQL Query.
+ * @return  {Promise<string>}  A Promise that resolves when the query is executed.
+ */
+export async function dbQuery(sql: string): Promise<string> {
+    sql = sql.replaceAll('"', '\\"');
+
+    const command = wrapSSHPrefix(`wp db query '${sql}'`);
+    const result = exec(command, { silent: true });
+
+    if (result.code === 1) {
+        return '';
+    }
+
+    return result.stdout;
+}
+
+/**
+ * Gets the WordPress Table Prefix.
+ *
+ * @return  {Promise<string>}  A Promise that resolves when the query is executed.
+ */
+export async function getWPTablePrefix(): Promise<string> {
+    const command = wrapSSHPrefix(`wp config get table_prefix`);
+    const result = exec(command, { silent: true });
+
+    if (result.code === 1) {
+        return '';
+    }
+
+    let tablePrefix: string = result.stdout;
+    tablePrefix = tablePrefix.replace(/\r?\n/g, "");
+
+    return tablePrefix;
+}
+
 export default wp;
