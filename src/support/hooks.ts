@@ -94,14 +94,6 @@ BeforeAll(async function (this: ICustomWorld) {
  * Before each test scenario without the @setup tag, performs setup tasks.
  */
 Before({tags: 'not @setup'}, async function (this: ICustomWorld) {
-    const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
-    const debugLogExists = await exists(debugLogPath);
-
-    if (debugLogExists && previousScenarioName) {
-        const newDebugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug-${previousScenarioName}.log`;
-        await rename(debugLogPath, newDebugLogPath);
-    }
-
     /**
      * To uncomment during implementation of cli
      */
@@ -190,6 +182,17 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 
     if (result?.status == Status.FAILED) {
         await this.utils.createScreenShot(this, pickle);
+    }
+
+    const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
+    const debugLogExists = await exists(debugLogPath);
+
+    if (debugLogExists && previousScenarioName) {
+        // Close up white spaces.
+        previousScenarioName = previousScenarioName.toLowerCase();
+        previousScenarioName = previousScenarioName.replaceAll(' ', '-');
+        const newDebugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug-${previousScenarioName}.log`;
+        await rename(debugLogPath, newDebugLogPath);
     }
 
     await this.page?.close()
