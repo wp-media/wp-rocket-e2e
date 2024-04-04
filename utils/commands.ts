@@ -242,6 +242,12 @@ export async function generateUsers(users: Array<{name: string, email: string, r
     })
 }
 
+/**
+ * Wraps a command with the appropriate prefix for SSH.
+ *
+ * @param {string} command - The command to be wrapped.
+ * @returns {string} - The wrapped command.
+ */
 function wrapSSHPrefix(command: string): string {
     const cwd = getWPDir(configurations);
 

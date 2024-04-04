@@ -22,11 +22,9 @@ let data: LcpDataTable[],
     
 const [actual, expected]: [LcpData, LcpData] = [{}, {}];
 
-Given('I clear critical images', async function (this: ICustomWorld) {
-    await this.utils.wprDropdown();
-    await this.page.locator('#wp-admin-bar-clean-saas a').click();
-});
-
+/**
+ * Executes step to visit page based on the form factor(desktop/mobile) and get the LCP/ATF data from DB.
+ */
 Given('I visit the following urls in {string}', async function (this: ICustomWorld, formFactor: string, dataTable) {
     let sql: string,
         result: string,
@@ -62,8 +60,6 @@ Given('I visit the following urls in {string}', async function (this: ICustomWor
             viewport: resultFromStdout[0].viewport
         }
     }
-
-    console.log(actual);
 });
 
 /**
@@ -91,8 +87,6 @@ Then('lcp and atf should be as expected in {string}', async function (this: ICus
             console.error(`Error fetching PageSpeed Insight for ${row[1]}:`, error);
         }
     }
-
-    console.log(expected);
 
     // Make assertions.
     for (const key in actual) {
