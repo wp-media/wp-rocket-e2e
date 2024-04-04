@@ -57,6 +57,7 @@ Given('I visit the following urls in {string}', async function (this: ICustomWor
 
         // Populate the actual data.
         actual[row[0]] = {
+            url: row[1],
             lcp: resultFromStdout[0].lcp,
             viewport: resultFromStdout[0].viewport
         }
@@ -78,10 +79,12 @@ Then('lcp and atf should be as expected in {string}', async function (this: ICus
         try {
             const response = await axios.get(apiUrl);
             const data = response.data;
+            const lcp: string = data.lighthouseResult.audits['prioritize-lcp-image'] &&  data.lighthouseResult.audits['prioritize-lcp-image'].details ? data.lighthouseResult.audits['prioritize-lcp-image'].details.debugData.initiatorPath[0].url : '';
 
             // Populate the expected data.
             expected[row[0]] = {
-                lcp: data.lighthouseResult.audits['prioritize-lcp-image'].details.debugData.initiatorPath[0].url,
+                url: row[1],
+                lcp: lcp,
                 viewport: row[2]
             }
         } catch (error) {
@@ -94,12 +97,12 @@ Then('lcp and atf should be as expected in {string}', async function (this: ICus
     // Make assertions.
     for (const key in actual) {
         if (Object.hasOwnProperty.call(actual, key)) {
-            const [actualLcp, expectedLcp, actualViewport, expectedViewport] = [actual[key].lcp, expected[key].lcp, actual[key].viewport, expected[key].viewport];
+            const [url, actualLcp, expectedLcp, actualViewport, expectedViewport] = [actual[key].url, actual[key].lcp, expected[key].lcp, actual[key].viewport, expected[key].viewport];
         
             // Check if expected lcp is present in actual lcp.
             if (!actualLcp.includes(expectedLcp)) {
                 truthy = false;
-                failMsg += `Expected LCP - ${expectedLcp} is not present in actual - ${actualLcp}\n`;
+                failMsg += `Expected LCP - ${expectedLcp} for ${url} is not present in actual - ${actualLcp}\n\n\n`;
             }
 
             // Cater for multiple expected viewport candidates.
@@ -109,14 +112,14 @@ Then('lcp and atf should be as expected in {string}', async function (this: ICus
                 for (const viewport of viewports) {
                     if (!actualViewport.includes(viewport)) {
                         truthy = false;
-                        failMsg += `Expected Viewport - ${viewport} is not present in actual - ${actualViewport}\n`;
+                        failMsg += `Expected Viewport - ${viewport} for ${url} is not present in actual - ${actualViewport}\n\n\n`;
                     }
                 }
             // Treat single viewport candidate.
             } else{
                 if (!actualViewport.includes(expectedViewport)) {
                     truthy = false;
-                    failMsg += `Expected Viewport - ${expectedViewport} is not present in actual - ${actualViewport}\n`;
+                    failMsg += `Expected Viewport - ${expectedViewport} for ${url} is not present in actual - ${actualViewport}\n\n\n`;
                 }
             }
         }
