@@ -33,7 +33,7 @@ Given('I visit the following urls in {string}', async function (this: ICustomWor
         resultFromStdout: Row[];
 
     // Set page to be visited in mobile.
-    if ( formFactor !== 'desktop' ) {
+    if ( formFactor === 'mobile' ) {
         await this.page.setViewportSize({
             width: 360,
             height: 640,
