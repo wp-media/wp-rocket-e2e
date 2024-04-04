@@ -17,6 +17,7 @@
     "test:vr": "$npm_package_config_testCommand --tags @vr",
     "test:llcssbg": "$npm_package_config_testCommand --tags @llcssbg",
     "test:llimages": "$npm_package_config_testCommand --tags @llimg",
+    "test:wpml": "$npm_package_config_testCommand --tags @wpml",
     "test:delayjs:genesis": "THEME=genesis-sample-develop $npm_package_config_testCommand --tags @delayjs",
     "test:delayjs:flatsome": "THEME=flatsome $npm_package_config_testCommand --tags @delayjs",
     "test:delayjs:divi": "THEME=Divi $npm_package_config_testCommand --tags @delayjs",

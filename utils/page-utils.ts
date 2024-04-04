@@ -216,7 +216,9 @@ export class PageUtils {
         }
        
         const action = activate ? '#activate-' : '#deactivate-';
-        await this.page.locator(action + pluginSlug).click();
+        if (await this.page.locator(action + pluginSlug).isVisible()) {
+            await this.page.locator(action + pluginSlug).click();
+        }
 
         if (!activate) {
             if (await this.page.locator('a:has-text("Force deactivation")').isVisible()) {
