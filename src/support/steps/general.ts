@@ -181,7 +181,7 @@ When('theme is activated', async function (this:ICustomWorld) {
 /**
  * Executes the step visit a page in mobile view.
  */
-When('visit page {string} in mobile view', async function (this:ICustomWorld, page) {
+When('I visit {string} in mobile view', async function (this:ICustomWorld, page) {
     await this.page.setViewportSize({
         width: 500,
         height: 480,

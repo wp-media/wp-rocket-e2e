@@ -24,7 +24,7 @@ Feature: No Regression with delayjs script udpate
         And I save settings 'cache' 'mobileDeviceSeparateCache'
         When theme is activated
         And I log out
-        And visit page '' in mobile view
+        And I visit '' in mobile view
         And expand mobile menu 
         And I click on link
         Then page navigated to the new page 'https://e2e.rocketlabsqa.ovh/about-us'
