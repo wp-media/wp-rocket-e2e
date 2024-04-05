@@ -27,7 +27,7 @@ Feature: No Regression with delayjs script udpate
         And visit page '' in mobile view
         And expand mobile menu 
         And I click on link
-        Then page navigated to the new page 'about-us'
+        Then page navigated to the new page 'https://e2e.rocketlabsqa.ovh/about-us'
 
     Scenario: Shouldn't cause console error when enabling Delay JS with WPML
         When I go to 'wp-admin/plugins.php'
