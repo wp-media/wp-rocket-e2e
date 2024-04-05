@@ -46,7 +46,7 @@ Given('I visit the following urls in {string}', async function (this: ICustomWor
     // Visit page.
     for (const row of data) {
         const url: string = `${WP_BASE_URL}/${row[0]}`;
-        await this.utils.visitPage(url);
+        await this.utils.visitPage(row[0]);
         // Wait for 2 seconds before fetching from DB.
         await this.page.waitForTimeout(2000);
 
