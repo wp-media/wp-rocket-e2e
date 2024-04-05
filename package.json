@@ -21,6 +21,7 @@
     "test:delayjs:flatsome": "THEME=flatsome $npm_package_config_testCommand --tags @delayjs",
     "test:delayjs:divi": "THEME=Divi $npm_package_config_testCommand --tags @delayjs",
     "test:delayjs:astra": "THEME=astra $npm_package_config_testCommand --tags @delayjs",
+    "test:lcp": "$npm_package_config_testCommand --tags @lcp",
     "test:test": "$npm_package_config_testCommand --tags @test",
     "wp-env": "wp-env"
   },
@@ -51,7 +52,9 @@
   },
   "homepage": "https://github.com/wp-media/wp-rocket-e2e#readme",
   "dependencies": {
+    "@types/axios": "^0.14.0",
     "@types/ssh2": "^1.11.13",
+    "axios": "^1.6.8",
     "backstopjs": "^6.2.2",
     "json-diff": "^1.0.6",
     "node-ssh": "^13.1.0",

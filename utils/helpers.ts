@@ -16,7 +16,7 @@ import type { Page } from '@playwright/test';
 import backstop from 'backstopjs';
 
 // Interfaces
-import { ExportedSettings, VRurlConfig, Viewport } from '../utils/types';
+import { ExportedSettings, VRurlConfig, Viewport, Row } from '../utils/types';
 import { uiReflectedSettings } from './exclusions';
 import { WP_BASE_URL } from '../config/wp.config';
 
@@ -366,4 +366,33 @@ export const deleteFolder = async(folderPath: string): Promise<void> => {
     } catch (error) {
         console.error(`Error deleting folder "${folderPath}": ${error.message}`);
     }
+}
+
+export const extractFromStdout = async(data: string): Promise<Row[]> => {
+    // Split the data into lines
+    const lines: string[] = data.trim().split('\n');
+
+    // Extract headers from the first line
+    const headers: string[] = lines[0].split('\t');
+
+    // Initialize an array to store objects
+    const result: Row[] = [];
+
+    // Iterate over the remaining lines and create objects
+    for (let i: number = 1; i < lines.length; i++) {
+        const values: string[] = lines[i].split('\t');
+        const obj: Row = {} as Row;
+        for (let j: number = 0; j < headers.length; j++) {
+            // Use keyof Row to ensure type safety
+            let value: string = values[j];
+            // Perform multiple replacements until no more backslashes are found
+            while (value.includes('\\\\')) {
+                value = value.replace(/\\\\/g, '');
+            }
+            obj[headers[j] as keyof Row] = value;
+        }
+        result.push(obj);
+    }
+
+    return result;
 }

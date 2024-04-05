@@ -99,3 +99,19 @@ export type Viewport = {
     width: number;
     height: number;
 };
+
+export interface LcpDataTable {
+    key: string;
+    value: string;
+}
+export interface LcpData {
+    [key: string]: {
+        url: string,
+        lcp: string,
+        viewport: string
+    }
+}
+
+export interface Row {
+    [key: string]: string
+}
