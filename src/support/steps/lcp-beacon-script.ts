@@ -15,6 +15,7 @@ import { LcpDataTable, LcpData, Row } from "../../../utils/types";
 import axios from 'axios';
 import { dbQuery, getWPTablePrefix } from "../../../utils/commands";
 import { extractFromStdout } from "../../../utils/helpers";
+import { WP_BASE_URL } from '../../../config/wp.config';
 
 let data: LcpDataTable[],
     truthy: boolean = true,
@@ -44,7 +45,8 @@ Given('I visit the following urls in {string}', async function (this: ICustomWor
 
     // Visit page.
     for (const row of data) {
-        await this.utils.visitPage(row[0]);
+        const url: string = `${WP_BASE_URL}/${row[0]}`;
+        await this.utils.visitPage(url);
         // Wait for 2 seconds before fetching from DB.
         await this.page.waitForTimeout(2000);
 
@@ -55,7 +57,7 @@ Given('I visit the following urls in {string}', async function (this: ICustomWor
 
         // Populate the actual data.
         actual[row[0]] = {
-            url: row[1],
+            url: url,
             lcp: resultFromStdout[0].lcp,
             viewport: resultFromStdout[0].viewport
         }
@@ -70,7 +72,8 @@ Then('lcp and atf should be as expected in {string}', async function (this: ICus
 
     // Get the LCP from the PSI
     for (const row of data) {
-        apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(row[1]+'?nowprocket')}/&fields=lighthouseResult.audits&strategy=${formFactor}`;
+        const url: string = `${WP_BASE_URL}/${row[0]}`;
+        apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url+'?nowprocket')}/&fields=lighthouseResult.audits&strategy=${formFactor}`;
 
         try {
             const response = await axios.get(apiUrl);
@@ -79,12 +82,12 @@ Then('lcp and atf should be as expected in {string}', async function (this: ICus
 
             // Populate the expected data.
             expected[row[0]] = {
-                url: row[1],
+                url: url,
                 lcp: lcp,
-                viewport: row[2]
+                viewport: row[1]
             }
         } catch (error) {
-            console.error(`Error fetching PageSpeed Insight for ${row[1]}:`, error);
+            console.error(`Error fetching PageSpeed Insight for ${url}:`, error);
         }
     }
 
