@@ -111,6 +111,68 @@ export async function cp(origin: string, destination: string): Promise<void> {
 }
 
 /**
+ * Renames a file on the host.
+ *
+ * @function
+ * @name rename
+ * @async
+ * @param {string} oldName - The current name of the file.
+ * @param {string} newName - The new name for the file.
+ * @returns {Promise<void>} - A Promise that resolves when the rename operation is completed.
+ */
+export async function rename(oldName: string, newName: string): Promise<void> {
+    if(configurations.type === ServerType.docker) {
+        await exec(`docker exec -T ${configurations.docker.container} mv ${oldName} ${newName}`, {
+            cwd: configurations.rootDir,
+            async: false
+        });
+
+        return;
+    }
+
+    if(configurations.type === ServerType.external) {
+        await exec(`ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "mv ${oldName} ${newName}"`);
+        return;
+    }
+
+    exec(`mv ${oldName} ${newName}`, {
+        cwd: configurations.rootDir,
+        async: false
+    });
+}
+
+/**
+ * Checks if a file exists on the server.
+ *
+ * @function
+ * @name exists
+ * @async
+ * @param {string} filePath - The path of the file to check.
+ * @returns {Promise<boolean>} - A Promise that resolves with true if the file exists, false otherwise.
+ */
+export async function exists(filePath: string): Promise<boolean> {
+    let command: string;
+
+    if(configurations.type === ServerType.docker) {
+        command = `docker exec -T ${configurations.docker.container} test -f ${filePath}; echo $?`;
+    } else if(configurations.type === ServerType.external) {
+        command = `ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} 'test -f ${filePath}; echo $?'`;
+    } else {
+        command = `test -f ${filePath}; echo $?`;
+    }
+
+    try {
+        const result = await exec(command, {
+            cwd: configurations.rootDir,
+            async: false
+        });
+        return result.stdout.trim() === '0';
+    } catch (error) {
+        return false;
+    }
+}
+
+/**
  * Unzips a compressed file to the specified destination on the server.
  *
  * @function
@@ -159,6 +221,19 @@ export async function rm(destination: string): Promise<void> {
  */
 export async function activatePlugin(name: string): Promise<void>  {
      await wp(`plugin activate ${name}`)
+}
+
+/**
+ * Executes a SQL query on the WordPress database using WP-CLI.
+ *
+ * @function
+ * @name query
+ * @async
+ * @param {string} query - The SQL query to be executed.
+ * @returns {Promise<void>} - A Promise that resolves when the query is executed.
+ */
+export async function query(query: string): Promise<void> {
+    await wp(`db query "${query}"`)
 }
 
 /**
