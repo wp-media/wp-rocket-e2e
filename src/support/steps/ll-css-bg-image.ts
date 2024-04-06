@@ -121,7 +121,7 @@ const LL_BACKGROUND_IMAGES = {
     ll_bg_css_double_colon:{
         initialImages: [
             `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/fabio-sasso-UgpCjt4XLTY-unsplash.jpg',
-            `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/600px-Mapang-test.gif',
+            `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/lcp/testjpg4.jpg',
             `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/underline.png',
             `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/Przechwytywanie.PNG',
             `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/maxime-lebrun-6g3Akg708E0-unsplash.jpg',
@@ -129,9 +129,14 @@ const LL_BACKGROUND_IMAGES = {
             `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/BigJPGImage_20mbmb.jpg',
         ],
         lazyLoadedImages: [
+            `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/lcp/testavif.avif',
             `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/img_nature.jpg',
             `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/istockphoto-1184692500-612x612.webp',
-            `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/miguel-luis-6wxFtwSuXHQ-unsplash.jpg',
+            `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/lcp/testjpg.jpg',
+            `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/lcp/testjpg3.jpg',
+            `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/lcp/testjpg2.jpg',
+            `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/butterfly.avif',
+            `${WP_BASE_URL}/`+'wp-content/rocket-test-data/images/lcp/testwebp.webp'
         ]
     }
 };
