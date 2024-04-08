@@ -376,6 +376,21 @@ export class PageUtils {
     }
 
     /**
+     * Performs to clear all cache action on WP Rocket.
+     *
+     * @return  {Promise<void>}
+     */
+    public clearWPRCache = async(): Promise<void> => {
+        await this.gotoWpr();
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        const clearCacheURL = await this.page.locator('.wpr-button.wpr-button--icon.wpr-icon-trash').first().getAttribute('href');
+
+        await this.page.goto(clearCacheURL);
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+    }
+
+    /**
      * Performs the enable all options action on WP Rocket.
      *
      * @return  {Promise<void>}
@@ -570,5 +585,32 @@ export class PageUtils {
         }   
 
         await activate.click();
+    }
+
+    /**
+     * Scroll down to the bottom of a page
+     *
+     * @return  {Promise<void>}
+     */
+    public scrollDownBottomOfAPage = async (): Promise<void> => {
+        await this.page.evaluate(async () => {
+            const scrollPage: Promise<void> = new Promise((resolve) => {
+
+                let totalHeight = 0;
+                const distance = 150;
+                const timer = setInterval(() => {
+                    const scrollHeight = document.body.scrollHeight;
+                    window.scrollBy(0, distance);
+                    totalHeight += distance;
+
+                    if (totalHeight >= scrollHeight) {
+                        clearInterval(timer);
+                        resolve();
+                    }
+                }, 700);
+            });
+
+            await scrollPage;
+        });
     }
 }

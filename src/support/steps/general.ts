@@ -100,6 +100,14 @@ When('I go to {string}', async function (this: ICustomWorld, page) {
 });
 
 /**
+ * Clear wpr cache
+ */
+Given('clear wpr cache', async function (this: ICustomWorld) {
+    await this.utils.clearWPRCache();
+});
+
+
+/**
  * Executes the step to click on a specific button.
  */
 When('I click on {string}', async function (this: ICustomWorld, selector) {
