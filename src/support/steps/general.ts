@@ -100,6 +100,14 @@ When('I go to {string}', async function (this: ICustomWorld, page) {
 });
 
 /**
+ * Clear wpr cache
+ */
+Given('clear wpr cache', async function (this: ICustomWorld) {
+    await this.utils.clearWPRCache();
+});
+
+
+/**
  * Executes the step to click on a specific button.
  */
 When('I click on {string}', async function (this: ICustomWorld, selector) {
@@ -181,7 +189,7 @@ When('theme is activated', async function (this:ICustomWorld) {
 /**
  * Executes the step visit a page in mobile view.
  */
-When('visit page {string} in mobile view', async function (this:ICustomWorld, page) {
+When('I visit {string} in mobile view', async function (this:ICustomWorld, page) {
     await this.page.setViewportSize({
         width: 500,
         height: 480,
@@ -314,7 +322,8 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
 /**
  * Executes the step to assert that page navigation.
  */
-Then('page navigated to the new page {string}', async function (this: ICustomWorld, url) {
+Then('page navigated to the new page {string}', async function (this: ICustomWorld, path) {
+    const url = `${WP_BASE_URL}/${path}`;
     const regex = new RegExp(url);
     await expect(this.page).toHaveURL(regex);
 });
