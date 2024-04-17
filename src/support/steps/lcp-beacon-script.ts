@@ -78,7 +78,7 @@ Then('lcp and atf should be as expected in {string}', async function (this: ICus
         try {
             const response = await axios.get(apiUrl);
             const data = response.data;
-            const lcp: string = data.lighthouseResult.audits['prioritize-lcp-image'] &&  data.lighthouseResult.audits['prioritize-lcp-image'].details ? data.lighthouseResult.audits['prioritize-lcp-image'].details.debugData.initiatorPath[0].url : '';
+            const lcp: string = data.lighthouseResult.audits['prioritize-lcp-image'] &&  data.lighthouseResult.audits['prioritize-lcp-image'].details ? data.lighthouseResult.audits['prioritize-lcp-image'].details.debugData.initiatorPath[0].url : 'not found';
 
             // Populate the expected data.
             expected[row[0]] = {
