@@ -29,15 +29,20 @@ const [actual, expected]: [LcpData, LcpData] = [{}, {}];
 Given('I visit the following urls in {string}', async function (this: ICustomWorld, formFactor: string, dataTable) {
     let sql: string,
         result: string,
-        resultFromStdout: Row[];
+        resultFromStdout: Row[],
+        viewPortWidth: number = 1350,
+        viewPortHeight: number = 940;
 
     // Set page to be visited in mobile.
     if ( formFactor === 'mobile' ) {
-        await this.page.setViewportSize({
-            width: 360,
-            height: 640,
-        });
+        viewPortWidth = 412;
+        viewPortHeight = 823;
     }
+
+    await this.page.setViewportSize({
+        width: viewPortWidth,
+        height: viewPortHeight
+    });
 
     data = dataTable.rows();
 
@@ -78,8 +83,19 @@ Then('lcp and atf should be as expected in {string}', async function (this: ICus
         try {
             const response = await axios.get(apiUrl);
             const data = response.data;
-            const lcp: string = data.lighthouseResult.audits['prioritize-lcp-image'] &&  data.lighthouseResult.audits['prioritize-lcp-image'].details ? data.lighthouseResult.audits['prioritize-lcp-image'].details.debugData.initiatorPath[0].url : 'not found';
+            let lcp: string = data.lighthouseResult.audits['prioritize-lcp-image'] && data.lighthouseResult.audits['prioritize-lcp-image'].details ? data.lighthouseResult.audits['prioritize-lcp-image'].details.debugData.initiatorPath[0].url : 'not found';
 
+            if (lcp === 'not found' && data.lighthouseResult.audits['largest-contentful-paint-element'].details) {
+                const snippet: string = data.lighthouseResult.audits['largest-contentful-paint-element'].details.items[0].items[0].node.snippet;
+                const imageRegex = /<img.*?src="(.*?)"/;
+                const match = snippet.match(imageRegex);
+
+                if (match && match[1]) {
+                    lcp = match[1];
+                }
+            }
+
+            console.log(`LCP for ${url} is ${lcp}`);
             // Populate the expected data.
             expected[row[0]] = {
                 url: url,
