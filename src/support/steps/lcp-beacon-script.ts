@@ -30,13 +30,13 @@ Given('I visit the following urls in {string}', async function (this: ICustomWor
     let sql: string,
         result: string,
         resultFromStdout: Row[],
-        viewPortWidth: number = 1350,
-        viewPortHeight: number = 940;
+        viewPortWidth: number = 1600,
+        viewPortHeight: number = 700;
 
     // Set page to be visited in mobile.
     if ( formFactor === 'mobile' ) {
-        viewPortWidth = 412;
-        viewPortHeight = 823;
+        viewPortWidth = 393;
+        viewPortHeight = 830;
     }
 
     await this.page.setViewportSize({
@@ -61,10 +61,14 @@ Given('I visit the following urls in {string}', async function (this: ICustomWor
         resultFromStdout = await extractFromStdout(result);
 
         // Populate the actual data.
-        actual[row[0]] = {
-            url: url,
-            lcp: resultFromStdout[0].lcp,
-            viewport: resultFromStdout[0].viewport
+        if (resultFromStdout && resultFromStdout.length > 0) {
+            actual[row[0]] = {
+                    url: url,
+                    lcp: resultFromStdout[0].lcp,
+                    viewport: resultFromStdout[0].viewport
+            }
+        } else {
+            console.error(`No result from database for url ${row[0]}`);
         }
     }
 });
