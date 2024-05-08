@@ -153,10 +153,7 @@ Then('lcp and atf should be as expected in {string}', async function (this: ICus
  *
  */
 Given('I go to {string} in {string}', async function (this: ICustomWorld, page, formFactor: string) {
-    let sql: string,
-        result: string,
-        resultFromStdout: Row[],
-        viewPortWidth: number = 1600,
+    let viewPortWidth: number = 1600,
         viewPortHeight: number = 700;
 
     // Set page to be visited in mobile.
@@ -181,9 +178,9 @@ Given('I go to {string} in {string}', async function (this: ICustomWorld, page, 
     await this.page.waitForTimeout(6000);
 
     // Get the LCP/ATF from the DB
-    sql = `SELECT url FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${page}%"`;
-    result = await dbQuery(sql);
-    resultFromStdout = await extractFromStdout(result);
+    const sql = `SELECT url FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${page}%"`;
+    const result = await dbQuery(sql);
+    const resultFromStdout = await extractFromStdout(result);
 
     const lcp = resultFromStdout[0].lcp, viewport = resultFromStdout[0].viewport
 
