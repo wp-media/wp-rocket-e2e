@@ -29,15 +29,20 @@ const [actual, expected]: [LcpData, LcpData] = [{}, {}];
 Given('I visit the following urls in {string}', async function (this: ICustomWorld, formFactor: string, dataTable) {
     let sql: string,
         result: string,
-        resultFromStdout: Row[];
+        resultFromStdout: Row[],
+        viewPortWidth: number = 1600,
+        viewPortHeight: number = 700;
 
     // Set page to be visited in mobile.
     if ( formFactor === 'mobile' ) {
-        await this.page.setViewportSize({
-            width: 360,
-            height: 640,
-        });
+        viewPortWidth = 393;
+        viewPortHeight = 830;
     }
+
+    await this.page.setViewportSize({
+        width: viewPortWidth,
+        height: viewPortHeight
+    });
 
     data = dataTable.rows();
 
@@ -56,10 +61,14 @@ Given('I visit the following urls in {string}', async function (this: ICustomWor
         resultFromStdout = await extractFromStdout(result);
 
         // Populate the actual data.
-        actual[row[0]] = {
-            url: url,
-            lcp: resultFromStdout[0].lcp,
-            viewport: resultFromStdout[0].viewport
+        if (resultFromStdout && resultFromStdout.length > 0) {
+            actual[row[0]] = {
+                    url: url,
+                    lcp: resultFromStdout[0].lcp,
+                    viewport: resultFromStdout[0].viewport
+            }
+        } else {
+            console.error(`No result from database for url ${row[0]}`);
         }
     }
 });
@@ -78,8 +87,19 @@ Then('lcp and atf should be as expected in {string}', async function (this: ICus
         try {
             const response = await axios.get(apiUrl);
             const data = response.data;
-            const lcp: string = data.lighthouseResult.audits['prioritize-lcp-image'] &&  data.lighthouseResult.audits['prioritize-lcp-image'].details ? data.lighthouseResult.audits['prioritize-lcp-image'].details.debugData.initiatorPath[0].url : '';
+            let lcp: string = data.lighthouseResult.audits['prioritize-lcp-image'] && data.lighthouseResult.audits['prioritize-lcp-image'].details ? data.lighthouseResult.audits['prioritize-lcp-image'].details.debugData.initiatorPath[0].url : 'not found';
 
+            if (lcp === 'not found' && data.lighthouseResult.audits['largest-contentful-paint-element'].details) {
+                const snippet: string = data.lighthouseResult.audits['largest-contentful-paint-element'].details.items[0].items[0].node.snippet;
+                const imageRegex = /<img.*?src="(.*?)"/;
+                const match = snippet.match(imageRegex);
+
+                if (match && match[1]) {
+                    lcp = match[1];
+                }
+            }
+
+            console.log(`LCP for ${url} is ${lcp}`);
             // Populate the expected data.
             expected[row[0]] = {
                 url: url,
