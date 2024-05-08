@@ -229,6 +229,19 @@ export class PageUtils {
     }
 
     /**
+     * Switch plugin activation state.
+     *
+     * @param pluginSlug  Plugin slug.
+     *
+     * @return  {Promise<void>}
+     */
+    public deactivatePlugin = async (pluginSlug: string): Promise<void> => {
+        if (await this.page.locator('#deactivate-' + pluginSlug).isVisible()) {
+            await this.page.locator('#deactivate-' + pluginSlug).click();
+        }
+    }
+
+    /**
      * Navigates to Wordpress themes page.
      *
      * @return  {Promise<void>}

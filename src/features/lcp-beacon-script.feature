@@ -6,6 +6,7 @@ Feature: Beacon script captures the right images.
         And plugin is installed 'new_release'
         And plugin is activated
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
+        And deactivate 'wpml-multilingual-cms' plugin
 
     Scenario: Beacon captures expected images in desktop
         When I log out
@@ -70,3 +71,11 @@ Feature: Beacon script captures the right images.
         | lcp_no_fetchpriority                  | []                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
         | lcp_6330_template                     | []                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
         Then lcp and atf should be as expected in 'mobile'
+
+    Scenario: Beacon returns no LCP and ATF in mobile
+        When I log out
+        And I go to 'lcp_no_images' in 'mobile'
+
+    Scenario: Beacon returns no LCP and ATF in desktop
+        When I log out
+        And I go to 'lcp_no_images' in 'mobile'

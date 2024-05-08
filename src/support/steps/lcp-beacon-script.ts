@@ -148,3 +148,45 @@ Then('lcp and atf should be as expected in {string}', async function (this: ICus
 
     expect(truthy, failMsg).toBeTruthy();
 });
+
+/**
+ *
+ */
+Given('I go to {string} in {string}', async function (this: ICustomWorld, page, formFactor: string) {
+    let sql: string,
+        result: string,
+        resultFromStdout: Row[],
+        viewPortWidth: number = 1600,
+        viewPortHeight: number = 700;
+
+    // Set page to be visited in mobile.
+    if ( formFactor === 'mobile' ) {
+        viewPortWidth = 393;
+        viewPortHeight = 830;
+    }
+
+
+    await this.page.waitForLoadState('load', { timeout: 100000 });
+
+    await this.page.setViewportSize({
+        width: viewPortWidth,
+        height: viewPortHeight
+    });
+
+    const tablePrefix: string = await getWPTablePrefix();
+
+    await this.utils.visitPage(page);
+
+    // Wait for 6 seconds before fetching from DB.
+    await this.page.waitForTimeout(6000);
+
+    // Get the LCP/ATF from the DB
+    sql = `SELECT url FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${page}%"`;
+    result = await dbQuery(sql);
+    resultFromStdout = await extractFromStdout(result);
+
+    const lcp = resultFromStdout[0].lcp, viewport = resultFromStdout[0].viewport
+
+    expect(lcp).toBe('not found');
+    expect(viewport).toBe('[]');
+})
