@@ -78,4 +78,4 @@ Feature: Beacon script captures the right images.
 
     Scenario: Beacon returns no LCP and ATF in desktop
         When I log out
-        And I go to 'lcp_no_images' in 'mobile'
+        And I go to 'lcp_no_images' in 'desktop'

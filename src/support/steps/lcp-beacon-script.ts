@@ -178,7 +178,7 @@ Given('I go to {string} in {string}', async function (this: ICustomWorld, page, 
     await this.page.waitForTimeout(6000);
 
     // Get the LCP/ATF from the DB
-    const sql = `SELECT url FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${page}%"`;
+    const sql = `SELECT lcp, viewport FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${page}%"`;
     const result = await dbQuery(sql);
     const resultFromStdout = await extractFromStdout(result);
 
