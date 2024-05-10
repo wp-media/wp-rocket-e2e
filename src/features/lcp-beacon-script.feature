@@ -10,9 +10,9 @@ Feature: Beacon script captures the right images.
     Scenario: Beacon captures expected images in desktop
         When I log out
         And I visit the urls for 'desktop'
-        Then lcp and atf should be as expected in 'desktop'
+        Then lcp and atf should be as expected
 
     Scenario: Beacon captures expected images in mobile
         When I log out
         And I visit the urls for 'mobile'
-        Then lcp and atf should be as expected in 'mobile'
+        Then lcp and atf should be as expected

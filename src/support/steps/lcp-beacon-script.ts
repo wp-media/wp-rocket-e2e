@@ -11,18 +11,17 @@
 import { ICustomWorld } from "../../common/custom-world";
 import { expect } from "@playwright/test";
 import { Given, Then } from "@cucumber/cucumber";
-import { LcpDataTable, LcpData, Row } from "../../../utils/types";
-import axios from 'axios';
+import { LcpData, Row } from "../../../utils/types";
 import { dbQuery, getWPTablePrefix } from "../../../utils/commands";
 import { extractFromStdout } from "../../../utils/helpers";
 import { WP_BASE_URL } from '../../../config/wp.config';
 import fs from 'fs/promises';
 
-let data: LcpDataTable[],
+let data: string,
     truthy: boolean = true,
     failMsg: string = "";
     
-const [actual, expected]: [LcpData, LcpData] = [{}, {}];
+const actual: LcpData = {};
 
 /**
  * Executes step to visit page based on the form factor(desktop/mobile) and get the LCP/ATF data from DB.
@@ -67,6 +66,7 @@ Given('I visit the urls for {string}', async function (this: ICustomWorld, formF
         sql = `SELECT lcp, viewport
                FROM ${tablePrefix}wpr_above_the_fold
                WHERE url LIKE "%${key}%"`;
+        result = await dbQuery(sql);
         resultFromStdout = await extractFromStdout(result);
         // Populate the actual data.
         if (resultFromStdout && resultFromStdout.length > 0) {
@@ -84,24 +84,15 @@ Given('I visit the urls for {string}', async function (this: ICustomWorld, formF
 /**
  * Executes the step to assert that LCP & ATF should be as expected.
  */
-Then('lcp and atf should be as expected in {string}', async function (this: ICustomWorld, formFactor: string) {
-    let expectedResults: any;
-    // Read the expected results from the file
-    try {
-        const data = await fs.readFile(`./src/support/results/expectedResults${formFactor.charAt(0).toUpperCase() + formFactor.slice(1)}.json`, 'utf8');
-        expectedResults = JSON.parse(data);
-    } catch (error) {
-        console.error(`Error reading expected results file for ${formFactor}:`, error);
-        return;
-    }
-
+Then('lcp and atf should be as expected', async function (this: ICustomWorld) {
+    const jsonData = JSON.parse(data);
     // Iterate over the data
-    for (const key in expectedResults) {
-        if (Object.hasOwnProperty.call(expectedResults, key)) {
-            const expected = expectedResults[key];
+    for (const key in jsonData) {
+        if (Object.hasOwnProperty.call(jsonData, key)) {
+            const expected = jsonData[key];
 
             // Check if expected lcp is present in actual lcp.
-            if (!actual[key].lcp.includes(expectedResults[key].lcp)) {
+            if (!actual[key].lcp.includes(jsonData[key].lcp)) {
                 truthy = false;
                 failMsg += `Expected LCP - ${expected.lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}\n\n\n`;
             }
