@@ -56,7 +56,8 @@ Given('I visit the urls for {string}', async function (this: ICustomWorld, formF
     for (const key in jsonData) {
         const url: string = `${WP_BASE_URL}/${key}`;
         await this.utils.visitPage(key);
-        // Wait for 2 seconds before fetching from DB.
+        // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
+
         await this.page.waitForFunction(() => {
             const beacon = document.querySelector('[data-name="wpr-lcp-beacon"]');
             return beacon && beacon.getAttribute('beacon-completed') === 'true';
