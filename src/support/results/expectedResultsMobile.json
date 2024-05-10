@@ -1,0 +1,158 @@
+{
+  "lcp_bg_inline_template": {
+    "lcp": "not found",
+    "viewport": [
+      "/wp-content/rocket-test-data/images/test_inline2.jpeg"
+    ]
+  },
+  "lcp_bg_samestyle_template": {
+    "lcp": "not found",
+    "viewport": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testavif.avif"
+    ]
+  },
+  "lcp_img_loadedbyjs_template": {
+    "lcp": "wp-content/rocket-test-data/images/lcp/testwebp.webp",
+    "viewport": [
+      "http://www.google.com/intl/en_com/images/logo_plain.png"
+    ]
+  },
+  "lcp_with_space_after_title": {
+    "lcp": "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testwebp.webp",
+    "viewport": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_inline2.jpeg"
+    ]
+  },
+  "lcp_test_template": {
+    "lcp": "wp-content/rocket-test-data/images/test_internal2.jpg",
+    "viewport": [
+      "/wp-content/rocket-test-data/images/test_internal2.jpg",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lipsum_logo.jpg"
+    ]
+  },
+  "lcp_bg_responsive_webkit_template": {
+    "lcp": "not found",
+    "viewport": [
+      "https://rocketlabsqa.ovh/wp-content/rocket-test-data/images/fixtheissue.jpg"
+    ]
+  },
+  "lcp_regular_image_template": {
+    "lcp": "wp-content/rocket-test-data/images/600px-Mapang-test.gif",
+    "viewport": [
+      "/test.png",
+      "/wp-content/rocket-test-data/images/test_inline2.jpeg",
+      "/wp-content/rocket-test-data/images/lcp/testPng.png",
+      "/wp-content/rocket-test-data/images/Przechwytywanie.PNG",
+      "/wp-content/rocket-test-data/images/file_example_JPG_100kB.jpg",
+      "/wp-content/rocket-test-data/images/img_nature.jpg",
+      "/wp-content/rocket-test-data/images/mountain.webp"
+    ]
+  },
+  "lcp_bg_multimage_template": {
+    "lcp": "not found",
+    "viewport": [
+      "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/image/test3.webp"
+    ]
+  },
+  "lcp_bg_reponsive_imgset_template": {
+    "lcp": "not found",
+    "viewport": [
+      "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8"
+    ]
+  },
+  "lcp_rsponsive_imagegrid": {
+    "lcp": "https://www.w3schools.com/w3images/rocks.jpg",
+    "viewport": [
+      "https://www.w3schools.com/w3images/wedding.jpg",
+      "wp-content/rocket-test-data/images/lcp/testjpg4.jpg",
+      "https://www.w3schools.com/w3images/ocean.jpg",
+      "wp-content/rocket-test-data/images/lcp/testjpg4.jpg",
+      "wp-content/rocket-test-data/images/lcp/testavif.avif",
+      "/wp-content/rocket-test-data/images/lcp/testwebp.webp",
+      "/wp-content/rocket-test-data/images/Przechwytywanie.PNG",
+      "/wp-content/rocket-test-data/images/file_example_JPG_100kB.jpg",
+      "/wp-content/rocket-test-data/images/file_example_JPG_100kB.jpg"
+    ]
+  },
+  "lcp_attribute_template": {
+    "lcp": "not found",
+    "viewport": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testPng.png",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/wp-rocket2.svg",
+      "/wp-content/rocket-test-data/images/lcp/testsvg.svg"
+    ]
+  },
+  "lcp_no_dimension_svg": {
+    "lcp": "wp-content/rocket-test-data/images/lcp/testsvg.svg",
+    "viewport": [
+      "https://discuss-assets.s3.amazonaws.com/original/3X/1/9/19823cc1f1f887d70755e0b500dd8ce2c51ba7f9.svg"
+    ]
+  },
+  "lcp_no_dimensions_picture": {
+    "lcp": "wp-content/rocket-test-data/images/lcp/testavif.avif",
+    "viewport": [
+      "/test.png",
+      "wp-content/rocket-test-data/images/test3.gif"
+    ]
+  },
+  "lcp_no_dimension_absolute_url": {
+    "lcp": "https://cdn.pixabay.com/photo/2023/06/05/02/01/starry-sky-8041247_1280.jpg",
+    "viewport": [
+      "/rocket-test-data/images/lcp/testPng.png",
+      "/rocket-test-data/images/lcp/testjpg.jpg"
+    ]
+  },
+  "lcp_image_withspecialchar_template": {
+    "lcp": "wp-content/rocket-test-data/images/lcp/image%20with%20space.jpg",
+    "viewport": [
+      "/wp-content/rocket-test-data/images/testspace%202.png",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/paperéquipesTest.jpeg"
+    ]
+  },
+  "lcp_img_addedbydynamicstyle_template": {
+    "lcp": "https://cdn.pixabay.com/photo/2023/06/05/02/01/starry-sky-8041247_1280.jpg",
+    "viewport": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testjpg.jpg",
+      "/wp-content/rocket-test-data/images/paper.jpeg"
+    ]
+  },
+  "lcp_withfetchpriorityhigh_template": {
+    "lcp": "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_inline2.jpeg",
+    "viewport": [
+      "wp-content/rocket-test-data/images/lcp/testjpeg.jpeg"
+    ]
+  },
+  "lcp_single_double": {
+    "lcp": "not found",
+    "viewport": []
+  },
+  "lcp_withfetchprioritylow_template": {
+    "lcp": "wp-content/rocket-test-data/images/test_inline2.jpeg",
+    "viewport": []
+  },
+  "lcp_withfetchpriorityempty_template": {
+    "lcp": "wp-content/rocket-test-data/images/test_inline2.jpeg",
+    "viewport": []
+  },
+  "lcp_withfetchpriorityinurl_template": {
+    "lcp": "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/fetchpriority='high'.jpg",
+    "viewport": []
+  },
+  "lcp_video_poster_template": {
+    "lcp": "wp-content/rocket-test-data/images/lcp/testjpg.jpg",
+    "viewport": []
+  },
+  "lcp_big_image_template": {
+    "lcp": "not found",
+    "viewport": []
+  },
+  "lcp_no_fetchpriority": {
+    "lcp": "wp-content/rocket-test-data/images/istockphoto-1184692500-612x612.webp",
+    "viewport": []
+  },
+  "lcp_6330_template": {
+    "lcp": "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/wp-rocket.svg",
+    "viewport": []
+  }
+}

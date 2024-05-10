@@ -16,6 +16,7 @@ import axios from 'axios';
 import { dbQuery, getWPTablePrefix } from "../../../utils/commands";
 import { extractFromStdout } from "../../../utils/helpers";
 import { WP_BASE_URL } from '../../../config/wp.config';
+import fs from 'fs/promises';
 
 let data: LcpDataTable[],
     truthy: boolean = true,
@@ -26,17 +27,19 @@ const [actual, expected]: [LcpData, LcpData] = [{}, {}];
 /**
  * Executes step to visit page based on the form factor(desktop/mobile) and get the LCP/ATF data from DB.
  */
-Given('I visit the following urls in {string}', async function (this: ICustomWorld, formFactor: string, dataTable) {
+Given('I visit the urls for {string}', async function (this: ICustomWorld, formFactor: string) {
     let sql: string,
         result: string,
         resultFromStdout: Row[],
         viewPortWidth: number = 1600,
-        viewPortHeight: number = 700;
+        viewPortHeight: number = 700,
+        resultFile: string = './src/support/results/expectedResultsDesktop.json';
 
     // Set page to be visited in mobile.
-    if ( formFactor === 'mobile' ) {
-        viewPortWidth = 393;
-        viewPortHeight = 830;
+    if (formFactor === 'mobile') {
+        viewPortWidth = 389;
+        viewPortHeight = 829;
+        resultFile = './src/support/results/expectedResultsMobile.json';
     }
 
     await this.page.setViewportSize({
@@ -44,31 +47,35 @@ Given('I visit the following urls in {string}', async function (this: ICustomWor
         height: viewPortHeight
     });
 
-    data = dataTable.rows();
+    const data = await fs.readFile(resultFile, 'utf8');
+    const jsonData = JSON.parse(data);
 
     const tablePrefix: string = await getWPTablePrefix();
 
     // Visit page.
-    for (const row of data) {
-        const url: string = `${WP_BASE_URL}/${row[0]}`;
-        await this.utils.visitPage(row[0]);
+    for (const key in jsonData) {
+        const url: string = `${WP_BASE_URL}/${key}`;
+        await this.utils.visitPage(key);
         // Wait for 2 seconds before fetching from DB.
-        await this.page.waitForTimeout(2000);
+        await this.page.waitForFunction(() => {
+            const beacon = document.querySelector('[data-name="wpr-lcp-beacon"]');
+            return beacon && beacon.getAttribute('beacon-completed') === 'true';
+        });
 
         // Get the LCP/ATF from the DB
-        sql = `SELECT lcp, viewport FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${row[0]}%"`;
-        result = await dbQuery(sql);
+        sql = `SELECT lcp, viewport
+               FROM ${tablePrefix}wpr_above_the_fold
+               WHERE url LIKE "%${key}%"`;
         resultFromStdout = await extractFromStdout(result);
-
         // Populate the actual data.
         if (resultFromStdout && resultFromStdout.length > 0) {
-            actual[row[0]] = {
-                    url: url,
-                    lcp: resultFromStdout[0].lcp,
-                    viewport: resultFromStdout[0].viewport
+            actual[key] = {
+                url: url,
+                lcp: resultFromStdout[0].lcp,
+                viewport: resultFromStdout[0].viewport
             }
         } else {
-            console.error(`No result from database for url ${row[0]}`);
+            console.error(`No result from database for url ${key}`);
         }
     }
 });
@@ -77,74 +84,41 @@ Given('I visit the following urls in {string}', async function (this: ICustomWor
  * Executes the step to assert that LCP & ATF should be as expected.
  */
 Then('lcp and atf should be as expected in {string}', async function (this: ICustomWorld, formFactor: string) {
-    let apiUrl: string;
-
-    // Get the LCP from the PSI
-    for (const row of data) {
-        const url: string = `${WP_BASE_URL}/${row[0]}`;
-        apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url+'?nowprocket')}/&fields=lighthouseResult.audits&strategy=${formFactor}`;
-
-        try {
-            const response = await axios.get(apiUrl);
-            const data = response.data;
-            let lcp: string = data.lighthouseResult.audits['prioritize-lcp-image'] && data.lighthouseResult.audits['prioritize-lcp-image'].details ? data.lighthouseResult.audits['prioritize-lcp-image'].details.debugData.initiatorPath[0].url : 'not found';
-
-            if (lcp === 'not found' && data.lighthouseResult.audits['largest-contentful-paint-element'].details) {
-                const snippet: string = data.lighthouseResult.audits['largest-contentful-paint-element'].details.items[0].items[0].node.snippet;
-                const imageRegex = /<img.*?src="(.*?)"/;
-                const match = snippet.match(imageRegex);
-
-                if (match && match[1]) {
-                    lcp = match[1];
-                }
-            }
-
-            console.log(`LCP for ${url} is ${lcp}`);
-            // Populate the expected data.
-            expected[row[0]] = {
-                url: url,
-                lcp: lcp,
-                viewport: row[1]
-            }
-        } catch (error) {
-            console.error(`Error fetching PageSpeed Insight for ${url}:`, error);
-        }
+    let expectedResults: any;
+    // Read the expected results from the file
+    try {
+        const data = await fs.readFile(`./src/support/results/expectedResults${formFactor.charAt(0).toUpperCase() + formFactor.slice(1)}.json`, 'utf8');
+        expectedResults = JSON.parse(data);
+    } catch (error) {
+        console.error(`Error reading expected results file for ${formFactor}:`, error);
+        return;
     }
 
-    // Make assertions.
-    for (const key in actual) {
-        if (Object.hasOwnProperty.call(actual, key)) {
-            const [url, actualLcp, expectedLcp, actualViewport, expectedViewport] = [actual[key].url, actual[key].lcp, expected[key].lcp, actual[key].viewport, expected[key].viewport];
-        
+    // Iterate over the data
+    for (const key in expectedResults) {
+        if (Object.hasOwnProperty.call(expectedResults, key)) {
+            const expected = expectedResults[key];
+
             // Check if expected lcp is present in actual lcp.
-            if (!actualLcp.includes(expectedLcp)) {
+            if (!actual[key].lcp.includes(expectedResults[key].lcp)) {
                 truthy = false;
-                failMsg += `Expected LCP - ${expectedLcp} for ${url} is not present in actual - ${actualLcp}\n\n\n`;
+                failMsg += `Expected LCP - ${expected.lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}\n\n\n`;
             }
 
             // Cater for multiple expected viewport candidates.
-            if (expectedViewport.includes(',')) {
-                const viewports = expectedViewport.split(',').map(item => item.trim());
-
-                for (const viewport of viewports) {
-                    if (!actualViewport.includes(viewport)) {
-                        truthy = false;
-                        failMsg += `Expected Viewport - ${viewport} for ${url} is not present in actual - ${actualViewport}\n\n\n`;
-                    }
-                }
-            // Treat single viewport candidate.
-            } else{
-                if (!actualViewport.includes(expectedViewport)) {
+            for (const viewport of expected.viewport) {
+                if (!actual[key].viewport.includes(viewport)) {
                     truthy = false;
-                    failMsg += `Expected Viewport - ${expectedViewport} for ${url} is not present in actual - ${actualViewport}\n\n\n`;
+                    failMsg += `Expected Viewport - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}\n\n\n`;
                 }
             }
         }
     }
 
-    if ( failMsg !== '' ) {
+    if (failMsg !== '') {
         console.log(failMsg);
     }
 
     expect(truthy, failMsg).toBeTruthy();
 });
+
