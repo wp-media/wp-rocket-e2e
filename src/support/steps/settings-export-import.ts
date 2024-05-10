@@ -17,7 +17,7 @@ import { Given, When, Then } from '@cucumber/cucumber';
 
 import type { ExportedSettings} from '../../../utils/types';
 import { readAnyFile, isExportedCorrectly } from '../../../utils/helpers';
-import { diffChecker as diffCheckerExclusions } from '../../../utils/exclusions';
+import { enabledOptions, diffChecker as diffCheckerExclusions } from '../../../utils/exclusions';
 
 import { diff } from 'json-diff';
 
@@ -75,12 +75,14 @@ Then('data is imported correctly', async function (this: ICustomWorld) {
     /**
      * Assert that data is imported correctly.
      */
-    await this.sections.set("cache").visit();
-    await expect(this.page.locator(this.sections.getStringProperty("cacheLoggedUser", "element"))).toBeChecked();
-    const mobileDeviceCache = await this.page.locator(this.sections.getStringProperty("mobileDeviceCache", "element")).isChecked();
-    expect(mobileDeviceCache).toBeFalsy();
-    const separateMobileDeviceCache = await this.page.locator(this.sections.getStringProperty("mobileDeviceSeparateCache", "element")).isChecked();
-    expect(separateMobileDeviceCache).toBeFalsy();
+    if(await this.sections.doesSectionExist('cache')) {
+        await this.sections.set("cache").visit();
+        await expect(this.page.locator(this.sections.getStringProperty("cacheLoggedUser", "element"))).toBeChecked();
+        const mobileDeviceCache = await this.page.locator(this.sections.getStringProperty("mobileDeviceCache", "element")).isChecked();
+        expect(mobileDeviceCache).toBeFalsy();
+        const separateMobileDeviceCache = await this.page.locator(this.sections.getStringProperty("mobileDeviceSeparateCache", "element")).isChecked();
+        expect(separateMobileDeviceCache).toBeFalsy();
+    }
 
     // No option is enabled in file optimization section.
     await this.sections.set("fileOptimization").visit();
@@ -129,8 +131,14 @@ Then('data is imported correctly', async function (this: ICustomWorld) {
 Then('data {string} is exported correctly', async function (fileNo: string) {
     const jsonData = await readAnyFile(`./plugin/exported_settings/wp-rocket-settings-test-2023-00-0${fileNo}-64e7ada0d3b70.json`);
     const exportedSettings: ExportedSettings = JSON.parse(jsonData);
+    const version = parseFloat(exportedSettings['version'].toString());
 
-    const validatedExportedSettings = await isExportedCorrectly(exportedSettings, 'lazyload');
+    if (version >= 3.16) {
+        const exclusions: Array<string> = ['do_caching_mobile_files', 'cache_mobile'];
+        enabledOptions.push(...exclusions);
+    }
+    
+    const validatedExportedSettings = await isExportedCorrectly(exportedSettings, enabledOptions);
     expect(validatedExportedSettings, 'Settings was not exported correctly.').toBeTruthy();
 });
 
