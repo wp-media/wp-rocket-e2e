@@ -68,6 +68,16 @@ Given('plugin is activated', async function (this: ICustomWorld) {
  * Given plugin is installed
  */
 Given('I save settings {string} {string}', async function (this: ICustomWorld, section: Section, element: string) {
+    // If section does not exist and element is cacheLoggedUser, toggle the element in addons section.
+    if (!(await this.sections.doesSectionExist(section))) {
+        if (element === 'cacheLoggedUser') {
+            await this.sections.set('addons').visit();
+            await this.sections.state(true).toggle(element);
+        }
+
+        return;
+    }   
+
     await this.sections.set(section).visit();
     await this.sections.state(true).toggle(element);
     await this.utils.saveSettings();
