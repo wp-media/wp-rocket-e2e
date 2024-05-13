@@ -1,6 +1,7 @@
 /config/wp.config.ts
 /node_modules
 /artifacts
+/plugin/wp_mobile.zip
 /plugin/new_release.zip
 /plugin/previous_stable.zip
 /plugin/wp-rocket_3.10.9.zip
