@@ -46,7 +46,7 @@ Given('I visit the urls for {string}', async function (this: ICustomWorld, formF
         height: viewPortHeight
     });
 
-    const data = await fs.readFile(resultFile, 'utf8');
+    data = await fs.readFile(resultFile, 'utf8');
     const jsonData = JSON.parse(data);
 
     const tablePrefix: string = await getWPTablePrefix();

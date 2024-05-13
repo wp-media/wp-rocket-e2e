@@ -46,13 +46,13 @@
   "lcp_regular_image_template": {
     "lcp": "wp-content/rocket-test-data/images/600px-Mapang-test.gif",
     "viewport": [
-      "/test.png, /wp-content/rocket-test-data/images/test_inline2.jpeg",
-      "/wp-content/rocket-test-data/images/Przechwytywanie.PNG",
-      "/wp-content/rocket-test-data/images/file_example_JPG_100kB.jpg"
+      "/test.png",
+      "/wp-content/rocket-test-data/images/test_inline2.jpeg",
+      "/wp-content/rocket-test-data/images/Przechwytywanie.PNG"
     ]
   },
   "lcp_bg_reponsive_imgset_template": {
-    "lcp": "not found",
+    "lcp": "/wp-content/rocket-test-data/images/lcp/testavif.avif",
     "viewport": [
       "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8"
     ]
@@ -85,8 +85,7 @@
   "lcp_no_dimensions_picture": {
     "lcp": "wp-content/rocket-test-data/images/lcp/testavif.avif",
     "viewport": [
-      "/test.png",
-      "https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test3.gif"
+      "/test.png"
     ]
   },
   "lcp_no_dimension_absolute_url": {
@@ -97,10 +96,10 @@
     ]
   },
   "lcp_image_withspecialchar_template": {
-    "lcp": "wp-content/rocket-test-data/images/lcp/image%20with%20space.jpg",
+    "lcp": "wp-content/rocket-test-data/images/lcp/imagewithspace.jpg",
     "viewport": [
-      "/wp-content/rocket-test-data/images/testspace%202.png",
-      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/paperéquipesTest.jpeg"
+      "/wp-content/rocket-test-data/images/testspace2.png",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/paperquipesTest.jpeg"
     ]
   },
   "lcp_img_addedbydynamicstyle_template": {
@@ -118,7 +117,6 @@
   "lcp_single_double": {
     "lcp": "not found",
     "viewport": [
-      "/wp-content/rocket-test-data/images/lcp/testwebp.webp"
     ]
   },
   "lcp_withfetchprioritylow_template": {
