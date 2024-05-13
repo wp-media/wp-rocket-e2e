@@ -130,12 +130,3 @@ When('I connect as {string}', async function (user) {
 Given('I am on the page {string}', {timeout: 10 * 1000} , async function (url) {
     await this.page.goto(`${configurations.baseUrl}${url}`);
 });
-
-/**
- * Executes the cleanup steps after all scenarios are executed.
- */
-AfterAll(function () {
-    const wpDir = getWPDir(configurations);
-    rm(`${wpDir}/wp-content/plugins/wp-rocket`)
-    rm(`${wpDir}/wp-content/plugins/wp-rocket-e2e-test-helper`)
-})
