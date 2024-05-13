@@ -316,7 +316,7 @@ export class Sections {
     
             return true;
 
-        } catch (error: unknown) {
+        } catch (error) {
             if (error instanceof Error) {
                 // Handle the error
                 console.error("An error occurred:", error.message);
