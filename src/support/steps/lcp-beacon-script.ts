@@ -33,7 +33,7 @@ Given('I visit the urls for {string}', async function (this: ICustomWorld, formF
         viewPortWidth: number = 1600,
         viewPortHeight: number = 700,
         resultFile: string = './src/support/results/expectedResultsDesktop.json',
-        is_mobile = 0;
+        isMobile = 0;
 
     // Set page to be visited in mobile.
     if (formFactor === 'mobile') {
@@ -65,13 +65,13 @@ Given('I visit the urls for {string}', async function (this: ICustomWorld, formF
             });
 
             if (formFactor !== 'desktop') {
-                is_mobile = 1;
+                isMobile = 1;
             }
             // Get the LCP/ATF from the DB
             sql = `SELECT lcp, viewport
                    FROM ${tablePrefix}wpr_above_the_fold
                    WHERE url LIKE "%${key}%"
-                     AND is_mobile = ${is_mobile}`;
+                     AND is_mobile = ${isMobile}`;
             result = await dbQuery(sql);
             resultFromStdout = await extractFromStdout(result);
             // Populate the actual data.
