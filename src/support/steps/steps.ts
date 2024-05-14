@@ -14,7 +14,6 @@ import {AfterAll, BeforeAll} from "@cucumber/cucumber";
 import wp, {
     activatePlugin,
     cp,
-    deactivatePlugin,
     generateUsers,
     resetWP,
     rm,
@@ -65,13 +64,6 @@ Given('I have an {word} account', { timeout: 60 * 1000 }, async function (status
  */
 Given('plugin {word} is activated', async function (plugin) {
    await activatePlugin(plugin)
-});
-
-/**
- * Executes the step to deactivate a specified WP plugin via CLI.
- */
-Given('plugin {word} is deactivated', async function (plugin) {
-    await deactivatePlugin(plugin)
 });
 
 /**

@@ -115,3 +115,11 @@ export interface LcpData {
 export interface Row {
     [key: string]: string
 }
+
+export interface NoLcpData {
+    [key: string]: {
+        type: string,
+        lcp: string,
+        viewport: string
+    }
+}

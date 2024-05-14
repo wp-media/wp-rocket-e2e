@@ -18,7 +18,9 @@ import { WP_BASE_URL } from '../../../config/wp.config';
 import { createReference, compareReference } from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
 import { Page } from '@playwright/test';
-
+import {
+    deactivatePlugin, installRemotePlugin,
+} from "../../../utils/commands";
 /**
  * Executes the step to log in.
  */
@@ -325,4 +327,18 @@ Then('page navigated to the new page {string}', async function (this: ICustomWor
     const url = `${WP_BASE_URL}/${path}`;
     const regex = new RegExp(url);
     await expect(this.page).toHaveURL(regex);
+});
+
+/**
+ * Executes the step to deactivate a specified WP plugin via CLI.
+ */
+Given('plugin {word} is deactivated', async function (plugin) {
+    await deactivatePlugin(plugin)
+});
+
+/**
+ * Executes the step to install a WP plugin from a remote url via CLI.
+ */
+Given('install {word} plugin', async function (pluginUrl) {
+    await installRemotePlugin(pluginUrl)
 });

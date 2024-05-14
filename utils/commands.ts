@@ -224,6 +224,20 @@ export async function activatePlugin(name: string): Promise<void>  {
 }
 
 /**
+ * Install a WordPress plugin from a remote zip file using the WP-CLI command.
+ *
+ * @function
+ * @name installRemotePlugin
+ * @async
+ * @param {string} url - The remote zip url of the plugin to be installed.
+ * @returns {Promise<void>} - A Promise that resolves when the installation is completed.
+ */
+export async function installRemotePlugin(url: string): Promise<void>  {
+    await wp(`plugin install ${url}`)
+}
+
+
+/**
  * Executes a SQL query on the WordPress database using WP-CLI.
  *
  * @function

@@ -11,7 +11,7 @@
 import { ICustomWorld } from "../../common/custom-world";
 import { expect } from "@playwright/test";
 import { Given, Then, When } from "@cucumber/cucumber";
-import { LcpDataTable, LcpData, Row } from "../../../utils/types";
+import {LcpDataTable, LcpData, Row, NoLcpData} from "../../../utils/types";
 import axios from 'axios';
 import { dbQuery, getWPTablePrefix } from "../../../utils/commands";
 import { extractFromStdout } from "../../../utils/helpers";
@@ -22,6 +22,7 @@ let data: LcpDataTable[],
     failMsg: string = "";
     
 const [actual, expected]: [LcpData, LcpData] = [{}, {}];
+const [noATF, expectedATF]: [NoLcpData, NoLcpData] = [{}, {}];
 
 /**
  * Executes step to visit page based on the form factor(desktop/mobile) and get the LCP/ATF data from DB.
@@ -182,8 +183,43 @@ When('I go to {string} in {string}', async function (this: ICustomWorld, page, f
     const result = await dbQuery(sql);
     const resultFromStdout = await extractFromStdout(result);
 
-    const lcp = resultFromStdout[0].lcp, viewport = resultFromStdout[0].viewport
+    noATF[0] = {
+        type: formFactor,
+        lcp: resultFromStdout[0].lcp,
+        viewport: resultFromStdout[0].viewport
+    }
 
-    expect(lcp).toBe('not found');
-    expect(viewport).toBe('[]');
+    expectedATF[0] = {
+        type: formFactor,
+        lcp: 'not found',
+        viewport: '[]'
+    }
+})
+
+/**
+ * Executes step to visit page based on the form factor(desktop/mobile) and get the LCP/ATF data from DB.
+ */
+Then('I must not see any LCP or ATF', async function (this: ICustomWorld) {
+    for (const key in noATF) {
+        if (Object.hasOwnProperty.call(noATF, key)) {
+            const [actualType, expectedType, actualLcp, expectedLcp, actualViewport, expectedViewport] = [noATF[key].type, expectedATF[key].type, noATF[key].lcp, expectedATF[key].lcp, noATF[key].viewport, expectedATF[key].viewport];
+
+            // Check if expected lcp is present in actual lcp.
+            if (!actualLcp.includes(expectedLcp)) {
+                truthy = false;
+                failMsg += `Expected LCP - ${expectedLcp} for ${expectedType} is not present in actual - ${actualLcp} for ${actualType}\n\n\n`;
+            }
+
+            if (!actualViewport.includes(expectedViewport)) {
+                truthy = false;
+                failMsg += `Expected Viewport - ${expectedViewport} for ${expectedType} is not present in actual - ${actualViewport} for ${actualType}\n\n\n`;
+            }
+        }
+    }
+
+    if ( failMsg !== '' ) {
+        console.log(failMsg);
+    }
+
+    expect(truthy, failMsg).toBeTruthy();
 })
