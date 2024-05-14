@@ -19,7 +19,8 @@ import fs from 'fs/promises';
 
 let data: string,
     truthy: boolean = true,
-    failMsg: string = "";
+    failMsg: string = "",
+    jsonData: Record<string, { lcp: string[]; viewport: string[]; enabled: boolean }>;
     
 const actual: LcpData = {};
 
@@ -48,7 +49,7 @@ Given('I visit the urls for {string}', async function (this: ICustomWorld, formF
     });
 
     data = await fs.readFile(resultFile, 'utf8');
-    const jsonData = JSON.parse(data);
+    jsonData = JSON.parse(data);
 
     const tablePrefix: string = await getWPTablePrefix();
 
@@ -92,7 +93,6 @@ Given('I visit the urls for {string}', async function (this: ICustomWorld, formF
  * Executes the step to assert that LCP & ATF should be as expected.
  */
 Then('lcp and atf should be as expected for {string}', async function (this: ICustomWorld, formFactor: string) {
-    const jsonData = JSON.parse(data);
     // Iterate over the data
     for (const key in jsonData) {
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
