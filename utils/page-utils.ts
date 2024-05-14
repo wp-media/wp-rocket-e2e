@@ -313,6 +313,8 @@ export class PageUtils {
     public disableAllOptions = async (): Promise<void> => {
         await this.gotoWpr();
 
+        this.sections.optionState = false;
+
         if(await this.sections.doesSectionExist('cache')) {
             // Disable all settings for cache section.
             await this.sections.set("cache").visit();
@@ -418,10 +420,12 @@ export class PageUtils {
 
         await this.page.waitForLoadState('load', { timeout: 30000 });
 
+        this.sections.optionState = true;
+
         if (await this.sections.doesSectionExist('cache')) {
              // Enable all settings for cache section.
             await this.sections.set("cache").visit();
-            await this.sections.state(true).massToggle();
+            await this.sections.massToggle();
             await this.saveSettings();
 
             await this.page.waitForLoadState('load', { timeout: 30000 });
