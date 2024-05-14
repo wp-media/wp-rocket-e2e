@@ -84,14 +84,6 @@ Given('activate {string} plugin', async function (this: ICustomWorld, plugin) {
 });
 
 /**
- * Executes the step to deactivate the WP plugin.
- */
-Given('deactivate {string} plugin', async function (this: ICustomWorld, plugin) {
-    await this.utils.gotoPlugin();
-    await this.utils.deactivatePlugin(plugin);
-});
-
-/**
  * Executes the step to log in.
  */
 When('I log in', async function (this: ICustomWorld) {

@@ -6,7 +6,7 @@ Feature: Beacon script captures the right images.
         And plugin is installed 'new_release'
         And plugin is activated
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
-        And deactivate 'sitepress-multilingual-cms' plugin
+        And plugin 'sitepress-multilingual-cms' is deactivated
 
     Scenario: Beacon captures expected images in desktop
         When I log out

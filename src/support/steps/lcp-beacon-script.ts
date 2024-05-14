@@ -10,7 +10,7 @@
  */
 import { ICustomWorld } from "../../common/custom-world";
 import { expect } from "@playwright/test";
-import { Given, Then } from "@cucumber/cucumber";
+import { Given, Then, When } from "@cucumber/cucumber";
 import { LcpDataTable, LcpData, Row } from "../../../utils/types";
 import axios from 'axios';
 import { dbQuery, getWPTablePrefix } from "../../../utils/commands";
@@ -152,7 +152,7 @@ Then('lcp and atf should be as expected in {string}', async function (this: ICus
 /**
  *
  */
-Given('I go to {string} in {string}', async function (this: ICustomWorld, page, formFactor: string) {
+When('I go to {string} in {string}', async function (this: ICustomWorld, page, formFactor: string) {
     let viewPortWidth: number = 1600,
         viewPortHeight: number = 700;
 
