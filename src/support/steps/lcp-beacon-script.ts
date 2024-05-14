@@ -32,7 +32,8 @@ Given('I visit the urls for {string}', async function (this: ICustomWorld, formF
         resultFromStdout: Row[],
         viewPortWidth: number = 1600,
         viewPortHeight: number = 700,
-        resultFile: string = './src/support/results/expectedResultsDesktop.json';
+        resultFile: string = './src/support/results/expectedResultsDesktop.json',
+        is_mobile = 0;
 
     // Set page to be visited in mobile.
     if (formFactor === 'mobile') {
@@ -53,30 +54,36 @@ Given('I visit the urls for {string}', async function (this: ICustomWorld, formF
 
     // Visit page.
     for (const key in jsonData) {
-        const url: string = `${WP_BASE_URL}/${key}`;
-        await this.utils.visitPage(key);
-        // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
+        if ( jsonData[key].enabled === true ) {
+            const url: string = `${WP_BASE_URL}/${key}`;
+            await this.utils.visitPage(key);
+            // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
 
-        await this.page.waitForFunction(() => {
-            const beacon = document.querySelector('[data-name="wpr-lcp-beacon"]');
-            return beacon && beacon.getAttribute('beacon-completed') === 'true';
-        });
+            await this.page.waitForFunction(() => {
+                const beacon = document.querySelector('[data-name="wpr-lcp-beacon"]');
+                return beacon && beacon.getAttribute('beacon-completed') === 'true';
+            });
 
-        // Get the LCP/ATF from the DB
-        sql = `SELECT lcp, viewport
-               FROM ${tablePrefix}wpr_above_the_fold
-               WHERE url LIKE "%${key}%"`;
-        result = await dbQuery(sql);
-        resultFromStdout = await extractFromStdout(result);
-        // Populate the actual data.
-        if (resultFromStdout && resultFromStdout.length > 0) {
-            actual[key] = {
-                url: url,
-                lcp: resultFromStdout[0].lcp,
-                viewport: resultFromStdout[0].viewport
+            if (formFactor !== 'desktop') {
+                is_mobile = 1;
             }
-        } else {
-            console.error(`No result from database for url ${key}`);
+            // Get the LCP/ATF from the DB
+            sql = `SELECT lcp, viewport
+                   FROM ${tablePrefix}wpr_above_the_fold
+                   WHERE url LIKE "%${key}%"
+                     AND is_mobile = ${is_mobile}`;
+            result = await dbQuery(sql);
+            resultFromStdout = await extractFromStdout(result);
+            // Populate the actual data.
+            if (resultFromStdout && resultFromStdout.length > 0) {
+                actual[key] = {
+                    url: url,
+                    lcp: resultFromStdout[0].lcp,
+                    viewport: resultFromStdout[0].viewport
+                }
+            } else {
+                console.error(`No result from database for url ${key}`);
+            }
         }
     }
 });
@@ -84,24 +91,26 @@ Given('I visit the urls for {string}', async function (this: ICustomWorld, formF
 /**
  * Executes the step to assert that LCP & ATF should be as expected.
  */
-Then('lcp and atf should be as expected', async function (this: ICustomWorld) {
+Then('lcp and atf should be as expected for {string}', async function (this: ICustomWorld, formFactor: string) {
     const jsonData = JSON.parse(data);
     // Iterate over the data
     for (const key in jsonData) {
-        if (Object.hasOwnProperty.call(jsonData, key)) {
+        if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
             const expected = jsonData[key];
-
-            // Check if expected lcp is present in actual lcp.
-            if (!actual[key].lcp.includes(jsonData[key].lcp)) {
-                truthy = false;
-                failMsg += `Expected LCP - ${expected.lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}\n\n\n`;
+            for (const lcp of expected.lcp) {
+                // Check if expected lcp is present in actual lcp.
+                if (!actual[key].lcp.includes(lcp)) {
+                    truthy = false;
+                    failMsg += `Expected LCP for ${formFactor} - ${lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}\n\n\n`;
+                }
             }
+
 
             // Cater for multiple expected viewport candidates.
             for (const viewport of expected.viewport) {
                 if (!actual[key].viewport.includes(viewport)) {
                     truthy = false;
-                    failMsg += `Expected Viewport - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}\n\n\n`;
+                    failMsg += `Expected Viewport for ${formFactor} - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}\n\n\n`;
                 }
             }
         }
