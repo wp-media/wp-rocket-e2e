@@ -175,8 +175,11 @@ When('I go to {string} in {string}', async function (this: ICustomWorld, page, f
 
     await this.utils.visitPage(page);
 
-    // Wait for 6 seconds before fetching from DB.
-    await this.page.waitForTimeout(6000);
+    // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
+    await this.page.waitForFunction(() => {
+        const beacon = document.querySelector('[data-name="wpr-lcp-beacon"]');
+        return beacon && beacon.getAttribute('beacon-completed') === 'true';
+    });
 
     // Get the LCP/ATF from the DB
     const sql = `SELECT lcp, viewport FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${page}%"`;
