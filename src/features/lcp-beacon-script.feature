@@ -73,7 +73,7 @@ Feature: Beacon script captures the right images.
         Then lcp and atf should be as expected in 'mobile'
 
     Scenario: Beacon returns no LCP and ATF in mobile
-        And install 'https://github.com/wp-media/wp-rocket-e2e-test-helper/blob/main/helper-plugin/force-wp-mobile.zip' plugin
+        Given I install plugin 'https://github.com/wp-media/wp-rocket-e2e-test-helper/blob/main/helper-plugin/force-wp-mobile.zip'
         And plugin 'force-wp-mobile' is activated
         When I log out
         And I go to 'lcp_no_images' in 'mobile'

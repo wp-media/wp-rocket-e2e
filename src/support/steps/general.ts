@@ -339,6 +339,6 @@ Given('plugin {word} is deactivated', async function (plugin) {
 /**
  * Executes the step to install a WP plugin from a remote url via CLI.
  */
-Given('install {word} plugin', async function (pluginUrl) {
+Given('I install plugin {string}', async function (pluginUrl) {
     await installRemotePlugin(pluginUrl)
 });
