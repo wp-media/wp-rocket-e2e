@@ -313,66 +313,86 @@ export class PageUtils {
     public disableAllOptions = async (): Promise<void> => {
         await this.gotoWpr();
 
-        // Disable all settings for cache section.
-        await this.sections.set("cache").visit();
-        await this.sections.massToggle();
-        await this.saveSettings();
+        this.sections.optionState = false;
 
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+        if(await this.sections.doesSectionExist('cache')) {
+            // Disable all settings for cache section.
+            await this.sections.set("cache").visit();
+            await this.sections.massToggle();
+            await this.saveSettings();
 
-        // Disable all settings for file optimization section.
-        await this.sections.set("fileOptimization").visit();
-        await this.sections.massToggle();
-        await this.saveSettings();
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+        }
 
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+        if(await this.sections.doesSectionExist('fileOptimization')) {
+            // Disable all settings for file optimization section.
+            await this.sections.set("fileOptimization").visit();
+            await this.sections.massToggle();
+            await this.saveSettings();
 
-        // Disable all settings for Media section.
-        await this.sections.set("media").visit();
-        await this.sections.massToggle();
-        await this.saveSettings();
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+        }
 
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+        if(await this.sections.doesSectionExist('media')) {
+            // Disable all settings for Media section.
+            await this.sections.set("media").visit();
+            await this.sections.massToggle();
+            await this.saveSettings();
 
-        // Disable all settings for Preload section.
-        await this.sections.set("preload").visit();
-        await this.sections.massToggle();
-        await this.saveSettings();
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+        }
 
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+        if(await this.sections.doesSectionExist('preload')) {
+            // Disable all settings for Preload section.
+            await this.sections.set("preload").visit();
+            await this.sections.massToggle();
+            await this.saveSettings();
 
-        // Advanced rules section.
-        await this.sections.set("advancedRules").visit();
-        await this.sections.massFill("");
-        await this.saveSettings();
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+        }
 
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+        if(await this.sections.doesSectionExist('advancedRules')) {
+            // Advanced rules section.
+            await this.sections.set("advancedRules").visit();
+            await this.sections.massFill("");
+            await this.saveSettings();
 
-        // Disable all settings for Database.
-        await this.sections.set("database").visit();
-        await this.sections.massToggle();
-        await this.page.getByRole('button', { name: 'Save Changes and Optimize' }).click();
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+        }
 
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+        if(await this.sections.doesSectionExist('database')) {
+            // Disable all settings for Database.
+            await this.sections.set("database").visit();
+            await this.sections.massToggle();
+            await this.page.getByRole('button', { name: 'Save Changes and Optimize' }).click();
 
-        // Disable all settings for CDN.
-        await this.sections.set("cdn").visit();
-        await this.sections.massToggle();
-        await this.sections.fill("cnames", "");
-        await this.saveSettings();
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+        }   
 
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+        if(await this.sections.doesSectionExist('cdn')) {
+            // Disable all settings for CDN.
+            await this.sections.set("cdn").visit();
+            await this.sections.massToggle();
+            await this.sections.fill("cnames", "");
+            await this.saveSettings();
 
-        // Disable all settings for Heartbeat.
-        await this.sections.set("heartbeat").visit();
-        await this.sections.massToggle();
-        await this.saveSettings();
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+        }
 
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+        if(await this.sections.doesSectionExist('heartbeat')) {
+            // Disable all settings for Heartbeat.
+            await this.sections.set("heartbeat").visit();
+            await this.sections.massToggle();
+            await this.saveSettings();
 
-        // Disable all settings for Addons.
-        await this.sections.set("addons").visit();
-        await this.sections.massToggle();
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+        }
+
+        if(await this.sections.doesSectionExist('addons')) {
+            // Disable all settings for Addons.
+            await this.sections.set("addons").visit();
+            await this.sections.massToggle();
+        }
     }
 
     /**
@@ -400,67 +420,87 @@ export class PageUtils {
 
         await this.page.waitForLoadState('load', { timeout: 30000 });
 
-        // Enable all settings for cache section.
-        await this.sections.set("cache").visit();
-        await this.sections.state(true).massToggle();
-        await this.saveSettings();
+        this.sections.optionState = true;
 
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+        if (await this.sections.doesSectionExist('cache')) {
+             // Enable all settings for cache section.
+            await this.sections.set("cache").visit();
+            await this.sections.massToggle();
+            await this.saveSettings();
 
-        // Enable all settings for file optimization section.
-        await this.sections.set("fileOptimization").visit();
-        await this.sections.massToggle();
-        await this.saveSettings();
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+        }
 
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+        if(await this.sections.doesSectionExist('fileOptimization')) {
+            // Enable all settings for file optimization section.
+            await this.sections.set("fileOptimization").visit();
+            await this.sections.massToggle();
+            await this.saveSettings();
 
-        // Enable all settings for Media section.
-        await this.sections.set("media").visit();
-        await this.sections.massToggle();
-        await this.saveSettings();
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+        }
+        
+        if (await this.sections.doesSectionExist('media')) {
+             // Enable all settings for Media section.
+            await this.sections.set("media").visit();
+            await this.sections.massToggle();
+            await this.saveSettings();
 
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+        }
+       
+        if (await this.sections.doesSectionExist('preload')) {
+            // Enable all settings for Preload section.
+            await this.sections.set("preload").visit();
+            await this.sections.massToggle();
+            await this.saveSettings();
 
-        // Enable all settings for Preload section.
-        await this.sections.set("preload").visit();
-        await this.sections.massToggle();
-        await this.saveSettings();
+            await this.page.waitForLoadState('load', { timeout: 30000 });   
+        }
 
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+        if(await this.sections.doesSectionExist('advancedRules')) {
+            // Advanced rules section.
+            await this.sections.set("advancedRules").visit();
+            const values: Array<string> = ['/test\n/.*\n/test2', 'woocommerce_items_in_cart', 'Mobile(.*)Safari(.*)', '/hello-world/', 'country'];
+            await this.sections.massFill(values);
+            await this.saveSettings();
+    
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+        }
 
-         // Advanced rules section.
-         await this.sections.set("advancedRules").visit();
-         const values: Array<string> = ['/test\n/.*\n/test2', 'woocommerce_items_in_cart', 'Mobile(.*)Safari(.*)', '/hello-world/', 'country'];
-         await this.sections.massFill(values);
-         await this.saveSettings();
- 
-         await this.page.waitForLoadState('load', { timeout: 30000 });
+        if(await this.sections.doesSectionExist('database')) {
+            // Enable all settings for Database.
+            await this.sections.set("database").visit();
+            await this.sections.massToggle();
+            await this.page.getByRole('button', { name: 'Save Changes and Optimize' }).click();
 
-        // Enable all settings for Database.
-        await this.sections.set("database").visit();
-        await this.sections.massToggle();
-        await this.page.getByRole('button', { name: 'Save Changes and Optimize' }).click();
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+        }
 
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+        if(await this.sections.doesSectionExist('cdn')) {
+            // Enable all settings for CDN.
+            await this.sections.set("cdn").visit();
+            await this.sections.toggle("cdn");
+            await this.sections.fill("cnames", "test.example.com");
+            await this.saveSettings();
 
-         // Enable all settings for CDN.
-         await this.sections.set("cdn").visit();
-         await this.sections.toggle("cdn");
-         await this.sections.fill("cnames", "test.example.com");
-         await this.saveSettings();
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+        }
 
-         await this.page.waitForLoadState('load', { timeout: 30000 });
+        if(await this.sections.doesSectionExist('heartbeat')) {
+            // Enable all settings for Heartbeat.
+            await this.sections.set("heartbeat").visit();
+            await this.sections.toggle("controlHeartbeat");
+            await this.saveSettings();
 
-         // Enable all settings for Heartbeat.
-         await this.sections.set("heartbeat").visit();
-         await this.sections.toggle("controlHeartbeat");
-         await this.saveSettings();
+            await this.page.waitForLoadState('load', { timeout: 30000 });
+        }
 
-         await this.page.waitForLoadState('load', { timeout: 30000 });
-
-         // Enable all settings for Addons.
-         await this.sections.set("addons").visit();
-         await this.sections.massToggle();
+        if(await this.sections.doesSectionExist('addons')) {
+            // Enable all settings for Addons.
+            await this.sections.set("addons").visit();
+            await this.sections.massToggle();
+        }
     }
 
     /**
