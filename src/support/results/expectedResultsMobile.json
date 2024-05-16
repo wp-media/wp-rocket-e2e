@@ -13,7 +13,7 @@
       "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testavif.avif"
     ],
     "viewport": [
-      "https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
     ],
     "enabled": true
   },
@@ -32,7 +32,7 @@
     ],
     "viewport": [
       "/test.png",
-      "https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testwebp.webp"
+      "/wp-content/rocket-test-data/images/lcp/testwebp.webp"
     ],
     "enabled": true
   },
@@ -84,7 +84,7 @@
     "viewport": [
       "/test.png",
       "/wp-content/rocket-test-data/images/test_inline2.jpeg",
-      "https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testPng.png",
+      "/wp-content/rocket-test-data/images/lcp/testPng.png",
       "/wp-content/rocket-test-data/images/Przechwytywanie.PNG"
     ],
     "enabled": true
@@ -139,20 +139,20 @@
   },
   "lcp_no_dimensions_picture": {
     "lcp": [
-      "https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testavif.avif"
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif"
     ],
     "viewport": [
-      "https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testjpg.jpg",
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg",
       "/test.png"
     ],
     "enabled": true
   },
   "lcp_no_dimension_absolute_url": {
     "lcp": [
-      "https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
     ],
     "viewport": [
-      "https://e2e.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testPng.png",
+      "/wp-content/rocket-test-data/images/lcp/testPng.png",
       "https://cdn.pixabay.com/photo/2023/06/05/02/01/starry-sky-8041247_1280.jpg"
     ],
     "enabled": true
