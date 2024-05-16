@@ -17,3 +17,4 @@ Feature: Beacon script captures the right images.
         And plugin 'force-wp-mobile' is activated
         When I log out
         And I visit the urls for 'mobile'
+        And plugin 'force-wp-mobile' is deactivated

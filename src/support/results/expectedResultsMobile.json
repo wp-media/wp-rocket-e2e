@@ -234,7 +234,9 @@
     "enabled": true
   },
   "lcp_no_images": {
-    "lcp": "not found",
+    "lcp": [
+      "not found"
+    ],
     "viewport": [],
     "enabled": true
   }
