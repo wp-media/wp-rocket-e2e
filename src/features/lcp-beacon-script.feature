@@ -18,5 +18,5 @@ Feature: Beacon script captures the right images.
         And plugin 'force-wp-mobile' is activated
         When I log out
         And I visit the urls for 'mobile'
-        Then lcp and atf should be as expected for 'mobile'
         And plugin 'force-wp-mobile' is deactivated
+        Then lcp and atf should be as expected for 'mobile'
