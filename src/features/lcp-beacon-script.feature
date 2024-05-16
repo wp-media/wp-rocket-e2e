@@ -11,10 +11,12 @@ Feature: Beacon script captures the right images.
     Scenario: Beacon captures expected images in desktop
         When I log out
         And I visit the urls for 'desktop'
+        Then lcp and atf should be as expected for 'desktop'
 
     Scenario: Beacon captures expected images in mobile
         Given I install plugin 'https://github.com/wp-media/wp-rocket-e2e-test-helper/blob/main/helper-plugin/force-wp-mobile.zip'
         And plugin 'force-wp-mobile' is activated
         When I log out
         And I visit the urls for 'mobile'
+        Then lcp and atf should be as expected for 'mobile'
         And plugin 'force-wp-mobile' is deactivated
