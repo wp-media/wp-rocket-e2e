@@ -12,6 +12,7 @@ import { ICustomWorld } from "../../common/custom-world";
 import { expect } from "@playwright/test";
 import { Given, Then } from "@cucumber/cucumber";
 import { LcpData, Row } from "../../../utils/types";
+
 import { dbQuery, getWPTablePrefix } from "../../../utils/commands";
 import { extractFromStdout } from "../../../utils/helpers";
 import { WP_BASE_URL } from '../../../config/wp.config';
@@ -21,7 +22,7 @@ let data: string,
     truthy: boolean = true,
     failMsg: string = "",
     jsonData: Record<string, { lcp: string[]; viewport: string[]; enabled: boolean }>;
-    
+
 const actual: LcpData = {};
 
 /**

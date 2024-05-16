@@ -11,7 +11,14 @@
  */
 import {expect} from "@playwright/test";
 import {AfterAll, BeforeAll} from "@cucumber/cucumber";
-import wp, {activatePlugin, cp, generateUsers, resetWP, rm, setTransient} from "../../../utils/commands";
+import wp, {
+    activatePlugin,
+    cp,
+    generateUsers,
+    resetWP,
+    rm,
+    setTransient
+} from "../../../utils/commands";
 import {configurations, getWPDir} from "../../../utils/configurations";
 import {match} from "ts-pattern";
 
