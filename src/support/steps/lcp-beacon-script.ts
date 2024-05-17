@@ -10,7 +10,7 @@
  */
 import { ICustomWorld } from "../../common/custom-world";
 import { expect } from "@playwright/test";
-import { Given, Then } from "@cucumber/cucumber";
+import { When, Then } from "@cucumber/cucumber";
 import { LcpData, Row } from "../../../utils/types";
 
 import { dbQuery, getWPTablePrefix } from "../../../utils/commands";
@@ -21,14 +21,15 @@ import fs from 'fs/promises';
 let data: string,
     truthy: boolean = true,
     failMsg: string = "",
-    jsonData: Record<string, { lcp: string[]; viewport: string[]; enabled: boolean }>;
+    jsonData: Record<string, { lcp: string[]; viewport: string[]; enabled: boolean }>,
+    isDbResultAvailable: boolean = true;
 
 const actual: LcpData = {};
 
 /**
  * Executes step to visit page based on the form factor(desktop/mobile) and get the LCP/ATF data from DB.
  */
-Given('I visit the urls for {string}', async function (this: ICustomWorld, formFactor: string) {
+When('I visit the urls for {string}', async function (this: ICustomWorld, formFactor: string) {
     let sql: string,
         result: string,
         resultFromStdout: Row[],
@@ -57,10 +58,13 @@ Given('I visit the urls for {string}', async function (this: ICustomWorld, formF
     // Visit page.
     for (const key in jsonData) {
         if ( jsonData[key].enabled === true ) {
+            // Construct page url.
             const url: string = `${WP_BASE_URL}/${key}`;
-            await this.utils.visitPage(key);
-            // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
 
+            // Visit the page url.
+            await this.utils.visitPage(key);
+
+            // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
             await this.page.waitForFunction(() => {
                 const beacon = document.querySelector('[data-name="wpr-lcp-beacon"]');
                 return beacon && beacon.getAttribute('beacon-completed') === 'true';
@@ -76,15 +80,19 @@ Given('I visit the urls for {string}', async function (this: ICustomWorld, formF
                      AND is_mobile = ${isMobile}`;
             result = await dbQuery(sql);
             resultFromStdout = await extractFromStdout(result);
+
+            // If no DB result, set assertion var to false, fail msg and skip the loop.
+            if (!resultFromStdout || resultFromStdout.length === 0) {
+                isDbResultAvailable = false;
+                failMsg += `No result from database for url ${key} in ${formFactor}\n\n\n`;
+                continue;
+            }
+
             // Populate the actual data.
-            if (resultFromStdout && resultFromStdout.length > 0) {
-                actual[key] = {
-                    url: url,
-                    lcp: resultFromStdout[0].lcp,
-                    viewport: resultFromStdout[0].viewport
-                }
-            } else {
-                console.error(`No result from database for url ${key}`);
+            actual[key] = {
+                url: url,
+                lcp: resultFromStdout[0].lcp,
+                viewport: resultFromStdout[0].viewport
             }
         }
     }
@@ -94,6 +102,14 @@ Given('I visit the urls for {string}', async function (this: ICustomWorld, formF
  * Executes the step to assert that LCP & ATF should be as expected.
  */
 Then('lcp and atf should be as expected for {string}', async function (this: ICustomWorld, formFactor: string) {
+    // Log fail messages from DB query before failing test.
+    if (failMsg !== '') {
+        console.log(failMsg);
+    }
+
+    // Fail test when no DB result is found.
+    expect(isDbResultAvailable).toBeTruthy();
+
     // Iterate over the data
     for (const key in jsonData) {
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
@@ -117,10 +133,12 @@ Then('lcp and atf should be as expected for {string}', async function (this: ICu
         }
     }
 
+    // Log fail message from Expectation mismatch before failing test.
     if (failMsg !== '') {
         console.log(failMsg);
     }
 
-    expect(truthy, failMsg).toBeTruthy();
+    // Fail test when there is expectation mismatch.
+    expect(truthy).toBeTruthy();
 });
 
