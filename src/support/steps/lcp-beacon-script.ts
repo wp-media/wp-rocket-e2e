@@ -105,10 +105,11 @@ Then('lcp and atf should be as expected for {string}', async function (this: ICu
     // Log fail messages from DB query before failing test.
     if (failMsg !== '') {
         console.log(failMsg);
-    }
 
-    // Fail test when no DB result is found.
-    expect(isDbResultAvailable).toBeTruthy();
+        // Fail test when no DB result is found.
+        expect(isDbResultAvailable).toBeTruthy();
+        return;
+    }
 
     // Iterate over the data
     for (const key in jsonData) {
