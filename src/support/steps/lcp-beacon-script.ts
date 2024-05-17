@@ -104,7 +104,7 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
 Then('lcp and atf should be as expected for {string}', async function (this: ICustomWorld, formFactor: string) {
     // Log fail messages from DB query before failing test.
     if (failMsg !== '') {
-        console.log(failMsg);
+        console.log('\x1b[31m%s\x1b[0m',failMsg);
 
         // Fail test when no DB result is found.
         expect(isDbResultAvailable).toBeTruthy();
@@ -136,7 +136,7 @@ Then('lcp and atf should be as expected for {string}', async function (this: ICu
 
     // Log fail message from Expectation mismatch before failing test.
     if (failMsg !== '') {
-        console.log(failMsg);
+        console.log('\x1b[31m%s\x1b[0m',failMsg);
     }
 
     // Fail test when there is expectation mismatch.
