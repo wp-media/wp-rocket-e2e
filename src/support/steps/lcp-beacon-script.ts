@@ -151,3 +151,29 @@ Then('lcp and atf should be as expected in {string}', async function (this: ICus
 
     expect(truthy, failMsg).toBeTruthy();
 });
+
+Then('lcp image in {string} has fetchpriority', async function (this: ICustomWorld, page) {
+    await this.page.setViewportSize({
+        width: 1600,
+        height: 700
+    });
+    let msg = 'false';
+
+    await this.utils.visitPage(page);
+    await this.utils.scrollDownBottomOfAPage();
+
+    const imageWithFetchPriority = await this.page.evaluate(() => {
+        const images = document.querySelectorAll('img');
+        return Array.from(images).map(img => ({
+            src: img.getAttribute('src'),
+            fetchpriority: img.getAttribute('fetchpriority') || false
+        }));
+    });
+    for (const image of imageWithFetchPriority) {
+        if(image.src === '' && image.fetchpriority !== false) {
+            msg = 'image with found'
+        }
+    }
+
+    expect(truthy, msg).toBeTruthy();
+});
