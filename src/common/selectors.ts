@@ -263,6 +263,11 @@ export const selectors: Selectors = {
     addons: {
         parent: "addons",
         elements: {
+            cacheLoggedUser: {
+                type: FieldType.checkbox,
+                element: "#cache_logged_user",
+                target: "label[for=cache_logged_user]"
+            },
             varnishAutoPurge: {
                 type: FieldType.checkbox,
                 element: "#varnish_auto_purge",

@@ -41,6 +41,10 @@ export const uiReflectedSettings = [
     'delay_js', 
 ];
 
+export const enabledOptions = [
+    "lazyload",
+];
+
 /**
  * Array representing settings used for diff checking.
  *
@@ -49,13 +53,12 @@ export const uiReflectedSettings = [
  */
 export const diffChecker = [
     "version",
-    "delay_js",
-    "minify_concatenate_css",
     "delay_js_exclusions_selected",
     "delay_js_exclusions_selected_exclusions",
     "license",
     "secret_cache_key",
     "minify_css_key",
     "minify_js_key",
-    "version",
+    "cache_mobile",
+    "do_caching_mobile_files"
 ];
