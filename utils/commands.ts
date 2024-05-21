@@ -131,11 +131,11 @@ export async function rename(oldName: string, newName: string): Promise<void> {
     }
 
     if(configurations.type === ServerType.external) {
-        await exec(`ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "mv ${oldName} ${newName}"`);
+        await exec(`ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "sudo mv ${oldName} ${newName}"`);
         return;
     }
 
-    exec(`mv ${oldName} ${newName}`, {
+    exec(`sudo mv ${oldName} ${newName}`, {
         cwd: configurations.rootDir,
         async: false
     });
@@ -202,7 +202,7 @@ export async function unzip(file: string, destination: string): Promise<void> {
  */
 export async function rm(destination: string): Promise<void> {
     const cwd = configurations.rootDir;
-    const command = wrapPrefix(`rm -rf ${destination}`);
+    const command = wrapPrefix(`sudo rm -rf ${destination}`);
     await exec(command, {
         cwd: cwd,
         async: false

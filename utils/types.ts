@@ -60,7 +60,7 @@ export interface Selectors{
  * Interface defining exported settings.
  */
 export interface ExportedSettings {
-    [key: string]: number;
+    [key: string]: number|string|Array<string|number>;
 }
 
 /**

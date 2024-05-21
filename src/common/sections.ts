@@ -117,10 +117,32 @@ export class Sections {
      * @return {Promise<void>} - A promise that resolves once the visit operation is complete.
      */
     public visit = async (): Promise<void> => {
-        this.canPerformAction();
+        try {
+            this.canPerformAction();
 
-        await this.page.locator("#wpr-nav-" + this.sectionId).click();
+            await this.page.locator("#wpr-nav-" + this.sectionId).click();
+        } catch (error) {
+            if (error instanceof Error) {
+                // Handle the error
+                console.error("An error occurred:", error.message);
+                return;
+            }
+
+            // Handle other types of errors
+            console.error("An unknown error occurred");
+        }
     };
+
+    /**
+     * Checks if the current section exists.
+     *
+     * @method
+     * @async
+     * @return {Promise<boolean>} - A promise that resolves with true if the section exists; otherwise, resolves with false.
+     */
+    public doesSectionExist = async (section: Section): Promise<boolean> => {
+        return await this.page.locator("#wpr-nav-" + this.selectors[section]["parent"]).isVisible();
+    }
 
     /**
      * Toggles the state of an option identified by the provided option ID.
@@ -133,38 +155,49 @@ export class Sections {
      * if the target element is not visible or is disabled, or if there is an issue with performing the action.
      */
     public toggle = async (optionId: string): Promise<void> => {
-        this.canPerformAction();
+        try {
+            this.canPerformAction();
 
-        if (!this.isType(optionId, "checkbox") && !this.isType(optionId, "button")) {
-            return;
-        }
-
-        if (! await this.page.locator(this.getStringProperty(optionId, 'target')).isVisible()) {
-            return;
-        }
-
-        if (await this.page.locator(this.getStringProperty(optionId, 'target')).isDisabled()) {
-            return;
-        }
-
-        if(this.isType(optionId, "checkbox")) {
-            if (this.optionState && await this.page.locator(this.getElement(optionId, 'checkbox')).isChecked()) {
+            if (!this.isType(optionId, "checkbox") && !this.isType(optionId, "button")) {
                 return;
             }
 
-            if (!this.optionState && !await this.page.locator(this.getElement(optionId, 'checkbox')).isChecked()) {
+            if (! await this.page.locator(this.getStringProperty(optionId, 'target')).isVisible()) {
                 return;
             }
-        }
 
-        if (this.propertyExist(optionId, "before") && !await this.elements[optionId].before(this.page)) {
-            return;
-        }
+            if (await this.page.locator(this.getStringProperty(optionId, 'target')).isDisabled()) {
+                return;
+            }
 
-        await this.page.locator(this.getStringProperty(optionId, 'target')).click();
+            if(this.isType(optionId, "checkbox")) {
+                if (this.optionState && await this.page.locator(this.getElement(optionId, 'checkbox')).isChecked()) {
+                    return;
+                }
 
-        if (this.propertyExist(optionId, "after")) {
-            await this.elements[optionId].after(this.page, this.optionState);
+                if (!this.optionState && !await this.page.locator(this.getElement(optionId, 'checkbox')).isChecked()) {
+                    return;
+                }
+            }
+
+            if (this.propertyExist(optionId, "before") && !await this.elements[optionId].before(this.page)) {
+                return;
+            }
+
+            await this.page.locator(this.getStringProperty(optionId, 'target')).click();
+
+            if (this.propertyExist(optionId, "after")) {
+                await this.elements[optionId].after(this.page, this.optionState);
+            }
+        } catch (error) {
+            if (error instanceof Error) {
+                // Handle the error
+                console.error("An error occurred:", error.message);
+                return;
+            }
+
+            // Handle other types of errors
+            console.error("An unknown error occurred");
         }
     }
 
@@ -177,12 +210,23 @@ export class Sections {
      * @return {Promise<void>} - A promise that resolves once the mass toggle operation is complete.
      */
     public massToggle = async (): Promise<void> => {
-        this.canPerformAction();
+        try {
+            this.canPerformAction();
 
-        for (const key in this.elements) {
-            if(this.isType(key, "checkbox")){
-                await this.toggle(key);
+            for (const key in this.elements) {
+                if(this.isType(key, "checkbox")){
+                    await this.toggle(key);
+                }
             }
+        } catch (error) {
+            if (error instanceof Error) {
+                // Handle the error
+                console.error("An error occurred:", error.message);
+                return;
+            }
+
+            // Handle other types of errors
+            console.error("An unknown error occurred");
         }
     }
 
@@ -217,17 +261,29 @@ export class Sections {
      * @return {Promise<void>} - A promise that resolves once the mass fill operation is complete.
      */
     public massFill = async(text: string | Array<string>): Promise<void> => {
-        this.canPerformAction();
+        try {
+            this.canPerformAction();
 
-        let i = 0;
+            let i = 0;
 
-        for (const key in this.elements) {
-            if(this.isType(key, "textbox")){
-                await this.fill(key, Array.isArray(text) ? text[i] : text);
+            for (const key in this.elements) {
+                if(this.isType(key, "textbox")){
+                    await this.fill(key, Array.isArray(text) ? text[i] : text);
+                }
+
+                i++;
+            }
+        } catch (error) {
+            if (error instanceof Error) {
+                // Handle the error
+                console.error("An error occurred:", error.message);
+                return;
             }
 
-            i++;
+            // Handle other types of errors
+            console.error("An unknown error occurred");
         }
+        
     }
 
     /**
@@ -239,25 +295,37 @@ export class Sections {
      * @return {Promise<boolean>} - A promise that resolves with true if all options are disabled; otherwise, resolves with false.
      */
     public areOptionsDisabled = async (): Promise<boolean> => {
-        this.canPerformAction();
+        try {
+            this.canPerformAction();
 
-        for (const key in this.elements) {
-            if(this.isType(key, "checkbox")){
-                if (! await this.page.locator(this.getStringProperty(key, 'target')).isVisible()) {
-                    continue;
-                }
-        
-                if (await this.page.locator(this.getStringProperty(key, 'target')).isDisabled()) {
-                    continue;
-                }
-
-                if (await this.page.locator(this.getElement(key, 'checkbox')).isChecked()) {
-                    return false;
+            for (const key in this.elements) {
+                if(this.isType(key, "checkbox")){
+                    if (! await this.page.locator(this.getStringProperty(key, 'target')).isVisible()) {
+                        continue;
+                    }
+            
+                    if (await this.page.locator(this.getStringProperty(key, 'target')).isDisabled()) {
+                        continue;
+                    }
+    
+                    if (await this.page.locator(this.getElement(key, 'checkbox')).isChecked()) {
+                        return false;
+                    }
                 }
             }
-        }
+    
+            return true;
 
-        return true;
+        } catch (error) {
+            if (error instanceof Error) {
+                // Handle the error
+                console.error("An error occurred:", error.message);
+                return;
+            }
+
+            // Handle other types of errors
+            console.error("An unknown error occurred");
+        }
     }
 
     /**
@@ -269,17 +337,30 @@ export class Sections {
      * @return {Promise<boolean>} - A promise that resolves with true if all textboxes are empty; otherwise, resolves with false.
      */
     public areTextBoxesEmpty = async (): Promise<boolean> => {
-        this.canPerformAction();
+        try {
+            this.canPerformAction();
 
-        for (const key in this.elements) {
-            if(this.isType(key, "textbox")){
-                if (await this.page.locator(this.getElement(key, 'textbox')).inputValue() !== '') {
-                    return false;
+            for (const key in this.elements) {
+                if(this.isType(key, "textbox")){
+                    if (await this.page.locator(this.getElement(key, 'textbox')).inputValue() !== '') {
+                        return false;
+                    }
                 }
             }
-        }
 
-        return true;
+            return true;
+            
+        } catch (error) {
+            if (error instanceof Error) {
+                // Handle the error
+                console.error("An error occurred:", error.message);
+                return;
+            }
+
+            // Handle other types of errors
+            console.error("An unknown error occurred");
+        }
+        
     }
 
     /**
