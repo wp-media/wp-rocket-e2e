@@ -112,7 +112,8 @@
       "/wp-content/rocket-test-data/images/lcp/testPng.png",
       "/wp-content/rocket-test-data/images/maxime-lebrun-6g3Akg708E0-unsplash.jpg",
       "https://www.w3schools.com/w3images/ocean.jpg"
-    ]
+    ],
+    "enabled": true
   },
   "lcp_attribute_template": {
     "lcp": [
