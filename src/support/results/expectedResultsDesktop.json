@@ -1,0 +1,242 @@
+{
+  "lcp_bg_inline_template": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/test_inline2.jpeg"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/testjpeg.jpeg"
+    ],
+    "enabled": true
+  },
+  "lcp_bg_samestyle_template": {
+    "lcp": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testavif.avif"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_img_loadedbydynamicjs_template": {
+    "lcp": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testavif.avif"
+    ],
+    "viewport": [
+      "http://www.google.com/intl/en_com/images/logo_plain.png"
+    ],
+    "enabled": true
+  },
+  "lcp_img_loadedbyjs_template": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/istockphoto-1184692500-612x612.webp"
+    ],
+    "viewport": [
+      "/test.png",
+      "/wp-content/rocket-test-data/images/lcp/testwebp.webp"
+    ],
+    "enabled": true
+  },
+  "lcp_bg_multimage_template": {
+    "lcp": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/image/test3.webp",
+      "/wp-content/rocket-test-data/image/file_example_JPG_100kB.jpg"
+    ],
+    "viewport": [
+      "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8",
+      "https://rocketlabsqa.ovh/wp-content/rocket-test-data/images/fixtheissue.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_with_space_after_title": {
+    "lcp": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testwebp.webp"
+    ],
+    "viewport": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_inline2.jpeg"
+    ],
+    "enabled": true
+  },
+  "lcp_test_template": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/test_internal2.jpg"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lipsum_logo.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_bg_responsive_webkit_template": {
+    "lcp": [
+      "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8",
+      "https://rocketlabsqa.ovh/wp-content/rocket-test-data/images/fixtheissue.jpg"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/image/test3.webp",
+      "/wp-content/rocket-test-data/images/lcp/testwebp.webp",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testavif.avif"
+    ],
+    "enabled": true
+  },
+  "lcp_regular_image_template": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/600px-Mapang-test.gif"
+    ],
+    "viewport": [
+      "/test.png",
+      "/wp-content/rocket-test-data/images/test_inline2.jpeg",
+      "/rocket-test-data/images/lcp/testPng.png",
+      "/wp-content/rocket-test-data/images/Przechwytywanie.PNG"
+    ],
+    "enabled": true
+  },
+  "lcp_bg_reponsive_imgset_template": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif",
+      "/wp-content/rocket-test-data/images/lcp/testwebp.webp"
+    ],
+    "viewport": [
+      "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8",
+      "https://rocketlabsqa.ovh/wp-content/rocket-test-data/images/fixtheissue.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_rsponsive_imagegrid": {
+    "lcp": [
+      "https://www.w3schools.com/w3images/underwater.jpg"
+    ],
+    "viewport": [
+      "https://www.w3schools.com/w3images/wedding.jpg",
+      "https://www.w3schools.com/w3images/rocks.jpg",
+      "/wp-content/rocket-test-data/images/lcp/testPng.png",
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif",
+      "/wp-content/rocket-test-data/images/file_example_JPG_100kB.jpg",
+      "/wp-content/rocket-test-data/images/maxime-lebrun-6g3Akg708E0-unsplash.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_attribute_template": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/wp-rocket.svg"
+    ],
+    "viewport": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testPng.png",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/wp-rocket2.svg",
+      "/wp-content/rocket-test-data/images/lcp/testsvg.svg",
+      "/wp-content/rocket-test-data/images/lcp/testjpeg.jpeg",
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif",
+      "/test.png"
+    ],
+    "enabled": true
+  },
+  "lcp_no_dimension_svg": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testsvg.svg"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_no_dimensions_picture": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif"
+    ],
+    "viewport": [
+      "/test.png",
+      "wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_no_dimension_absolute_url": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/testPng.png",
+      "https://cdn.pixabay.com/photo/2023/06/05/02/01/starry-sky-8041247_1280.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_image_withspecialchar_template": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/image%20with%20space.jpg"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/testspace%202.png",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/paperéquipesTest.jpeg"
+    ],
+    "enabled": false
+  },
+  "lcp_img_addedbydynamicstyle_template": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/paper.jpeg"
+    ],
+    "viewport": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_withfetchpriorityhigh_template": {
+    "lcp": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_inline2.jpeg"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/testjpeg.jpeg"
+    ],
+    "enabled": true
+  },
+  "lcp_single_double": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testwebp.webp"
+    ],
+    "viewport": [],
+    "enabled": false
+  },
+  "lcp_withfetchprioritylow_template": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/test_inline2.jpeg"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_withfetchpriorityempty_template": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/test_inline2.jpeg"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_withfetchpriorityinurl_template": {
+    "lcp": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/fetchpriority='high'.jpg"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_video_poster_template": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_big_image_template": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/BigJPGImage_20mbmb.jpg"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_no_fetchpriority": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/istockphoto-1184692500-612x612.webp"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_no_images": {
+    "lcp": [
+      "not found"
+    ],
+    "viewport": [],
+    "enabled": true
+  }
+}

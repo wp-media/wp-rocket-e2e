@@ -100,10 +100,6 @@ export type Viewport = {
     height: number;
 };
 
-export interface LcpDataTable {
-    key: string;
-    value: string;
-}
 export interface LcpData {
     [key: string]: {
         url: string,
