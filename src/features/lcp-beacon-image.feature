@@ -9,5 +9,4 @@ Feature: Fetchpriority should be applied to image
 
   Scenario: When I visited a page that has LCP with relative image
     When I log out
-    #And I go to 'lcp_regular_image_template'
-    And lcp image in 'lcp_regular_image_template' has fetchpriority
+    Then lcp image in 'lcp_regular_image_template' has fetchpriority
