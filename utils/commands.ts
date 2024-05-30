@@ -236,6 +236,18 @@ export async function installRemotePlugin(url: string): Promise<void>  {
     await wp(`plugin install ${url}`)
 }
 
+/**
+ * Uninstalls one or more plugins.
+ *
+ * @function
+ * @name uninstallPlugin
+ * @async
+ * @param {string} plugin - The plugin slug.
+ * @returns {Promise<void>} - A Promise that resolves when the uninstallation is completed.
+ */
+export async function uninstallPlugin(plugin: string): Promise<void>  {
+    await wp(`plugin uninstall --deactivate ${plugin}`);
+}
 
 /**
  * Executes a SQL query on the WordPress database using WP-CLI.
