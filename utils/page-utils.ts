@@ -16,6 +16,7 @@ import { ICustomWorld } from '../src/common/custom-world';
 import fs from "fs/promises";
 
 import {WP_BASE_URL, WP_PASSWORD, WP_USERNAME} from '../config/wp.config';
+import { uninstallPlugin } from "./commands";
 
 /**
  * Utility class for interacting with a Playwright Page instance in WordPress testing.
@@ -573,6 +574,8 @@ export class PageUtils {
         // Assert that WPR is deleted successfully
         await this.page.waitForSelector('#wp-rocket-deleted');
         await expect(this.page.locator('#wp-rocket-deleted')).toBeVisible(); 
+
+        await uninstallPlugin('force-wp-mobile');
     }
 
     /**
