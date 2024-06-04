@@ -20,7 +20,7 @@ import fs from 'fs/promises';
 
 let data: string,
     truthy: boolean = true,
-    failMsg: string = "",
+    failMsg: string,
     jsonData: Record<string, { lcp: string[]; viewport: string[]; enabled: boolean }>,
     isDbResultAvailable: boolean = true;
 
@@ -44,6 +44,9 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
         viewPortHeight = 829;
         resultFile = './src/support/results/expectedResultsMobile.json';
     }
+
+    // Reset variable state.
+    failMsg = '';
 
     await this.page.setViewportSize({
         width: viewPortWidth,
