@@ -535,6 +535,10 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public cleanUp = async (): Promise<void> => {
+        // Remove helper plugin.
+        await uninstallPlugin('force-wp-mobile');
+
+        // Start the process to remove wp-rocket.
         await this.visitPage('wp-admin');
         await this.auth();
 
@@ -574,8 +578,6 @@ export class PageUtils {
         // Assert that WPR is deleted successfully
         await this.page.waitForSelector('#wp-rocket-deleted');
         await expect(this.page.locator('#wp-rocket-deleted')).toBeVisible(); 
-
-        await uninstallPlugin('force-wp-mobile');
     }
 
     /**
