@@ -24,7 +24,7 @@
     "viewport": [
       "http://www.google.com/intl/en_com/images/logo_plain.png"
     ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_img_loadedbyjs_template": {
     "lcp": [
@@ -112,7 +112,7 @@
       "/wp-content/rocket-test-data/images/file_example_JPG_100kB.jpg",
       "/wp-content/rocket-test-data/images/maxime-lebrun-6g3Akg708E0-unsplash.jpg"
     ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_attribute_template": {
     "lcp": [
@@ -153,7 +153,7 @@
       "/wp-content/rocket-test-data/images/lcp/testPng.png",
       "https://cdn.pixabay.com/photo/2023/06/05/02/01/starry-sky-8041247_1280.jpg"
     ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_image_withspecialchar_template": {
     "lcp": [

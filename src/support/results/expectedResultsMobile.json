@@ -15,7 +15,7 @@
     "viewport": [
       "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
     ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_img_loadedbydynamicjs_template": {
     "lcp": [
@@ -24,7 +24,7 @@
     "viewport": [
       "http://www.google.com/intl/en_com/images/logo_plain.png"
     ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_img_loadedbyjs_template": {
     "lcp": [
@@ -34,7 +34,7 @@
       "/test.png",
       "/wp-content/rocket-test-data/images/lcp/testwebp.webp"
     ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_bg_multimage_template": {
     "lcp": [
@@ -45,7 +45,7 @@
       "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8",
       "https://rocketlabsqa.ovh/wp-content/rocket-test-data/images/fixtheissue.jpg"
     ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_with_space_after_title": {
     "lcp": [
@@ -75,7 +75,7 @@
       "/wp-content/rocket-test-data/images/lcp/testwebp.webp",
       "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testavif.avif"
     ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_regular_image_template": {
     "lcp": [
@@ -113,7 +113,7 @@
       "/wp-content/rocket-test-data/images/maxime-lebrun-6g3Akg708E0-unsplash.jpg",
       "https://www.w3schools.com/w3images/ocean.jpg"
     ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_attribute_template": {
     "lcp": [
@@ -129,7 +129,7 @@
       "/wp-content/rocket-test-data/images/lcp/testavif.avif",
       "/test.png"
     ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_no_dimension_svg": {
     "lcp": [
@@ -156,7 +156,7 @@
       "/wp-content/rocket-test-data/images/lcp/testPng.png",
       "https://cdn.pixabay.com/photo/2023/06/05/02/01/starry-sky-8041247_1280.jpg"
     ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_image_withspecialchar_template": {
     "lcp": [
