@@ -146,7 +146,7 @@
       "/wp-content/rocket-test-data/images/lcp/testjpg.jpg",
       "/test.png"
     ],
-    "enabled": false
+    "enabled": true
   },
   "lcp_no_dimension_absolute_url": {
     "lcp": [
