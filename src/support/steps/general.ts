@@ -239,6 +239,37 @@ When('expand mobile menu', async function (this:ICustomWorld) {
 });
 
 /**
+ * Executes the step to clear wp rocket cache.
+ */
+When('I clear cache', async function (this:ICustomWorld) {
+    // Goto WP Rocket dashboard
+    await this.utils.gotoWpr();
+
+    this.sections.set('dashboard');
+    await this.sections.toggle('clearCacheBtn');
+    await this.page.waitForLoadState('load', { timeout: 30000 });
+});
+
+/**
+ * Executes the step to visit page in a specific browser dimension.
+ */
+When('I visit page {string} with browser dimension {int} x {int}', async function (this:ICustomWorld, page, width, height) {
+    await this.page.setViewportSize({
+        width: width,
+        height: height,
+    });
+
+    await this.utils.visitPage(page);
+});
+
+/**
+ * Executes the step to scroll to the bottom of the page.
+ */
+When('I scroll to bottom of page', async function (this:ICustomWorld) {
+    await this.utils.scrollDownBottomOfAPage();
+});
+
+/**
  * Executes the step to assert the presence of specific text.
  */
 Then('I should see {string}', async function (this: ICustomWorld, text) {

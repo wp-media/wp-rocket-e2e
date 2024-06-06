@@ -149,15 +149,8 @@ Then('lcp and atf should be as expected for {string}', async function (this: ICu
     expect(truthy).toBeTruthy();
 });
 
-Then('lcp image in {string} has fetchpriority', async function (this: ICustomWorld, page) {
-    await this.page.setViewportSize({
-        width: 1600,
-        height: 700
-    });
+Then('lcp image should have fetchpriority', async function (this: ICustomWorld) {
     truthy= false;
-
-    await this.utils.visitPage(page);
-    await this.utils.scrollDownBottomOfAPage();
 
     const imageWithFetchPriority = await this.page.evaluate(() => {
         const images = document.querySelectorAll('img');
