@@ -114,6 +114,9 @@ Then('lcp and atf should be as expected for {string}', async function (this: ICu
         return;
     }
 
+    // Set test status to True by default.
+    truthy = true;
+
     // Iterate over the data
     for (const key in jsonData) {
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
