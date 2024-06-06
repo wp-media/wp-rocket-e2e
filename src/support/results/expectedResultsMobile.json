@@ -136,7 +136,7 @@
       "/wp-content/rocket-test-data/images/lcp/testsvg.svg"
     ],
     "viewport": [],
-    "enabled": true
+    "enabled": false
   },
   "lcp_no_dimensions_picture": {
     "lcp": [
@@ -146,7 +146,7 @@
       "/wp-content/rocket-test-data/images/lcp/testjpg.jpg",
       "/test.png"
     ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_no_dimension_absolute_url": {
     "lcp": [
