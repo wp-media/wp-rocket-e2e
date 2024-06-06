@@ -416,7 +416,7 @@ export async function testSshConnection(): Promise<string> {
 
     if (result.code !== 0) {
         let failMsg = 'SSH connection failed! ❌\n';
-        failMsg += '⚠️ Please check that your SSH configuration is correct and you have stable internet connection';
+        failMsg += 'Please check that your SSH configuration is correct and you have stable internet connection';
         console.log(failMsg);
         throw new Error(failMsg);
     }
