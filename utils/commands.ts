@@ -405,4 +405,21 @@ export async function getWPTablePrefix(): Promise<string> {
     return tablePrefix;
 }
 
+export async function testSshConnection(): Promise<string> {
+    if(configurations.type !== ServerType.external) {
+        return;
+    }
+
+    const cwd = getWPDir(configurations);
+    const command: string = `ssh ${configurations.ssh.username}@${configurations.ssh.address} -i ${configurations.ssh.key}`;
+    const result = exec(command, { silent: true });
+
+    if (result.code !== 0) {
+        let failMsg = 'SSH connection failed! ❌\n';
+        failMsg += '⚠️ Please check that your SSH configuration is correct and you have stable internet connection';
+        console.log(failMsg);
+        throw new Error(failMsg);
+    }
+}
+
 export default wp;
