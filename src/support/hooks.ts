@@ -25,7 +25,7 @@ import backstop from 'backstopjs';
 import {SCENARIO_URLS, WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
-import {rename, exists, rm} from "../../utils/commands";
+import {rename, exists, rm, testSshConnection} from "../../utils/commands";
 // import {configurations, getWPDir} from "../../utils/configurations";
 
 /**
@@ -49,45 +49,51 @@ setDefaultTimeout(process.env.PWDEBUG ? -1 : 60 * 10000);
  * Before all tests, launches the Chromium browser.
  */
 BeforeAll(async function (this: ICustomWorld) {
-    const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/*.log`;
-    await rm(debugLogPath);
+    try {
+        await testSshConnection();
 
-    await deleteFolder('./backstop_data/bitmaps_test');
-    browser = await chromium.launch({ headless: false });
+        const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/*.log`;
+        await rm(debugLogPath);
 
-    const theme = process.env.THEME ? process.env.THEME : '';
+        await deleteFolder('./backstop_data/bitmaps_test');
+        browser = await chromium.launch({ headless: false });
 
-    if (theme !== '') {
-        const context = await browser.newContext({
-            recordVideo: {
-                dir: "test-results/videos",
-            },
-        });
-    
-        const page = await context.newPage();
-        const sections = new Sections(page, pluginSelectors);
-        const utils = new PageUtils(page, sections);
-    
-        await utils.auth();
-        await utils.switchTheme(theme);
-    
-        await page?.close();
-        await context?.close();
+        const theme = process.env.THEME ? process.env.THEME : '';
+
+        if (theme !== '') {
+            const context = await browser.newContext({
+                recordVideo: {
+                    dir: "test-results/videos",
+                },
+            });
+        
+            const page = await context.newPage();
+            const sections = new Sections(page, pluginSelectors);
+            const utils = new PageUtils(page, sections);
+        
+            await utils.auth();
+            await utils.switchTheme(theme);
+        
+            await page?.close();
+            await context?.close();
+        }
+
+        if (process.env.npm_config_vrurl === undefined) {
+            await batchUpdateVRTestUrl({
+                optimize: false,
+                urls: SCENARIO_URLS
+            });
+            await backstop('reference');
+            // Update test url request page with wprocket optimizations.
+            await batchUpdateVRTestUrl({
+                optimize: true,
+                urls: SCENARIO_URLS
+            });
+        }
+    } catch (error) {
+        console.error('Setup failed: ', error.message);
+        throw new Error('Setup failed: ' + error.message);
     }
-
-    if (process.env.npm_config_vrurl === undefined) {
-        await batchUpdateVRTestUrl({
-            optimize: false,
-            urls: SCENARIO_URLS
-        });
-        await backstop('reference');
-        // Update test url request page with wprocket optimizations.
-        await batchUpdateVRTestUrl({
-            optimize: true,
-            urls: SCENARIO_URLS
-        });
-    }
-
 });
 
 /**
