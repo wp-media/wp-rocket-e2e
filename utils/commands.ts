@@ -54,7 +54,6 @@ async function wp(args: string): Promise<boolean> {
             privateKeyPath: configurations.ssh.key
         })
         const result = await client.execCommand(`wp ${args}${root} --path=${cwd}`);
-
         if(result.code === 1) {
             console.error('Error :', result.stderr);
             return false
@@ -238,7 +237,7 @@ export async function activatePlugin(name: string): Promise<void>  {
  * @returns {Promise<void>} - A Promise that resolves when the activation is completed.
  */
 export async function checkPluginStatus(name: string): Promise<void>  {
-    const status = await wp(`plugin is-active ${name}`)
+    const status: boolean = await wp(`plugin is-active ${name}`);
     if(!status) {
         throw new Error('Plugin is not active')
     }
