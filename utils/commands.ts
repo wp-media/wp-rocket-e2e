@@ -53,7 +53,12 @@ async function wp(args: string): Promise<void> {
             username: configurations.ssh.username,
             privateKeyPath: configurations.ssh.key
         })
-        const res = await client.execCommand(`wp ${args}${root} --path=${cwd}`);
+        const result = await client.execCommand(`wp ${args}${root} --path=${cwd}`);
+
+        if(result.code === 1) {
+            console.error('Error :', result.stderr);
+            throw new Error('Command not executed successfully')
+        }
         return ;
     }
     const command = wrapPrefix(`wp ${args}${root} --path=${cwd}`);
@@ -221,6 +226,19 @@ export async function rm(destination: string): Promise<void> {
  */
 export async function activatePlugin(name: string): Promise<void>  {
      await wp(`plugin activate ${name}`)
+}
+
+/**
+ * Check if a WordPress plugin is active using the WP-CLI command.
+ *
+ * @function
+ * @name checkPluginStatus
+ * @async
+ * @param {string} name - The name of the plugin to check.
+ * @returns {Promise<void>} - A Promise that resolves when the activation is completed.
+ */
+export async function checkPluginStatus(name: string): Promise<void>  {
+    await wp(`plugin is-active ${name}`)
 }
 
 /**

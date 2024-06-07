@@ -12,7 +12,7 @@
 import {expect} from "@playwright/test";
 import {AfterAll, BeforeAll} from "@cucumber/cucumber";
 import wp, {
-    activatePlugin,
+    activatePlugin, checkPluginStatus,
     cp,
     generateUsers,
     resetWP,
@@ -63,7 +63,14 @@ Given('I have an {word} account', { timeout: 60 * 1000 }, async function (status
  * Executes the step to activate a specified WP plugin.
  */
 Given('plugin {word} is activated', async function (plugin) {
-   await activatePlugin(plugin)
+    await activatePlugin(plugin)
+});
+
+/**
+ * Check if a plugin is active.
+ */
+Given('plugin {word} is-active', async function (plugin) {
+    await checkPluginStatus(plugin)
 });
 
 /**
