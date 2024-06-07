@@ -224,24 +224,14 @@ export async function rm(destination: string): Promise<void> {
  * @returns {Promise<void>} - A Promise that resolves when the activation is completed.
  */
 export async function activatePlugin(name: string): Promise<void>  {
-     await wp(`plugin activate ${name}`)
-}
-
-/**
- * Check if a WordPress plugin is active using the WP-CLI command.
- *
- * @function
- * @name checkPluginStatus
- * @async
- * @param {string} name - The name of the plugin to check.
- * @returns {Promise<void>} - A Promise that resolves when the activation is completed.
- */
-export async function checkPluginStatus(name: string): Promise<void>  {
+    await wp(`plugin activate ${name}`)
     const status: boolean = await wp(`plugin is-active ${name}`);
     if(!status) {
         throw new Error('Plugin is not active')
     }
 }
+
+
 
 /**
  * Install a WordPress plugin from a remote zip file using the WP-CLI command.

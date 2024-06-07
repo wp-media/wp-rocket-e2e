@@ -16,7 +16,6 @@ Feature: Beacon script captures the right images.
     Scenario: Beacon captures expected images in mobile
         Given I install plugin 'https://github.com/wp-media/wp-rocket-e2e-test-helper/raw/main/helper-plugin/force-wp-mobile.zip'
         And plugin 'force-wp-mobile' is activated
-        And plugin 'force-wp-mobile' is-active
         When I log out
         And I visit the urls for 'mobile'
         And plugin 'force-wp-mobile' is deactivated
