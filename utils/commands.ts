@@ -399,8 +399,7 @@ export async function testSshConnection(): Promise<string> {
     if(configurations.type !== ServerType.external) {
         return;
     }
-
-    const cwd = getWPDir(configurations);
+    
     const command: string = `ssh ${configurations.ssh.username}@${configurations.ssh.address} -i ${configurations.ssh.key} env`;
     const result = exec(command, { silent: true });
 
