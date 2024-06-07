@@ -80,6 +80,18 @@ export async function resetWP(): Promise<void> {
 }
 
 /**
+ * Check if WP i
+ *
+ * @function
+ * @name resetWP
+ * @async
+ * @returns {Promise<void>} - A Promise that resolves when check is complete.
+ */
+export async function checkWPStatus(): Promise<void> {
+    await wp('--info');
+}
+
+/**
  * Copies files from the origin to the destination on the server.
  *
  * @function
