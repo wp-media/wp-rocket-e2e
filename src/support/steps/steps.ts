@@ -63,7 +63,7 @@ Given('I have an {word} account', { timeout: 60 * 1000 }, async function (status
  * Executes the step to activate a specified WP plugin.
  */
 Given('plugin {word} is activated', async function (plugin) {
-   await activatePlugin(plugin)
+    await activatePlugin(plugin)
 });
 
 /**
