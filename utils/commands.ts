@@ -10,6 +10,7 @@
  */
 import {exec} from "shelljs";
 import {configurations, getWPDir, ServerType} from "./configurations";
+import chalk from 'chalk';
 
 const {NodeSSH} = require('node-ssh')
 
@@ -92,7 +93,24 @@ export async function resetWP(): Promise<void> {
  * @returns {Promise<void>} - A Promise that resolves when check is complete.
  */
 export async function checkWPStatus(): Promise<void> {
-    await wp('--info');
+    const status: boolean =  await wp('--info');
+
+    console.log(chalk.blue.bold('WP CLI Basic Setup Status'));
+    console.log(chalk.blue('=====================\n'));
+
+    let statusColor = chalk.green,
+        statusSymbol =  '✔️',
+        message = 'WP CLI is running';
+
+    if(!status) {
+        statusColor =  chalk.red;
+        statusSymbol =  '❌';
+        message = 'WP CLI is not running, please check your config'
+    }
+
+    console.log(`'WP CLI health check': ${statusColor.bold(message.toUpperCase())} ${statusSymbol}`);
+    console.log(statusColor(message));
+    console.log(chalk.blue('-------------------------'));
 }
 
 /**
