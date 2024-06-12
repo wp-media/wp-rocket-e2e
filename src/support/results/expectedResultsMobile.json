@@ -240,5 +240,44 @@
     ],
     "viewport": [],
     "enabled": true
+  },
+  "lcp_picture_template2": {
+    "lcp": [
+      "/rocket-test-data/images/test3.gif",
+      "/rocket-test-data/images/testjpg3.jpg",
+      "/rocket-test-data/images/lcp/testjpg2.jpg"
+    ],
+    "viewport": [
+      "/rocket-test-data/images/test3.gif",
+      "/rocket-test-data/images/testjpg3.jpg",
+      "/rocket-test-data/images/lcp/testjpg2.jpg"
+    ],
+    "enabled": false
+  },
+  "lcp_bg_img_in_section": {
+    "lcp": [
+      "https://e2e.rocketlabsqa.ovh/wp-content/uploads/2024/03/should_be_lcp_atf_image.jpg"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_section_template_relative": {
+    "lcp": [
+      "/wp-content/rocket-test-data/image/test3.webp",
+      "/wp-content/rocket-test-data/image/file_example_JPG_100kB.jpg"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_section_template2": {
+    "lcp": [
+      "https://images.pexels.com/photos/67636/rose-blue-flower-rose-blooms-67636.jpeg?auto=compress&cs=tinysrgb&h=350"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+    ],
+    "enabled": true
   }
 }
