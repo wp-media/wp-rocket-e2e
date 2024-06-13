@@ -68,12 +68,12 @@
   "lcp_bg_responsive_webkit_template": {
     "lcp": [
       "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8",
-      "https://rocketlabsqa.ovh/wp-content/rocket-test-data/images/fixtheissue.jpg"
+      "/wp-content/rocket-test-data/images/fixtheissue.jpg"
     ],
     "viewport": [
       "/wp-content/rocket-test-data/image/test3.webp",
       "/wp-content/rocket-test-data/images/lcp/testwebp.webp",
-      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testavif.avif"
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif"
     ],
     "enabled": true
   },
