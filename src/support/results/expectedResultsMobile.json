@@ -10,49 +10,49 @@
   },
   "lcp_bg_samestyle_template": {
     "lcp": [
-      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testavif.avif"
-    ],
-    "viewport": [
       "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
     ],
-    "enabled": false
+    "viewport": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testavif.avif"
+    ],
+    "enabled": true
   },
   "lcp_img_loadedbydynamicjs_template": {
     "lcp": [
-      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testavif.avif"
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif"
     ],
     "viewport": [
-      "http://www.google.com/intl/en_com/images/logo_plain.png"
+      "/wp-content/rocket-test-data/images/lcp/logo_plain.png"
     ],
-    "enabled": false
+    "enabled": true
   },
   "lcp_img_loadedbyjs_template": {
     "lcp": [
-      "/wp-content/rocket-test-data/images/istockphoto-1184692500-612x612.webp"
+      "/wp-content/rocket-test-data/images/lcp/testwebp.webp"
     ],
     "viewport": [
       "/test.png",
-      "/wp-content/rocket-test-data/images/lcp/testwebp.webp"
+      "/wp-content/rocket-test-data/images/istockphoto-1184692500-612x612.webp"
     ],
-    "enabled": false
+    "enabled": true
   },
   "lcp_bg_multimage_template": {
     "lcp": [
-      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/image/test3.webp",
-      "/wp-content/rocket-test-data/image/file_example_JPG_100kB.jpg"
-    ],
-    "viewport": [
       "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8",
       "https://rocketlabsqa.ovh/wp-content/rocket-test-data/images/fixtheissue.jpg"
     ],
-    "enabled": false
+    "viewport": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/image/test3.webp",
+      "/wp-content/rocket-test-data/image/file_example_JPG_100kB.jpg"
+    ],
+    "enabled": true
   },
   "lcp_with_space_after_title": {
     "lcp": [
-      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testwebp.webp"
+      "/wp-content/rocket-test-data/images/lcp/testwebp.webp"
     ],
     "viewport": [
-      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/test_inline2.jpeg"
+      "/wp-content/rocket-test-data/images/test_inline2.jpeg"
     ],
     "enabled": true
   },
@@ -68,14 +68,12 @@
   "lcp_bg_responsive_webkit_template": {
     "lcp": [
       "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8",
-      "https://rocketlabsqa.ovh/wp-content/rocket-test-data/images/fixtheissue.jpg"
+      "/wp-content/rocket-test-data/images/fixtheissue.jpg"
     ],
     "viewport": [
-      "/wp-content/rocket-test-data/image/test3.webp",
-      "/wp-content/rocket-test-data/images/lcp/testwebp.webp",
-      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testavif.avif"
+      "/wp-content/rocket-test-data/image/test3.webp"
     ],
-    "enabled": false
+    "enabled": true
   },
   "lcp_regular_image_template": {
     "lcp": [
@@ -102,18 +100,12 @@
   },
   "lcp_rsponsive_imagegrid": {
     "lcp": [
-      "https://www.w3schools.com/w3images/underwater.jpg"
+      "/wp-content/rocket-test-data/images/lcp/rocks.jpg"
     ],
     "viewport": [
-      "https://www.w3schools.com/w3images/wedding.jpg",
-      "/wp-content/rocket-test-data/images/file_example_JPG_100kB.jpg",
-      "/wp-content/rocket-test-data/images/lcp/testavif.avif",
-      "https://www.w3schools.com/w3images/rocks.jpg",
-      "/wp-content/rocket-test-data/images/lcp/testPng.png",
-      "/wp-content/rocket-test-data/images/maxime-lebrun-6g3Akg708E0-unsplash.jpg",
-      "https://www.w3schools.com/w3images/ocean.jpg"
+      "/wp-content/rocket-test-data/images/lcp/wedding.jpg"
     ],
-    "enabled": false
+    "enabled": true
   },
   "lcp_attribute_template": {
     "lcp": [
@@ -123,17 +115,13 @@
       "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testPng.png",
       "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/wp-rocket2.svg",
       "/wp-content/rocket-test-data/images/lcp/testsvg.svg",
-      "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8",
-      "https://rocketlabsqa.ovh/wp-content/rocket-test-data/images/fixtheissue.jpg",
-      "/wp-content/rocket-test-data/images/lcp/testjpeg.jpeg",
-      "/wp-content/rocket-test-data/images/lcp/testavif.avif",
-      "/test.png"
+      "/wp-content/rocket-test-data/images/lcp/testjpeg.jpeg"
     ],
-    "enabled": false
+    "enabled": true
   },
   "lcp_no_dimension_svg": {
     "lcp": [
-      "/wp-content/rocket-test-data/images/lcp/testsvg.svg"
+      "https://discuss-assets.s3.amazonaws.com/original/3X/1/9/19823cc1f1f887d70755e0b500dd8ce2c51ba7f9.svg"
     ],
     "viewport": [],
     "enabled": false
@@ -143,20 +131,20 @@
       "/wp-content/rocket-test-data/images/lcp/testavif.avif"
     ],
     "viewport": [
-      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg",
+      "/wp-content/rocket-test-data/images/lcp/testjpeg.jpeg",
       "/test.png"
     ],
     "enabled": true
   },
   "lcp_no_dimension_absolute_url": {
     "lcp": [
-      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif"
     ],
     "viewport": [
       "/wp-content/rocket-test-data/images/lcp/testPng.png",
-      "https://cdn.pixabay.com/photo/2023/06/05/02/01/starry-sky-8041247_1280.jpg"
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
     ],
-    "enabled": false
+    "enabled": true
   },
   "lcp_image_withspecialchar_template": {
     "lcp": [
@@ -164,9 +152,9 @@
     ],
     "viewport": [
       "/wp-content/rocket-test-data/images/testspace%202.png",
-      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/paperéquipesTest.jpeg"
+      "/wp-content/rocket-test-data/images/paper%C3%A9quipesTest.jpeg"
     ],
-    "enabled": false
+    "enabled": true
   },
   "lcp_img_addedbydynamicstyle_template": {
     "lcp": [
