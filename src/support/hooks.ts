@@ -209,18 +209,18 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 });
 
 /**
- * Before each test scenario with the @lcp tag, performs setup tasks.
+ * Before each test scenario with the @delaylcp tag, performs setup tasks.
  */
-Before({tags: '@lcp'}, async function (this: ICustomWorld) {
+Before({tags: '@delaylcp'}, async function (this: ICustomWorld) {
     // Install and activate the remote plugin 
     await installRemotePlugin('https://github.com/wp-media/wp-rocket-e2e-test-helper/raw/main/helper-plugin/rocket-lcp-delay.zip');
     await activatePlugin('rocket-lcp-delay');
 });
 
 /**
- * After each test scenario with the @lcp tag, performs teardown tasks.
+ * After each test scenario with the @delaylcp tag, performs teardown tasks.
  */
-After({tags: '@lcp'}, async function (this: ICustomWorld) {
+After({tags: '@delaylcp'}, async function (this: ICustomWorld) {
     await uninstallPlugin('rocket-lcp-delay');
 });
 
