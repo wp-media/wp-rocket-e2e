@@ -236,9 +236,12 @@
       "/rocket-test-data/images/lcp/testjpg2.jpg"
     ],
     "viewport": [
-      "/rocket-test-data/images/test3.gif",
-      "/rocket-test-data/images/testjpg3.jpg",
-      "/rocket-test-data/images/lcp/testjpg2.jpg"
+      "/rocket-test-data/images/1_BDCYb3Yx8exGZVu5lLRPNw.png",
+      "/rocket-test-data/images/lcp/testavif.avif",
+      "/test.png",
+      "/rocket-test-data/images/lcp/testwebp.webp",
+      "/rocket-test-data/images/paper.jpeg",
+      "/rocket-test-data/images/lcp/testjpeg.jpeg"
     ],
     "enabled": true
   },
