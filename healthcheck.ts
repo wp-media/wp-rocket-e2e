@@ -1,8 +1,8 @@
 import chalk from "chalk";
 import wp from "./utils/commands";
-import { PageUtils } from './utils/page-utils';
-import { WP_BASE_URL } from "./config/wp.config";
-import { chromium, Browser, Page } from 'playwright';
+import {PageUtils} from './utils/page-utils';
+import {WP_BASE_URL} from "./config/wp.config";
+import {chromium as chrome, expect, Page} from '@playwright/test';
 import {Sections} from "./src/common/sections";
 import {selectors as pluginSelectors} from "./src/common/selectors";
 
@@ -27,23 +27,38 @@ export async function checkWPStatus(): Promise<void> {
     console.log(chalk.blue('-------------------------'));
 }
 
-export async function openE2EPage(): Promise<void> {
-    const browser: Browser = await chromium.launch({ headless: false });
-    const page: Page = await browser.newPage();
-    await page.goto(WP_BASE_URL);
-    await page.waitForLoadState('load', { timeout: 30000 });
 
+async function setupBrowser(headless: boolean = false):Promise<Page> {
+    const browser = await chrome.launch({ headless });
+    const context = await browser.newContext();
+
+    return await context.newPage();
+}
+
+export async function openE2EPage(): Promise<void> {
+    const page = await setupBrowser(false);
+
+    await page.goto(WP_BASE_URL);
 }
 
 export async function auth(): Promise<void> {
+    const page = await setupBrowser(false);
+    const sections = new Sections(page, pluginSelectors);
+    const utils = new PageUtils(page, sections);
 
+    await utils.auth()
+    page.on('response', async (response) => {
+        expect(response.status()).not.toEqual(500);
+        expect(response.status()).not.toEqual(404);
+    });
+
+    await utils.wpAdminLogout()
 }
-
 
 (async (): Promise<void> => {
     await checkWPStatus();
     await openE2EPage();
-
+    await auth();
 
     process.exit(0);
 })();
