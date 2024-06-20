@@ -1,4 +1,4 @@
-@lcp @setup
+@lcp @delaylcp @setup
 Feature: Beacon script captures the right images.
 
     Background:

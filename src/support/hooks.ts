@@ -25,7 +25,7 @@ import backstop from 'backstopjs';
 import {SCENARIO_URLS, WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
-import {rename, exists, rm, testSshConnection} from "../../utils/commands";
+import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin} from "../../utils/commands";
 // import {configurations, getWPDir} from "../../utils/configurations";
 
 /**
@@ -206,6 +206,22 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 
     //  await resetWP();
 
+});
+
+/**
+ * Before each test scenario with the @delaylcp tag, performs setup tasks.
+ */
+Before({tags: '@delaylcp'}, async function (this: ICustomWorld) {
+    // Install and activate the remote plugin 
+    await installRemotePlugin('https://github.com/wp-media/wp-rocket-e2e-test-helper/raw/main/helper-plugin/rocket-lcp-delay.zip');
+    await activatePlugin('rocket-lcp-delay');
+});
+
+/**
+ * After each test scenario with the @delaylcp tag, performs teardown tasks.
+ */
+After({tags: '@delaylcp'}, async function (this: ICustomWorld) {
+    await uninstallPlugin('rocket-lcp-delay');
 });
 
 /**
