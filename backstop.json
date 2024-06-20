@@ -8,27 +8,6 @@
     }
   ],
   "scenarios": [
-    {
-      "label": "home",
-      "url": "http://mike.e2e.rocketlabsqa.ovh/",
-      "referenceUrl": "",
-      "readyEvent": "",
-      "readySelector": "",
-      "delay": 0,
-      "hideSelectors": [],
-      "removeSelectors": [],
-      "hoverSelector": "",
-      "clickSelector": "",
-      "postInteractionWait": 0,
-      "selectors": [],
-      "selectorExpansion": true,
-      "expect": 0,
-      "misMatchThreshold": 0.1,
-      "requireSameDimensions": true,
-      "onReadyScript": "scrollToBottom.js",
-      "onBeforeScript": "",
-      "viewports": []
-    }
   ],
   "paths": {
     "bitmaps_reference": "backstop_data/bitmaps_reference",
