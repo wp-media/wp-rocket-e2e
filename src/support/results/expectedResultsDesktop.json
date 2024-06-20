@@ -236,5 +236,110 @@
     ],
     "viewport": [],
     "enabled": true
+  },
+  "lcp_picture_template": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/test3.gif",
+      "/rocket-test-data/images/lcp/testjpg2.jpg",
+      "/rocket-test-data/images/testjpg3.jpg"
+    ],
+    "viewport": [
+      "/rocket-test-data/images/lcp/testwebp.webp",
+      "/rocket-test-data/images/lcp/testjpeg.jpeg",
+      "/rocket-test-data/images/paper.jpeg",
+      "/test.png",
+      "/rocket-test-data/images/lcp/testavif.avif"
+    ],
+    "enabled": true
+  },
+  "lcp_picture_template2": {
+    "lcp": [
+      "/rocket-test-data/images/paper.jpeg",
+      "/rocket-test-data/images/lcp/testjpeg.jpeg",
+      "/rocket-test-data/images/lcp/testwebp.webp"
+    ],
+    "viewport": [
+      "/rocket-test-data/images/test3.gif",
+      "/rocket-test-data/images/testjpg3.jpg",
+      "/rocket-test-data/images/lcp/testjpg2.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_bg_img_in_section": {
+    "lcp": [
+      "/wp-content/uploads/2024/03/should_be_lcp_atf_image.jpg"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_section_template_relative": {
+    "lcp": [
+      "/wp-content/rocket-test-data/image/test3.webp",
+      "/wp-content/rocket-test-data/image/file_example_JPG_100kB.jpg"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_section_template2": {
+    "lcp": [
+      "https://images.pexels.com/photos/67636/rose-blue-flower-rose-blooms-67636.jpeg?auto=compress&cs=tinysrgb&h=350"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_bg_relative_attribute_incss": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif",
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/testjpeg.jpeg"
+    ],
+    "enabled": true
+  },
+  "lcp_bg_img_in_header_template": {
+    "lcp": [
+      "/wp-content/uploads/2024/03/should_be_lcp_atf_image.jpg"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_6647_svgbg_template": {
+    "lcp": [],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_6599_template2": {
+    "lcp": [
+      "https://call.adame.io/images/adaptive.php?width=200&image_url=https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/09af39a1-c481-4ad0-9283-aa4a4b6db0c9/original=true/00010-360343057.jpeg"
+    ],
+    "viewport": [
+      "https://new.rocketlabsqa.ovh/file.php?url=img.jpg",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/testwebp.webp"
+    ],
+    "enabled": true
+  },
+  "lcp_picture_media_type_mixed": {
+    "lcp": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-450x380.jpg"
+    ],
+    "viewport": [
+    ],
+    "enabled": true
+  },
+  "lcp_picture_relative": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/marchlarge1-scaled.jpg"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/test3.gif"
+    ],
+    "enabled": true
   }
 }
