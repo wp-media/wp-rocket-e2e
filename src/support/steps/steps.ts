@@ -12,7 +12,7 @@
 import {expect} from "@playwright/test";
 import {AfterAll, BeforeAll} from "@cucumber/cucumber";
 import wp, {
-    activatePlugin, checkWPStatus,
+    activatePlugin,
     cp,
     generateUsers,
     resetWP,
@@ -136,11 +136,4 @@ When('I connect as {string}', async function (user) {
  */
 Given('I am on the page {string}', {timeout: 10 * 1000} , async function (url) {
     await this.page.goto(`${configurations.baseUrl}${url}`);
-});
-
-/**
- * Executes the step to verify if wp is installed.
- */
-Given('wp cli is running', async function () {
-    await checkWPStatus()
 });
