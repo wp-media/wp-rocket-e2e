@@ -24,7 +24,6 @@
     "test:llimages": "$npm_package_config_testCommand --tags @llimages",
     "test:lcp": "$npm_package_config_testCommand --tags @lcp",
     "test:test": "$npm_package_config_testCommand --tags @test",
-    "test:healthcheck": "$npm_package_config_testCommand --tags @healthcheck",
     "healthcheck": "ts-node healthcheck.ts",
     "wp-env": "wp-env"
   },

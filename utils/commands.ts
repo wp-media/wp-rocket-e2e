@@ -10,7 +10,6 @@
  */
 import {exec} from "shelljs";
 import {configurations, getWPDir, ServerType} from "./configurations";
-import chalk from 'chalk';
 
 const {NodeSSH} = require('node-ssh')
 
