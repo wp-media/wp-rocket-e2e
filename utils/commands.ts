@@ -40,9 +40,10 @@ function wrapPrefix(command: string): string {
  * @name wp
  * @async
  * @param {string} args - Arguments to be passed to the WP-CLI command.
+ * @param {boolean} show_errors - Show error
  * @returns {Promise<string>} - A Promise that resolves when the command is executed.
  */
-async function wp(args: string): Promise<boolean> {
+async function wp(args: string, show_errors: boolean = true): Promise<boolean> {
     const root = configurations.type === ServerType.docker ? ' --allow-root': '';
     const cwd = getWPDir(configurations);
 
@@ -53,9 +54,13 @@ async function wp(args: string): Promise<boolean> {
             username: configurations.ssh.username,
             privateKeyPath: configurations.ssh.key
         })
+
         const result = await client.execCommand(`wp ${args}${root} --path=${cwd}`);
+
         if(result.code === 1) {
-            console.error('Error :', result.stderr);
+            if(show_errors){
+                console.error('Error :', result.stderr);
+            }
             return false
         }
         return true;
@@ -240,7 +245,7 @@ export async function activatePlugin(name: string): Promise<void>  {
  * @returns {Promise<boolean>} - A Promise that resolves when the check is completed.
  */
 export async function isPluginInstalled(name: string): Promise<boolean> {
-    return await wp(`plugin is-installed ${name}`)
+    return await wp(`plugin is-installed ${name}`, false);
 }
 
 
