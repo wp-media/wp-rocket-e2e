@@ -69,7 +69,7 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
 
             // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
             await this.page.waitForFunction(() => {
-                const beacon = document.querySelector('[data-name="wpr-lcp-beacon"]');
+                const beacon = document.querySelector('[data-name="wpr-wpr-beacon"]');
                 return beacon && beacon.getAttribute('beacon-completed') === 'true';
             });
 
