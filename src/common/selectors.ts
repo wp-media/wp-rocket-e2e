@@ -52,9 +52,6 @@ export const selectors: Selectors = {
                 type: FieldType.checkbox,
                 element: "#minify_css",
                 target: "label[for=minify_css]",
-                after: async (page: Page, state: boolean): Promise<void> => {
-                     await activateFromPopUp(page, state, "text=Activate minify CSS") 
-                }
             },
             combineCss: {
                 type: FieldType.checkbox,
@@ -92,9 +89,6 @@ export const selectors: Selectors = {
                 type: FieldType.checkbox,
                 element: "#minify_js",
                 target: "label[for=minify_js]",
-                after: async (page: Page, state: boolean): Promise<void> => {
-                    await activateFromPopUp(page, state, "text=Activate minify JavaScript") 
-               }
             },
             combineJs: {
                 type: FieldType.checkbox,
