@@ -247,7 +247,7 @@ When('I clear cache', async function (this:ICustomWorld) {
 
     this.sections.set('dashboard');
     await this.sections.toggle('clearCacheBtn');
-    await this.page.waitForLoadState('load', { timeout: 30000 });
+    await expect(this.page.getByText('WP Rocket: Cache cleared.')).toBeVisible();
 });
 
 /**
