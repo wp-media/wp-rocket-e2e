@@ -277,16 +277,12 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public wpAdminLogout = async (): Promise<void> => {
-        if(! await this.page.locator('#wp-admin-bar-my-account').isVisible()) {
-            return ;
-        }
+        await this.page.locator('#wp-admin-bar-my-account').isVisible();
         await this.page.locator('#wp-admin-bar-my-account').hover();
         await this.page.waitForSelector('#wp-admin-bar-logout');
         await this.page.locator('#wp-admin-bar-logout a').click();
-  
-        await this.page.waitForLoadState('load', { timeout: 30000 });
-        await this.page.waitForTimeout(3000);
-    }
+        await expect(this.page.getByText('You are now logged out.')).toBeVisible();
+    }    
 
     /**
      * Performs Wordpress login action.
