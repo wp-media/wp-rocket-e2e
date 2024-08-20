@@ -155,7 +155,6 @@ When('I enable all settings', async function (this: ICustomWorld) {
  */
 When('I log out', async function (this: ICustomWorld) {
     await this.utils.wpAdminLogout();
-    await this.page.waitForLoadState('load', { timeout: 30000 });
 });
 
 /**
