@@ -189,6 +189,22 @@ export class PageUtils {
     }
 
     /**
+     * Changes permalink custom structure to have ending slash.
+     *
+     * @return  {Promise<void>}
+     */
+    public permalinkChanged = async (): Promise<void> => {
+        await this.page.goto(WP_BASE_URL + '/wp-admin/options-permalink.php');
+        await this.page.locator('#permalink_structure').fill('/%postname%/');
+
+        // Save changes.
+        await this.page.locator('#submit').click();
+
+        // Assert permalink structure successfully changed.
+        await expect(this.page.locator('#setting-error-settings_updated')).toContainText('Permalink structure updated.');
+    }
+
+    /**
      * Peforms a WPR menu dropdown action.
      *
      * @return  {Promise<void>}[return description]
