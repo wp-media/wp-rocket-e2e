@@ -14,9 +14,7 @@ import { dbQuery, getWPTablePrefix } from "../../../utils/commands";
 import { extractFromStdout } from "../../../utils/helpers";
 
 import {WP_BASE_URL} from "../../../config/wp.config";
-
-import assert from "assert";
-
+import { expect } from "@playwright/test";
 
 function delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -52,9 +50,8 @@ When('performance hints data added to DB', async function (this: ICustomWorld) {
 
     // Log the fetched data
     console.log('Data in the table:', resultFromStdout);
-
-    // Assert that the actual data matches the expected data
-   // assert.deepStrictEqual(resultFromStdout, expectedData, 'The data in the table does not match the expected data');
+    // Fail test if data is not in DB
+    expect (resultFromStdout).toBeTruthy();
 
 });
 
@@ -79,7 +76,8 @@ Then('data is removed from the performance hints tables', async function (this: 
         console.log('Data is removed from the table as expected.');
     } else {
         console.log('Data in the table:', resultFromStdout);
-        assert.fail('Data still exists in the table, but it was expected to be removed.');
+        // Fail test if DB results are found
+        expect (resultFromStdout).toBeFalsy();
     }
 
 });
