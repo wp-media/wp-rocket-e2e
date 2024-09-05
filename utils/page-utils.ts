@@ -255,6 +255,24 @@ export class PageUtils {
     }
 
     /**
+     * Navigates to Wordpress Pages page.
+     *
+     * @return  {Promise<void>}
+     */
+        public gotoPages = async (): Promise<void> => {
+            await this.page.goto(WP_BASE_URL + '/wp-admin/edit.php?post_type=page');
+        }
+
+        /**
+     * Navigates to Wordpress Pages - Trash tab.
+     *
+     * @return  {Promise<void>}
+     */
+        public gotoTrashedPages = async (): Promise<void> => {
+            await this.page.goto(WP_BASE_URL + '/wp-admin/edit.php?post_status=trash&post_type=page');
+        }
+
+    /**
      * Navigates to Wordpress site health page.
      *
      * @return  {Promise<void>}
