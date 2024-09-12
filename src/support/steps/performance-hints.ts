@@ -205,7 +205,7 @@ When('switching the theme', async function (this: ICustomWorld) {
     await this.page.locator('#wpbody-content > div.wrap > div.theme-browser.rendered > div > div:nth-child(2) > div.theme-id-container > div > a.button.activate').click(); 
 });
 
-When ('I edit the content of the {string}', async function (this: ICustomWorld, permalink: string) {
+When ('I edit the content of the {string}', async function (this: ICustomWorld) {
     await this.page.waitForSelector('#wp-admin-bar-edit', { state: 'visible' });
     await this.page.locator('#wp-admin-bar-edit').click(); 
     await this.page.waitForSelector('div.editor-header__settings > button', { state: 'visible' });

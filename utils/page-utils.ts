@@ -314,7 +314,7 @@ export class PageUtils {
         await this.page.locator('#wp-admin-bar-my-account').isVisible();
         await this.page.locator('#wp-admin-bar-my-account').hover();
         await this.page.waitForSelector('#wp-admin-bar-logout');
-        await this.page.locator('#wp-admin-bar-logout a').click();
+        await this.page.locator('#wp-admin-bar-logout > a').click();
         await expect(this.page.getByText('You are now logged out.')).toBeVisible();
     }    
 

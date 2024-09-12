@@ -111,18 +111,6 @@ When('I go to {string}', async function (this: ICustomWorld, page) {
 });
 
 /**
- * Executes the step to visit a specific page, desktop, acceptable screen-size for ATF & LRC.
- */
-When('I go to {string} desktop accepted size', async function (this: ICustomWorld, page) {
-    await this.page.setViewportSize({
-        width: 1600,
-        height: 780,
-    });
-    await this.utils.visitPage(page);
-    await this.page.waitForLoadState('load', { timeout: 100000 });
-});
-
-/**
  * Clear wpr cache
  */
 Given('clear wpr cache', async function (this: ICustomWorld) {

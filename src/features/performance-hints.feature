@@ -15,16 +15,17 @@ Feature: Clear lcp/performance hints data tests
         Given performance hints data added to DB
         When permalink is changed
         Then data is removed from the performance hints tables
-
+    
     Scenario: C16390 - Should clear performance hints when switch theme
         Given performance hints data added to DB
         And switching the theme
         Then data is removed from the performance hints tables
+        And theme 'Twenty Twenty' is activated
 
     Scenario: Should clear performance hints of the current URL
         Given I log out
-        And I go to 'atf-lrc-1' desktop accepted size
-        And I go to 'atf-lrc-2' desktop accepted size
+        And I visit page 'atf-lrc-1' with browser dimension 1600 x 700
+        And I visit page 'atf-lrc-2' with browser dimension 1600 x 700
         And data for 'atf-lrc-1' present in the performance hints tables
         And data for 'atf-lrc-2' present in the performance hints tables
         Then I am logged in 
@@ -35,7 +36,7 @@ Feature: Clear lcp/performance hints data tests
     
     Scenario: C16388 - Should clear performance hints of the URL when edited
         Given I log out
-        And I go to 'atf-lrc-1' desktop accepted size
+        And I visit page 'atf-lrc-1' with browser dimension 1600 x 700
         And data for 'atf-lrc-1' present in the performance hints tables
         Then I am logged in 
         And I go to 'atf-lrc-1'
@@ -44,7 +45,7 @@ Feature: Clear lcp/performance hints data tests
 
     Scenario: C16388 - Should clear performance hints of the URL when deleted
         Given I log out
-        And I go to 'atf-lrc-1' desktop accepted size
+        And I visit page 'atf-lrc-1' with browser dimension 1600 x 700
         And data for 'atf-lrc-1' present in the performance hints tables
         Then I am logged in
         When 'atf-lrc-1' page is deleted
