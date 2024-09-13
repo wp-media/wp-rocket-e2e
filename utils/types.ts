@@ -104,7 +104,8 @@ export interface LcpData {
     [key: string]: {
         url: string,
         lcp: string,
-        viewport: string
+        viewport: string,
+        comment: string
     }
 }
 
