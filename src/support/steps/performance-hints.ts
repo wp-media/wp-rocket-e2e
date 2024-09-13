@@ -56,27 +56,50 @@ When('performance hints data added to DB', async function (this: ICustomWorld) {
 
     // Function to insert data and fetch filtered results
     const processTable = async (tableName) => {
+        // Log SQL before executing for debugging
+        console.log(`Truncating table: ${tableName}`);
         await dbQuery(`TRUNCATE TABLE ${tableName}`);
-        await dbQuery(insertSql.replace('%s', tableName));
-        
+
+        const insertQuery = insertSql.replace('%s', tableName);
+        console.log(`Executing insert SQL: ${insertQuery}`);
+        await dbQuery(insertQuery);
+
         // Fetch the data from the table
-        const resultString = await dbQuery(selectSql.replace('%s', tableName));
+        const selectQuery = selectSql.replace('%s', tableName);
+        const resultString = await dbQuery(selectQuery);
         
         // Log the raw result to debug
         console.log(`Raw result from ${tableName}:`, resultString);
 
-        // Convert and filter the result
+        // Convert the result
         const result = parseTabularData(resultString);
-        return result.filter(row => data.some(d => d.url === row.url && d.is_mobile === row.is_mobile && d.status === row.status));
+
+        // Log the result after conversion, before filtering
+        console.log(`Result from ${tableName} before filtering:`, result);
+
+        // Filter out the rows that match the hardcoded data
+        const filteredResult = data.filter(hardcodedRow => 
+            result.some(dbRow => 
+                dbRow.url === hardcodedRow.url && 
+                dbRow.is_mobile == hardcodedRow.is_mobile && 
+                dbRow.status === hardcodedRow.status
+            )
+        );
+
+        console.log(`Filtered result from ${tableName}:`, filteredResult);
+
+        // Check if the filtered result contains all the hardcoded data
+        expect(filteredResult.length).toBe(data.length); // Ensure all hardcoded data is found
+    
+        return filteredResult;
     };
 
-    // Process both tables and get filtered results
+    // Process both tables
     const [resultFromTable1, resultFromTable2] = await Promise.all(tableNames.map(processTable));
 
-    // Log the filtered results
+    // Log the filtered results for both tables
     console.log('Data in the first table:', resultFromTable1);
     console.log('Data in the second table:', resultFromTable2);
- 
 });
 
 When('clear performance hints is clicked in admin bar', async function (this: ICustomWorld) {
