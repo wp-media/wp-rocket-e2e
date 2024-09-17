@@ -86,6 +86,30 @@ const SCENARIO_URLS = {
 	},
 	singleColon: {
 		path: 'll_bg_css_single_colon'
+	},
+	delayJs13Live: {
+		path: 'delayjs_1_3_live_template',
+	},
+	delayJs68Live: {
+		path: 'delayjs_68_live_template',
+	},
+	lcp6647Live: {
+		path: 'lcp_6647_live',
+	},
+	lcpLive4Template: {
+		path: 'lcp_live_4_template',
+	},
+	lcpLiveTestSpan: {
+		path: 'lcp_live_test_span',
+	},
+	rucss5213Template: {
+		path: 'rucss_5213_template',
+	},
+	template4787: {
+		path: '4787_template',
+	},
+	lrcWillSite: {
+		path: 'lrc_will_site',
 	}
 }
 
