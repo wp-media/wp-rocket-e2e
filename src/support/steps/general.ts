@@ -280,7 +280,7 @@ Then('I should see {string}', async function (this: ICustomWorld, text) {
  */
 Then('I must not see any error in debug.log', async function (this: ICustomWorld){
     // Goto WP Rocket dashboard
-    await this.utils.gotoWpr();
+    await this.utils.gotoPlugin();
 
     // Assert that there is no related error in debug.log
     await expect(this.page.locator('#wpr_debug_log_notice')).toBeHidden();
