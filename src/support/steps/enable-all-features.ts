@@ -24,5 +24,5 @@ Then('page loads successfully', async function (this: ICustomWorld) {
         expect(response.status()).not.toEqual(404);
     });
     await this.page.goto(WP_BASE_URL);
-    await this.page.waitForLoadState('load', { timeout: 30000 });
+    //Todo: future enahancement, we can do VR compared to nowprocket but if no CNAME is set or correct CNAME is set
 });

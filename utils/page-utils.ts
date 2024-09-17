@@ -297,9 +297,9 @@ export class PageUtils {
         if(! await this.page.locator('#user_login').isVisible()) {
             return ;
         }
-        await this.page.waitForTimeout(200);
+
         await this.wpAdminLogin();
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+      
     }
 
     /**
