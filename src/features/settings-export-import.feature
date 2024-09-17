@@ -1,4 +1,4 @@
-@smoke @local @export @setup
+@smoke @local @export @setup @only
 Feature: C2148 - Should not change the content of existing fields
 
     Background:
@@ -10,7 +10,6 @@ Feature: C2148 - Should not change the content of existing fields
         And I disabled all settings
         And I export data '1'
         And I enable all settings
-        And I save settings 'cache' 'cacheLoggedUser'
         When I import data
         Then data is imported correctly
 
@@ -18,7 +17,6 @@ Feature: C2148 - Should not change the content of existing fields
         Given plugin is installed 'previous_stable'
         And plugin is activated
         Given I disabled all settings
-        And I save settings 'media' 'lazyload'
         When I export data '2'
         Then data '2' is exported correctly
 
@@ -26,7 +24,6 @@ Feature: C2148 - Should not change the content of existing fields
         Given plugin is installed 'previous_stable'
         And plugin is activated
         And I disabled all settings
-        And I save settings 'media' 'lazyload'
         And I updated plugin to 'new_release'
         And I save settings 'media' 'lazyload'
         When I export data '3'
