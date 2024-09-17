@@ -48,7 +48,7 @@ Given('I updated to latest version', async function (this: ICustomWorld) {
  */
 When('I import data', async function (this: ICustomWorld) {
     await this.utils.importSettings('./plugin/exported_settings/wp-rocket-settings-test-2023-00-01-64e7ada0d3b70.json');
-    await this.page.waitForLoadState('load', { timeout: 100000 });
+    await expect(this.page.getByText('Settings imported and saved.')).toBeVisible();
 });
 
 /**

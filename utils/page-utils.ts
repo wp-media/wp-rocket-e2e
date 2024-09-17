@@ -317,8 +317,8 @@ export class PageUtils {
             await this.sections.set("cache").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            
         }
 
         if(await this.sections.doesSectionExist('fileOptimization')) {
@@ -326,8 +326,8 @@ export class PageUtils {
             await this.sections.set("fileOptimization").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+           
         }
 
         if(await this.sections.doesSectionExist('media')) {
@@ -335,8 +335,8 @@ export class PageUtils {
             await this.sections.set("media").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+           
         }
 
         if(await this.sections.doesSectionExist('preload')) {
@@ -344,8 +344,7 @@ export class PageUtils {
             await this.sections.set("preload").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
         }
 
         if(await this.sections.doesSectionExist('advancedRules')) {
@@ -353,8 +352,8 @@ export class PageUtils {
             await this.sections.set("advancedRules").visit();
             await this.sections.massFill("");
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            
         }
 
         if(await this.sections.doesSectionExist('database')) {
@@ -362,8 +361,8 @@ export class PageUtils {
             await this.sections.set("database").visit();
             await this.sections.massToggle();
             await this.page.getByRole('button', { name: 'Save Changes and Optimize' }).click();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+           
         }   
 
         if(await this.sections.doesSectionExist('cdn')) {
@@ -372,17 +371,8 @@ export class PageUtils {
             await this.sections.massToggle();
             await this.sections.fill("cnames", "");
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
-        }
-
-        if(await this.sections.doesSectionExist('heartbeat')) {
-            // Disable all settings for Heartbeat.
-            await this.sections.set("heartbeat").visit();
-            await this.sections.massToggle();
-            await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+           
         }
 
         if(await this.sections.doesSectionExist('addons')) {
@@ -390,6 +380,17 @@ export class PageUtils {
             await this.sections.set("addons").visit();
             await this.sections.massToggle();
         }
+
+        if(await this.sections.doesSectionExist('heartbeat')) {
+            // Disable all settings for Heartbeat.
+            await this.sections.set("heartbeat").visit();
+            await this.sections.massToggle();
+            await this.saveSettings();
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            
+        }
+
+
     }
 
     /**

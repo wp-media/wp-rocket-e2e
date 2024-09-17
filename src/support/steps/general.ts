@@ -83,7 +83,6 @@ Given('I save settings {string} {string}', async function (this: ICustomWorld, s
     await this.sections.state(true).toggle(element);
     await this.utils.saveSettings();
 
-    await this.page.waitForLoadState('load', { timeout: 30000 });
 });
 
 /**
