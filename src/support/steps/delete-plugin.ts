@@ -29,8 +29,6 @@ When('I delete plugin', async function (this: ICustomWorld) {
         await this.page.locator('text=Confirm').click();
     }
 
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-
     // Delete WPR.
     await this.page.locator( '#delete-wp-rocket' ).click();
 
