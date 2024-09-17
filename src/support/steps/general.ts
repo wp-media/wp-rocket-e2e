@@ -33,7 +33,6 @@ Given('I am logged in', async function (this: ICustomWorld) {
  */
 Given('plugin is installed {string}', async function (this: ICustomWorld, pluginVersion: string) {
     await this.utils.uploadNewPlugin(`./plugin/${pluginVersion}.zip`);
-    await this.page.waitForLoadState('load', { timeout: 30000 });
     await expect(this.page).toHaveURL(/action=upload-plugin/); 
 });
 

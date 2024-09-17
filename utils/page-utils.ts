@@ -268,7 +268,7 @@ export class PageUtils {
         await this.page.locator('.upload-view-toggle').click();
         await this.page.locator('#pluginzip').setInputFiles(file);
         await this.page.waitForSelector('#install-plugin-submit');
-        await this.page.locator('#install-plugin-submit').click({ timeout: 120000 });
+        await this.page.locator('#install-plugin-submit').click();
     }
 
     /**
