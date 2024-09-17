@@ -56,6 +56,11 @@ When('I import data', async function (this: ICustomWorld) {
  */
 
 When('I export data {string}', async function (this: ICustomWorld, fileNo: string) {
+   if(! await this.page.url().includes('page=wprocket#tools')) 
+        {
+            await this.utils.visitPage('wp-admin/options-general.php?page=wprocket#tools');
+
+        }
     await this.page.locator('#wpr-nav-tools').click();
     // Export settings.
     const downloadPromise = this.page.waitForEvent('download');
