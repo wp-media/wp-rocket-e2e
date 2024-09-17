@@ -260,11 +260,11 @@ export class PageUtils {
      * Performs upload new plugin action.
      *
      * @param file File to be uploaded.
-     *
      * @return  {Promise<void>}
      */
     public uploadNewPlugin = async (file: string): Promise<void> => {
         await this.page.goto(WP_BASE_URL + '/wp-admin/plugin-install.php');
+       await this.page.waitForSelector('.upload-view-toggle');
         await this.page.locator('.upload-view-toggle').click();
         await this.page.locator('#pluginzip').setInputFiles(file);
         await this.page.waitForSelector('#install-plugin-submit');
@@ -318,6 +318,7 @@ export class PageUtils {
             await this.sections.massToggle();
             await this.saveSettings();
             await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            await this.page.locator('#setting-error-settings_updated > button').click();
             
         }
 
@@ -327,6 +328,7 @@ export class PageUtils {
             await this.sections.massToggle();
             await this.saveSettings();
             await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            await this.page.locator('#setting-error-settings_updated > button').click();
            
         }
 
@@ -336,6 +338,7 @@ export class PageUtils {
             await this.sections.massToggle();
             await this.saveSettings();
             await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            await this.page.locator('#setting-error-settings_updated > button').click();
            
         }
 
@@ -345,6 +348,7 @@ export class PageUtils {
             await this.sections.massToggle();
             await this.saveSettings();
             await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            await this.page.locator('#setting-error-settings_updated > button').click();
         }
 
         if(await this.sections.doesSectionExist('advancedRules')) {
@@ -353,7 +357,7 @@ export class PageUtils {
             await this.sections.massFill("");
             await this.saveSettings();
             await expect(this.page.getByText('Settings saved.')).toBeVisible();
-            
+            await this.page.locator('#setting-error-settings_updated > button').click();
         }
 
         if(await this.sections.doesSectionExist('database')) {
@@ -362,7 +366,7 @@ export class PageUtils {
             await this.sections.massToggle();
             await this.page.getByRole('button', { name: 'Save Changes and Optimize' }).click();
             await expect(this.page.getByText('Settings saved.')).toBeVisible();
-           
+            await this.page.locator('#setting-error-settings_updated > button').click();
         }   
 
         if(await this.sections.doesSectionExist('cdn')) {
@@ -372,6 +376,7 @@ export class PageUtils {
             await this.sections.fill("cnames", "");
             await this.saveSettings();
             await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            await this.page.locator('#setting-error-settings_updated > button').click();
            
         }
 
@@ -476,6 +481,7 @@ export class PageUtils {
             await this.sections.fill("cnames", "test.example.com");
             await this.saveSettings();
             await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            await this.page.locator('#setting-error-settings_updated > button').click();
         }
 
         if(await this.sections.doesSectionExist('addons')) {
