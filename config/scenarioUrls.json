@@ -1,0 +1,23 @@
+{
+  "test:llcssbg": {
+    "home": {
+      "path": ""
+    },
+    "llcss": {
+      "path": "lazyload_css_background_images"
+    },
+    "noJsLlcss": {
+      "path": "lazyload_css_background_images",
+      "disableJs": true
+    },
+    "elementorLlcss": {
+      "path": "elementor-overlay"
+    },
+    "doubleColon": {
+      "path": "ll_bg_css_double_colon"
+    },
+    "singleColon": {
+      "path": "ll_bg_css_single_colon"
+    }
+  }
+}
