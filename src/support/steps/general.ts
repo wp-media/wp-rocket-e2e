@@ -107,7 +107,6 @@ When('I log in', async function (this: ICustomWorld) {
  */
 When('I go to {string}', async function (this: ICustomWorld, page) {
     await this.utils.visitPage(page);
-    await this.page.waitForLoadState('load', { timeout: 100000 });
 });
 
 /**
@@ -132,12 +131,15 @@ When('I click on {string}', async function (this: ICustomWorld, selector) {
         await this.page.locator('#tools_tab').click();
         await this.page.waitForSelector('#save_last_major_version');
         await this.page.locator('#save_last_major_version').click();
-        await this.page.waitForLoadState('load', { timeout: 30000 });
         await this.utils.gotoWpr();
         await this.page.locator('#wpr-nav-tools').click();
+        await this.page.locator(selector).click();
+        await this.page.waitForLoadState('load', { timeout: 70000 });
     }
-    await this.page.locator(selector).click();
-    await this.page.waitForLoadState('load', { timeout: 100000 });
+    else{
+        await this.page.locator(selector).click();
+    }
+    
 });
 
 /**
