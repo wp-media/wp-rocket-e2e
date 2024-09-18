@@ -262,10 +262,35 @@ When('I visit page {string} with browser dimension {int} x {int}', async functio
 });
 
 /**
+ * Executes the step to visit beacon driven page in a specific browser dimension.
+ */
+When('I visit beacon driven page {string} with browser dimension {int} x {int}', async function (this:ICustomWorld, page, width, height) {
+    await this.page.setViewportSize({
+        width: width,
+        height: height,
+    });
+
+    await this.utils.visitPage(page);
+
+    // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
+    await this.page.waitForFunction(() => {
+        const beacon = document.querySelector('[data-name="wpr-wpr-beacon"]');
+        return beacon && beacon.getAttribute('beacon-completed') === 'true';
+    });
+});
+
+/**
  * Executes the step to scroll to the bottom of the page.
  */
 When('I scroll to bottom of page', async function (this:ICustomWorld) {
     await this.utils.scrollDownBottomOfAPage();
+});
+
+/**
+ * Executes the step to change permalink structure.
+ */
+When('permalink structure is changed to {string}', async function (this: ICustomWorld, structure: string) {
+    await this.utils.permalinkChanged(structure);
 });
 
 /**
