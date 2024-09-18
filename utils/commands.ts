@@ -272,9 +272,25 @@ export async function installRemotePlugin(url: string): Promise<void>  {
  * @returns {Promise<void>} - A Promise that resolves when the uninstallation is completed.
  */
 export async function uninstallPlugin(plugin: string): Promise<void>  {
-    if(await isPluginInstalled(plugin)) {
-        await wp(`plugin uninstall --deactivate ${plugin}`);
+    const plugins = plugin.split(' ');
+    for (const p of plugins) {
+        if (await isPluginInstalled(p)) {
+            await wp(`plugin uninstall --deactivate ${p}`);
+        }
     }
+}
+
+/**
+ * Update Permalink.
+ *
+ * @function
+ * @name updatePermalinkStructure
+ * @async
+ * @param {string} structure - The permalink structure.
+ * @returns {Promise<void>} - A Promise that resolves when the permalink structure is updated.
+ */
+export async function updatePermalinkStructure(structure: string): Promise<void>  {
+    await wp(`option update permalink_structure ${structure}`);
 }
 
 /**
