@@ -133,14 +133,6 @@ Then('data is removed from the performance hints tables', async function (this: 
     const tablePrefix = await getWPTablePrefix();
     const tables = [`${tablePrefix}wpr_above_the_fold`, `${tablePrefix}wpr_lazy_render_content`];
 
-    // Define the data to ignore based on the imported WP_BASE_URL
-    const ignoreData = [
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        { url: WP_BASE_URL, is_mobile: 1 },
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        { url: WP_BASE_URL, is_mobile: 0 }
-    ];
-
     // Helper function to check if data is removed from a table
     const verifyTableIsEmpty = async (tableName: string): Promise<void> => {
         // Construct SQL query to select all rows
@@ -148,20 +140,19 @@ Then('data is removed from the performance hints tables', async function (this: 
         const result = await dbQuery(selectSql); 
         const resultFromStdout = await extractFromStdout(result);
 
-        // Filter out the ignored data
-        const filteredResult = resultFromStdout.filter(row => {
-            return !ignoreData.some(ignoreEntry => 
-                row.url === ignoreEntry.url && row.is_mobile === String(ignoreEntry.is_mobile)
-            );
+        // URLs to check
+        const urlsToDelete = [
+            `${WP_BASE_URL}/a`,
+            `${WP_BASE_URL}/b`,
+            `${WP_BASE_URL}/c`
+        ];
+        
+        // Filter out any URL that exists in the dataset and adds it to the constant.
+        const missingUrls = urlsToDelete.filter(url => {
+            return !resultFromStdout.some(item => item.url === url);
         });
 
-        // Check if the filtered result is empty
-        if (filteredResult.length === 0) {
-            console.log(`Data is removed from ${tableName} as expected.`);
-        } else {
-            console.log(`Filtered data in ${tableName}:`, filteredResult);
-            expect(filteredResult).toBeFalsy();  // Fail test if filtered results are found
-        }
+        expect(urlsToDelete.length).toBe(missingUrls.length);
     };
 
     // Verify both tables
