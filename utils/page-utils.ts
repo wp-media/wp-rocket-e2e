@@ -116,6 +116,15 @@ export class PageUtils {
     }
 
     /**
+     * Navigates to Imagify settings page.
+     *
+     * @return {Promise<void>}
+     */
+    public gotoImagify = async (): Promise<void> => {
+        await this.page.goto(WP_BASE_URL + '/wp-admin/options-general.php?page=imagify');
+    }
+
+    /**
      * Navigates to new post on Wordpress.
      *
      * @return  {Promise<void>}
