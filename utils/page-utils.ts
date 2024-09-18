@@ -264,7 +264,7 @@ export class PageUtils {
      */
     public uploadNewPlugin = async (file: string): Promise<void> => {
         await this.page.goto(WP_BASE_URL + '/wp-admin/plugin-install.php');
-       await this.page.waitForSelector('.upload-view-toggle');
+        await this.page.waitForSelector('.upload-view-toggle');
         await this.page.locator('.upload-view-toggle').click();
         await this.page.locator('#pluginzip').setInputFiles(file);
         await this.page.waitForSelector('#install-plugin-submit');
