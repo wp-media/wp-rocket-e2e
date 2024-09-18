@@ -14,7 +14,7 @@ import { expect } from "@playwright/test";
 import { ICustomWorld } from "../../common/custom-world";
 
 import { Given, When, Then } from '@cucumber/cucumber';
-import { WP_BASE_URL } from '../../../config/wp.config';
+import {SCENARIO_URLS, WP_BASE_URL} from '../../../config/wp.config';
 import { createReference, compareReference } from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
 import { Page } from '@playwright/test';
@@ -260,6 +260,23 @@ When('I visit page {string} with browser dimension {int} x {int}', async functio
     });
 
     await this.utils.visitPage(page);
+});
+
+/**
+ * Executes the step to visit page in a specific browser dimension.
+ */
+When('I visit lrc live templates', async function (this:ICustomWorld) {
+    await this.page.setViewportSize({
+        width:  1600,
+        height: 700,
+    });
+    const liveUrl = SCENARIO_URLS;
+
+    for (const key in liveUrl) {
+        if(liveUrl[key].type === 'lrc') {
+            await this.utils.visitPage(liveUrl[key].path);
+        }
+    }
 });
 
 /**
