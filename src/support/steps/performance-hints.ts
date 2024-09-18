@@ -15,8 +15,14 @@ import { dbQuery, getWPTablePrefix } from "../../../utils/commands";
 import { extractFromStdout } from "../../../utils/helpers";
 import { expect } from "@playwright/test";
 
-function delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+/**
+ * Gets page title from URL path.
+ *
+ * @param {string} path - URL Path.
+ * @returns {string} - String of title from path.
+ */
+const getTitleFromPath = (path: string): string => {
+    return path.replace(/-/g, ' ');
 }
 
 /*
@@ -31,18 +37,21 @@ When('performance hints data added to DB', async function (this: ICustomWorld) {
 
     // Define the data to be inserted
     const data = [
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         { url: `${WP_BASE_URL}/a`, is_mobile: 0, status: 'completed' },
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         { url: `${WP_BASE_URL}/b`, is_mobile: 0, status: 'completed' },
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         { url: `${WP_BASE_URL}/c`, is_mobile: 0, status: 'completed' }
     ];
 
     // Build the insert SQL statement
-    const values = data.map(row => `('${row.url}', ${row.is_mobile}, '${row.status}')`).join(',');
+    const values = data.map(row => `("${row.url}", ${row.is_mobile}, "${row.status}")`).join(',');
     const insertSql = `INSERT INTO %s (url, is_mobile, status) VALUES ${values}`;
     const selectSql = `SELECT url, is_mobile, status FROM %s`;
 
     // Function to convert tabular data to array of objects
-    const parseTabularData = (tabularData) => {
+    const parseTabularData = (tabularData: string): Array<{ [key: string]: string }> => {
         const lines = tabularData.trim().split('\n');
         const headers = lines.shift().split('\t');
         return lines.map(line => {
@@ -55,7 +64,8 @@ When('performance hints data added to DB', async function (this: ICustomWorld) {
     };
 
     // Function to insert data and fetch filtered results
-    const processTable = async (tableName) => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const processTable = async (tableName: string): Promise<Array<{ url: string; is_mobile: number; status: string }>> => {
         // Log SQL before executing for debugging
         console.log(`Truncating table: ${tableName}`);
         await dbQuery(`TRUNCATE TABLE ${tableName}`);
@@ -81,7 +91,7 @@ When('performance hints data added to DB', async function (this: ICustomWorld) {
         const filteredResult = data.filter(hardcodedRow => 
             result.some(dbRow => 
                 dbRow.url === hardcodedRow.url && 
-                dbRow.is_mobile == hardcodedRow.is_mobile && 
+                Number(dbRow.is_mobile) === hardcodedRow.is_mobile && 
                 dbRow.status === hardcodedRow.status
             )
         );
@@ -106,7 +116,7 @@ When('clear performance hints is clicked in admin bar', async function (this: IC
     await this.page.locator('#wp-admin-bar-wp-rocket').hover();
     await this.page.waitForSelector('#wp-admin-bar-clear-performance-hints', { state: 'visible' });
     await this.page.locator('#wp-admin-bar-clear-performance-hints').click(); 
-    await this.page.waitForSelector('div.notice.notice-success', { state: 'visible' });
+    await this.page.waitForSelector('text=WP Rocket: Critical images and Lazy Render data was cleared!', { state: 'visible' });
 });
 
 When('clear performance hints for this URL is clicked in admin bar', async function (this: ICustomWorld) {
@@ -125,12 +135,14 @@ Then('data is removed from the performance hints tables', async function (this: 
 
     // Define the data to ignore based on the imported WP_BASE_URL
     const ignoreData = [
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         { url: WP_BASE_URL, is_mobile: 1 },
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         { url: WP_BASE_URL, is_mobile: 0 }
     ];
 
     // Helper function to check if data is removed from a table
-    const verifyTableIsEmpty = async (tableName: string) => {
+    const verifyTableIsEmpty = async (tableName: string): Promise<void> => {
         // Construct SQL query to select all rows
         const selectSql = `SELECT * FROM ${tableName}`;
         const result = await dbQuery(selectSql); 
@@ -167,9 +179,9 @@ Then('data for {string} is removed from the performance hints tables', async fun
     const tables = [`${tablePrefix}wpr_above_the_fold`, `${tablePrefix}wpr_lazy_render_content`];
 
     // Helper function to check if the permalink is removed from a table
-    const verifyPermalinkRemoved = async (tableName: string) => {
+    const verifyPermalinkRemoved = async (tableName: string): Promise<void> => {
         // Construct SQL query to check if the permalink exists in the table
-        const selectSql = `SELECT * FROM ${tableName} WHERE url = '${permalink}'`;
+        const selectSql = `SELECT * FROM ${tableName} WHERE url LIKE "%${permalink}%"`;
         const result = await dbQuery(selectSql); 
         const resultFromStdout = await extractFromStdout(result);
 
@@ -196,9 +208,9 @@ Then('data for {string} present in the performance hints tables', async function
     const tables = [`${tablePrefix}wpr_above_the_fold`, `${tablePrefix}wpr_lazy_render_content`];
 
     // Helper function to check if the permalink still exists in a table
-    const verifyPermalinkExists = async (tableName: string) => {
+    const verifyPermalinkExists = async (tableName: string): Promise<void> => {
         // Construct SQL query to check if the permalink exists in the table
-        const selectSql = `SELECT * FROM ${tableName} WHERE url = '${permalink}'`;
+        const selectSql = `SELECT * FROM ${tableName} WHERE url LIKE "%${permalink}%"`;
         const result = await dbQuery(selectSql); 
         const resultFromStdout = await extractFromStdout(result);
 
@@ -217,10 +229,6 @@ Then('data for {string} present in the performance hints tables', async function
     }
 });
 
-When('permalink is changed', async function (this: ICustomWorld) {
-    await this.utils.permalinkChanged();
-});
-
 When('switching the theme', async function (this: ICustomWorld) {
     await this.utils.gotoThemes();
     await this.page.locator('#wpbody-content > div.wrap > div.theme-browser.rendered > div > div:nth-child(2) > div.theme-id-container').hover();
@@ -228,16 +236,19 @@ When('switching the theme', async function (this: ICustomWorld) {
     await this.page.locator('#wpbody-content > div.wrap > div.theme-browser.rendered > div > div:nth-child(2) > div.theme-id-container > div > a.button.activate').click(); 
 });
 
-When ('I edit the content of the {string}', async function (this: ICustomWorld) {
+When ('I edit the content of post', async function (this: ICustomWorld) {
     await this.page.waitForSelector('#wp-admin-bar-edit', { state: 'visible' });
-    await this.page.locator('#wp-admin-bar-edit').click(); 
-    await this.page.waitForSelector('div.editor-header__settings > button', { state: 'visible' });
-    await this.page.locator('div.editor-header__settings > button').click();
+    await this.page.locator('#wp-admin-bar-edit').click();
+    await this.page.waitForSelector('button:has-text("Update"):not(:disabled)', { state: 'visible' });
+    await this.page.getByRole('button', { name: 'Update' }).click();
+    await this.page.waitForSelector('[aria-label="Dismiss this notice"]', { state: 'visible' });
 });
 
 When ('{string} page is deleted', async function (this: ICustomWorld, permalink: string) {
+    const path = getTitleFromPath(permalink);
+
     await this.utils.gotoPages();
-    await this.page.locator('#post-search-input').fill(permalink);
+    await this.page.locator('#post-search-input').fill(path);
     await this.page.locator('#search-submit').click();
     await this.page.locator('td.title.column-title.has-row-actions.column-primary.page-title > strong > a').hover();
     await this.page.waitForSelector('div.row-actions > span.trash > a', { state: 'visible' }); 
@@ -247,11 +258,12 @@ When ('{string} page is deleted', async function (this: ICustomWorld, permalink:
 
 
 Then ('untrash and republish {string} page', async function (this: ICustomWorld, permalink: string) {
+    const path = getTitleFromPath(permalink);
     // Go to Trashed pages and filter trashed page
     await this.utils.gotoTrashedPages();
-    await this.page.locator('#post-search-input').fill(permalink);
+    await this.page.locator('#post-search-input').fill(path);
     await this.page.locator('#search-submit').click();
-    await this.page.locator('strong > span').hover();
+    await this.page.locator('span').filter({ hasText: /^atf lrc 1$/ }).hover();
 
     // Untrash page
     await this.page.waitForSelector('div.row-actions > span.untrash', { state: 'visible' }); 
@@ -260,16 +272,16 @@ Then ('untrash and republish {string} page', async function (this: ICustomWorld,
 
     // Republish page
     await this.utils.gotoPages();
-    await this.page.locator('#post-search-input').fill(permalink);
+    await this.page.locator('#post-search-input').fill(path);
     await this.page.locator('#search-submit').click();
-    await this.page.waitForSelector('strong > a', { state: 'visible' });
-    await this.page.locator('strong > a').hover();
-    await this.page.waitForSelector('div.row-actions > span.edit', { state: 'visible' });
-    await this.page.locator('div.row-actions > span.edit').click();
-    await this.page.waitForSelector('button.editor-post-publish-panel__toggle.editor-post-publish-button__button.is-primary.is-compact', { state: 'visible' });
-    await this.page.locator('button.editor-post-publish-panel__toggle.editor-post-publish-button__button.is-primary.is-compact').click();
+    await this.page.waitForSelector('[aria-label="“atf lrc 1” (Edit)"]', { state: 'visible' });
+    await this.page.getByLabel('“atf lrc 1” (Edit)').click();
 
-    // Reconfirm publish
-    await this.page.waitForSelector('div.editor-post-publish-panel__header-publish-button > button', { state: 'visible' });
-    await this.page.locator('div.editor-post-publish-panel__header-publish-button > button').click();
+    await this.page.waitForSelector('button:has-text("Publish"):not(:disabled)', { state: 'visible' });
+    await this.page.getByRole('button', { name: 'Publish', exact: true }).click();
+
+    await this.page.waitForSelector('div[aria-label="Editor publish"] button:has-text("Publish")', { state: 'visible' });
+    await this.page.getByLabel('Editor publish').getByRole('button', { name: 'Publish', exact: true }).click();
+
+    await this.page.waitForSelector('[aria-label="Dismiss this notice"]', { state: 'visible' });
 });
