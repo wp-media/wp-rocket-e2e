@@ -149,19 +149,34 @@ Then('lcp and atf should be as expected for {string}', async function (this: ICu
     expect(truthy).toBeTruthy();
 });
 
+let lcpImages: Array<{ src: string; fetchpriority: string | boolean; lazyloaded: string | boolean }> = [];
+
 Then('lcp image should have fetchpriority', async function (this: ICustomWorld) {
     truthy= false;
 
-    const imageWithFetchPriority = await this.page.evaluate(() => {
+    lcpImages = await this.page.evaluate(() => {
         const images = document.querySelectorAll('img');
         return Array.from(images).map(img => ({
             src: img.getAttribute('src'),
-            fetchpriority: img.getAttribute('fetchpriority') || false
+            fetchpriority: img.getAttribute('fetchpriority') || false,
+            lazyloaded: img.classList.contains('lazyloaded')
         }));
     });
 
-    for (const image of imageWithFetchPriority) {
+    for (const image of lcpImages) {
         if(image.src === '/wp-content/rocket-test-data/images/600px-Mapang-test.gif' && image.fetchpriority !== false) {
+            truthy = true
+        }
+    }
+
+    expect(truthy).toBeTruthy();
+});
+
+Then('lcp image markup is not written to LL format', async function (this: ICustomWorld) {
+    truthy = false;
+
+    for (const image of lcpImages) {
+        if(image.lazyloaded === false) {
             truthy = true
         }
     }
