@@ -576,7 +576,7 @@ export class PageUtils {
      */
     public cleanUp = async (): Promise<void> => {
         // Remove helper plugin.
-        await uninstallPlugin('wp-rocket force-wp-mobile rocket-disable-ph-saas-visit');
+        await uninstallPlugin('wp-rocket force-wp-mobile');
 
         // Reset permalink structure.
         await updatePermalinkStructure('/%postname%/'); 

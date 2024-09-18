@@ -3,8 +3,6 @@ Feature: Clear lcp/performance hints data tests
 
     Background:
         Given I am logged in
-        And I install plugin 'https://github.com/wp-media/wp-rocket-e2e-test-helper/raw/main/helper-plugin/rocket-disable-ph-saas-visit.zip'
-        And plugin 'rocket-disable-ph-saas-visit' is activated
         And plugin is installed 'new_release'
         And plugin is activated
 
