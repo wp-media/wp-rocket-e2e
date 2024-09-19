@@ -10,7 +10,7 @@
 
 import { ICustomWorld } from "../../common/custom-world";
 import { WP_BASE_URL } from '../../../config/wp.config';
-import { When, Then } from '@cucumber/cucumber';
+import { When, Then, Given } from '@cucumber/cucumber';
 import { dbQuery, getWPTablePrefix } from "../../../utils/commands";
 import { extractFromStdout } from "../../../utils/helpers";
 import { expect } from "@playwright/test";
@@ -28,7 +28,7 @@ const getTitleFromPath = (path: string): string => {
 /*
  * Executes step to add hardcoded data to DB: ATF & LRC tables
  */ 
-When('performance hints data added to DB', async function (this: ICustomWorld) {
+Given('performance hints data added to DB', async function (this: ICustomWorld) {
     const tablePrefix = await getWPTablePrefix();
     const tableNames = [
         `${tablePrefix}wpr_above_the_fold`,
@@ -230,8 +230,23 @@ When('switching the theme', async function (this: ICustomWorld) {
 When ('I edit the content of post', async function (this: ICustomWorld) {
     await this.page.waitForSelector('#wp-admin-bar-edit', { state: 'visible' });
     await this.page.locator('#wp-admin-bar-edit').click();
-    await this.page.waitForSelector('button:has-text("Update"):not(:disabled)', { state: 'visible' });
-    await this.page.getByRole('button', { name: 'Update' }).click();
+    
+    // Check for 'Update' button.
+    const updateButton = this.page.getByRole('button', { name: 'Update', exact: true });
+
+    try {
+        // Wait for the 'Update' button.
+        await updateButton.waitFor({ state: 'visible' });
+        await updateButton.click();
+    } catch (error) {
+        // If 'Update' is not found, check for 'Save' button for WP version >= 6.6.2.
+        const saveButton = this.page.getByRole('button', { name: 'Save', exact: true });
+        
+         // Wait for the 'Save' button.
+         await saveButton.waitFor({ state: 'visible' });
+         await saveButton.click();
+    }
+
     await this.page.waitForSelector('[aria-label="Dismiss this notice"]', { state: 'visible' });
 });
 
@@ -265,8 +280,8 @@ Then ('untrash and republish {string} page', async function (this: ICustomWorld,
     await this.utils.gotoPages();
     await this.page.locator('#post-search-input').fill(path);
     await this.page.locator('#search-submit').click();
-    await this.page.waitForSelector('[aria-label="“atf lrc 1” (Edit)"]', { state: 'visible' });
-    await this.page.getByLabel('“atf lrc 1” (Edit)').click();
+    await this.page.waitForSelector('[aria-label="\u201catf lrc 1\u201d (Edit)"]', { state: 'visible' });
+    await this.page.getByLabel('"atf lrc 1" (Edit)').click();
 
     await this.page.waitForSelector('button:has-text("Publish"):not(:disabled)', { state: 'visible' });
     await this.page.getByRole('button', { name: 'Publish', exact: true }).click();

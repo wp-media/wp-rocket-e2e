@@ -455,4 +455,36 @@ export async function testSshConnection(): Promise<string> {
     }
 }
 
+/**
+ * Performs a post search action by title using wp cli.
+ *
+ * @param   {string}   title  Post Title.
+ * @param   {string}   status  Post Status.
+ * @param   {string}   fields  Post fields to return.
+ * @return  {Promise<string>}  A Promise that resolves when the post search is executed.
+ */
+export async function getPostDataFromTitle(title: string, status: string, fields: string): Promise<string> {
+    const command = wrapSSHPrefix(`wp post list --post_status=${status} --post_type=page --fields=${fields} --title='${title}'
+`);
+console.log(command);
+    const result = exec(command, { silent: true });
+
+    if (result.code === 1) {
+        return '';
+    }
+
+    return result.stdout;
+}
+
+/**
+ * Updates post status using wp cli.
+ *
+ * @param   {string}   id  Post ID.
+ * @param   {string}   status  Post Status.
+ * @return  {Promise<void>}  A Promise that resolves when the post search is executed.
+ */
+export async function updatePostStatus(id: number, status: string): Promise<void> {
+    await wp(`post update ${id} --post_status=${status}`);
+}
+
 export default wp;
