@@ -421,8 +421,6 @@ export class PageUtils {
     public enableAllOptions = async (): Promise<void> => {
         await this.gotoWpr();
 
-       // await this.page.waitForLoadState('load', { timeout: 30000 });
-
         this.sections.optionState = true;
 
         if (await this.sections.doesSectionExist('cache')) {
