@@ -19,6 +19,7 @@ import backstop from 'backstopjs';
 import { ExportedSettings, VRurlConfig, Viewport, Row } from '../utils/types';
 import { uiReflectedSettings } from './exclusions';
 import { WP_BASE_URL } from '../config/wp.config';
+import { dbQuery } from './commands';
 
 const backstopConfig = './backstop.json';
 /**
@@ -395,4 +396,20 @@ export const extractFromStdout = async(data: string): Promise<Row[]> => {
     }
 
     return result;
+}
+
+export const seedData = async(tables: Array<string>, data: Array<{ [key: string]: string | number }>): Promise<void> => {
+    // Dynamically build the values string from the data constant
+    const values = data.map(row => 
+        `(${Object.values(row).map(value => 
+            typeof value === 'string' ? `"${value}"` : value
+        ).join(', ')})`
+    ).join(', ');
+
+    const insertSql = `INSERT INTO %s (${Object.keys(data[0]).join(', ')}) VALUES ${values}`;
+
+    for (const tableName of tables) {
+        const insertQuery = insertSql.replace('%s', tableName);
+        await dbQuery(insertQuery);
+    }
 }
