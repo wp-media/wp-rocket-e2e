@@ -184,6 +184,7 @@
     "enabled": true
   },
   "lcp_single_double": {
+    "comment": "LCP on this template is from an <input> tag which is not handled by default. Hence, we expect no LCP to be identified.",
     "lcp": [],
     "viewport": [],
     "enabled": true
@@ -311,6 +312,7 @@
     "enabled": true
   },
   "lcp_6647_svgbg_template": {
+    "comment": "Contains only SVG and background-image styles starting with data:image. Those are not captured by our OCI feature.",
     "lcp": [],
     "viewport": [],
     "enabled": true

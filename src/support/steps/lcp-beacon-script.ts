@@ -21,7 +21,7 @@ import fs from 'fs/promises';
 let data: string,
     truthy: boolean = true,
     failMsg: string,
-    jsonData: Record<string, { lcp: string[]; viewport: string[]; enabled: boolean }>,
+    jsonData: Record<string, { lcp: string[]; viewport: string[]; enabled: boolean, comment: string; }>,
     isDbResultAvailable: boolean = true;
 
 const actual: LcpData = {};
@@ -71,7 +71,7 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
             await this.page.waitForFunction(() => {
                 const beacon = document.querySelector('[data-name="wpr-wpr-beacon"]');
                 return beacon && beacon.getAttribute('beacon-completed') === 'true';
-            });
+            }, { timeout: 900000 });
 
             if (formFactor !== 'desktop') {
                 isMobile = 1;
@@ -95,7 +95,8 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
             actual[key] = {
                 url: url,
                 lcp: resultFromStdout[0].lcp,
-                viewport: resultFromStdout[0].viewport
+                viewport: resultFromStdout[0].viewport,
+                comment: jsonData[key].comment ?? ''
             }
         }
     }
@@ -125,7 +126,8 @@ Then('lcp and atf should be as expected for {string}', async function (this: ICu
                 // Check if expected lcp is present in actual lcp.
                 if (!actual[key].lcp.includes(lcp)) {
                     truthy = false;
-                    failMsg += `Expected LCP for ${formFactor} - ${lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}\n\n\n`;
+                    failMsg += `Expected LCP for ${formFactor} - ${lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}
+                    more info -- ( ${actual[key].comment} )\n\n\n`;
                 }
             }
 
@@ -134,7 +136,8 @@ Then('lcp and atf should be as expected for {string}', async function (this: ICu
             for (const viewport of expected.viewport) {
                 if (!actual[key].viewport.includes(viewport)) {
                     truthy = false;
-                    failMsg += `Expected Viewport for ${formFactor} - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}\n\n\n`;
+                    failMsg += `Expected Viewport for ${formFactor} - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}
+                    more info -- ( ${actual[key].comment} )\n\n\n`;
                 }
             }
         }
