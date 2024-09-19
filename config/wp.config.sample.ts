@@ -1,3 +1,5 @@
+import ScenarioUrls from "./scenarioUrls.json";
+
 /**
  * The default WordPress admin user configuration for both local and live environments.
  * @constant
@@ -57,37 +59,10 @@ const {
  *	}
  * }}
 */
-const SCENARIO_URLS = {
-	/**
-	 * The value will hold the url paths
-	 */
-	home: {
-		path: ''
-	},
-	llcss: {
-		path: 'lazyload_css_background_images'
-	},
-	noJsLlcss: {
-		path: 'lazyload_css_background_images',
-		disableJs: true
-	},
-	elementorLlcss: {
-		path: 'elementor-overlay'
-	},
-	delayJs: {
-		path: ''
-	},
-	delayJsMobile: {
-		path: '',
-		mobile: true,
-	},
-	doubleColon: {
-		path: 'll_bg_css_double_colon'
-	},
-	singleColon: {
-		path: 'll_bg_css_single_colon'
-	}
-}
+
+
+const scriptName = process.env.npm_lifecycle_event;
+const SCENARIO_URLS = ScenarioUrls[scriptName];
 
 /**
  * Exported WordPress environment configuration.
