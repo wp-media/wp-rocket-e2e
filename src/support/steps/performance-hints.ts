@@ -15,16 +15,6 @@ import { dbQuery, getWPTablePrefix, getPostDataFromTitle, updatePostStatus } fro
 import { extractFromStdout } from "../../../utils/helpers";
 import { expect } from "@playwright/test";
 
-/**
- * Gets page title from URL path.
- *
- * @param {string} path - URL Path.
- * @returns {string} - String of title from path.
- */
-const getTitleFromPath = (path: string): string => {
-    return path.replace(/-/g, ' ');
-}
-
 /*
  * Executes step to add hardcoded data to DB: ATF & LRC tables
  */ 
@@ -251,10 +241,8 @@ When ('I edit the content of post', async function (this: ICustomWorld) {
 });
 
 When ('{string} page is deleted', async function (this: ICustomWorld, permalink: string) {
-    const title = getTitleFromPath(permalink);
-
     await this.utils.gotoPages();
-    await this.page.locator('#post-search-input').fill(title);
+    await this.page.locator('#post-search-input').fill(permalink);
     await this.page.locator('#search-submit').click();
     await this.page.locator('td.title.column-title.has-row-actions.column-primary.page-title > strong > a').hover();
     await this.page.waitForSelector('div.row-actions > span.trash > a', { state: 'visible' }); 
@@ -264,8 +252,7 @@ When ('{string} page is deleted', async function (this: ICustomWorld, permalink:
 
 
 Then ('untrash and republish {string} page', async function (this: ICustomWorld, permalink: string) {
-    const title = getTitleFromPath(permalink);
-    const postDataStdout = await getPostDataFromTitle(title, 'trash', 'ID,post_title');
+    const postDataStdout = await getPostDataFromTitle(permalink, 'trash', 'ID,post_title');
     const postData = await extractFromStdout(postDataStdout);
     await updatePostStatus(parseInt(postData[0].ID, 10), 'publish');
 });
