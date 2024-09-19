@@ -89,28 +89,36 @@ const SCENARIO_URLS = {
 	},
 	delayJs13Live: {
 		path: 'delayjs_1_3_live_template',
+		type: 'lrc'
 	},
 	delayJs68Live: {
 		path: 'delayjs_68_live_template',
+		type: 'lrc'
 	},
 	lcp6647Live: {
 		path: 'lcp_6647_live',
+		type: 'lrc'
 	},
 	lcpLive4Template: {
 		path: 'lcp_live_4_template',
+		type: 'lrc'
 	},
 	lcpLiveTestSpan: {
 		path: 'lcp_live_test_span',
+		type: 'lrc'
 	},
 	rucss5213Template: {
 		path: 'rucss_5213_template',
+		type: 'lrc'
 	},
 	template4787: {
 		path: '4787_template',
+		type: 'lrc'
 	},
 	lrcWillSite: {
 		path: 'lrc_will_site',
-	}
+		type: 'lrc'
+	},
 }
 
 /**
