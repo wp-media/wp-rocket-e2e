@@ -60,12 +60,9 @@ const {
  * }}
 */
 
-function getScenarioUrls(scriptName: string) {
-	return ScenarioUrls[scriptName];
-}
 
 const scriptName = process.env.npm_lifecycle_event;
-const SCENARIO_URLS = getScenarioUrls(scriptName);
+const SCENARIO_URLS = ScenarioUrls[scriptName];
 
 /**
  * Exported WordPress environment configuration.
