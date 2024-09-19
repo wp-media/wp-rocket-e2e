@@ -11,7 +11,7 @@
 import { ICustomWorld } from "../../common/custom-world";
 import { WP_BASE_URL } from '../../../config/wp.config';
 import { When, Then, Given } from '@cucumber/cucumber';
-import { dbQuery, getWPTablePrefix } from "../../../utils/commands";
+import { dbQuery, getWPTablePrefix, getPostDataFromTitle, updatePostStatus } from "../../../utils/commands";
 import { extractFromStdout } from "../../../utils/helpers";
 import { expect } from "@playwright/test";
 
@@ -251,10 +251,10 @@ When ('I edit the content of post', async function (this: ICustomWorld) {
 });
 
 When ('{string} page is deleted', async function (this: ICustomWorld, permalink: string) {
-    const path = getTitleFromPath(permalink);
+    const title = getTitleFromPath(permalink);
 
     await this.utils.gotoPages();
-    await this.page.locator('#post-search-input').fill(path);
+    await this.page.locator('#post-search-input').fill(title);
     await this.page.locator('#search-submit').click();
     await this.page.locator('td.title.column-title.has-row-actions.column-primary.page-title > strong > a').hover();
     await this.page.waitForSelector('div.row-actions > span.trash > a', { state: 'visible' }); 
@@ -264,30 +264,8 @@ When ('{string} page is deleted', async function (this: ICustomWorld, permalink:
 
 
 Then ('untrash and republish {string} page', async function (this: ICustomWorld, permalink: string) {
-    const path = getTitleFromPath(permalink);
-    // Go to Trashed pages and filter trashed page
-    await this.utils.gotoTrashedPages();
-    await this.page.locator('#post-search-input').fill(path);
-    await this.page.locator('#search-submit').click();
-    await this.page.locator('span').filter({ hasText: /^atf lrc 1$/ }).hover();
-
-    // Untrash page
-    await this.page.waitForSelector('div.row-actions > span.untrash', { state: 'visible' }); 
-    await this.page.locator('div.row-actions > span.untrash').click();
-    await this.page.waitForSelector('#message', { state: 'visible' }); 
-
-    // Republish page
-    await this.utils.gotoPages();
-    await this.page.locator('#post-search-input').fill(path);
-    await this.page.locator('#search-submit').click();
-    await this.page.waitForSelector('[aria-label="\u201catf lrc 1\u201d (Edit)"]', { state: 'visible' });
-    await this.page.getByLabel('"atf lrc 1" (Edit)').click();
-
-    await this.page.waitForSelector('button:has-text("Publish"):not(:disabled)', { state: 'visible' });
-    await this.page.getByRole('button', { name: 'Publish', exact: true }).click();
-
-    await this.page.waitForSelector('div[aria-label="Editor publish"] button:has-text("Publish")', { state: 'visible' });
-    await this.page.getByLabel('Editor publish').getByRole('button', { name: 'Publish', exact: true }).click();
-
-    await this.page.waitForSelector('[aria-label="Dismiss this notice"]', { state: 'visible' });
+    const title = getTitleFromPath(permalink);
+    const postDataStdout = await getPostDataFromTitle(title, 'trash', 'ID,post_title');
+    const postData = await extractFromStdout(postDataStdout);
+    await updatePostStatus(parseInt(postData[0].ID, 10), 'publish');
 });
