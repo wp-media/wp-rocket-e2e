@@ -12,7 +12,7 @@ import { ICustomWorld } from "../../common/custom-world";
 import { WP_BASE_URL } from '../../../config/wp.config';
 import { When, Then, Given } from '@cucumber/cucumber';
 import { dbQuery, getWPTablePrefix, getPostDataFromTitle, updatePostStatus } from "../../../utils/commands";
-import { extractFromStdout } from "../../../utils/helpers";
+import { extractFromStdout, seedData } from "../../../utils/helpers";
 import { expect } from "@playwright/test";
 
 /*
@@ -35,47 +35,23 @@ Given('performance hints data added to DB', async function (this: ICustomWorld) 
         { url: `${WP_BASE_URL}/c`, is_mobile: 0, status: 'completed' }
     ];
 
-    // Build the insert SQL statement
-    const values = data.map(row => `("${row.url}", ${row.is_mobile}, "${row.status}")`).join(',');
-    const insertSql = `INSERT INTO %s (url, is_mobile, status) VALUES ${values}`;
-    const selectSql = `SELECT url, is_mobile, status FROM %s`;
+    await Promise.all(tableNames.map(async (tableName) => {
+        await dbQuery(`TRUNCATE TABLE ${tableName}`);
+    }));
 
-    // Function to convert tabular data to array of objects
-    const parseTabularData = (tabularData: string): Array<{ [key: string]: string }> => {
-        const lines = tabularData.trim().split('\n');
-        const headers = lines.shift().split('\t');
-        return lines.map(line => {
-            const values = line.split('\t');
-            return headers.reduce((obj, header, index) => {
-                obj[header.trim()] = values[index].trim();
-                return obj;
-            }, {});
-        });
-    };
+    await seedData(tableNames, data);
+
+    const selectSql = `SELECT url, is_mobile, status FROM %s`;
 
     // Function to insert data and fetch filtered results
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const processTable = async (tableName: string): Promise<Array<{ url: string; is_mobile: number; status: string }>> => {
-        // Log SQL before executing for debugging
-        console.log(`Truncating table: ${tableName}`);
-        await dbQuery(`TRUNCATE TABLE ${tableName}`);
-
-        const insertQuery = insertSql.replace('%s', tableName);
-        console.log(`Executing insert SQL: ${insertQuery}`);
-        await dbQuery(insertQuery);
-
         // Fetch the data from the table
         const selectQuery = selectSql.replace('%s', tableName);
         const resultString = await dbQuery(selectQuery);
-        
-        // Log the raw result to debug
-        console.log(`Raw result from ${tableName}:`, resultString);
 
         // Convert the result
-        const result = parseTabularData(resultString);
-
-        // Log the result after conversion, before filtering
-        console.log(`Result from ${tableName} before filtering:`, result);
+        const result = await extractFromStdout(resultString);
 
         // Filter out the rows that match the hardcoded data
         const filteredResult = data.filter(hardcodedRow => 
@@ -86,20 +62,14 @@ Given('performance hints data added to DB', async function (this: ICustomWorld) 
             )
         );
 
-        console.log(`Filtered result from ${tableName}:`, filteredResult);
-
         // Check if the filtered result contains all the hardcoded data
         expect(filteredResult.length).toBe(data.length); // Ensure all hardcoded data is found
     
         return filteredResult;
     };
 
-    // Process both tables
-    const [resultFromTable1, resultFromTable2] = await Promise.all(tableNames.map(processTable));
-
-    // Log the filtered results for both tables
-    console.log('Data in the first table:', resultFromTable1);
-    console.log('Data in the second table:', resultFromTable2);
+    // Check that data exists in tables.
+    await Promise.all(tableNames.map(processTable));
 });
 
 When('clear performance hints is clicked in admin bar', async function (this: ICustomWorld) {
@@ -168,12 +138,7 @@ Then('data for {string} is removed from the performance hints tables', async fun
         const resultFromStdout = await extractFromStdout(result);
 
         // Check if any rows are returned that match the permalink
-        if (resultFromStdout.length === 0) {
-            console.log(`Permalink "${permalink}" has been successfully removed from ${tableName}.`);
-        } else {
-            console.log(`Permalink "${permalink}" still exists in ${tableName}:`, resultFromStdout);
-            expect(resultFromStdout.length).toBe(0);  // Fail test if permalink is found
-        }
+        expect(resultFromStdout.length).toBe(0);
     };
 
     // Verify both tables
@@ -197,12 +162,7 @@ Then('data for {string} present in the performance hints tables', async function
         const resultFromStdout = await extractFromStdout(result);
 
         // Check if any rows are returned that match the permalink
-        if (resultFromStdout.length > 0) {
-            console.log(`Permalink "${permalink}" still exists in ${tableName}.`);
-        } else {
-            console.log(`Permalink "${permalink}" does not exist in ${tableName}.`);
-            expect(resultFromStdout.length).toBeGreaterThan(0);  // Fail test if permalink is not found
-        }
+        expect(resultFromStdout.length).toBeGreaterThan(0);  // Fail test if permalink is not found
     };
 
     // Verify both tables
