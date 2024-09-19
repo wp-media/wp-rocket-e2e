@@ -22,7 +22,7 @@ import { PageUtils } from "../../utils/page-utils";
 import { batchUpdateVRTestUrl } from "../../utils/helpers";
 import { deleteFolder } from "../../utils/helpers";
 import backstop from 'backstopjs';
-import {SCENARIO_URLS, WP_SSH_ROOT_DIR,} from "../../config/wp.config";
+import {SCENARIO_URLS, WP_SSH_ROOT_DIR, ENV_HEADLESS,} from "../../config/wp.config";
 
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin} from "../../utils/commands";
@@ -56,7 +56,8 @@ BeforeAll(async function (this: ICustomWorld) {
         await rm(debugLogPath);
 
         await deleteFolder('./backstop_data/bitmaps_test');
-        browser = await chromium.launch({ headless: false });
+        const isHeadless = ENV_HEADLESS === 'true';
+        browser = await chromium.launch({ headless: isHeadless });
 
         const theme = process.env.THEME ? process.env.THEME : '';
 

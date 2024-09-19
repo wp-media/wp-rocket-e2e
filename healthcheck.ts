@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import wp from "./utils/commands";
 import {PageUtils} from './utils/page-utils';
-import {WP_BASE_URL} from "./config/wp.config";
+import {WP_BASE_URL, ENV_HEADLESS,} from "./config/wp.config";
 import {chromium as chrome, expect, Page} from '@playwright/test';
 import {Sections} from "./src/common/sections";
 import {selectors as pluginSelectors} from "./src/common/selectors";
@@ -36,13 +36,15 @@ async function setupBrowser(headless: boolean = false):Promise<Page> {
 }
 
 export async function openE2EPage(): Promise<void> {
-    const page = await setupBrowser(false);
+    const isHeadless = ENV_HEADLESS === 'true';
+    const page = await setupBrowser(isHeadless);
 
     await page.goto(WP_BASE_URL);
 }
 
 export async function auth(): Promise<void> {
-    const page = await setupBrowser(false);
+    const isHeadless = ENV_HEADLESS === 'true';
+    const page = await setupBrowser(isHeadless);
     const sections = new Sections(page, pluginSelectors);
     const utils = new PageUtils(page, sections);
 

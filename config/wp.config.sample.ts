@@ -29,6 +29,7 @@ const WP_ADMIN_USER = {
  *   WP_SSH_ADDRESS: string;
  *   WP_SSH_KEY: string;
  *   WP_SSH_ROOT_DIR: string;
+ *   ENV_HEADLESS: string;
  * }}
  */
 const {
@@ -42,7 +43,8 @@ const {
 	WP_SSH_USERNAME = '',
 	WP_SSH_ADDRESS = '',
 	WP_SSH_KEY = '',
-	WP_SSH_ROOT_DIR = ''
+	WP_SSH_ROOT_DIR = '',
+	ENV_HEADLESS = 'true'
 } = process.env;
 
 /**
@@ -104,6 +106,7 @@ const SCENARIO_URLS = {
  *   WP_SSH_ADDRESS: string;
  *   WP_SSH_KEY: string;
  *   WP_SSH_ROOT_DIR: string;
+ *   ENV_HEADLESS: boolean;
  * 	 SCENARIO_URLS: {
  * 		home: string;
  * 		llcss: string;	
@@ -124,5 +127,6 @@ export {
 	WP_SSH_ADDRESS,
 	WP_SSH_KEY,
 	WP_SSH_ROOT_DIR,
+	ENV_HEADLESS,
 	SCENARIO_URLS
 };
