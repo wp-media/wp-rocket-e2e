@@ -19,5 +19,41 @@
     "singleColon": {
       "path": "ll_bg_css_single_colon"
     }
+  },
+  "test:delayjs:genesis": {
+    "delayJs": {
+      "path": ""
+    },
+    "delayJsMobile": {
+        "path": "",
+        "mobile": true
+    }
+  },
+  "test:delayjs:flatsome": {
+    "delayJs": {
+      "path": ""
+    },
+    "delayJsMobile": {
+        "path": "",
+        "mobile": true
+    }
+  },
+  "test:delayjs:divi": {
+    "delayJs": {
+      "path": ""
+    },
+    "delayJsMobile": {
+        "path": "",
+        "mobile": true
+    }
+  },
+  "test:delayjs:astra": {
+    "delayJs": {
+      "path": ""
+    },
+    "delayJsMobile": {
+        "path": "",
+        "mobile": true
+    }
   }
 }
