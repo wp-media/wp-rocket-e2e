@@ -52,7 +52,6 @@ When('clear performance hints for this URL is clicked in admin bar', async funct
     await this.page.locator('#wp-admin-bar-wp-rocket').hover();
     await this.page.waitForSelector('#wp-admin-bar-clear-performance-hints-data-url', { state: 'visible' });
     await this.page.locator('#wp-admin-bar-clear-performance-hints-data-url').click(); 
-    await this.page.waitForLoadState('load', { timeout: 30000 });
 });
 
 /*
