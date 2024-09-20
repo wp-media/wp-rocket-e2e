@@ -230,7 +230,7 @@ export async function rm(destination: string): Promise<void> {
  */
 export async function activatePlugin(name: string): Promise<void>  {
     await wp(`plugin activate ${name}`)
-    const status: boolean = await wp(`plugin is-active ${name}`);console.log(status)
+    const status: boolean = await wp(`plugin is-active ${name}`);
     if(!status) {
         throw new Error(`Plugin - ${name} is not active`);
     }
@@ -239,7 +239,7 @@ export async function activatePlugin(name: string): Promise<void>  {
 /**
  * Check if plugin is installed
  * @function
- * @name activatePlugin
+ * @name isPluginInstalled
  * @async
  * @param {string} name - The name of the plugin to be checked if installed.
  * @returns {Promise<boolean>} - A Promise that resolves when the check is completed.
@@ -248,6 +248,17 @@ export async function isPluginInstalled(name: string): Promise<boolean> {
     return await wp(`plugin is-installed ${name}`, false);
 }
 
+/**
+ * Delete a plugin if exist
+ * @function
+ * @name deletePlugin
+ * @async
+ * @param {string} name - The name of the plugin to be deleted if installed.
+ * @returns {Promise<boolean>} - A Promise that resolves when the check is completed.
+ */
+export async function deletePlugin(name: string): Promise<boolean> {
+    return await wp(`plugin delete ${name}`, false);
+}
 
 /**
  * Install a WordPress plugin from a remote zip file using the WP-CLI command.

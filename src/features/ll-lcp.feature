@@ -3,8 +3,9 @@ Feature: Lazyload with LCP
 
   Background:
     Given I am logged in
+    And delete 'wp-rocket' plugin
     And plugin is installed 'new_release'
-    And plugin is activated
+    And plugin 'wp-rocket' is activated
     When I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
     And I save settings 'media' 'lazyloadCssBgImg'
 
