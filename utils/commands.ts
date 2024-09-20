@@ -230,7 +230,7 @@ export async function rm(destination: string): Promise<void> {
  */
 export async function activatePlugin(name: string): Promise<void>  {
     await wp(`plugin activate ${name}`)
-    const status: boolean = await wp(`plugin is-active ${name}`);
+    const status: boolean = await wp(`plugin is-active ${name}`);console.log(status)
     if(!status) {
         throw new Error(`Plugin - ${name} is not active`);
     }

@@ -16,13 +16,13 @@ const WP_ADMIN_USER = {
 } as const;
 
 /**
- * The default Imagify settings informations
+ * The default Imagify settings information
  *
  * @constant
- * @type {{ API_KEY: string }}
+ * @type {{ apiKey: string }}
  */
 const IMAGIFY_INFOS = {
-	API_KEY: ''
+	apiKey: ''
 } as const;
 
 /**

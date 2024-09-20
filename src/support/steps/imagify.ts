@@ -17,7 +17,7 @@ Given('I save imagify API key', async function (this: ICustomWorld) {
 
     if (apiKeyInput) {
         // Fill the API key input field with the API key from the config
-        await this.page.fill('input#api_key', IMAGIFY_INFOS.API_KEY);
+        await this.page.fill('input#api_key', IMAGIFY_INFOS.apiKey);
 
         // Click the submit button to save the changes
         await this.page.click('div.submit.imagify-clearfix input#submit');
