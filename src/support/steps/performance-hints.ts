@@ -12,7 +12,7 @@ import { ICustomWorld } from "../../common/custom-world";
 import { WP_BASE_URL } from '../../../config/wp.config';
 import { When, Then, Given } from '@cucumber/cucumber';
 import { dbQuery, getWPTablePrefix, getPostDataFromTitle, updatePostStatus } from "../../../utils/commands";
-import { extractFromStdout, seedData } from "../../../utils/helpers";
+import { extractFromStdout, seedData, checkData } from "../../../utils/helpers";
 import { expect } from "@playwright/test";
 
 /*
@@ -40,36 +40,6 @@ Given('performance hints data added to DB', async function (this: ICustomWorld) 
     }));
 
     await seedData(tableNames, data);
-
-    const selectSql = `SELECT url, is_mobile, status FROM %s`;
-
-    // Function to insert data and fetch filtered results
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const processTable = async (tableName: string): Promise<Array<{ url: string; is_mobile: number; status: string }>> => {
-        // Fetch the data from the table
-        const selectQuery = selectSql.replace('%s', tableName);
-        const resultString = await dbQuery(selectQuery);
-
-        // Convert the result
-        const result = await extractFromStdout(resultString);
-
-        // Filter out the rows that match the hardcoded data
-        const filteredResult = data.filter(hardcodedRow => 
-            result.some(dbRow => 
-                dbRow.url === hardcodedRow.url && 
-                Number(dbRow.is_mobile) === hardcodedRow.is_mobile && 
-                dbRow.status === hardcodedRow.status
-            )
-        );
-
-        // Check if the filtered result contains all the hardcoded data
-        expect(filteredResult.length).toBe(data.length); // Ensure all hardcoded data is found
-    
-        return filteredResult;
-    };
-
-    // Check that data exists in tables.
-    await Promise.all(tableNames.map(processTable));
 });
 
 When('clear performance hints is clicked in admin bar', async function (this: ICustomWorld) {
@@ -93,34 +63,13 @@ When('clear performance hints for this URL is clicked in admin bar', async funct
 Then('data is removed from the performance hints tables', async function (this: ICustomWorld) {
     const tablePrefix = await getWPTablePrefix();
     const tables = [`${tablePrefix}wpr_above_the_fold`, `${tablePrefix}wpr_lazy_render_content`];
+    const data = [
+        { url: `${WP_BASE_URL}/a` },
+        { url: `${WP_BASE_URL}/b` },
+        { url: `${WP_BASE_URL}/c` }
+    ];
 
-    // Helper function to check if data is removed from a table
-    const verifyTableIsEmpty = async (tableName: string): Promise<void> => {
-        // Construct SQL query to select all rows
-        const selectSql = `SELECT * FROM ${tableName}`;
-        const result = await dbQuery(selectSql); 
-        const resultFromStdout = await extractFromStdout(result);
-
-        // URLs to check
-        const urlsToDelete = [
-            `${WP_BASE_URL}/a`,
-            `${WP_BASE_URL}/b`,
-            `${WP_BASE_URL}/c`
-        ];
-        
-        // Filter out any URL that exists in the dataset and adds it to the constant.
-        const missingUrls = urlsToDelete.filter(url => {
-            return !resultFromStdout.some(item => item.url === url);
-        });
-
-        expect(urlsToDelete.length).toBe(missingUrls.length);
-    };
-
-    // Verify both tables
-    for (const table of tables) {
-        await verifyTableIsEmpty(table);
-    }
-
+    await checkData(tables, data);
 });
 
 /*
@@ -129,22 +78,11 @@ Then('data is removed from the performance hints tables', async function (this: 
 Then('data for {string} is removed from the performance hints tables', async function (this: ICustomWorld, permalink: string) {
     const tablePrefix = await getWPTablePrefix();
     const tables = [`${tablePrefix}wpr_above_the_fold`, `${tablePrefix}wpr_lazy_render_content`];
+    const data = [
+        { url: `${WP_BASE_URL}/${permalink}` }
+    ];
 
-    // Helper function to check if the permalink is removed from a table
-    const verifyPermalinkRemoved = async (tableName: string): Promise<void> => {
-        // Construct SQL query to check if the permalink exists in the table
-        const selectSql = `SELECT * FROM ${tableName} WHERE url LIKE "%${permalink}%"`;
-        const result = await dbQuery(selectSql); 
-        const resultFromStdout = await extractFromStdout(result);
-
-        // Check if any rows are returned that match the permalink
-        expect(resultFromStdout.length).toBe(0);
-    };
-
-    // Verify both tables
-    for (const table of tables) {
-        await verifyPermalinkRemoved(table);
-    }
+    await checkData(tables, data);
 });
 
 /*
@@ -153,22 +91,11 @@ Then('data for {string} is removed from the performance hints tables', async fun
 Then('data for {string} present in the performance hints tables', async function (this: ICustomWorld, permalink: string) {
     const tablePrefix = await getWPTablePrefix();
     const tables = [`${tablePrefix}wpr_above_the_fold`, `${tablePrefix}wpr_lazy_render_content`];
+    const data = [
+        { url: `${WP_BASE_URL}/${permalink}` }
+    ];
 
-    // Helper function to check if the permalink still exists in a table
-    const verifyPermalinkExists = async (tableName: string): Promise<void> => {
-        // Construct SQL query to check if the permalink exists in the table
-        const selectSql = `SELECT * FROM ${tableName} WHERE url LIKE "%${permalink}%"`;
-        const result = await dbQuery(selectSql); 
-        const resultFromStdout = await extractFromStdout(result);
-
-        // Check if any rows are returned that match the permalink
-        expect(resultFromStdout.length).toBeGreaterThan(0);  // Fail test if permalink is not found
-    };
-
-    // Verify both tables
-    for (const table of tables) {
-        await verifyPermalinkExists(table);
-    }
+    await checkData(tables, data, true);
 });
 
 When('switching the theme', async function (this: ICustomWorld) {
