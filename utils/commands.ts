@@ -466,7 +466,6 @@ export async function testSshConnection(): Promise<string> {
 export async function getPostDataFromTitle(title: string, status: string, fields: string): Promise<string> {
     const command = wrapSSHPrefix(`wp post list --post_status=${status} --post_type=page --fields=${fields} --title='${title}'
 `);
-console.log(command);
     const result = exec(command, { silent: true });
 
     if (result.code === 1) {
