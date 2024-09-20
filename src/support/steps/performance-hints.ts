@@ -13,7 +13,6 @@ import { WP_BASE_URL } from '../../../config/wp.config';
 import { When, Then, Given } from '@cucumber/cucumber';
 import { dbQuery, getWPTablePrefix, getPostDataFromTitle, updatePostStatus } from "../../../utils/commands";
 import { extractFromStdout, seedData, checkData } from "../../../utils/helpers";
-import { expect } from "@playwright/test";
 
 /*
  * Executes step to add hardcoded data to DB: ATF & LRC tables
