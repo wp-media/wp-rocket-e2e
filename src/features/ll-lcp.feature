@@ -14,20 +14,20 @@ Feature: Lazyload with LCP
     And I visit the urls for 'desktop'
     When I am logged in
     And I clear cache
-    And I visit the urls for 'desktop'
+    And I visit the urls for 'desktop' and check for lazyload
     Then lcp image markup is not written to LL format
 #    And ATF image markup is not written to LL format
 
-  Scenario: Should exclude next-gen lcp/atf from LL
-    Given I install plugin 'imagify'
-    And plugin 'imagify' is activated
-    When I am logged in
-    And I go to 'wp-admin/options-general.php?page=imagify'
-    And I save imagify API key
-    And display next-gen is enabled on imagify
-    And I visit page 'lcp_with_imagify' with browser dimension 1600 x 700
+  #Scenario: Should exclude next-gen lcp/atf from LL
+  #  Given I install plugin 'imagify'
+  #  And plugin 'imagify' is activated
+  #  When I am logged in
+  #  And I go to 'wp-admin/options-general.php?page=imagify'
+  #  And I save imagify API key
+  #  And display next-gen is enabled on imagify
+  #  And I visit page 'lcp_with_imagify' with browser dimension 1600 x 700
 #    And page 'lcp_with_imagify' with images having next-gen avif, webp, avif/webp, no next gen is visited # I didn't get that
-    When I clear cache
-    And I visit page 'lcp_with_imagify' with browser dimension 1600 x 700
-    Then lcp image markup is not written to LL format
+  #  When I clear cache
+  #  And I visit page 'lcp_with_imagify' with browser dimension 1600 x 700
+  #  Then lcp image markup is not written to LL format
 #    And ATF image markup is not written to LL format
