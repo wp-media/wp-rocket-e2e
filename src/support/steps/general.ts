@@ -33,7 +33,6 @@ Given('I am logged in', async function (this: ICustomWorld) {
  */
 Given('plugin is installed {string}', async function (this: ICustomWorld, pluginVersion: string) {
     await this.utils.uploadNewPlugin(`./plugin/${pluginVersion}.zip`);
-    await this.page.waitForLoadState('load', { timeout: 30000 });
     await expect(this.page).toHaveURL(/action=upload-plugin/); 
 });
 
@@ -84,7 +83,6 @@ Given('I save settings {string} {string}', async function (this: ICustomWorld, s
     await this.sections.state(true).toggle(element);
     await this.utils.saveSettings();
 
-    await this.page.waitForLoadState('load', { timeout: 30000 });
 });
 
 /**
@@ -107,7 +105,6 @@ When('I log in', async function (this: ICustomWorld) {
  */
 When('I go to {string}', async function (this: ICustomWorld, page) {
     await this.utils.visitPage(page);
-    await this.page.waitForLoadState('load', { timeout: 100000 });
 });
 
 /**
@@ -132,12 +129,15 @@ When('I click on {string}', async function (this: ICustomWorld, selector) {
         await this.page.locator('#tools_tab').click();
         await this.page.waitForSelector('#save_last_major_version');
         await this.page.locator('#save_last_major_version').click();
-        await this.page.waitForLoadState('load', { timeout: 30000 });
         await this.utils.gotoWpr();
         await this.page.locator('#wpr-nav-tools').click();
+        await this.page.locator(selector).click();
+        await this.page.waitForLoadState('load', { timeout: 70000 });
     }
-    await this.page.locator(selector).click();
-    await this.page.waitForLoadState('load', { timeout: 100000 });
+    else{
+        await this.page.locator(selector).click();
+    }
+    
 });
 
 /**
@@ -155,7 +155,6 @@ When('I enable all settings', async function (this: ICustomWorld) {
  */
 When('I log out', async function (this: ICustomWorld) {
     await this.utils.wpAdminLogout();
-    await this.page.waitForLoadState('load', { timeout: 30000 });
 });
 
 /**
@@ -247,7 +246,7 @@ When('I clear cache', async function (this:ICustomWorld) {
 
     this.sections.set('dashboard');
     await this.sections.toggle('clearCacheBtn');
-    await this.page.waitForLoadState('load', { timeout: 30000 });
+    await expect(this.page.getByText('WP Rocket: Cache cleared.')).toBeVisible();
 });
 
 /**
@@ -273,9 +272,7 @@ When('I visit lrc live templates', async function (this:ICustomWorld) {
     const liveUrl = SCENARIO_URLS;
 
     for (const key in liveUrl) {
-        if(liveUrl[key].type === 'lrc') {
-            await this.utils.visitPage(liveUrl[key].path);
-        }
+        await this.utils.visitPage(liveUrl[key].path);
     }
 });
 
@@ -298,8 +295,8 @@ Then('I should see {string}', async function (this: ICustomWorld, text) {
  */
 Then('I must not see any error in debug.log', async function (this: ICustomWorld){
     // Goto WP Rocket dashboard
-    await this.utils.gotoWpr();
-    await this.page.waitForLoadState('load', { timeout: 30000 });
+    await this.utils.gotoPlugin();
+
     // Assert that there is no related error in debug.log
     await expect(this.page.locator('#wpr_debug_log_notice')).toBeHidden();
 });
@@ -317,6 +314,17 @@ Then('clean up', async function (this: ICustomWorld) {
  */
 Then('I must not see any visual regression {string}', async function (this: ICustomWorld, label: string) {
     await compareReference(label);
+});
+
+/**
+ * Executes the step to check for LRC visual regression.
+ */
+Then('I must not see any visual regression in LRC', async function (this: ICustomWorld) {
+    const liveUrl = SCENARIO_URLS;
+
+    for (const key in liveUrl) {
+        await compareReference(liveUrl[key].path);
+    }
 });
 
 /**

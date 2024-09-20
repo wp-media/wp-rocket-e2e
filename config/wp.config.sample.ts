@@ -1,3 +1,5 @@
+import ScenarioUrls from "./scenarioUrls.json";
+
 /**
  * The default WordPress admin user configuration for both local and live environments.
  * @constant
@@ -57,69 +59,9 @@ const {
  *	}
  * }}
 */
-const SCENARIO_URLS = {
-	/**
-	 * The value will hold the url paths
-	 */
-	home: {
-		path: ''
-	},
-	llcss: {
-		path: 'lazyload_css_background_images'
-	},
-	noJsLlcss: {
-		path: 'lazyload_css_background_images',
-		disableJs: true
-	},
-	elementorLlcss: {
-		path: 'elementor-overlay'
-	},
-	delayJs: {
-		path: ''
-	},
-	delayJsMobile: {
-		path: '',
-		mobile: true,
-	},
-	doubleColon: {
-		path: 'll_bg_css_double_colon'
-	},
-	singleColon: {
-		path: 'll_bg_css_single_colon'
-	},
-	delayJs13Live: {
-		path: 'delayjs_1_3_live_template',
-		type: 'lrc'
-	},
-	delayJs68Live: {
-		path: 'delayjs_68_live_template',
-		type: 'lrc'
-	},
-	lcp6647Live: {
-		path: 'lcp_6647_live',
-		type: 'lrc'
-	},
-	lcpLive4Template: {
-		path: 'lcp_live_4_template',
-		type: 'lrc'
-	},
-	lcpLiveTestSpan: {
-		path: 'lcp_live_test_span',
-		type: 'lrc'
-	},
-	rucss5213Template: {
-		path: 'rucss_5213_template',
-		type: 'lrc'
-	},
-	template4787: {
-		path: '4787_template',
-		type: 'lrc'
-	},
-	lrcWillSite: {
-		path: 'lrc_will_site',
-		type: 'lrc'
-	},
-}
+
+const scriptName = process.env.npm_lifecycle_event;
+const SCENARIO_URLS = ScenarioUrls[scriptName];
 
 /**
  * Exported WordPress environment configuration.

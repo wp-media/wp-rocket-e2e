@@ -1,0 +1,49 @@
+{
+  "test:llcssbg": {
+    "home": {
+      "path": ""
+    },
+    "llcss": {
+      "path": "lazyload_css_background_images"
+    },
+    "noJsLlcss": {
+      "path": "lazyload_css_background_images",
+      "disableJs": true
+    },
+    "elementorLlcss": {
+      "path": "elementor-overlay"
+    },
+    "doubleColon": {
+      "path": "ll_bg_css_double_colon"
+    },
+    "singleColon": {
+      "path": "ll_bg_css_single_colon"
+    }
+  },
+  "test:lrc": {
+    "delayJs13Live": {
+      "path": "delayjs_1-3_live_template"
+    },
+    "delayJs68Live": {
+      "path": "delayjs_68_live_template"
+    },
+    "lcp6647Live": {
+      "path": "lcp_6647_live"
+    },
+    "lcpLive4Template": {
+      "path": "lcp_live_4_template"
+    },
+    "lcpLiveTestSpan": {
+      "path": "lcp_live_test_span"
+    },
+    "rucss5213Template": {
+      "path": "rucss_5213_template"
+    },
+    "template4787": {
+      "path": "4787-2"
+    },
+    "lrcWillSite": {
+      "path": "lrc_will_site"
+    }
+  }
+}

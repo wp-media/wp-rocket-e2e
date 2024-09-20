@@ -48,7 +48,7 @@ Given('I updated to latest version', async function (this: ICustomWorld) {
  */
 When('I import data', async function (this: ICustomWorld) {
     await this.utils.importSettings('./plugin/exported_settings/wp-rocket-settings-test-2023-00-01-64e7ada0d3b70.json');
-    await this.page.waitForLoadState('load', { timeout: 100000 });
+    await expect(this.page.getByText('Settings imported and saved.')).toBeVisible();
 });
 
 /**
@@ -56,6 +56,11 @@ When('I import data', async function (this: ICustomWorld) {
  */
 
 When('I export data {string}', async function (this: ICustomWorld, fileNo: string) {
+   if(! await this.page.url().includes('page=wprocket#tools')) 
+        {
+            await this.utils.visitPage('wp-admin/options-general.php?page=wprocket#tools');
+
+        }
     await this.page.locator('#wpr-nav-tools').click();
     // Export settings.
     const downloadPromise = this.page.waitForEvent('download');
