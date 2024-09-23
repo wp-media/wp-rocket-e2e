@@ -12,6 +12,5 @@ Feature: LRC Visual Regression Test on Live Template
       And I visit lrc live templates
       And I am logged in
       And I clear cache
-      When I create reference
-      Then I must not see any visual regression in LRC
+      Then I must not see any visual regression in scenario urls
 

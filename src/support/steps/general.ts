@@ -245,7 +245,8 @@ When('I clear cache', async function (this:ICustomWorld) {
     await this.utils.gotoWpr();
 
     this.sections.set('dashboard');
-    await this.sections.toggle('clearCacheBtn');
+    await this.page.locator("text=Clear and preload").last().click();
+    //await this.sections.toggle('clearCacheBtn');
     await expect(this.page.getByText('WP Rocket: Cache cleared.')).toBeVisible();
 });
 
@@ -319,11 +320,11 @@ Then('I must not see any visual regression {string}', async function (this: ICus
 /**
  * Executes the step to check for LRC visual regression.
  */
-Then('I must not see any visual regression in LRC', async function (this: ICustomWorld) {
+Then('I must not see any visual regression in scenario urls', async function (this: ICustomWorld) {
     const liveUrl = SCENARIO_URLS;
 
     for (const key in liveUrl) {
-        await compareReference(liveUrl[key].path);
+        await compareReference(liveUrl[key]);
     }
 });
 
