@@ -54,7 +54,7 @@ When('I visit the urls and check for lazyload', async function (this: ICustomWor
                 Array.from(images).forEach((img) => {
                     result[url] = {
                         src: img.getAttribute('src'),
-                        url: `${WP_BASE_URL}/${key}`,
+                        url: url,
                         lazyloaded: img.classList.contains('lazyloaded')
                     }
                 });
