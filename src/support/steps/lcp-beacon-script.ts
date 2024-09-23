@@ -11,7 +11,7 @@
 import {ICustomWorld} from "../../common/custom-world";
 import {expect} from "@playwright/test";
 import {Then, When} from "@cucumber/cucumber";
-import {LcpData, Row} from "../../../utils/types";
+import {LcpData, Row, SinglePageLCPImages} from "../../../utils/types";
 
 import {dbQuery, getWPTablePrefix} from "../../../utils/commands";
 import {extractFromStdout} from "../../../utils/helpers";
@@ -23,7 +23,8 @@ let data: string,
     failMsg: string,
     jsonData: Record<string, { lcp: string[]; viewport: string[]; enabled: boolean, comment: string; }>,
     isDbResultAvailable: boolean = true,
-    lcpLLImages: { [key: string] : { src: string; url: string | boolean; lazyloaded: string | boolean }} = {};
+    lcpLLImages: { [key: string] : { src: string; url: string | boolean; lazyloaded: string | boolean }} = {},
+    singlePageLcp : SinglePageLCPImages = {url: '', lcp: '', viewport: ''};
 
 const actual: LcpData = {};
 
@@ -108,7 +109,6 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
             // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
             await this.page.waitForFunction(() => {
                 const beacon = document.querySelector('[data-name="wpr-wpr-beacon"]');
-                console.log(beacon ? beacon.getAttribute('beacon-completed') : 'No beacon found');
                 return beacon && beacon.getAttribute('beacon-completed') === 'true';
             }, { timeout: 100000 });
 
@@ -246,7 +246,10 @@ Then('lcp and atf images are not written to LL format', async function (this: IC
     expect(truthy).toBeTruthy();
 });
 
-When('I visit the {string} and check for lazyload', async function (this: ICustomWorld, url: string) {
+When('I visit the {string} and check lcp-atf are not lazyloaded', async function (this: ICustomWorld, url: string) {
+    // Reset truthy to true here.
+    truthy = true;
+
     await this.page.setViewportSize({
         width: 1600,
         height: 700
@@ -254,18 +257,71 @@ When('I visit the {string} and check for lazyload', async function (this: ICusto
 
     await this.utils.visitPage(url);
 
-    lcpLLImages = await this.page.evaluate((url) => {
+    const allImages = await this.page.evaluate((url) => {
         const images = document.querySelectorAll('img'),
-            result = {};
+            result = [];
 
         Array.from(images).forEach((img) => {
-            result[url] = {
+            result.push({
                 src: img.getAttribute('src'),
                 url: url,
                 lazyloaded: img.classList.contains('lazyloaded')
-            }
+            })
         });
 
         return result;
     }, url);
+
+    allImages.forEach((image) => {
+        if(singlePageLcp.lcp.includes(image.src) && image.lazyloaded ) {
+            truthy = false;
+        }
+
+        if(singlePageLcp.viewport.includes(image.src) && image.lazyloaded ) {
+            truthy = false;
+        }
+    });
+
+    // Fail test when there is expectation mismatch.
+    expect(truthy).toBeTruthy();
+});
+
+/**
+ * Executes the step to visit page in a specific browser dimension.
+ */
+When('I visit page {string} and check for lcp', async function (this:ICustomWorld, page) {
+
+    const tablePrefix: string = await getWPTablePrefix();
+
+    await this.page.setViewportSize({
+        width: 1600,
+        height: 700,
+    });
+
+    await this.utils.visitPage(page);
+
+    // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
+    await this.page.waitForFunction(() => {
+        const beacon = document.querySelector('[data-name="wpr-wpr-beacon"]');
+        return beacon && beacon.getAttribute('beacon-completed') === 'true';
+    }, { timeout: 100000 });
+
+    // Get the LCP/ATF from the DB
+    const sql = `SELECT lcp, viewport
+                   FROM ${tablePrefix}wpr_above_the_fold
+                   WHERE url LIKE "%${page}%"
+                     AND is_mobile = 0`;
+    const result = await dbQuery(sql);
+    const resultFromStdout = await extractFromStdout(result);
+
+    // If no DB result, set assertion var to false, fail msg and skip the loop.
+    if (!resultFromStdout || resultFromStdout.length === 0) {
+        isDbResultAvailable = false;
+    }
+
+    singlePageLcp = {
+        url: page,
+        lcp: resultFromStdout[0].lcp,
+        viewport: resultFromStdout[0].viewport
+    }
 });

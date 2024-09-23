@@ -22,19 +22,23 @@ Feature: Lazyload with LCP
     Given I install plugin 'imagify'
     And plugin 'imagify' is activated
     When I am logged in
-    And I go to 'wp-admin/options-general.php?page=imagify'
-    And I save imagify API key
-    And display next-gen is enabled on imagify
+    And Imagify is set up
     When I log out
-    And I visit page 'lcp_with_imagify' with browser dimension 1600 x 700
+    And I visit page 'lcp_with_imagify' and check for lcp
     When I am logged in
     And I save settings 'media' 'lazyloadCssBgImg'
     And I clear cache
-    And I visit the 'lcp_with_imagify' and check for lazyload
+    And I visit the 'lcp_with_imagify' and check lcp-atf are not lazyloaded
     Then lcp and atf images are not written to LL format
 
+  Scenario: Should exclude next-gen lcp/atf from LL
+    When I am logged in
+    And display next-gen is enabled on imagify
+    When I log out
+    And I visit page 'lcp_with_imagify' and check for lcp
+    When I am logged in
+    And I save settings 'media' 'lazyloadCssBgImg'
+    And I clear cache
+    And I visit the 'lcp_with_imagify' and check lcp-atf are not lazyloaded
+    Then lcp and atf images are not written to LL format
 
-  #  When I clear cache
-  #  And I visit page 'lcp_with_imagify' with browser dimension 1600 x 700
-  #  Then lcp image markup is not written to LL format
-#    And ATF image markup is not written to LL format
