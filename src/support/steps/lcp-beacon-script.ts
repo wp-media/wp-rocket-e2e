@@ -63,7 +63,6 @@ When('I visit the urls and check for lazyload', async function (this: ICustomWor
             }, key);
         }
     }
-
 });
 /**
  * Executes step to visit page based on the form factor(desktop/mobile) and get the LCP/ATF data from DB.
@@ -245,4 +244,28 @@ Then('lcp and atf images are not written to LL format', async function (this: IC
 
     // Fail test when there is expectation mismatch.
     expect(truthy).toBeTruthy();
+});
+
+When('I visit the {string} and check for lazyload', async function (this: ICustomWorld, url: string) {
+    await this.page.setViewportSize({
+        width: 1600,
+        height: 700
+    });
+
+    await this.utils.visitPage(url);
+
+    lcpLLImages = await this.page.evaluate((url) => {
+        const images = document.querySelectorAll('img'),
+            result = {};
+
+        Array.from(images).forEach((img) => {
+            result[url] = {
+                src: img.getAttribute('src'),
+                url: url,
+                lazyloaded: img.classList.contains('lazyloaded')
+            }
+        });
+
+        return result;
+    }, url);
 });
