@@ -1,4 +1,4 @@
-@lcpll
+@lcpll @delaylcp @setup
 Feature: Lazyload with LCP
 
   Background:
@@ -10,13 +10,13 @@ Feature: Lazyload with LCP
     And I save settings 'media' 'lazyloadCssBgImg'
 
   Scenario: Should Exclude LCP/ATF from Lazyload
+    And I clear cache
     When I log out
     And I visit the urls for 'desktop'
     When I am logged in
     And I clear cache
-    And I visit the urls for 'desktop' and check for lazyload
-    Then lcp image markup is not written to LL format
-#    And ATF image markup is not written to LL format
+    And I visit the urls and check for lazyload
+    Then lcp and atf images are not written to LL format
 
   #Scenario: Should exclude next-gen lcp/atf from LL
   #  Given I install plugin 'imagify'
