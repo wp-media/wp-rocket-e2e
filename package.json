@@ -25,6 +25,7 @@
     "test:lcp": "$npm_package_config_testCommand --tags @lcp",
     "test:test": "$npm_package_config_testCommand --tags @test",
     "test:lrc": "$npm_package_config_testCommand --tags @lrc",
+    "test:performancehints": "$npm_package_config_testCommand --tags @performancehints",
     "healthcheck": "ts-node healthcheck.ts",
     "wp-env": "wp-env"
   },

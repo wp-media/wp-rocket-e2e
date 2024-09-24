@@ -272,9 +272,25 @@ export async function installRemotePlugin(url: string): Promise<void>  {
  * @returns {Promise<void>} - A Promise that resolves when the uninstallation is completed.
  */
 export async function uninstallPlugin(plugin: string): Promise<void>  {
-    if(await isPluginInstalled(plugin)) {
-        await wp(`plugin uninstall --deactivate ${plugin}`);
+    const plugins = plugin.split(' ');
+    for (const p of plugins) {
+        if (await isPluginInstalled(p)) {
+            await wp(`plugin uninstall --deactivate ${p}`);
+        }
     }
+}
+
+/**
+ * Update Permalink.
+ *
+ * @function
+ * @name updatePermalinkStructure
+ * @async
+ * @param {string} structure - The permalink structure.
+ * @returns {Promise<void>} - A Promise that resolves when the permalink structure is updated.
+ */
+export async function updatePermalinkStructure(structure: string): Promise<void>  {
+    await wp(`option update permalink_structure ${structure}`);
 }
 
 /**
@@ -437,6 +453,37 @@ export async function testSshConnection(): Promise<string> {
         console.log(failMsg);
         throw new Error(failMsg);
     }
+}
+
+/**
+ * Performs a post search action by title using wp cli.
+ *
+ * @param   {string}   title  Post Title.
+ * @param   {string}   status  Post Status.
+ * @param   {string}   fields  Post fields to return.
+ * @return  {Promise<string>}  A Promise that resolves when the post search is executed.
+ */
+export async function getPostDataFromTitle(title: string, status: string, fields: string): Promise<string> {
+    const command = wrapSSHPrefix(`wp post list --post_status=${status} --post_type=page --fields=${fields} --title='${title}'
+`);
+    const result = exec(command, { silent: true });
+
+    if (result.code === 1) {
+        return '';
+    }
+
+    return result.stdout;
+}
+
+/**
+ * Updates post status using wp cli.
+ *
+ * @param   {string}   id  Post ID.
+ * @param   {string}   status  Post Status.
+ * @return  {Promise<void>}  A Promise that resolves when the post search is executed.
+ */
+export async function updatePostStatus(id: number, status: string): Promise<void> {
+    await wp(`post update ${id} --post_status=${status}`);
 }
 
 export default wp;
