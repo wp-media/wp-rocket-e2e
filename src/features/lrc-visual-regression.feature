@@ -9,7 +9,7 @@ Feature: LRC Visual Regression Test on Live Template
 
     Scenario: Shouldn't have any visual regression when visiting
       When I log out
-      And I visit lrc live templates
+      And I visit scenario urls
       And I am logged in
       And I clear cache
       Then I must not see any visual regression in scenario urls
