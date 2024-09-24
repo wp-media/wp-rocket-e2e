@@ -263,9 +263,9 @@ When('I visit page {string} with browser dimension {int} x {int}', async functio
 });
 
 /**
- * Executes the step to visit page in a specific browser dimension.
+ * Executes the step to visit scenario urls for visual regression testing in a specific browser dimension.
  */
-When('I visit lrc live templates', async function (this:ICustomWorld) {
+When('I visit scenario urls', async function (this:ICustomWorld) {
     await this.page.setViewportSize({
         width:  1600,
         height: 700,
@@ -324,7 +324,7 @@ Then('I must not see any visual regression in scenario urls', async function (th
     const liveUrl = SCENARIO_URLS;
 
     for (const key in liveUrl) {
-        await compareReference(liveUrl[key]);
+        await compareReference(key);
     }
 });
 
