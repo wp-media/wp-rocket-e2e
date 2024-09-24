@@ -16,7 +16,7 @@ import { ICustomWorld } from '../src/common/custom-world';
 import fs from "fs/promises";
 
 import {WP_BASE_URL, WP_PASSWORD, WP_USERNAME} from '../config/wp.config';
-import { uninstallPlugin } from "./commands";
+import { uninstallPlugin, updatePermalinkStructure } from "./commands";
 
 /**
  * Utility class for interacting with a Playwright Page instance in WordPress testing.
@@ -189,6 +189,25 @@ export class PageUtils {
     }
 
     /**
+     * Changes permalink custom structure to have ending slash.
+     *
+     * @return  {Promise<void>}
+     */
+    public permalinkChanged = async (structure: string): Promise<void> => {
+        await this.page.goto(WP_BASE_URL + '/wp-admin/options-permalink.php');
+        const permalinkLocator = '#permalink_structure';
+
+        if (await this.page.locator(permalinkLocator).inputValue() === structure) {
+            return;
+        }
+
+        await this.page.locator(permalinkLocator).fill(structure);
+        // Save changes.
+        await this.page.locator('#submit').click();
+        await this.page.waitForSelector('text=Settings saved.', { state: 'visible' });
+    }
+
+    /**
      * Peforms a WPR menu dropdown action.
      *
      * @return  {Promise<void>}[return description]
@@ -239,6 +258,24 @@ export class PageUtils {
     }
 
     /**
+     * Navigates to Wordpress Pages page.
+     *
+     * @return  {Promise<void>}
+     */
+        public gotoPages = async (): Promise<void> => {
+            await this.page.goto(WP_BASE_URL + '/wp-admin/edit.php?post_type=page');
+        }
+
+        /**
+     * Navigates to Wordpress Pages - Trash tab.
+     *
+     * @return  {Promise<void>}
+     */
+        public gotoTrashedPages = async (): Promise<void> => {
+            await this.page.goto(WP_BASE_URL + '/wp-admin/edit.php?post_status=trash&post_type=page');
+        }
+
+    /**
      * Navigates to Wordpress site health page.
      *
      * @return  {Promise<void>}
@@ -277,11 +314,18 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public wpAdminLogout = async (): Promise<void> => {
-        await this.page.locator('#wp-admin-bar-my-account').isVisible();
-        await this.page.locator('#wp-admin-bar-my-account').hover();
-        await this.page.waitForSelector('#wp-admin-bar-logout');
-        await this.page.locator('#wp-admin-bar-logout a').click();
-        await expect(this.page.getByText('You are now logged out.')).toBeVisible();
+        // Navigate to the logout URL directly
+        await this.page.goto(WP_BASE_URL + '/wp-login.php?action=logout');
+
+        const logoutLink = this.page.getByRole('link', { name: 'log out' });
+        if (!await logoutLink.isVisible()) {
+            return;
+        }
+
+        await logoutLink.click();
+        await expect(this.page.getByText('You are now logged out.')).toBeVisible({ timeout: 10000 });
+        await this.page.goto(WP_BASE_URL + '/wp-login.php');
+        await expect(this.page.locator('#loginform')).toBeVisible();
     }    
 
     /**
@@ -531,8 +575,23 @@ export class PageUtils {
      */
     public cleanUp = async (): Promise<void> => {
         // Remove helper plugin.
-        await uninstallPlugin('force-wp-mobile');
+        await uninstallPlugin('wp-rocket force-wp-mobile');
 
+        // Reset permalink structure.
+        await updatePermalinkStructure('/%postname%/'); 
+
+        // Remove WP Rocket from UI if on local run is explicitly parsed.
+        if ( process.env.npm_config_env !== undefined && process.env.npm_config_env === 'local' ) {
+            await this.removeWprViaUi();
+        }
+    }
+
+    /**
+     * Removes WP Rocket via the WP Admin UI.
+     *
+     * @return  {Promise<void>} Promise that resolves after the uninstallation process is complete.
+     */
+    public removeWprViaUi = async (): Promise<void> => {
         // Start the process to remove wp-rocket.
         await this.visitPage('wp-admin');
         await this.auth();
@@ -572,7 +631,7 @@ export class PageUtils {
 
         // Assert that WPR is deleted successfully
         await this.page.waitForSelector('#wp-rocket-deleted');
-        await expect(this.page.locator('#wp-rocket-deleted')).toBeVisible(); 
+        await expect(this.page.locator('#wp-rocket-deleted')).toBeVisible();
     }
 
     /**
