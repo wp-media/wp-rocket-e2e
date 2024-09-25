@@ -45,5 +45,41 @@
     "lrcWillSite": {
       "path": "lrc_will_site"
     }
+  },
+  "test:delayjs:genesis": {
+    "delayJs": {
+      "path": ""
+    },
+    "delayJsMobile": {
+      "path": "",
+      "mobile": true
+    }
+  },
+  "test:delayjs:flatsome": {
+    "delayJs": {
+      "path": ""
+    },
+    "delayJsMobile": {
+      "path": "",
+      "mobile": true
+    }
+  },
+  "test:delayjs:divi": {
+    "delayJs": {
+      "path": ""
+    },
+    "delayJsMobile": {
+      "path": "",
+      "mobile": true
+    }
+  },
+  "test:delayjs:astra": {
+    "delayJs": {
+      "path": ""
+    },
+    "delayJsMobile": {
+      "path": "",
+      "mobile": true
+    }
   }
 }
