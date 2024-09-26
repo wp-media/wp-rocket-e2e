@@ -2,6 +2,7 @@ import { ICustomWorld } from "../../common/custom-world";
 
 import { Given } from '@cucumber/cucumber';
 import { IMAGIFY_INFOS } from "../../../config/wp.config";
+import {expect} from "@playwright/test";
 
 Given('Imagify is set up', async function (this: ICustomWorld) {
     await this.utils.gotoImagify();
@@ -25,4 +26,6 @@ Given('display next-gen is enabled on imagify', async function (this: ICustomWor
 
     // Click the submit button to save the changes
     await this.page.click('input#submit');
+
+    await expect(this.page.getByText('Settings saved.')).toBeVisible();
 });

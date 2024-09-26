@@ -249,7 +249,8 @@ export async function isPluginInstalled(name: string): Promise<boolean> {
 }
 
 /**
- * Delete a plugin if exist
+ * Delete a plugin if exist.
+ * Note: this is not ideal for wpr or imagify plugins as it doesn't delete DB data which relies on uninstall hook.
  * @function
  * @name deletePlugin
  * @async
