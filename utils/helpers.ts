@@ -273,7 +273,7 @@ export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> =>
         }
         else{
             beforeScript = '';
-            readyScript = config.optimize ? 'scrollToBottom.js' : 'wait.js';
+            readyScript = config.optimize ? 'scrollToBottom.js' : 'scrollToBottom.js';
         }
 
         viewports = 'mobile' in urls[key] && urls[key].mobile ? mobileViewport : [];
