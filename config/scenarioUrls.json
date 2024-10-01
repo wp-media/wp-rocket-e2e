@@ -20,10 +20,6 @@
       "path": "ll_bg_css_single_colon"
     }
   },
-  "test:lrc": {
-    "delayJs13Live": {
-      "path": "delayjs_1-3_live_template"
-    },
     "delayJs68Live": {
       "path": "delayjs_68_live_template"
     },
