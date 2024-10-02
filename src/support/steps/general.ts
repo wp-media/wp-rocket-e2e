@@ -19,7 +19,7 @@ import { createReference, compareReference } from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
 import { Page } from '@playwright/test';
 import {
-    deactivatePlugin, deletePlugin, installRemotePlugin,
+    deactivatePlugin, installRemotePlugin,
 } from "../../../utils/commands";
 /**
  * Executes the step to log in.
@@ -91,13 +91,6 @@ Given('I save settings {string} {string}', async function (this: ICustomWorld, s
 Given('activate {string} plugin', async function (this: ICustomWorld, plugin) {
     await this.utils.gotoPlugin();
     await this.utils.togglePluginActivation(plugin);
-});
-
-/**
- * Executes the step to delete a WP plugin.
- */
-Given('delete {string} plugin', async function (this: ICustomWorld, plugin) {
-    await deletePlugin(plugin)
 });
 
 /**
