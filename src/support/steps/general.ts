@@ -245,7 +245,8 @@ When('I clear cache', async function (this:ICustomWorld) {
     await this.utils.gotoWpr();
 
     this.sections.set('dashboard');
-    await this.sections.toggle('clearCacheBtn');
+    await this.page.locator("text=Clear and preload").last().click();
+    //await this.sections.toggle('clearCacheBtn');
     await expect(this.page.getByText('WP Rocket: Cache cleared.')).toBeVisible();
 });
 

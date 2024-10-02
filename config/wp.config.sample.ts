@@ -16,6 +16,16 @@ const WP_ADMIN_USER = {
 } as const;
 
 /**
+ * The default Imagify settings information
+ *
+ * @constant
+ * @type {{ apiKey: string }}
+ */
+const IMAGIFY_INFOS = {
+	apiKey: ''
+} as const;
+
+/**
  * Extracted environment variables related to WordPress configuration.
  * Uses default values if environment variables are not set.
  * @constant
@@ -99,5 +109,6 @@ export {
 	WP_SSH_ADDRESS,
 	WP_SSH_KEY,
 	WP_SSH_ROOT_DIR,
-	SCENARIO_URLS
+	SCENARIO_URLS,
+	IMAGIFY_INFOS
 };
