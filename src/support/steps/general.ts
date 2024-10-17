@@ -14,7 +14,7 @@ import { expect } from "@playwright/test";
 import { ICustomWorld } from "../../common/custom-world";
 
 import { Given, When, Then } from '@cucumber/cucumber';
-import { WP_BASE_URL } from '../../../config/wp.config';
+import {SCENARIO_URLS, WP_BASE_URL} from '../../../config/wp.config';
 import { createReference, compareReference } from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
 import { Page } from '@playwright/test';
@@ -245,7 +245,8 @@ When('I clear cache', async function (this:ICustomWorld) {
     await this.utils.gotoWpr();
 
     this.sections.set('dashboard');
-    await this.sections.toggle('clearCacheBtn');
+    const cacheButton = this.page.locator('p:has-text("This action will clear") + a').first();
+    await cacheButton.click();
     await expect(this.page.getByText('WP Rocket: Cache cleared.')).toBeVisible();
 });
 
@@ -261,6 +262,20 @@ When('I visit page {string} with browser dimension {int} x {int}', async functio
     await this.utils.visitPage(page);
 });
 
+/**
+ * Executes the step to visit scenario urls for visual regression testing in a specific browser dimension.
+ */
+When('I visit scenario urls', async function (this:ICustomWorld) {
+    await this.page.setViewportSize({
+        width: 1600,
+        height: 700,
+    });
+    const liveUrl = SCENARIO_URLS;
+
+    for (const key in liveUrl) {
+        await this.utils.visitPage(liveUrl[key].path);
+    }
+});
 /**
  * Executes the step to visit beacon driven page in a specific browser dimension.
  */
@@ -324,6 +339,17 @@ Then('clean up', async function (this: ICustomWorld) {
  */
 Then('I must not see any visual regression {string}', async function (this: ICustomWorld, label: string) {
     await compareReference(label);
+});
+
+/**
+ * Executes the step to check for LRC visual regression.
+ */
+Then('I must not see any visual regression in scenario urls', async function (this: ICustomWorld) {
+    const liveUrl = SCENARIO_URLS;
+
+    for (const key in liveUrl) {
+        await compareReference(key);
+    }
 });
 
 /**

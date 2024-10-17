@@ -20,13 +20,39 @@
       "path": "ll_bg_css_single_colon"
     }
   },
+  "test:lrc": {
+    "delayJs13Live": {
+      "path": "delayjs_1-3_live_template"
+    },
+    "delayJs68Live": {
+      "path": "delayjs_68_live_template"
+    },
+    "lcp6647Live": {
+      "path": "lcp_6647_live"
+    },
+    "lcpLive4Template": {
+      "path": "lcp_live_4_template"
+    },
+    "lcpLiveTestSpan": {
+      "path": "lcp_live_test_span"
+    },
+    "rucss5213Template": {
+      "path": "rucss_5213_template"
+    },
+    "template4787": {
+      "path": "4787-2"
+    },
+    "lrcWillSite": {
+      "path": "lrc_will_site"
+    }
+  },
   "test:delayjs:genesis": {
     "delayJs": {
       "path": ""
     },
     "delayJsMobile": {
-        "path": "",
-        "mobile": true
+      "path": "",
+      "mobile": true
     }
   },
   "test:delayjs:flatsome": {
@@ -34,8 +60,8 @@
       "path": ""
     },
     "delayJsMobile": {
-        "path": "",
-        "mobile": true
+      "path": "",
+      "mobile": true
     }
   },
   "test:delayjs:divi": {
@@ -43,8 +69,8 @@
       "path": ""
     },
     "delayJsMobile": {
-        "path": "",
-        "mobile": true
+      "path": "",
+      "mobile": true
     }
   },
   "test:delayjs:astra": {
@@ -52,8 +78,8 @@
       "path": ""
     },
     "delayJsMobile": {
-        "path": "",
-        "mobile": true
+      "path": "",
+      "mobile": true
     }
   }
 }

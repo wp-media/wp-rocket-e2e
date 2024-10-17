@@ -60,7 +60,6 @@ const {
  * }}
 */
 
-
 const scriptName = process.env.npm_lifecycle_event;
 const SCENARIO_URLS = ScenarioUrls[scriptName];
 
