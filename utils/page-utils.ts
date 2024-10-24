@@ -594,7 +594,6 @@ export class PageUtils {
     public removeWprViaUi = async (): Promise<void> => {
         // Start the process to remove wp-rocket.
         await this.visitPage('wp-admin');
-        await this.auth();
 
         // Confirm Dialog Box.
         this.page.on('dialog', async(dialog) => {

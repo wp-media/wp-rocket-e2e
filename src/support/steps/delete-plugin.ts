@@ -30,8 +30,9 @@ When('I delete plugin', async function (this: ICustomWorld) {
     }
 
     // Delete WPR.
-    await this.page.locator( '#delete-wp-rocket' ).click();
+    //await this.page.locator( '#delete-wp-rocket' ).click();
 
+    await this.utils.removeWprViaUi();
 });
 
 /**
