@@ -582,6 +582,10 @@ export class PageUtils {
 
         // Remove WP Rocket from UI if on local run is explicitly parsed.
         if ( process.env.npm_config_env !== undefined && process.env.npm_config_env === 'local' ) {
+            // Start the process to remove wp-rocket.
+            await this.visitPage('wp-admin');
+            await this.auth();
+
             await this.removeWprViaUi();
         }
     }
@@ -592,10 +596,6 @@ export class PageUtils {
      * @return  {Promise<void>} Promise that resolves after the uninstallation process is complete.
      */
     public removeWprViaUi = async (): Promise<void> => {
-        // Start the process to remove wp-rocket.
-        await this.visitPage('wp-admin');
-        await this.auth();
-
         // Confirm Dialog Box.
         this.page.on('dialog', async(dialog) => {
             expect(dialog.type()).toContain('confirm');
