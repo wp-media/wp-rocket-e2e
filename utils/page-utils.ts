@@ -16,7 +16,7 @@ import { ICustomWorld } from '../src/common/custom-world';
 import fs from "fs/promises";
 
 import {WP_BASE_URL, WP_PASSWORD, WP_USERNAME} from '../config/wp.config';
-import { uninstallPlugin, updatePermalinkStructure } from "./commands";
+import { uninstallPlugin, updatePermalinkStructure, deactivatePlugin } from "./commands";
 
 /**
  * Utility class for interacting with a Playwright Page instance in WordPress testing.
@@ -576,6 +576,9 @@ export class PageUtils {
     public cleanUp = async (): Promise<void> => {
         // Remove helper plugin.
         await uninstallPlugin('wp-rocket force-wp-mobile');
+
+        // Deactivate WPML.
+        await deactivatePlugin('sitepress-multilingual-cms');
 
         // Reset permalink structure.
         await updatePermalinkStructure('/%postname%/'); 
