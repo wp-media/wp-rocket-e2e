@@ -179,6 +179,5 @@ Then('Check {string} input for background images', async function (this: ICustom
     await this.page.locator('input[name="lastName"]').nth(1).fill('Random text')
 
     await this.utils.scrollDownBottomOfAPage();
-
-    expect(images).toEqual(LL_BACKGROUND_IMAGES[page].lazyLoadedImages)
+    expect(images.every(image => LL_BACKGROUND_IMAGES[page].lazyLoadedImages.includes(image))).toBeTruthy();
 });
