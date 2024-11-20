@@ -10,7 +10,8 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint  . --ext .ts --fix",
-    "test:e2e": "$npm_package_config_testCommand",
+    "test:e2e": "npm run test:specific && npm run test:delayjs:genesis && npm run test:delayjs:flatsome && npm run test:delayjs:divi && npm run test:delayjs:astra",
+    "test:specific": "$npm_package_config_testCommand --tags \"not @delayjs and not @local and not @online and not @vr and not @test\"",
     "test:smoke": "$npm_package_config_testCommand --tags @smoke",
     "test:local": "$npm_package_config_testCommand --tags @local",
     "test:online": "$npm_package_config_testCommand --tags @online",
