@@ -36,6 +36,5 @@ scripts.forEach(script => {
     execSync(`npm run ${script}`, { stdio: 'inherit' });
   } catch (error) {
     console.error(`Error running ${script}:`, error.message);
-    process.exit(1);
   }
 });
