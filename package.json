@@ -27,6 +27,7 @@
     "test:lrc": "$npm_package_config_testCommand --tags @lrc",
     "test:performancehints": "$npm_package_config_testCommand --tags @performancehints",
     "healthcheck": "ts-node healthcheck.ts",
+    "push-report": "ts-node report.ts",
     "wp-env": "wp-env"
   },
   "repository": {
