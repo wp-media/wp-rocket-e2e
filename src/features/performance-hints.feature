@@ -1,4 +1,4 @@
-@setup @performancehints
+@setup @general
 Feature: Clear lcp/performance hints data tests
 
     Background:
