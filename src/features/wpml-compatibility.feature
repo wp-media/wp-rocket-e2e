@@ -1,4 +1,4 @@
-@setup @general
+@setup @llcssbg
 Feature: C14655 - Should LL Background work on main/sub language
     Background:
       Given I am logged in
