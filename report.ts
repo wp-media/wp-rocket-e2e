@@ -87,9 +87,6 @@ export async function moveTestResultToSubdirectory(testResultDir, newSubDir, cal
         items.forEach(item => {
             const itemPath = path.join(testResultsDir, item);
 
-            // Skip the newly created directory
-            if (item === newSubDir) return;
-
             const destPath = path.join(newTestDir, item);
 
             // Move the file or directory
