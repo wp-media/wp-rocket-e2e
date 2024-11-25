@@ -1,4 +1,4 @@
-@online @setup @genral
+@online @setup
 Feature: C11513 - Should not cause fatal error when upgrade from previous version to latest version while using PHP 8.1.6 while beacon is open
 
     Background:
