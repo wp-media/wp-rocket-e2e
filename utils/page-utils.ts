@@ -16,7 +16,7 @@ import { ICustomWorld } from '../src/common/custom-world';
 import fs from "fs/promises";
 
 import {WP_BASE_URL, WP_PASSWORD, WP_USERNAME} from '../config/wp.config';
-import { uninstallPlugin, updatePermalinkStructure, deactivatePlugin } from "./commands";
+import { uninstallPlugin, updatePermalinkStructure, deactivatePlugin, switchToDefaultTheme } from "./commands";
 
 /**
  * Utility class for interacting with a Playwright Page instance in WordPress testing.
@@ -582,6 +582,9 @@ export class PageUtils {
 
         // Reset permalink structure.
         await updatePermalinkStructure('/%postname%/'); 
+
+        // Switch to "Twenty Twenty" theme.
+        await switchToDefaultTheme('twentytwenty');
 
         // Remove WP Rocket from UI if on local run is explicitly parsed.
         if ( process.env.npm_config_env !== undefined && process.env.npm_config_env === 'local' ) {
