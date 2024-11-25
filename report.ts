@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from "path";
 import {exec} from "child_process";
-import { GITHUB_PAT} from "config/wp.config";
+import { GITHUB_PAT} from "./config/wp.config";
 
 const GIT_PAT = GITHUB_PAT;
 if (!GIT_PAT) {
@@ -15,6 +15,7 @@ const testResults = path.join(__dirname, 'test-results');
 
 const args = process.argv.slice(2);
 if(args.length < 1) {
+    console.log(GIT_PAT);
     console.error('Please provide the new naming for test folder')
 }
 const newTestDir = args[0];
