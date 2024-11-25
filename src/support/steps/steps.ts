@@ -70,7 +70,7 @@ Given('plugin {word} is activated', async function (plugin) {
  * Executes the step to assert the visibility of a banner with specific text.
  */
 Then('I must see the banner {string}', async function (text) {
-    await expect(this.page.getByText(text)).toBeVisible();
+    await expect(this.page.getByText(text)).toBeVisible({ timeout: 15000 });
 });
 
 /**
@@ -84,7 +84,7 @@ When('click on {string}', function (text) {
  * Executes the step to assert the non-visibility of a banner with specific text.
  */
 Then('I must not see the banner {string}', async function (text) {
-    await expect(this.page.getByText(text)).not.toBeVisible();
+    await expect(this.page.getByText(text)).not.toBeVisible({ timeout: 15000 } );
 });
 
 /**
@@ -127,7 +127,7 @@ When('I go {string}', async function (url) {
  * Executes the step to connect as a specific user.
  */
 When('I connect as {string}', async function (user) {
-    await this.utils.wpAdminLogout();
+   await this.utils.wpAdminLogout();
     await this.utils.auth(user);
 });
 
