@@ -10,8 +10,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint  . --ext .ts --fix",
-    "test:e2e": "ts-node run-scripts.ts",
-    "test:general": "$npm_package_config_testCommand --tags @general",
+    "test:e2e": "$npm_package_config_testCommand",
     "test:smoke": "$npm_package_config_testCommand --tags @smoke",
     "test:local": "$npm_package_config_testCommand --tags @local",
     "test:online": "$npm_package_config_testCommand --tags @online",
