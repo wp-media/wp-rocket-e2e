@@ -1,10 +1,13 @@
+@cpcss @setup 
 Feature: CPCSS Notice
 
   Background:
-    Given plugin wp-rocket is activated
+    Given I am logged in
+    And plugin is installed 'new_release'
+    And plugin is activated
     And I connect as 'admin'
     And I am on the page '/wp-admin/options-general.php?page=wprocket#file_optimization'
-
+@test
   Scenario: Unexpired account with CPCSS and click RUCSS
     Given I have an unexpired account
     And turn on 'CPCSS'
