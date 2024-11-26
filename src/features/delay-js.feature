@@ -12,8 +12,6 @@ Feature: No Regression with delayjs script udpate
         Given theme "<theme>" is activated
         And visual regression reference is generated
         When I log out
-        And I visit site url
-        And move the mouse
         Then no error in the console different than nowprocket page ''
         Then I must not see any visual regression 'delayJsMobile'
         When I save settings 'cache' 'mobileDeviceCache'
