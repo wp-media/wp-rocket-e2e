@@ -21,7 +21,6 @@ import { selectors as pluginSelectors } from "./../common/selectors";
 import { PageUtils } from "../../utils/page-utils";
 import { deleteFolder } from "../../utils/helpers";
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
-
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin} from "../../utils/commands";
 // import {configurations, getWPDir} from "../../utils/configurations";
@@ -64,7 +63,7 @@ BeforeAll(async function (this: ICustomWorld) {
 /**
  * Before each test scenario without the @setup tag, performs setup tasks.
  */
-Before({tags: 'not @setup'}, async function (this: ICustomWorld) {
+Before({tags: 'not @setup'}, async function (this: ICustomWorld, {pickle}) {
     /**
      * To uncomment during implementation of cli
      */
@@ -121,6 +120,7 @@ Before({tags: 'not @setup'}, async function (this: ICustomWorld) {
     this.page = await this.context.newPage();
     this.sections = new Sections(this.page, pluginSelectors);
     this.utils = new PageUtils(this.page, this.sections);
+    this.pickle = pickle;
 
     /**
      * To uncomment during implementation of cli
