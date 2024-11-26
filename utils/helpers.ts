@@ -15,12 +15,14 @@ import fs from 'fs/promises';
 import type { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 import backstop from 'backstopjs';
+import { Pickle } from '@cucumber/messages';
 
 // Interfaces
 import { ExportedSettings, VRurlConfig, Viewport, Row } from '../utils/types';
 import { uiReflectedSettings } from './exclusions';
 import { WP_BASE_URL } from '../config/wp.config';
 import { dbQuery } from './commands';
+import scenarioUrls from "./../config/scenarioUrls.json";
 
 const backstopConfig = './backstop.json';
 /**
@@ -477,4 +479,40 @@ export const checkData = async(tables: Array<string>, data: Array<{ [key: string
 
         expect(data.length).toBe(filteredData.length);
     }
+}
+
+/**
+ * Checks if a cucumber tag is present in the scenario
+ *
+ * @param   {Pickle}                               pickle  Array of table names parsed.                           exists  Should check if data exists or is removed.
+ * @param   {string}                               tag  Array of table names parsed.                           exists  Should check if data exists or is removed.
+ *
+ * @return  {Promise<Array<string>>}                              Promise that resolves after data has been confirmed as removed.
+ */
+export const isTagPresent = async(pickle: Pickle, tag: string): Promise<boolean> => {
+    // Extracting tag names from the pickle object
+    const tags = pickle.tags.map(tag => tag.name);
+    return tags.includes(tag);
+}
+
+/**
+ * Get valid scenario tag for backstop reference scenario urls.
+ *
+ * @param   {Array<string>}                               tags  Array of table names parsed.                        exists  Should check if data exists or is removed.
+ *
+ * @return  {Promise<string>}                              Promise that resolves after data has been confirmed as removed.
+ */
+export const getScenarioTag = async(tags: Array<string>): Promise<string> => {
+    let tag: string;
+    const scenarioKeys: Array<string> = Object.keys(scenarioUrls);
+
+    for (const key in tags) {
+        if (scenarioKeys.includes(tags[key])) {
+            tag = tags[key];
+
+            break;
+        }
+    }
+
+    return tag;
 }
