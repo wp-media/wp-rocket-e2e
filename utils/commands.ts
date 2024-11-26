@@ -297,12 +297,12 @@ export async function updatePermalinkStructure(structure: string): Promise<void>
  * Switch Theme.
  *
  * @function
- * @name switchToDefaultTheme
+ * @name switchTheme
  * @async
  * @param {string} theme - The theme to activate.
  * @returns {Promise<void>} - A Promise that resolves when the theme is activated.
  */
-export async function switchToDefaultTheme(theme: string): Promise<void> {
+export async function switchTheme(theme: string): Promise<void> {
     await wp(`theme activate ${theme}`);
 }
 
