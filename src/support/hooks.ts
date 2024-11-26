@@ -19,10 +19,8 @@ import { ChromiumBrowser, chromium } from '@playwright/test';
 import { Sections } from '../common/sections';
 import { selectors as pluginSelectors } from "./../common/selectors";
 import { PageUtils } from "../../utils/page-utils";
-import { batchUpdateVRTestUrl } from "../../utils/helpers";
 import { deleteFolder } from "../../utils/helpers";
-import backstop from 'backstopjs';
-import {SCENARIO_URLS, WP_SSH_ROOT_DIR,} from "../../config/wp.config";
+import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin} from "../../utils/commands";
@@ -57,39 +55,6 @@ BeforeAll(async function (this: ICustomWorld) {
 
         await deleteFolder('./backstop_data/bitmaps_test');
         browser = await chromium.launch({ headless: false });
-
-        const theme = process.env.THEME ? process.env.THEME : '';
-
-        if (theme !== '') {
-            const context = await browser.newContext({
-                recordVideo: {
-                    dir: "test-results/videos",
-                },
-            });
-        
-            const page = await context.newPage();
-            const sections = new Sections(page, pluginSelectors);
-            const utils = new PageUtils(page, sections);
-        
-            await utils.auth();
-            await utils.switchTheme(theme);
-        
-            await page?.close();
-            await context?.close();
-        }
-
-        if (process.env.npm_config_vrurl === undefined) {
-            await batchUpdateVRTestUrl({
-                optimize: false,
-                urls: SCENARIO_URLS
-            });
-            await backstop('reference');
-            // Update test url request page with wprocket optimizations.
-            await batchUpdateVRTestUrl({
-                optimize: true,
-                urls: SCENARIO_URLS
-            });
-        }
     } catch (error) {
         console.error('Setup failed: ', error.message);
         throw new Error('Setup failed: ' + error.message);
@@ -167,7 +132,7 @@ Before({tags: 'not @setup'}, async function (this: ICustomWorld) {
 /**
  * Before each test scenario with the @setup tag, performs setup tasks.
  */
-Before({tags: '@setup'}, async function(this: ICustomWorld) {
+Before({tags: '@setup'}, async function(this: ICustomWorld, {pickle}) {
     this.context = await browser.newContext({
         recordVideo: {
             dir: "test-results/videos",
@@ -178,6 +143,16 @@ Before({tags: '@setup'}, async function(this: ICustomWorld) {
     this.utils = new PageUtils(this.page, this.sections);
 
     await this.utils.cleanUp();
+    this.pickle = pickle;
+});
+
+/**
+ * Before each test scenario with the @delaylcp tag, performs setup tasks.
+ */
+Before({tags: '@delaylcp'}, async function (this: ICustomWorld) {
+    // Install and activate the remote plugin 
+    await installRemotePlugin('https://github.com/wp-media/wp-rocket-e2e-test-helper/raw/main/helper-plugin/rocket-lcp-delay.zip');
+    await activatePlugin('rocket-lcp-delay');
 });
 
 /**
@@ -206,15 +181,6 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 
     //  await resetWP();
 
-});
-
-/**
- * Before each test scenario with the @delaylcp tag, performs setup tasks.
- */
-Before({tags: '@delaylcp'}, async function (this: ICustomWorld) {
-    // Install and activate the remote plugin 
-    await installRemotePlugin('https://github.com/wp-media/wp-rocket-e2e-test-helper/raw/main/helper-plugin/rocket-lcp-delay.zip');
-    await activatePlugin('rocket-lcp-delay');
 });
 
 /**
