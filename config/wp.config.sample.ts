@@ -1,5 +1,3 @@
-import ScenarioUrls from "./scenarioUrls.json";
-
 /**
  * The default WordPress admin user configuration for both local and live environments.
  * @constant
@@ -60,9 +58,6 @@ const {
  * }}
 */
 
-const scriptName = process.env.npm_lifecycle_event;
-const SCENARIO_URLS = ScenarioUrls[scriptName];
-
 /**
  * Exported WordPress environment configuration.
  * @exports
@@ -97,6 +92,5 @@ export {
 	WP_SSH_USERNAME,
 	WP_SSH_ADDRESS,
 	WP_SSH_KEY,
-	WP_SSH_ROOT_DIR,
-	SCENARIO_URLS
+	WP_SSH_ROOT_DIR
 };
