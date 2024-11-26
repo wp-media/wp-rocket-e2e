@@ -670,7 +670,7 @@ export class PageUtils {
      *
      * @return  {Promise<void>}
      */
-    public async switchTheme(theme: string): Promise<void> {
+    public async switchThemeViaUi(theme: string): Promise<void> {
         await this.visitPage('wp-admin/themes.php');
         await this.page.locator('#wp-filter-search-input').fill(theme);
         // Wait for filtered theme to be displayed.

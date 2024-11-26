@@ -180,7 +180,7 @@ When('I create reference', async function (this:ICustomWorld) {
  * Executes the step to activate a theme.
  */
 When('theme {string} is activated', async function (this:ICustomWorld, theme) {
-    await this.utils.switchTheme(theme);
+    await this.utils.switchThemeViaUi(theme);
 });
 
 /**
@@ -193,7 +193,7 @@ When('theme is activated', async function (this:ICustomWorld) {
         return;
     }
 
-    await this.utils.switchTheme(theme);
+    await this.utils.switchThemeViaUi(theme);
 });
 
 /**
