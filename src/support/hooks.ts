@@ -72,7 +72,7 @@ BeforeAll(async function (this: ICustomWorld) {
             const utils = new PageUtils(page, sections);
         
             await utils.auth();
-            await utils.switchTheme(theme);
+            await utils.switchThemeViaUi(theme);
         
             await page?.close();
             await context?.close();

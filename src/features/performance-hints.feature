@@ -20,7 +20,6 @@ Feature: Clear lcp/performance hints data tests
         Given performance hints data added to DB
         And switching the theme
         Then data is removed from the performance hints tables
-        Then theme 'Twenty Twenty' is activated
 
     Scenario: Should clear performance hints of the current URL
         Given I log out
