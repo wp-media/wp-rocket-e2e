@@ -1,4 +1,4 @@
-@wpml @setup
+@setup @llcssbg
 Feature: C14655 - Should LL Background work on main/sub language
     Background:
       Given I am logged in
@@ -12,12 +12,14 @@ Feature: C14655 - Should LL Background work on main/sub language
       And wpml directory is enabled
 
     Scenario: Open the page with directory lanaguage
+      When I log out
       Then no error in the console different than nowprocket page 'lazyload_css_background_images'
       When switch to another language
       Then I must not see any error in debug.log
 
     Scenario: Change WPML to query string option
       Given wpml query string is enabled
+      When I log out
       Then no error in the console different than nowprocket page 'lazyload_css_background_images'
       When switch to another language
       Then I must not see any error in debug.log

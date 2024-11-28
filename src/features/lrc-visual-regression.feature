@@ -8,6 +8,7 @@ Feature: LRC Visual Regression Test on Live Template
     And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
 
     Scenario: Shouldn't have any visual regression when visiting
+      Given visual regression reference is generated
       When I log out
       And I visit scenario urls
       And I am logged in
