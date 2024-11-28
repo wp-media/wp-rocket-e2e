@@ -99,7 +99,7 @@ Given('activate {string} plugin', async function (this: ICustomWorld, plugin) {
  * Executes the step to activate a theme.
  */
 Given('theme {string} is activated', async function (this:ICustomWorld, theme) {
-    await this.utils.switchTheme(theme);
+    await this.utils.switchThemeViaUi(theme);
 
     // Check tags via pickle.
     if (! await isTagPresent(this.pickle, '@delayjs')) {
@@ -246,9 +246,6 @@ When('expand mobile menu', async function (this:ICustomWorld) {
     }
 
     switch (theme) {
-        case 'genesis-sample-develop':
-            target = '#genesis-mobile-nav-primary';
-            break;
         case 'flatsome':
             target = '[data-open="#main-menu"]';
             break;
