@@ -116,9 +116,14 @@ Given('theme {string} is activated', async function (this:ICustomWorld, theme) {
 Given('visual regression reference is generated', async function (this:ICustomWorld) {
     const tags = this.pickle.tags.map(tag => tag.name);
     const tag: string = await getScenarioTag(tags);
+    
+    // Array of tags to exclude from one time reference generation.
+    const exclusion = [
+        '@delayjs'
+    ]
 
     // Bail out if there is already reference for the current tag.
-    if (process.env.scenario_tag === tag) {
+    if (process.env.scenario_tag === tag && !exclusion.includes(tag)) {
         return;
     }
 
