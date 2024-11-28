@@ -239,9 +239,6 @@ When('expand mobile menu', async function (this:ICustomWorld) {
     }
 
     switch (theme) {
-        case 'genesis-sample-develop':
-            target = '#genesis-mobile-nav-primary';
-            break;
         case 'flatsome':
             target = '[data-open="#main-menu"]';
             break;

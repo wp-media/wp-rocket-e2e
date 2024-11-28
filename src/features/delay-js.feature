@@ -35,4 +35,3 @@ Feature: No Regression with delayjs script udpate
             | astra                  |
             | Divi                   |
             | flatsome               |
-            | genesis-sample-develop |
