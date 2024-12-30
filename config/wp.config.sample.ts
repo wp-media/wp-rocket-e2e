@@ -44,8 +44,7 @@ const {
 	WP_SSH_USERNAME = '',
 	WP_SSH_ADDRESS = '',
 	WP_SSH_KEY = '',
-	WP_SSH_ROOT_DIR = '',
-	GITHUB_PAT = ''
+	WP_SSH_ROOT_DIR = ''
 } = process.env;
 
 /**
@@ -99,6 +98,5 @@ export {
 	WP_SSH_ADDRESS,
 	WP_SSH_KEY,
 	WP_SSH_ROOT_DIR,
-	SCENARIO_URLS,
-	GITHUB_PAT
+	SCENARIO_URLS
 };
