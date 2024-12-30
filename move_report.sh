@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$#" -lt 2 ]; then
+if [ "$#" -lt 1 ]; then
   echo "Usage: $0 <destination_directory> [new_name]"
   exit 1
 fi
@@ -8,12 +8,6 @@ fi
 SOURCE_FOLDER="test-results"
 DESTINATION_DIR=$1
 NEW_NAME=$2
-
-# Ensure the source folder exists
-if [ ! -d "$SOURCE_FOLDER" ]; then
-  echo "Error: Source folder '$SOURCE_FOLDER' does not exist."
-  exit 2
-fi
 
 # Ensure the destination directory exists
 if [ ! -d "$DESTINATION_DIR" ]; then
