@@ -1,5 +1,5 @@
 {
-  "test:llcssbg": {
+  "@llcssbg": {
     "home": {
       "path": ""
     },
@@ -20,7 +20,7 @@
       "path": "ll_bg_css_single_colon"
     }
   },
-  "test:lrc": {
+  "@lrc": {
     "delayJs13Live": {
       "path": "delayjs_1-3_live_template"
     },
@@ -46,34 +46,7 @@
       "path": "lrc_will_site"
     }
   },
-  "test:delayjs:genesis": {
-    "delayJs": {
-      "path": ""
-    },
-    "delayJsMobile": {
-      "path": "",
-      "mobile": true
-    }
-  },
-  "test:delayjs:flatsome": {
-    "delayJs": {
-      "path": ""
-    },
-    "delayJsMobile": {
-      "path": "",
-      "mobile": true
-    }
-  },
-  "test:delayjs:divi": {
-    "delayJs": {
-      "path": ""
-    },
-    "delayJsMobile": {
-      "path": "",
-      "mobile": true
-    }
-  },
-  "test:delayjs:astra": {
+  "@delayjs": {
     "delayJs": {
       "path": ""
     },

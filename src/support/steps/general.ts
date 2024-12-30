@@ -14,13 +14,15 @@ import { expect } from "@playwright/test";
 import { ICustomWorld } from "../../common/custom-world";
 
 import { Given, When, Then } from '@cucumber/cucumber';
-import {SCENARIO_URLS, WP_BASE_URL} from '../../../config/wp.config';
-import { createReference, compareReference } from "../../../utils/helpers";
+import {WP_BASE_URL} from '../../../config/wp.config';
+import scenarioUrls from "./../../../config/scenarioUrls.json";
+import { createReference, compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl } from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
 import { Page } from '@playwright/test';
 import {
     deactivatePlugin, installRemotePlugin,
 } from "../../../utils/commands";
+import backstop from 'backstopjs';
 /**
  * Executes the step to log in.
  */
@@ -91,6 +93,56 @@ Given('I save settings {string} {string}', async function (this: ICustomWorld, s
 Given('activate {string} plugin', async function (this: ICustomWorld, plugin) {
     await this.utils.gotoPlugin();
     await this.utils.togglePluginActivation(plugin);
+});
+
+/**
+ * Executes the step to activate a theme.
+ */
+Given('theme {string} is activated', async function (this:ICustomWorld, theme) {
+    await this.utils.switchThemeViaUi(theme);
+
+    // Check tags via pickle.
+    if (! await isTagPresent(this.pickle, '@delayjs')) {
+        return;
+    }
+
+    // Set the THEME environment variable to the current theme.
+    process.env.THEME = theme;
+});
+
+/**
+ * Executes the step to generate visual regression reference via backstopjs.
+ */
+Given('visual regression reference is generated', async function (this:ICustomWorld) {
+    const tags = this.pickle.tags.map(tag => tag.name);
+    const tag: string = await getScenarioTag(tags);
+    
+    // Array of tags to exclude from one time reference generation.
+    const exclusion = [
+        '@delayjs'
+    ]
+
+    // Bail out if there is already reference for the current tag.
+    if (process.env.scenario_tag === tag && !exclusion.includes(tag)) {
+        return;
+    }
+
+    try {
+        await batchUpdateVRTestUrl({
+            optimize: false,
+            urls: scenarioUrls[tag]
+        });
+        await backstop('reference');
+        // Update test url request page with wprocket optimizations.
+        await batchUpdateVRTestUrl({
+            optimize: true,
+            urls: scenarioUrls[tag]
+        });
+    } catch (error) {
+        console.error('Backstop reference generation failed: ', error.message);
+    }
+
+    process.env.scenario_tag = tag;
 });
 
 /**
@@ -175,27 +227,6 @@ When('I create reference', async function (this:ICustomWorld) {
     await createReference(process.env.npm_config_vrurl);
 });
 
-
-/**
- * Executes the step to activate a theme.
- */
-When('theme {string} is activated', async function (this:ICustomWorld, theme) {
-    await this.utils.switchTheme(theme);
-});
-
-/**
- * Executes the step to activate a theme set from the CLI.
- */
-When('theme is activated', async function (this:ICustomWorld) {
-    const theme = process.env.THEME ? process.env.THEME : '';
-
-    if (theme === '') {
-        return;
-    }
-
-    await this.utils.switchTheme(theme);
-});
-
 /**
  * Executes the step visit a page in mobile view.
  */
@@ -220,9 +251,6 @@ When('expand mobile menu', async function (this:ICustomWorld) {
     }
 
     switch (theme) {
-        case 'genesis-sample-develop':
-            target = '#genesis-mobile-nav-primary';
-            break;
         case 'flatsome':
             target = '[data-open="#main-menu"]';
             break;
@@ -270,7 +298,9 @@ When('I visit scenario urls', async function (this:ICustomWorld) {
         width: 1600,
         height: 700,
     });
-    const liveUrl = SCENARIO_URLS;
+    const tags = this.pickle.tags.map(tag => tag.name);
+    const tag: string = await getScenarioTag(tags);
+    const liveUrl = scenarioUrls[tag];
 
     for (const key in liveUrl) {
         await this.utils.visitPage(liveUrl[key].path);
@@ -345,7 +375,9 @@ Then('I must not see any visual regression {string}', async function (this: ICus
  * Executes the step to check for LRC visual regression.
  */
 Then('I must not see any visual regression in scenario urls', async function (this: ICustomWorld) {
-    const liveUrl = SCENARIO_URLS;
+    const tags = this.pickle.tags.map(tag => tag.name);
+    const tag: string = await getScenarioTag(tags);
+    const liveUrl = scenarioUrls[tag];
 
     for (const key in liveUrl) {
         await compareReference(key);

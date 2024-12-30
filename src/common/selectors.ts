@@ -63,16 +63,14 @@ export const selectors: Selectors = {
                }
             },
             cpcss:{
-                before: async (page: Page): Promise<boolean> => {
-                    if (! await page.locator("#wpr-radio-async_css").isHidden()) {
-                        return true;
-                    }
-                        page.locator("label[for=optimize_css_delivery]").click()
-                        return true;
-                    },
-                type: FieldType.button,
-                target: "#wpr-radio-async_css",
+                type: FieldType.checkbox,
+                element: "#optimize_css_delivery",
+                target: "label[for=optimize_css_delivery]",
+                after: async (page: Page): Promise<void> => {
+                    await page.locator("#wpr-radio-async_css").click();
+                },
             },
+    
             rucss:{
                 type: FieldType.checkbox,
                 element: "#optimize_css_delivery",
