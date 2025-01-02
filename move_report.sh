@@ -11,7 +11,7 @@ NEW_NAME=$2
 
 # If no destination is passed use the default.
 if [ ! -d "$DESTINATION_DIR" ]; then
-  DESTINATION_DIR="/Users/opeyemiibrahim/src/gigs"
+  DESTINATION_DIR="/var/shared/rocket-e2e-reports"
 fi
 
 # Determine the new folder name, if folder name is not passed, use date and username
