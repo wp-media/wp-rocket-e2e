@@ -10,12 +10,10 @@ import {promises as fs} from "fs";
 async function initialization(): Promise<{ scriptPath: string; args: string[] }> {
     const scriptPath = path.resolve('move_report.sh');
     const destination = process.argv[2];
-    const newName = process.argv[3];
-
-    if (!destination) {
-        console.error('Usage: npm run push-report <destination_directory> [new_name]');
-        process.exit(1);
-    }
+    const tag = process.env.npm_config_tag;
+    const newName = tag
+        ? `${tag}_test`
+        : null;
 
     // Prepare the arguments for the script
     const args = [destination];

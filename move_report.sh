@@ -9,10 +9,9 @@ SOURCE_FOLDER="test-results"
 DESTINATION_DIR=$1
 NEW_NAME=$2
 
-# Ensure the destination directory exists
+# If no destination is passed use the default.
 if [ ! -d "$DESTINATION_DIR" ]; then
-  echo "Error: Destination directory '$DESTINATION_DIR' does not exist."
-  exit 3
+  DESTINATION_DIR="/Users/opeyemiibrahim/src/gigs"
 fi
 
 # Determine the new folder name, if folder name is not passed, use date and username
