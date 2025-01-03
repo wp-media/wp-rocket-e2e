@@ -76,14 +76,8 @@ export class PageUtils {
      * @return {Promise<void>}
      */
     public wpAdminLogin = async (user: string | null = null): Promise<void> => {
-
-        let username= WP_USERNAME;
-        let password= WP_PASSWORD;
-
-        if(user === 'admin2') {
-            username = WP_USERNAME2
-            password = WP_PASSWORD2
-        }
+        const username = user === 'admin2' ? WP_USERNAME2 : WP_USERNAME;
+        const password = user === 'admin2' ? WP_PASSWORD2 : WP_PASSWORD;
 
         // Fill username & password.
         await this.page.click('#user_login');
@@ -352,12 +346,7 @@ export class PageUtils {
             return ;
         }
 
-        // Check if user is not null, login with the provider user.
-        if (user !== null) {
-            await this.wpAdminLogin(user);
-        } else {
-            await this.wpAdminLogin();
-        }
+        await this.wpAdminLogin(user);
     }
 
     /**
