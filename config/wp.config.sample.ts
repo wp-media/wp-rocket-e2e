@@ -29,7 +29,6 @@ const WP_ADMIN_USER = {
  *   WP_SSH_ADDRESS: string;
  *   WP_SSH_KEY: string;
  *   WP_SSH_ROOT_DIR: string;
- *   ENVIRONMENT_USERNAME: string;
  * }}
  */
 const {
@@ -43,8 +42,7 @@ const {
 	WP_SSH_USERNAME = '',
 	WP_SSH_ADDRESS = '',
 	WP_SSH_KEY = '',
-	WP_SSH_ROOT_DIR = '',
-	ENVIRONMENT_USERNAME = ''
+	WP_SSH_ROOT_DIR = ''
 } = process.env;
 
 /**
@@ -81,7 +79,6 @@ const {
  * 		noJsLlcss: string;
  * 		elementorLlcss: string;
  * 	 },
- * 	 ENVIRONMENT_USERNAME: string;
  * }}
  */
 export { 
@@ -95,6 +92,5 @@ export {
 	WP_SSH_USERNAME,
 	WP_SSH_ADDRESS,
 	WP_SSH_KEY,
-	WP_SSH_ROOT_DIR,
-	ENVIRONMENT_USERNAME
+	WP_SSH_ROOT_DIR
 };
