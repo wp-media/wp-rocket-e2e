@@ -13,12 +13,16 @@
 import os from 'os';
 import fs from 'fs/promises';
 import type { Page } from '@playwright/test';
+import { expect } from '@playwright/test';
 import backstop from 'backstopjs';
+import { Pickle } from '@cucumber/messages';
 
 // Interfaces
 import { ExportedSettings, VRurlConfig, Viewport, Row } from '../utils/types';
 import { uiReflectedSettings } from './exclusions';
 import { WP_BASE_URL } from '../config/wp.config';
+import { dbQuery } from './commands';
+import scenarioUrls from "./../config/scenarioUrls.json";
 
 const backstopConfig = './backstop.json';
 /**
@@ -271,7 +275,7 @@ export const batchUpdateVRTestUrl = async(config: VRurlConfig): Promise<void> =>
         }
         else{
             beforeScript = '';
-            readyScript = config.optimize ? 'scrollToBottom.js' : '';
+            readyScript = 'scrollToBottom.js';
         }
 
         viewports = 'mobile' in urls[key] && urls[key].mobile ? mobileViewport : [];
@@ -395,4 +399,120 @@ export const extractFromStdout = async(data: string): Promise<Row[]> => {
     }
 
     return result;
+}
+
+/**
+ * Inserts new data to DB Tables.
+ *
+ * @param   {Array<string>}                                tables  Array of table names parsed.
+ * @param   { Array<{ [key: string]: string | number }>}   data    Data to populate tables.
+ *
+ * @return  {<Promise><void>}                              Promise that resolves after data has been inserted and confirmed.
+ */
+export const seedData = async(tables: Array<string>, data: Array<{ [key: string]: string | number }>): Promise<void> => {
+    // Dynamically build the values string from the data constant
+    const values = data.map(row => 
+        `(${Object.values(row).map(value => 
+            typeof value === 'string' ? `"${value}"` : value
+        ).join(', ')})`
+    ).join(', ');
+
+    const insertSql = `INSERT INTO %s (${Object.keys(data[0]).join(', ')}) VALUES ${values}`;
+    const selectSql = `SELECT ${Object.keys(data[0]).join(', ')} FROM %s`;
+
+    for (const table of tables) {
+        // Insert data to tables.
+        const insertQuery = insertSql.replace('%s', table);
+        await dbQuery(insertQuery);
+
+        // Check that data actually exists in DB.
+        const selectQuery = selectSql.replace('%s', table);
+        const resultString = await dbQuery(selectQuery);
+
+        const result = await extractFromStdout(resultString);
+
+        // Filter out the rows that match the hardcoded data
+        const filteredResult = data.filter(hardcodedRow => 
+            result.some(dbRow => 
+                Object.keys(hardcodedRow).every(key => {
+                    const dbValue = dbRow[key as keyof Row];
+                    const hardcodedValue = hardcodedRow[key];
+                    return typeof hardcodedValue === 'number' 
+                        ? Number(dbValue) === hardcodedValue 
+                        : dbValue === hardcodedValue;
+                })
+            )
+        );
+
+        // Check if the filtered result contains all the hardcoded data
+        expect(filteredResult.length).toBe(data.length); // Ensure all hardcoded data is found
+    }
+}
+
+/**
+ * Checks that data is removed from table.
+ *
+ * @param   {Array<string>}                               tables  Array of table names parsed.
+ * @param   {Array<{ [key: string]: string | number }>}   data    Data to be checked in tables.
+ * @param   {boolean}                                     exists  Should check if data exists or is removed.
+ *
+ * @return  {<Promise><void>}                              Promise that resolves after data has been confirmed as removed.
+ */
+export const checkData = async(tables: Array<string>, data: Array<{ [key: string]: string | number }>, exists: boolean = false): Promise<void> => {
+    // Verify both tables
+    for (const table of tables) {
+        const selectSql = `SELECT * FROM ${table}`;
+        const result = await dbQuery(selectSql); 
+        const resultFromStdout = await extractFromStdout(result);
+        
+        // Filter out any URL that does not exists in the dataset and adds it to the constant.
+        const filteredData = data.filter(urlObj => {
+            return !resultFromStdout.some(item => {
+                return Object.entries(urlObj).every(([key, value]) => item[key] === value);
+            });
+        });
+
+        if ( exists ) {
+            expect(0).toBe(filteredData.length);
+            continue;
+        }
+
+        expect(data.length).toBe(filteredData.length);
+    }
+}
+
+/**
+ * Checks if a cucumber tag is present in the scenario
+ *
+ * @param   {Pickle}                               pickle  Array of table names parsed.                           exists  Should check if data exists or is removed.
+ * @param   {string}                               tag  Array of table names parsed.                           exists  Should check if data exists or is removed.
+ *
+ * @return  {Promise<Array<string>>}                              Promise that resolves after data has been confirmed as removed.
+ */
+export const isTagPresent = async(pickle: Pickle, tag: string): Promise<boolean> => {
+    // Extracting tag names from the pickle object
+    const tags = pickle.tags.map(tag => tag.name);
+    return tags.includes(tag);
+}
+
+/**
+ * Get valid scenario tag for backstop reference scenario urls.
+ *
+ * @param   {Array<string>}                               tags  Array of table names parsed.                        exists  Should check if data exists or is removed.
+ *
+ * @return  {Promise<string>}                              Promise that resolves after data has been confirmed as removed.
+ */
+export const getScenarioTag = async(tags: Array<string>): Promise<string> => {
+    let tag: string;
+    const scenarioKeys: Array<string> = Object.keys(scenarioUrls);
+
+    for (const key in tags) {
+        if (scenarioKeys.includes(tags[key])) {
+            tag = tags[key];
+
+            break;
+        }
+    }
+
+    return tag;
 }

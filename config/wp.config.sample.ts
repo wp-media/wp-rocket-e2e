@@ -1,5 +1,4 @@
 import ScenarioUrls from "./scenarioUrls.json";
-
 /**
  * The default WordPress admin user configuration for both local and live environments.
  * @constant
@@ -68,9 +67,7 @@ const {
  *	 mobile?: boolean
  *	}
  * }}
-*/
-
-
+ */
 const scriptName = process.env.npm_lifecycle_event;
 const SCENARIO_URLS = ScenarioUrls[scriptName];
 
