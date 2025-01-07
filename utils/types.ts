@@ -118,3 +118,11 @@ export interface SinglePageLCPImages {
     lcp: string,
     viewport: string
 }
+export interface LLImagesData {
+    [key: string] : {
+        src: string;
+        type: string;
+        url: string | boolean;
+        lazyloaded: string | boolean
+    }
+}

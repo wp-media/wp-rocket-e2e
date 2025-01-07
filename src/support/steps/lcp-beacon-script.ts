@@ -11,7 +11,7 @@
 import {ICustomWorld} from "../../common/custom-world";
 import {expect} from "@playwright/test";
 import {Then, When} from "@cucumber/cucumber";
-import {LcpData, Row, SinglePageLCPImages} from "../../../utils/types";
+import {LcpData, LLImagesData, Row, SinglePageLCPImages} from "../../../utils/types";
 
 import {dbQuery, getWPTablePrefix} from "../../../utils/commands";
 import {extractFromStdout} from "../../../utils/helpers";
@@ -23,7 +23,7 @@ let data: string,
     failMsg: string,
     jsonData: Record<string, { lcp: string[]; viewport: string[]; enabled: boolean, comment: string; }>,
     isDbResultAvailable: boolean = true,
-    lcpLLImages: { [key: string] : { src: string; type: string; url: string | boolean; lazyloaded: string | boolean }} = {},
+    lcpLLImages: LLImagesData = {},
     singlePageLcp : SinglePageLCPImages = {url: '', lcp: '', viewport: ''};
 
 const actual: LcpData = {};
@@ -233,6 +233,36 @@ Then('lcp image should have fetchpriority', async function (this: ICustomWorld) 
     expect(truthy).toBeTruthy();
 });
 
+const checkLcpOrViewport = async (images: LLImagesData, type: string, key: string, values: string[]): Promise<void> => {
+    let result = {
+        lcpImage: '',
+        lcpLLStatus: true,
+    }, lcpUrl: string | boolean;
+
+    for (const value of values) {
+        if (images[`${key}_bg`] && images[`${key}_bg`].src.includes(value) && images[`${key}_bg`].lazyloaded) {
+            result = {
+                lcpImage: images[`${key}_bg`].src,
+                lcpLLStatus: false,
+            };
+            lcpUrl = images[`${key}_bg`].url
+        }
+
+        if (images[`${key}_image`] && images[`${key}_image`].src.includes(value) && images[`${key}_image`].lazyloaded) {
+            result = {
+                lcpImage: images[`${key}_image`].src,
+                lcpLLStatus: false,
+            };
+            lcpUrl = images[`${key}_bg`].url
+        }
+
+        if (!result.lcpLLStatus) {
+            truthy = false;
+            failMsg += `Expected ${type} for - ${value} for ${lcpUrl} is lazyloaded - ${result.lcpImage}\n\n\n`;
+        }
+    }
+}
+
 Then('lcp and atf images are not written to LL format', async function (this: ICustomWorld) {
     // Reset truthy to true here.
     truthy = true;
@@ -241,60 +271,10 @@ Then('lcp and atf images are not written to LL format', async function (this: IC
     for (const key in jsonData) {
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
             const expected = jsonData[key];
-            let lcpImage = '',
-                lcpLLStatus = true,
-                lcpUrl: string | boolean;
 
-            // Check for LCP
-            for (const lcp of expected.lcp) {
-                if ((lcpLLImages[`${key}_bg`])) {
-                    if ((lcpLLImages[`${key}_bg`].src.includes(lcp) && lcpLLImages[`${key}_bg`].lazyloaded)){
-                        lcpImage = lcpLLImages[`${key}_bg`].src;
-                        lcpLLStatus = false;
-                        lcpUrl = lcpLLImages[`${key}_bg`].url;
-                    }
-                }
+            await checkLcpOrViewport(lcpLLImages, key, 'LCP', expected.lcp);
 
-                if ((lcpLLImages[`${key}_image`])) {
-                    if ((lcpLLImages[`${key}_image`].src.includes(lcp) && lcpLLImages[`${key}_image`].lazyloaded)){
-                        lcpImage = lcpLLImages[`${key}_image`].src;
-                        lcpLLStatus = false;
-                        lcpUrl = lcpLLImages[`${key}_bg`].url;
-                    }
-                }
-
-                // Check if expected lcp is present in actual lcp.
-                if (!lcpLLStatus) {
-                    truthy = false;
-                    failMsg += `Expected LCP for - ${lcp} for ${lcpUrl} is lazyloaded - ${lcpImage}\n\n\n`;
-                }
-            }
-
-            // Check for ATF
-            for (const viewport of expected.viewport) {
-                if ((lcpLLImages[`${key}_bg`])) {
-                    if ((lcpLLImages[`${key}_bg`].src.includes(viewport) && lcpLLImages[`${key}_bg`].lazyloaded)){
-                        lcpImage = lcpLLImages[`${key}_bg`].src;
-                        lcpLLStatus = false;
-                        lcpUrl = lcpLLImages[`${key}_bg`].url;
-                    }
-                }
-
-                if ((lcpLLImages[`${key}_image`])) {
-                    if ((lcpLLImages[`${key}_image`].src.includes(viewport) && lcpLLImages[`${key}_image`].lazyloaded)){
-                        lcpImage = lcpLLImages[`${key}_image`].src;
-                        lcpLLStatus = false;
-                        lcpUrl = lcpLLImages[`${key}_bg`].url;
-                    }
-                }
-
-                // Check if expected lcp is present in actual lcp.
-                if (!lcpLLStatus) {
-                    truthy = false;
-                    failMsg += `Expected Viewport for - ${viewport} for ${lcpUrl} is lazyloaded - ${lcpImage}
-                   \n\n\n`;
-                }
-            }
+            await checkLcpOrViewport(lcpLLImages, key, 'Viewport', expected.viewport);
         }
     }
 
