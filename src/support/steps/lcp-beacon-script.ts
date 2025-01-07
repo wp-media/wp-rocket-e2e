@@ -23,7 +23,7 @@ let data: string,
     failMsg: string,
     jsonData: Record<string, { lcp: string[]; viewport: string[]; enabled: boolean, comment: string; }>,
     isDbResultAvailable: boolean = true,
-    lcpLLImages: { [key: string] : { src: string; url: string | boolean; lazyloaded: string | boolean }} = {},
+    lcpLLImages: { [key: string] : { src: string; type: string; url: string | boolean; lazyloaded: string | boolean }} = {},
     singlePageLcp : SinglePageLCPImages = {url: '', lcp: '', viewport: ''};
 
 const actual: LcpData = {};
@@ -50,15 +50,34 @@ When('I visit the urls and check for lazyload', async function (this: ICustomWor
 
             lcpLLImages = await this.page.evaluate((url) => {
                 const images = document.querySelectorAll('img'),
-                    result = {};
+                    result = {},
+                    allElements = document.querySelectorAll('*');
 
                 Array.from(images).forEach((img) => {
-                    result[url] = {
+                    result[`${url}_img`] = {
                         src: img.getAttribute('src'),
+                        type: 'image',
                         url: url,
                         lazyloaded: img.classList.contains('lazyloaded')
                     }
                 });
+
+                Array.from(allElements).forEach((element) => {
+                    const computedStyle = window.getComputedStyle(element);
+                    const backgroundImage = computedStyle.backgroundImage;
+
+                    if (backgroundImage && backgroundImage !== 'none') {
+                        const bgUrl = backgroundImage.replace(/^url\(['"]?/, '').replace(/['"]?\)$/, '');
+
+                        result[`${url}_bg`] = {
+                            type: 'background',
+                            src: bgUrl,
+                            url: url,
+                            lazyloaded: element.classList.contains('data-rocket-lazy-bg'),
+                        };
+                    }
+                })
+
 
                 return result;
             }, key);
@@ -222,20 +241,57 @@ Then('lcp and atf images are not written to LL format', async function (this: IC
     for (const key in jsonData) {
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
             const expected = jsonData[key];
+            let lcpImage = '',
+                lcpLLStatus = true,
+                lcpUrl: string | boolean;
+
             // Check for LCP
             for (const lcp of expected.lcp) {
+                if ((lcpLLImages[`${key}_bg`])) {
+                    if ((lcpLLImages[`${key}_bg`].src.includes(lcp) && lcpLLImages[`${key}_bg`].lazyloaded)){
+                        lcpImage = lcpLLImages[`${key}_bg`].src;
+                        lcpLLStatus = false;
+                        lcpUrl = lcpLLImages[`${key}_bg`].url;
+                    }
+                }
+
+                if ((lcpLLImages[`${key}_image`])) {
+                    if ((lcpLLImages[`${key}_image`].src.includes(lcp) && lcpLLImages[`${key}_image`].lazyloaded)){
+                        lcpImage = lcpLLImages[`${key}_image`].src;
+                        lcpLLStatus = false;
+                        lcpUrl = lcpLLImages[`${key}_bg`].url;
+                    }
+                }
+
                 // Check if expected lcp is present in actual lcp.
-                if (lcpLLImages[key].src.includes(lcp) && lcpLLImages[key].lazyloaded) {
+                if (!lcpLLStatus) {
                     truthy = false;
-                    failMsg += `Expected LCP for - ${lcp} for ${lcpLLImages[key].url} is lazyloaded - ${lcpLLImages[key].src}\n\n\n`;
+                    failMsg += `Expected LCP for - ${lcp} for ${lcpUrl} is lazyloaded - ${lcpImage}\n\n\n`;
                 }
             }
 
             // Check for ATF
             for (const viewport of expected.viewport) {
-                if (lcpLLImages[key].src.includes(viewport) && lcpLLImages[key].lazyloaded) {
+                if ((lcpLLImages[`${key}_bg`])) {
+                    if ((lcpLLImages[`${key}_bg`].src.includes(viewport) && lcpLLImages[`${key}_bg`].lazyloaded)){
+                        lcpImage = lcpLLImages[`${key}_bg`].src;
+                        lcpLLStatus = false;
+                        lcpUrl = lcpLLImages[`${key}_bg`].url;
+                    }
+                }
+
+                if ((lcpLLImages[`${key}_image`])) {
+                    if ((lcpLLImages[`${key}_image`].src.includes(viewport) && lcpLLImages[`${key}_image`].lazyloaded)){
+                        lcpImage = lcpLLImages[`${key}_image`].src;
+                        lcpLLStatus = false;
+                        lcpUrl = lcpLLImages[`${key}_bg`].url;
+                    }
+                }
+
+                // Check if expected lcp is present in actual lcp.
+                if (!lcpLLStatus) {
                     truthy = false;
-                    failMsg += `Expected Viewport for - ${viewport} for ${lcpLLImages[key].url} is lazyloaded - ${lcpLLImages[key].src}
+                    failMsg += `Expected Viewport for - ${viewport} for ${lcpUrl} is lazyloaded - ${lcpImage}
                    \n\n\n`;
                 }
             }
