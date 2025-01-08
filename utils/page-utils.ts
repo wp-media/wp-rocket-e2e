@@ -15,7 +15,7 @@ import {expect} from "@playwright/test";
 import { ICustomWorld } from '../src/common/custom-world';
 import fs from "fs/promises";
 
-import {WP_BASE_URL, WP_PASSWORD, WP_USERNAME} from '../config/wp.config';
+import {WP_BASE_URL, WP_PASSWORD, WP_PASSWORD2, WP_USERNAME, WP_USERNAME2} from '../config/wp.config';
 import { uninstallPlugin, updatePermalinkStructure, deactivatePlugin, switchTheme } from "./commands";
 
 /**
@@ -75,12 +75,15 @@ export class PageUtils {
      *
      * @return {Promise<void>}
      */
-    public wpAdminLogin = async (): Promise<void> => {
+    public wpAdminLogin = async (user: string | null = null): Promise<void> => {
+        const username = user === 'admin2' ? WP_USERNAME2 : WP_USERNAME;
+        const password = user === 'admin2' ? WP_PASSWORD2 : WP_PASSWORD;
+
         // Fill username & password.
         await this.page.click('#user_login');
-        await this.page.fill('#user_login', WP_USERNAME);
+        await this.page.fill('#user_login', username);
         await this.page.click('#user_pass');
-        await this.page.fill('#user_pass', WP_PASSWORD);
+        await this.page.fill('#user_pass', password);
 
         // Click login.
         await this.page.click('#wp-submit');
@@ -331,9 +334,10 @@ export class PageUtils {
     /**
      * Performs Wordpress login action.
      *
+     * @param user - Optional username for login. If not provided, a default user will be used.
      * @return  {Promise<void>}
      */
-    public  auth = async (): Promise<void> => {
+    public  auth = async (user: string| null = null): Promise<void> => {
         if(! this.page.url().includes('wp-login.php')) {
             await this.visitPage('wp-admin');
         }
@@ -342,8 +346,7 @@ export class PageUtils {
             return ;
         }
 
-        await this.wpAdminLogin();
-      
+        await this.wpAdminLogin(user);
     }
 
     /**
