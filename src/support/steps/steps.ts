@@ -124,7 +124,7 @@ When('I go {string}', async function (this: ICustomWorld, url: string) {
  */
 When('I connect as {string}', async function (this: ICustomWorld, user: string) {
    await this.utils.wpAdminLogout();
-    await this.utils.auth();
+    await this.utils.auth('admin2');
 });
 
 /**
