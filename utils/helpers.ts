@@ -527,8 +527,7 @@ export const getScenarioTag = async(tags: Array<string>): Promise<string> => {
 export const isWprRelatedError = async(contents: string): Promise<boolean> => {
     const patterns: Array<string> = [
         '/plugins/wp-rocket/',
-        'wpr_rucss_used_css',
-        'wpr_rocket_cache'
+        'WP_Rocket'
     ];
 
     for (const pattern of patterns) {
