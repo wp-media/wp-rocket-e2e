@@ -142,3 +142,10 @@ Then ('untrash and republish {string} page', async function (this: ICustomWorld,
     const postData = await extractFromStdout(postDataStdout);
     await updatePostStatus(parseInt(postData[0].ID, 10), 'publish');
 });
+
+When('I changed homepage to {string}', async function(this: ICustomWorld, page: string){
+    await this.page.locator('input[name="show_on_front"][value="page"]').click();
+    await this.page.pause()
+    await this.page.selectOption('select#page_on_front', { label: 'atf-lrc-2' });
+    await this.page.locator('#submit').click();
+})
