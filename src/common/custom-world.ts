@@ -28,6 +28,7 @@ import { Pickle } from '@cucumber/messages';
 import { BrowserContext, Page } from '@playwright/test';
 import { Sections } from './sections';
 import { PageUtils } from '../../utils/page-utils';
+import type { Section } from "../../utils/types";
 
 export interface ICustomWorld extends World {
 	context?: BrowserContext;
@@ -35,6 +36,8 @@ export interface ICustomWorld extends World {
     sections?: Sections;
     utils?: PageUtils;
 	pickle?: Pickle;
+	wprSection?: Section;
+	wprOption?: string;
 }
 
 export class CustomWorld extends World implements ICustomWorld {
