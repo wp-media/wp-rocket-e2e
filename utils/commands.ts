@@ -511,4 +511,25 @@ export async function updatePostStatus(id: number, status: string): Promise<void
     await wp(`post update ${id} --post_status=${status}`);
 }
 
+/**
+ * Read file on the server.
+ *
+ * @function
+ * @name readFile
+ * @async
+ * @param {string} path - The path to the file to be read.
+ * @returns {Promise<string>} - A Promise that resolves after file content is read.
+ */
+export async function readFile(path: string): Promise<string> {
+    const cwd = configurations.rootDir;
+    const command = wrapPrefix(`sudo cat ${path}`);
+    const result = exec(command, { cwd: cwd, async: false });
+
+    if (result.code !== 0) {
+        return '';
+    }
+
+    return result.stdout;
+}
+
 export default wp;

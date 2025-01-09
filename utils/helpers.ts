@@ -558,3 +558,25 @@ export const getScenarioTag = async(tags: Array<string>): Promise<string> => {
 
     return tag;
 }
+
+/**
+ * Check for WP Rocket related error in debug.log.
+ *
+ * @param   {string}   contents  File content to be checked.
+ *
+ * @return  {Promise<boolean>}             Promise that resolves after check is completed.
+ */
+export const isWprRelatedError = async(contents: string): Promise<boolean> => {
+    const patterns: Array<string> = [
+        '/plugins/wp-rocket/',
+        'WP_Rocket'
+    ];
+
+    for (const pattern of patterns) {
+        if (contents.includes(pattern)) {
+            return true;
+        }
+    }
+
+    return false;
+}
