@@ -19,10 +19,10 @@ import { ChromiumBrowser, chromium } from '@playwright/test';
 import { Sections } from '../common/sections';
 import { selectors as pluginSelectors } from "./../common/selectors";
 import { PageUtils } from "../../utils/page-utils";
-import { deleteFolder } from "../../utils/helpers";
+import { deleteFolder, isWprRelatedError } from "../../utils/helpers";
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
-import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin} from "../../utils/commands";
+import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 // import {configurations, getWPDir} from "../../utils/configurations";
@@ -198,8 +198,10 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 
     const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
     const debugLogExists = await exists(debugLogPath);
+    const debugLogContents = await readFile(debugLogPath);
+    const wprRelatedError = await isWprRelatedError(debugLogContents);
 
-    if (debugLogExists && previousScenarioName) {
+    if (debugLogExists && previousScenarioName && wprRelatedError) {
         // Close up white spaces.
         previousScenarioName = previousScenarioName.toLowerCase();
         previousScenarioName = previousScenarioName.replaceAll(' ', '-');
