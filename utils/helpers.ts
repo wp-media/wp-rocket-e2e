@@ -18,7 +18,7 @@ import backstop from 'backstopjs';
 import { Pickle } from '@cucumber/messages';
 
 // Interfaces
-import { ExportedSettings, VRurlConfig, Viewport, Row } from '../utils/types';
+import {ExportedSettings, VRurlConfig, Viewport, Row, LLImagesData} from '../utils/types';
 import { uiReflectedSettings } from './exclusions';
 import { WP_BASE_URL } from '../config/wp.config';
 import { dbQuery } from './commands';
@@ -70,6 +70,48 @@ const getDir = async (file: string): Promise<string> => {
     return dir;
 }
 
+/**
+ * Check LCP/ATF images does not have lazyload attribute, either as image or background-image
+ */
+export const checkLcpOrViewport: (images: LLImagesData, type: string, key: string, values: string[]) => Promise<{
+    isValid: boolean;
+    errorMessages: string[]
+}> = async (images: LLImagesData, type: string, key: string, values: string[])  => {
+    let result = {
+        lcpImage: '',
+        lcpLLStatus: true,
+    }, lcpUrl: string | boolean;
+
+    let isValid = true;
+    const errorMessages : string[] = [];
+
+    for (const value of values) {
+        if (images[`${key}_bg`] && images[`${key}_bg`].src.includes(value) && images[`${key}_bg`].lazyloaded) {
+            result = {
+                lcpImage: images[`${key}_bg`].src,
+                lcpLLStatus: false,
+            };
+            lcpUrl = images[`${key}_bg`].url
+        }
+
+        if (images[`${key}_image`] && images[`${key}_image`].src.includes(value) && images[`${key}_image`].lazyloaded) {
+            result = {
+                lcpImage: images[`${key}_image`].src,
+                lcpLLStatus: false,
+            };
+            lcpUrl = images[`${key}_bg`].url
+        }
+
+        if (!result.lcpLLStatus) {
+            isValid = false;
+            errorMessages.push(
+                `Expected ${type} for - ${value} for ${lcpUrl} is lazyloaded - ${result.lcpImage}\n\n\n`
+            );
+        }
+
+        return { isValid, errorMessages };
+    }
+}
 /**
  * Read the content of a file.
  *

@@ -14,7 +14,7 @@ import {Then, When} from "@cucumber/cucumber";
 import {LcpData, LLImagesData, Row, SinglePageLCPImages} from "../../../utils/types";
 
 import {dbQuery, getWPTablePrefix} from "../../../utils/commands";
-import {extractFromStdout} from "../../../utils/helpers";
+import {checkLcpOrViewport, extractFromStdout} from "../../../utils/helpers";
 import {WP_BASE_URL} from '../../../config/wp.config';
 import fs from 'fs/promises';
 
@@ -233,36 +233,11 @@ Then('lcp image should have fetchpriority', async function (this: ICustomWorld) 
     expect(truthy).toBeTruthy();
 });
 
-const checkLcpOrViewport = async (images: LLImagesData, type: string, key: string, values: string[]): Promise<void> => {
-    let result = {
-        lcpImage: '',
-        lcpLLStatus: true,
-    }, lcpUrl: string | boolean;
-
-    for (const value of values) {
-        if (images[`${key}_bg`] && images[`${key}_bg`].src.includes(value) && images[`${key}_bg`].lazyloaded) {
-            result = {
-                lcpImage: images[`${key}_bg`].src,
-                lcpLLStatus: false,
-            };
-            lcpUrl = images[`${key}_bg`].url
-        }
-
-        if (images[`${key}_image`] && images[`${key}_image`].src.includes(value) && images[`${key}_image`].lazyloaded) {
-            result = {
-                lcpImage: images[`${key}_image`].src,
-                lcpLLStatus: false,
-            };
-            lcpUrl = images[`${key}_bg`].url
-        }
-
-        if (!result.lcpLLStatus) {
-            truthy = false;
-            failMsg += `Expected ${type} for - ${value} for ${lcpUrl} is lazyloaded - ${result.lcpImage}\n\n\n`;
-        }
-    }
-}
-
+/**
+ * Executes the step to assert that LCP & ATF aren't lazyloaded.
+ *
+ * @returns {Promise<void>}
+ */
 Then('lcp and atf images are not written to LL format', async function (this: ICustomWorld) {
     // Reset truthy to true here.
     truthy = true;
@@ -272,9 +247,17 @@ Then('lcp and atf images are not written to LL format', async function (this: IC
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
             const expected = jsonData[key];
 
-            await checkLcpOrViewport(lcpLLImages, key, 'LCP', expected.lcp);
+            const lcpResult = await checkLcpOrViewport(lcpLLImages, key, 'LCP', expected.lcp);
+            if (!lcpResult.isValid) {
+                truthy = false;
+                failMsg += lcpResult.errorMessages.join('');
+            }
 
-            await checkLcpOrViewport(lcpLLImages, key, 'Viewport', expected.viewport);
+            const viewportResult = await checkLcpOrViewport(lcpLLImages, key, 'Viewport', expected.viewport);
+            if (!viewportResult.isValid) {
+                truthy = false;
+                failMsg += viewportResult.errorMessages.join('');
+            }
         }
     }
 
