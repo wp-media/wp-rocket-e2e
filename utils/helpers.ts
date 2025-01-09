@@ -73,10 +73,10 @@ const getDir = async (file: string): Promise<string> => {
 /**
  * Check LCP/ATF images does not have lazyload attribute, either as image or background-image
  */
-export const checkLcpOrViewport: (images: LLImagesData, type: string, key: string, values: string[]) => Promise<{
+export const checkLcpOrViewport = async (images: LLImagesData, type: string, key: string, values: string[]): Promise<{
     isValid: boolean;
     errorMessages: string[]
-}> = async (images: LLImagesData, type: string, key: string, values: string[])  => {
+}>  => {
     let result = {
         lcpImage: '',
         lcpLLStatus: true,
@@ -108,9 +108,9 @@ export const checkLcpOrViewport: (images: LLImagesData, type: string, key: strin
                 `Expected ${type} for - ${value} for ${lcpUrl} is lazyloaded - ${result.lcpImage}\n\n\n`
             );
         }
-
-        return { isValid, errorMessages };
     }
+
+    return { isValid, errorMessages };
 }
 /**
  * Read the content of a file.

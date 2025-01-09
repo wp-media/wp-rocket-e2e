@@ -248,13 +248,13 @@ Then('lcp and atf images are not written to LL format', async function (this: IC
             const expected = jsonData[key];
 
             const lcpResult = await checkLcpOrViewport(lcpLLImages, key, 'LCP', expected.lcp);
-            if (!lcpResult.isValid) {
+            if (lcpResult && !lcpResult.isValid) {
                 truthy = false;
                 failMsg += lcpResult.errorMessages.join('');
             }
 
             const viewportResult = await checkLcpOrViewport(lcpLLImages, key, 'Viewport', expected.viewport);
-            if (!viewportResult.isValid) {
+            if (viewportResult && !viewportResult.isValid) {
                 truthy = false;
                 failMsg += viewportResult.errorMessages.join('');
             }
