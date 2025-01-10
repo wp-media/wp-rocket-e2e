@@ -523,7 +523,7 @@ export async function updatePostStatus(id: number, status: string): Promise<void
 export async function readFile(path: string): Promise<string> {
     const cwd = configurations.rootDir;
     const command = wrapPrefix(`sudo cat ${path}`);
-    const result = exec(command, { cwd: cwd, async: false });
+    const result = exec(command, { cwd: cwd, async: false, silent: true });
 
     if (result.code !== 0) {
         return '';
