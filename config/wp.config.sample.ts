@@ -99,7 +99,7 @@ const SCENARIO_URLS = ScenarioUrls[scriptName];
  * 		llcss: string;	
  * 		noJsLlcss: string;
  * 		elementorLlcss: string;
- * 	 }
+ * 	 },
  * }}
  */
 export { 
