@@ -1,16 +1,26 @@
-@setup @performancehints
+@setup @delaylcp @performancehints
 Feature: Clear lcp/performance hints data tests
 
     Background:
         Given I am logged in
-        And plugin is installed 'new_release'
-        And plugin is activated
 
     Scenario: When I change site homepage to page with links
         When I go '/wp-admin/options-reading.php'
-        And I changed homepage to 'homepage_10urls'
-        When clear performance hints is clicked in admin bar
+        And I changed homepage to 'homepage_10URLs'
+        Given plugin is installed 'new_release'
+        And plugin is activated
         And I log out
+        When I visit site url
+        Then homepage and n URLs is added to Database
+
+    Scenario: Shouldn't cause error if no links in home page
+        Given I am logged in
+        When I go '/wp-admin/options-reading.php'
+        And I changed homepage to 'homepage_noURLs'
+        When clear performance hints is clicked in admin bar
+        Then I must not see any error in debug.log
+        And only homepage is added to Database
+
 
 
     #Scenario: C16387 - Should clear performance hints data when click clear PH in admin bar
