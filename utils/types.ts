@@ -112,3 +112,17 @@ export interface LcpData {
 export interface Row {
     [key: string]: string
 }
+
+export interface SinglePageLCPImages {
+    url: string,
+    lcp: string,
+    viewport: string
+}
+export interface LLImagesData {
+    [key: string] : {
+        src: string;
+        type: string;
+        url: string | boolean;
+        lazyloaded: string | boolean
+    }
+}

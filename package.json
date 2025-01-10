@@ -10,8 +10,8 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint  . --ext .ts --fix",
-    "test:e2e": "$npm_package_config_testCommand --tags \"not @vr\"",
-    "test:smoke": "$npm_package_config_testCommand --tags @smoke",
+    "test:e2e": "$npm_package_config_testCommand  --tags \"not @vr\" ; npm run push-report --tag=$npm_config_tag",
+    "test:smoke": "$npm_package_config_testCommand --tags @smoke ; npm run push-report --tag=$npm_config_tag",
     "test:local": "$npm_package_config_testCommand --tags @local",
     "test:online": "$npm_package_config_testCommand --tags @online",
     "test:vr": "$npm_package_config_testCommand --tags @vr $npm_config_wproption",
@@ -23,6 +23,7 @@
     "test:cpcss": "$npm_package_config_testCommand --tags @cpcss",
     "test:performancehints": "$npm_package_config_testCommand --tags @performancehints",
     "healthcheck": "ts-node healthcheck.ts",
+    "push-report": "ts-node report.ts",
     "wp-env": "wp-env"
   },
   "repository": {
