@@ -1,3 +1,4 @@
+import ScenarioUrls from "./scenarioUrls.json";
 /**
  * The default WordPress admin user configuration for both local and live environments.
  * @constant
@@ -13,6 +14,16 @@ const WP_ADMIN_USER = {
 	local: 'http://localhost',
 	live: 'https://example.org'
 	
+} as const;
+
+/**
+ * The default Imagify settings information
+ *
+ * @constant
+ * @type {{ apiKey: string }}
+ */
+const IMAGIFY_INFOS = {
+	apiKey: ''
 } as const;
 
 /**
@@ -62,7 +73,9 @@ const {
  *	 mobile?: boolean
  *	}
  * }}
-*/
+ */
+const scriptName = process.env.npm_lifecycle_event;
+const SCENARIO_URLS = ScenarioUrls[scriptName];
 
 /**
  * Exported WordPress environment configuration.
@@ -102,5 +115,7 @@ export {
 	WP_SSH_USERNAME,
 	WP_SSH_ADDRESS,
 	WP_SSH_KEY,
-	WP_SSH_ROOT_DIR
+	WP_SSH_ROOT_DIR,
+	SCENARIO_URLS,
+	IMAGIFY_INFOS
 };
