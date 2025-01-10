@@ -86,7 +86,7 @@ const {
  * 		llcss: string;	
  * 		noJsLlcss: string;
  * 		elementorLlcss: string;
- * 	 }
+ * 	 },
  * }}
  */
 export { 
