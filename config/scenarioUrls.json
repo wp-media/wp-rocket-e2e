@@ -54,5 +54,19 @@
       "path": "",
       "mobile": true
     }
+  },
+  "@vr": {
+    "delayJs68Live": {
+      "path": "delayjs_68_live_template"
+    },
+    "lcp6647Live": {
+      "path": "lcp_6647_live"
+    },
+    "lcpLive4Template": {
+      "path": "lcp_live_4_template"
+    },
+    "lcpLiveTestSpan": {
+      "path": "lcp_live_test_span"
+    }
   }
 }

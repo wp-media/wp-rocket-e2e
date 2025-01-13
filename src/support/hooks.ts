@@ -23,6 +23,8 @@ import { deleteFolder, isWprRelatedError } from "../../utils/helpers";
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile} from "../../utils/commands";
+import type { Selectors } from "../../utils/types";
+import type { Section } from "../../utils/types";
 // import {configurations, getWPDir} from "../../utils/configurations";
 
 /**
@@ -153,6 +155,35 @@ Before({tags: '@delaylcp'}, async function (this: ICustomWorld) {
     // Install and activate the remote plugin 
     await installRemotePlugin('https://github.com/wp-media/wp-rocket-e2e-test-helper/raw/main/helper-plugin/rocket-lcp-delay.zip');
     await activatePlugin('rocket-lcp-delay');
+});
+
+/**
+ * Before each test scenario with the @vr tag, performs setup tasks.
+ */
+Before({tags: '@vr'}, async function (this: ICustomWorld) {
+    const option = process.env.npm_config_wproption;
+
+    if(!option) {
+        throw new Error('Option label not correctly parsed. Check that the labels are defined')
+    }
+
+    const elementKeys: string[] = [];
+    const elementToParentMap: Record<string, string> = {};
+
+    // Loop through each top-level key
+    Object.entries(pluginSelectors as Selectors).forEach(([parentKey, { elements }]) => {
+        Object.keys(elements).forEach(elementKey => {
+            elementKeys.push(elementKey);
+            elementToParentMap[elementKey] = parentKey;
+        });
+    });
+
+    if (!elementKeys.includes(option)) {
+        throw new Error('Value for option label is invalid. Refer to src/common/selectors');
+    }
+
+    this.wprSection = elementToParentMap[option] as Section;
+    this.wprOption = option;
 });
 
 /**

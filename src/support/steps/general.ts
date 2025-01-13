@@ -16,13 +16,14 @@ import { ICustomWorld } from "../../common/custom-world";
 import { Given, When, Then } from '@cucumber/cucumber';
 import {WP_BASE_URL} from '../../../config/wp.config';
 import scenarioUrls from "./../../../config/scenarioUrls.json";
-import { createReference, compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl } from "../../../utils/helpers";
+import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl } from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
 import { Page } from '@playwright/test';
 import {
     deactivatePlugin, installRemotePlugin,
 } from "../../../utils/commands";
 import backstop from 'backstopjs';
+
 /**
  * Executes the step to log in.
  */
@@ -146,6 +147,27 @@ Given('visual regression reference is generated', async function (this:ICustomWo
 });
 
 /**
+ * Clear wpr cache
+ */
+Given('clear wpr cache', async function (this: ICustomWorld) {
+    await this.utils.clearWPRCache();
+});
+
+/**
+ * Executes the step to deactivate a specified WP plugin via CLI.
+ */
+Given('plugin {word} is deactivated', async function (plugin) {
+    await deactivatePlugin(plugin)
+});
+
+/**
+ * Executes the step to install a WP plugin from a remote url via CLI.
+ */
+Given('I install plugin {string}', async function (pluginUrl) {
+    await installRemotePlugin(pluginUrl)
+});
+
+/**
  * Executes the step to log in.
  */
 When('I log in', async function (this: ICustomWorld) {
@@ -158,14 +180,6 @@ When('I log in', async function (this: ICustomWorld) {
 When('I go to {string}', async function (this: ICustomWorld, page) {
     await this.utils.visitPage(page);
 });
-
-/**
- * Clear wpr cache
- */
-Given('clear wpr cache', async function (this: ICustomWorld) {
-    await this.utils.clearWPRCache();
-});
-
 
 /**
  * Executes the step to click on a specific button.
@@ -214,17 +228,6 @@ When('I log out', async function (this: ICustomWorld) {
  */
 When('I visit site url', async function (this: ICustomWorld) {
     await this.page.goto(WP_BASE_URL);
-});
-
-/**
- * Executes the step to create a reference.
- */
-When('I create reference', async function (this:ICustomWorld) {
-    if (process.env.npm_config_vrurl === undefined) {
-        return;
-    }
-
-    await createReference(process.env.npm_config_vrurl);
 });
 
 /**
@@ -340,6 +343,22 @@ When('permalink structure is changed to {string}', async function (this: ICustom
     await this.utils.permalinkChanged(structure);
 });
 
+When('I enable option', async function (this: ICustomWorld) {
+    // If section does not exist and element is cacheLoggedUser, toggle the element in addons section.
+    if (!(await this.sections.doesSectionExist(this.wprSection))) {
+        if (this.wprOption === 'cacheLoggedUser') {
+            await this.sections.set('addons').visit();
+            await this.sections.state(true).toggle(this.wprOption);
+        }
+
+        return;
+    }   
+
+    await this.sections.set(this.wprSection).visit();
+    await this.sections.state(true).toggle(this.wprOption);
+    await this.utils.saveSettings();
+
+});
 /**
  * Executes the step to assert the presence of specific text.
  */
@@ -361,7 +380,6 @@ Then('I must not see any error in debug.log', async function (this: ICustomWorld
 /**
  * Executes the step to clean up WP Rocket.
  */
-
 Then('clean up', async function (this: ICustomWorld) {
     await this.utils.cleanUp();
 });
@@ -452,18 +470,4 @@ Then('page navigated to the new page {string}', async function (this: ICustomWor
     const url = `${WP_BASE_URL}/${path}`;
     const regex = new RegExp(url);
     await expect(this.page).toHaveURL(regex);
-});
-
-/**
- * Executes the step to deactivate a specified WP plugin via CLI.
- */
-Given('plugin {word} is deactivated', async function (plugin) {
-    await deactivatePlugin(plugin)
-});
-
-/**
- * Executes the step to install a WP plugin from a remote url via CLI.
- */
-Given('I install plugin {string}', async function (pluginUrl) {
-    await installRemotePlugin(pluginUrl)
 });
