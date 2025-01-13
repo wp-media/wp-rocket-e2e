@@ -1,3 +1,4 @@
+import ScenarioUrls from "./scenarioUrls.json";
 /**
  * The default WordPress admin user configuration for both local and live environments.
  * @constant
@@ -6,11 +7,23 @@
 const WP_ADMIN_USER = {
 	username: 'live_username',
 	password: 'live_password',
+	username2: 'live_username2',
+	password2: 'live_password2',
 	localUsername: 'admin',
 	localPassword: 'password',
 	local: 'http://localhost',
 	live: 'https://example.org'
 	
+} as const;
+
+/**
+ * The default Imagify settings information
+ *
+ * @constant
+ * @type {{ apiKey: string }}
+ */
+const IMAGIFY_INFOS = {
+	apiKey: ''
 } as const;
 
 /**
@@ -20,6 +33,8 @@ const WP_ADMIN_USER = {
  * @type {{
  *   WP_USERNAME: string;
  *   WP_PASSWORD: string;
+ *   WP_USERNAME2: string;
+ *   WP_PASSWORD2: string;
  *   WP_BASE_URL: string;
  *   WP_ROOT_DIR: string;
  *   WP_ENV_TYPE: ServerType;
@@ -34,6 +49,8 @@ const WP_ADMIN_USER = {
 const {
 	WP_USERNAME = process.env.npm_config_env !== undefined ? WP_ADMIN_USER.localUsername : WP_ADMIN_USER.username,
 	WP_PASSWORD = process.env.npm_config_env !== undefined ? WP_ADMIN_USER.localPassword : WP_ADMIN_USER.password,
+	WP_USERNAME2 = process.env.npm_config_env !== undefined ? WP_ADMIN_USER.localUsername : WP_ADMIN_USER.username2,
+	WP_PASSWORD2 = process.env.npm_config_env !== undefined ? WP_ADMIN_USER.localPassword : WP_ADMIN_USER.password2,
 	WP_BASE_URL = process.env.npm_config_env !== undefined ? WP_ADMIN_USER.local : WP_ADMIN_USER.live,
 	WP_ROOT_DIR = '',
 	WP_ENV_TYPE = '',
@@ -56,38 +73,9 @@ const {
  *	 mobile?: boolean
  *	}
  * }}
-*/
-const SCENARIO_URLS = {
-	/**
-	 * The value will hold the url paths
-	 */
-	home: {
-		path: ''
-	},
-	llcss: {
-		path: 'lazyload_css_background_images'
-	},
-	noJsLlcss: {
-		path: 'lazyload_css_background_images',
-		disableJs: true
-	},
-	elementorLlcss: {
-		path: 'elementor-overlay'
-	},
-	delayJs: {
-		path: ''
-	},
-	delayJsMobile: {
-		path: '',
-		mobile: true,
-	},
-	doubleColon: {
-		path: 'll_bg_css_double_colon'
-	},
-	singleColon: {
-		path: 'll_bg_css_single_colon'
-	}
-}
+ */
+const scriptName = process.env.npm_lifecycle_event;
+const SCENARIO_URLS = ScenarioUrls[scriptName];
 
 /**
  * Exported WordPress environment configuration.
@@ -95,6 +83,8 @@ const SCENARIO_URLS = {
  * @type {{
  *   WP_USERNAME: string;
  *   WP_PASSWORD: string;
+ *   WP_USERNAME2: string;
+ *   WP_PASSWORD2: string;
  *   WP_BASE_URL: string;
  *   WP_ROOT_DIR: string;
  *   WP_ENV_TYPE: ServerType;
@@ -109,12 +99,14 @@ const SCENARIO_URLS = {
  * 		llcss: string;	
  * 		noJsLlcss: string;
  * 		elementorLlcss: string;
- * 	 }
+ * 	 },
  * }}
  */
 export { 
 	WP_USERNAME,
 	WP_PASSWORD,
+	WP_USERNAME2,
+	WP_PASSWORD2,
 	WP_BASE_URL,
 	WP_ROOT_DIR,
 	WP_ENV_TYPE,
@@ -124,5 +116,6 @@ export {
 	WP_SSH_ADDRESS,
 	WP_SSH_KEY,
 	WP_SSH_ROOT_DIR,
-	SCENARIO_URLS
+	SCENARIO_URLS,
+	IMAGIFY_INFOS
 };

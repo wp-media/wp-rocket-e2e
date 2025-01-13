@@ -19,13 +19,12 @@ import { ChromiumBrowser, chromium } from '@playwright/test';
 import { Sections } from '../common/sections';
 import { selectors as pluginSelectors } from "./../common/selectors";
 import { PageUtils } from "../../utils/page-utils";
-import { batchUpdateVRTestUrl } from "../../utils/helpers";
-import { deleteFolder } from "../../utils/helpers";
-import backstop from 'backstopjs';
-import {SCENARIO_URLS, WP_SSH_ROOT_DIR,} from "../../config/wp.config";
-
+import { deleteFolder, isWprRelatedError } from "../../utils/helpers";
+import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
-import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin} from "../../utils/commands";
+import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile} from "../../utils/commands";
+import type { Selectors } from "../../utils/types";
+import type { Section } from "../../utils/types";
 // import {configurations, getWPDir} from "../../utils/configurations";
 
 /**
@@ -57,39 +56,6 @@ BeforeAll(async function (this: ICustomWorld) {
 
         await deleteFolder('./backstop_data/bitmaps_test');
         browser = await chromium.launch({ headless: false });
-
-        const theme = process.env.THEME ? process.env.THEME : '';
-
-        if (theme !== '') {
-            const context = await browser.newContext({
-                recordVideo: {
-                    dir: "test-results/videos",
-                },
-            });
-        
-            const page = await context.newPage();
-            const sections = new Sections(page, pluginSelectors);
-            const utils = new PageUtils(page, sections);
-        
-            await utils.auth();
-            await utils.switchTheme(theme);
-        
-            await page?.close();
-            await context?.close();
-        }
-
-        if (process.env.npm_config_vrurl === undefined) {
-            await batchUpdateVRTestUrl({
-                optimize: false,
-                urls: SCENARIO_URLS
-            });
-            await backstop('reference');
-            // Update test url request page with wprocket optimizations.
-            await batchUpdateVRTestUrl({
-                optimize: true,
-                urls: SCENARIO_URLS
-            });
-        }
     } catch (error) {
         console.error('Setup failed: ', error.message);
         throw new Error('Setup failed: ' + error.message);
@@ -99,7 +65,7 @@ BeforeAll(async function (this: ICustomWorld) {
 /**
  * Before each test scenario without the @setup tag, performs setup tasks.
  */
-Before({tags: 'not @setup'}, async function (this: ICustomWorld) {
+Before({tags: 'not @setup'}, async function (this: ICustomWorld, {pickle}) {
     /**
      * To uncomment during implementation of cli
      */
@@ -156,6 +122,7 @@ Before({tags: 'not @setup'}, async function (this: ICustomWorld) {
     this.page = await this.context.newPage();
     this.sections = new Sections(this.page, pluginSelectors);
     this.utils = new PageUtils(this.page, this.sections);
+    this.pickle = pickle;
 
     /**
      * To uncomment during implementation of cli
@@ -167,7 +134,7 @@ Before({tags: 'not @setup'}, async function (this: ICustomWorld) {
 /**
  * Before each test scenario with the @setup tag, performs setup tasks.
  */
-Before({tags: '@setup'}, async function(this: ICustomWorld) {
+Before({tags: '@setup'}, async function(this: ICustomWorld, {pickle}) {
     this.context = await browser.newContext({
         recordVideo: {
             dir: "test-results/videos",
@@ -178,6 +145,45 @@ Before({tags: '@setup'}, async function(this: ICustomWorld) {
     this.utils = new PageUtils(this.page, this.sections);
 
     await this.utils.cleanUp();
+    this.pickle = pickle;
+});
+
+/**
+ * Before each test scenario with the @delaylcp tag, performs setup tasks.
+ */
+Before({tags: '@delaylcp'}, async function (this: ICustomWorld) {
+    // Install and activate the remote plugin 
+    await installRemotePlugin('https://github.com/wp-media/wp-rocket-e2e-test-helper/raw/main/helper-plugin/rocket-lcp-delay.zip');
+    await activatePlugin('rocket-lcp-delay');
+});
+
+/**
+ * Before each test scenario with the @vr tag, performs setup tasks.
+ */
+Before({tags: '@vr'}, async function (this: ICustomWorld) {
+    const option = process.env.npm_config_wproption;
+
+    if(!option) {
+        throw new Error('Option label not correctly parsed. Check that the labels are defined')
+    }
+
+    const elementKeys: string[] = [];
+    const elementToParentMap: Record<string, string> = {};
+
+    // Loop through each top-level key
+    Object.entries(pluginSelectors as Selectors).forEach(([parentKey, { elements }]) => {
+        Object.keys(elements).forEach(elementKey => {
+            elementKeys.push(elementKey);
+            elementToParentMap[elementKey] = parentKey;
+        });
+    });
+
+    if (!elementKeys.includes(option)) {
+        throw new Error('Value for option label is invalid. Refer to src/common/selectors');
+    }
+
+    this.wprSection = elementToParentMap[option] as Section;
+    this.wprOption = option;
 });
 
 /**
@@ -192,8 +198,10 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 
     const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
     const debugLogExists = await exists(debugLogPath);
+    const debugLogContents = await readFile(debugLogPath);
+    const wprRelatedError = await isWprRelatedError(debugLogContents);
 
-    if (debugLogExists && previousScenarioName) {
+    if (debugLogExists && previousScenarioName && wprRelatedError) {
         // Close up white spaces.
         previousScenarioName = previousScenarioName.toLowerCase();
         previousScenarioName = previousScenarioName.replaceAll(' ', '-');
@@ -206,15 +214,6 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 
     //  await resetWP();
 
-});
-
-/**
- * Before each test scenario with the @delaylcp tag, performs setup tasks.
- */
-Before({tags: '@delaylcp'}, async function (this: ICustomWorld) {
-    // Install and activate the remote plugin 
-    await installRemotePlugin('https://github.com/wp-media/wp-rocket-e2e-test-helper/raw/main/helper-plugin/rocket-lcp-delay.zip');
-    await activatePlugin('rocket-lcp-delay');
 });
 
 /**

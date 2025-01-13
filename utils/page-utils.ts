@@ -15,8 +15,8 @@ import {expect} from "@playwright/test";
 import { ICustomWorld } from '../src/common/custom-world';
 import fs from "fs/promises";
 
-import {WP_BASE_URL, WP_PASSWORD, WP_USERNAME} from '../config/wp.config';
-import { uninstallPlugin } from "./commands";
+import {WP_BASE_URL, WP_PASSWORD, WP_PASSWORD2, WP_USERNAME, WP_USERNAME2} from '../config/wp.config';
+import { uninstallPlugin, updatePermalinkStructure, deactivatePlugin, switchTheme } from "./commands";
 
 /**
  * Utility class for interacting with a Playwright Page instance in WordPress testing.
@@ -75,12 +75,15 @@ export class PageUtils {
      *
      * @return {Promise<void>}
      */
-    public wpAdminLogin = async (): Promise<void> => {
+    public wpAdminLogin = async (user: string | null = null): Promise<void> => {
+        const username = user === 'admin2' ? WP_USERNAME2 : WP_USERNAME;
+        const password = user === 'admin2' ? WP_PASSWORD2 : WP_PASSWORD;
+
         // Fill username & password.
         await this.page.click('#user_login');
-        await this.page.fill('#user_login', WP_USERNAME);
+        await this.page.fill('#user_login', username);
         await this.page.click('#user_pass');
-        await this.page.fill('#user_pass', WP_PASSWORD);
+        await this.page.fill('#user_pass', password);
 
         // Click login.
         await this.page.click('#wp-submit');
@@ -113,6 +116,15 @@ export class PageUtils {
      */
     public gotoWpr = async (): Promise<void> => {
         await this.page.goto(WP_BASE_URL + '/wp-admin/options-general.php?page=wprocket#dashboard');
+    }
+
+    /**
+     * Navigates to Imagify settings page.
+     *
+     * @return {Promise<void>}
+     */
+    public gotoImagify = async (): Promise<void> => {
+        await this.page.goto(WP_BASE_URL + '/wp-admin/options-general.php?page=imagify');
     }
 
     /**
@@ -189,6 +201,25 @@ export class PageUtils {
     }
 
     /**
+     * Changes permalink custom structure to have ending slash.
+     *
+     * @return  {Promise<void>}
+     */
+    public permalinkChanged = async (structure: string): Promise<void> => {
+        await this.page.goto(WP_BASE_URL + '/wp-admin/options-permalink.php');
+        const permalinkLocator = '#permalink_structure';
+
+        if (await this.page.locator(permalinkLocator).inputValue() === structure) {
+            return;
+        }
+
+        await this.page.locator(permalinkLocator).fill(structure);
+        // Save changes.
+        await this.page.locator('#submit').click();
+        await this.page.waitForSelector('text=Settings saved.', { state: 'visible' });
+    }
+
+    /**
      * Peforms a WPR menu dropdown action.
      *
      * @return  {Promise<void>}[return description]
@@ -239,6 +270,24 @@ export class PageUtils {
     }
 
     /**
+     * Navigates to Wordpress Pages page.
+     *
+     * @return  {Promise<void>}
+     */
+        public gotoPages = async (): Promise<void> => {
+            await this.page.goto(WP_BASE_URL + '/wp-admin/edit.php?post_type=page');
+        }
+
+        /**
+     * Navigates to Wordpress Pages - Trash tab.
+     *
+     * @return  {Promise<void>}
+     */
+        public gotoTrashedPages = async (): Promise<void> => {
+            await this.page.goto(WP_BASE_URL + '/wp-admin/edit.php?post_status=trash&post_type=page');
+        }
+
+    /**
      * Navigates to Wordpress site health page.
      *
      * @return  {Promise<void>}
@@ -260,15 +309,15 @@ export class PageUtils {
      * Performs upload new plugin action.
      *
      * @param file File to be uploaded.
-     *
      * @return  {Promise<void>}
      */
     public uploadNewPlugin = async (file: string): Promise<void> => {
         await this.page.goto(WP_BASE_URL + '/wp-admin/plugin-install.php');
+        await this.page.waitForSelector('.upload-view-toggle');
         await this.page.locator('.upload-view-toggle').click();
         await this.page.locator('#pluginzip').setInputFiles(file);
         await this.page.waitForSelector('#install-plugin-submit');
-        await this.page.locator('#install-plugin-submit').click({ timeout: 120000 });
+        await this.page.locator('#install-plugin-submit').click();
     }
 
     /**
@@ -277,23 +326,27 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public wpAdminLogout = async (): Promise<void> => {
-        if(! await this.page.locator('#wp-admin-bar-my-account').isVisible()) {
-            return ;
+        // Navigate to the logout URL directly
+        await this.page.goto(WP_BASE_URL + '/wp-login.php?action=logout');
+
+        const logoutLink = this.page.getByRole('link', { name: 'log out' });
+        if (!await logoutLink.isVisible()) {
+            return;
         }
-        await this.page.locator('#wp-admin-bar-my-account').hover();
-        await this.page.waitForSelector('#wp-admin-bar-logout');
-        await this.page.locator('#wp-admin-bar-logout a').click();
-  
-        await this.page.waitForLoadState('load', { timeout: 30000 });
-        await this.page.waitForTimeout(3000);
-    }
+
+        await logoutLink.click();
+        await expect(this.page.getByText('You are now logged out.')).toBeVisible({ timeout: 10000 });
+        await this.page.goto(WP_BASE_URL + '/wp-login.php');
+        await expect(this.page.locator('#loginform')).toBeVisible();
+    }    
 
     /**
      * Performs Wordpress login action.
      *
+     * @param user - Optional username for login. If not provided, a default user will be used.
      * @return  {Promise<void>}
      */
-    public  auth = async (): Promise<void> => {
+    public  auth = async (user: string| null = null): Promise<void> => {
         if(! this.page.url().includes('wp-login.php')) {
             await this.visitPage('wp-admin');
         }
@@ -301,9 +354,8 @@ export class PageUtils {
         if(! await this.page.locator('#user_login').isVisible()) {
             return ;
         }
-        await this.page.waitForTimeout(200);
-        await this.wpAdminLogin();
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        await this.wpAdminLogin(user);
     }
 
     /**
@@ -321,8 +373,9 @@ export class PageUtils {
             await this.sections.set("cache").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            await this.page.locator('#setting-error-settings_updated > button').click();
+            
         }
 
         if(await this.sections.doesSectionExist('fileOptimization')) {
@@ -330,8 +383,9 @@ export class PageUtils {
             await this.sections.set("fileOptimization").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            await this.page.locator('#setting-error-settings_updated > button').click();
+           
         }
 
         if(await this.sections.doesSectionExist('media')) {
@@ -339,8 +393,9 @@ export class PageUtils {
             await this.sections.set("media").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            await this.page.locator('#setting-error-settings_updated > button').click();
+           
         }
 
         if(await this.sections.doesSectionExist('preload')) {
@@ -348,8 +403,8 @@ export class PageUtils {
             await this.sections.set("preload").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            await this.page.locator('#setting-error-settings_updated > button').click();
         }
 
         if(await this.sections.doesSectionExist('advancedRules')) {
@@ -357,8 +412,8 @@ export class PageUtils {
             await this.sections.set("advancedRules").visit();
             await this.sections.massFill("");
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            await this.page.locator('#setting-error-settings_updated > button').click();
         }
 
         if(await this.sections.doesSectionExist('database')) {
@@ -366,8 +421,8 @@ export class PageUtils {
             await this.sections.set("database").visit();
             await this.sections.massToggle();
             await this.page.getByRole('button', { name: 'Save Changes and Optimize' }).click();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            await this.page.locator('#setting-error-settings_updated > button').click();
         }   
 
         if(await this.sections.doesSectionExist('cdn')) {
@@ -376,17 +431,9 @@ export class PageUtils {
             await this.sections.massToggle();
             await this.sections.fill("cnames", "");
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
-        }
-
-        if(await this.sections.doesSectionExist('heartbeat')) {
-            // Disable all settings for Heartbeat.
-            await this.sections.set("heartbeat").visit();
-            await this.sections.massToggle();
-            await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            await this.page.locator('#setting-error-settings_updated > button').click();
+           
         }
 
         if(await this.sections.doesSectionExist('addons')) {
@@ -394,6 +441,17 @@ export class PageUtils {
             await this.sections.set("addons").visit();
             await this.sections.massToggle();
         }
+
+        if(await this.sections.doesSectionExist('heartbeat')) {
+            // Disable all settings for Heartbeat.
+            await this.sections.set("heartbeat").visit();
+            await this.sections.massToggle();
+            await this.saveSettings();
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            
+        }
+
+
     }
 
     /**
@@ -419,8 +477,6 @@ export class PageUtils {
     public enableAllOptions = async (): Promise<void> => {
         await this.gotoWpr();
 
-        await this.page.waitForLoadState('load', { timeout: 30000 });
-
         this.sections.optionState = true;
 
         if (await this.sections.doesSectionExist('cache')) {
@@ -428,8 +484,7 @@ export class PageUtils {
             await this.sections.set("cache").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
         }
 
         if(await this.sections.doesSectionExist('fileOptimization')) {
@@ -437,8 +492,7 @@ export class PageUtils {
             await this.sections.set("fileOptimization").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
         }
         
         if (await this.sections.doesSectionExist('media')) {
@@ -446,8 +500,7 @@ export class PageUtils {
             await this.sections.set("media").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
         }
        
         if (await this.sections.doesSectionExist('preload')) {
@@ -455,8 +508,7 @@ export class PageUtils {
             await this.sections.set("preload").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });   
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();  
         }
 
         if(await this.sections.doesSectionExist('advancedRules')) {
@@ -465,8 +517,7 @@ export class PageUtils {
             const values: Array<string> = ['/test\n/.*\n/test2', 'woocommerce_items_in_cart', 'Mobile(.*)Safari(.*)', '/hello-world/', 'country'];
             await this.sections.massFill(values);
             await this.saveSettings();
-    
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
         }
 
         if(await this.sections.doesSectionExist('database')) {
@@ -474,8 +525,7 @@ export class PageUtils {
             await this.sections.set("database").visit();
             await this.sections.massToggle();
             await this.page.getByRole('button', { name: 'Save Changes and Optimize' }).click();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Database optimization process is complete')).toBeVisible();
         }
 
         if(await this.sections.doesSectionExist('cdn')) {
@@ -484,17 +534,8 @@ export class PageUtils {
             await this.sections.toggle("cdn");
             await this.sections.fill("cnames", "test.example.com");
             await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
-        }
-
-        if(await this.sections.doesSectionExist('heartbeat')) {
-            // Enable all settings for Heartbeat.
-            await this.sections.set("heartbeat").visit();
-            await this.sections.toggle("controlHeartbeat");
-            await this.saveSettings();
-
-            await this.page.waitForLoadState('load', { timeout: 30000 });
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+            await this.page.locator('#setting-error-settings_updated > button').click();
         }
 
         if(await this.sections.doesSectionExist('addons')) {
@@ -502,6 +543,16 @@ export class PageUtils {
             await this.sections.set("addons").visit();
             await this.sections.massToggle();
         }
+
+        if(await this.sections.doesSectionExist('heartbeat')) {
+            // Enable all settings for Heartbeat.
+            await this.sections.set("heartbeat").visit();
+            await this.sections.toggle("controlHeartbeat");
+            await this.saveSettings();
+            await expect(this.page.getByText('Settings saved.')).toBeVisible();
+        }
+
+    
     }
 
     /**
@@ -536,12 +587,33 @@ export class PageUtils {
      */
     public cleanUp = async (): Promise<void> => {
         // Remove helper plugin.
-        await uninstallPlugin('force-wp-mobile');
+        await uninstallPlugin('wp-rocket force-wp-mobile');
 
-        // Start the process to remove wp-rocket.
-        await this.visitPage('wp-admin');
-        await this.auth();
+        // Deactivate WPML.
+        await deactivatePlugin('sitepress-multilingual-cms');
 
+        // Reset permalink structure.
+        await updatePermalinkStructure('/%postname%/'); 
+
+        // Switch to "Twenty Twenty" theme.
+        await switchTheme('twentytwenty');
+
+        // Remove WP Rocket from UI if on local run is explicitly parsed.
+        if ( process.env.npm_config_env !== undefined && process.env.npm_config_env === 'local' ) {
+            // Start the process to remove wp-rocket.
+            await this.visitPage('wp-admin');
+            await this.auth();
+
+            await this.removeWprViaUi();
+        }
+    }
+
+    /**
+     * Removes WP Rocket via the WP Admin UI.
+     *
+     * @return  {Promise<void>} Promise that resolves after the uninstallation process is complete.
+     */
+    public removeWprViaUi = async (): Promise<void> => {
         // Confirm Dialog Box.
         this.page.on('dialog', async(dialog) => {
             expect(dialog.type()).toContain('confirm');
@@ -577,7 +649,7 @@ export class PageUtils {
 
         // Assert that WPR is deleted successfully
         await this.page.waitForSelector('#wp-rocket-deleted');
-        await expect(this.page.locator('#wp-rocket-deleted')).toBeVisible(); 
+        await expect(this.page.locator('#wp-rocket-deleted')).toBeVisible();
     }
 
     /**
@@ -610,7 +682,7 @@ export class PageUtils {
      *
      * @return  {Promise<void>}
      */
-    public async switchTheme(theme: string): Promise<void> {
+    public async switchThemeViaUi(theme: string): Promise<void> {
         await this.visitPage('wp-admin/themes.php');
         await this.page.locator('#wp-filter-search-input').fill(theme);
         // Wait for filtered theme to be displayed.

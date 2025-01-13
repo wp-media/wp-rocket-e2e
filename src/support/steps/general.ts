@@ -14,13 +14,16 @@ import { expect } from "@playwright/test";
 import { ICustomWorld } from "../../common/custom-world";
 
 import { Given, When, Then } from '@cucumber/cucumber';
-import { WP_BASE_URL } from '../../../config/wp.config';
-import { createReference, compareReference } from "../../../utils/helpers";
+import {WP_BASE_URL} from '../../../config/wp.config';
+import scenarioUrls from "./../../../config/scenarioUrls.json";
+import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl } from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
 import { Page } from '@playwright/test';
 import {
     deactivatePlugin, installRemotePlugin,
 } from "../../../utils/commands";
+import backstop from 'backstopjs';
+
 /**
  * Executes the step to log in.
  */
@@ -33,7 +36,6 @@ Given('I am logged in', async function (this: ICustomWorld) {
  */
 Given('plugin is installed {string}', async function (this: ICustomWorld, pluginVersion: string) {
     await this.utils.uploadNewPlugin(`./plugin/${pluginVersion}.zip`);
-    await this.page.waitForLoadState('load', { timeout: 30000 });
     await expect(this.page).toHaveURL(/action=upload-plugin/); 
 });
 
@@ -84,7 +86,6 @@ Given('I save settings {string} {string}', async function (this: ICustomWorld, s
     await this.sections.state(true).toggle(element);
     await this.utils.saveSettings();
 
-    await this.page.waitForLoadState('load', { timeout: 30000 });
 });
 
 /**
@@ -93,6 +94,77 @@ Given('I save settings {string} {string}', async function (this: ICustomWorld, s
 Given('activate {string} plugin', async function (this: ICustomWorld, plugin) {
     await this.utils.gotoPlugin();
     await this.utils.togglePluginActivation(plugin);
+});
+
+/**
+ * Executes the step to activate a theme.
+ */
+Given('theme {string} is activated', async function (this:ICustomWorld, theme) {
+    await this.utils.switchThemeViaUi(theme);
+
+    // Check tags via pickle.
+    if (! await isTagPresent(this.pickle, '@delayjs')) {
+        return;
+    }
+
+    // Set the THEME environment variable to the current theme.
+    process.env.THEME = theme;
+});
+
+/**
+ * Executes the step to generate visual regression reference via backstopjs.
+ */
+Given('visual regression reference is generated', async function (this:ICustomWorld) {
+    const tags = this.pickle.tags.map(tag => tag.name);
+    const tag: string = await getScenarioTag(tags);
+    
+    // Array of tags to exclude from one time reference generation.
+    const exclusion = [
+        '@delayjs'
+    ]
+
+    // Bail out if there is already reference for the current tag.
+    if (process.env.scenario_tag === tag && !exclusion.includes(tag)) {
+        return;
+    }
+
+    try {
+        await batchUpdateVRTestUrl({
+            optimize: false,
+            urls: scenarioUrls[tag]
+        });
+        await backstop('reference');
+        // Update test url request page with wprocket optimizations.
+        await batchUpdateVRTestUrl({
+            optimize: true,
+            urls: scenarioUrls[tag]
+        });
+    } catch (error) {
+        console.error('Backstop reference generation failed: ', error.message);
+    }
+
+    process.env.scenario_tag = tag;
+});
+
+/**
+ * Clear wpr cache
+ */
+Given('clear wpr cache', async function (this: ICustomWorld) {
+    await this.utils.clearWPRCache();
+});
+
+/**
+ * Executes the step to deactivate a specified WP plugin via CLI.
+ */
+Given('plugin {word} is deactivated', async function (plugin) {
+    await deactivatePlugin(plugin)
+});
+
+/**
+ * Executes the step to install a WP plugin from a remote url via CLI.
+ */
+Given('I install plugin {string}', async function (pluginUrl) {
+    await installRemotePlugin(pluginUrl)
 });
 
 /**
@@ -107,16 +179,7 @@ When('I log in', async function (this: ICustomWorld) {
  */
 When('I go to {string}', async function (this: ICustomWorld, page) {
     await this.utils.visitPage(page);
-    await this.page.waitForLoadState('load', { timeout: 100000 });
 });
-
-/**
- * Clear wpr cache
- */
-Given('clear wpr cache', async function (this: ICustomWorld) {
-    await this.utils.clearWPRCache();
-});
-
 
 /**
  * Executes the step to click on a specific button.
@@ -132,12 +195,15 @@ When('I click on {string}', async function (this: ICustomWorld, selector) {
         await this.page.locator('#tools_tab').click();
         await this.page.waitForSelector('#save_last_major_version');
         await this.page.locator('#save_last_major_version').click();
-        await this.page.waitForLoadState('load', { timeout: 30000 });
         await this.utils.gotoWpr();
         await this.page.locator('#wpr-nav-tools').click();
+        await this.page.locator(selector).click();
+        await this.page.waitForLoadState('load', { timeout: 70000 });
     }
-    await this.page.locator(selector).click();
-    await this.page.waitForLoadState('load', { timeout: 100000 });
+    else{
+        await this.page.locator(selector).click();
+    }
+    
 });
 
 /**
@@ -155,7 +221,6 @@ When('I enable all settings', async function (this: ICustomWorld) {
  */
 When('I log out', async function (this: ICustomWorld) {
     await this.utils.wpAdminLogout();
-    await this.page.waitForLoadState('load', { timeout: 30000 });
 });
 
 /**
@@ -163,38 +228,6 @@ When('I log out', async function (this: ICustomWorld) {
  */
 When('I visit site url', async function (this: ICustomWorld) {
     await this.page.goto(WP_BASE_URL);
-});
-
-/**
- * Executes the step to create a reference.
- */
-When('I create reference', async function (this:ICustomWorld) {
-    if (process.env.npm_config_vrurl === undefined) {
-        return;
-    }
-
-    await createReference(process.env.npm_config_vrurl);
-});
-
-
-/**
- * Executes the step to activate a theme.
- */
-When('theme {string} is activated', async function (this:ICustomWorld, theme) {
-    await this.utils.switchTheme(theme);
-});
-
-/**
- * Executes the step to activate a theme set from the CLI.
- */
-When('theme is activated', async function (this:ICustomWorld) {
-    const theme = process.env.THEME ? process.env.THEME : '';
-
-    if (theme === '') {
-        return;
-    }
-
-    await this.utils.switchTheme(theme);
 });
 
 /**
@@ -221,9 +254,6 @@ When('expand mobile menu', async function (this:ICustomWorld) {
     }
 
     switch (theme) {
-        case 'genesis-sample-develop':
-            target = '#genesis-mobile-nav-primary';
-            break;
         case 'flatsome':
             target = '[data-open="#main-menu"]';
             break;
@@ -246,8 +276,11 @@ When('I clear cache', async function (this:ICustomWorld) {
     await this.utils.gotoWpr();
 
     this.sections.set('dashboard');
-    await this.sections.toggle('clearCacheBtn');
-    await this.page.waitForLoadState('load', { timeout: 30000 });
+
+    const cacheButton = this.page.locator('p:has-text("This action will clear") + a').first();
+    await cacheButton.click();
+
+    await expect(this.page.getByText('WP Rocket: Cache cleared.')).toBeVisible();
 });
 
 /**
@@ -263,12 +296,69 @@ When('I visit page {string} with browser dimension {int} x {int}', async functio
 });
 
 /**
+ * Executes the step to visit scenario urls for visual regression testing in a specific browser dimension.
+ */
+When('I visit scenario urls', async function (this:ICustomWorld) {
+    await this.page.setViewportSize({
+        width: 1600,
+        height: 700,
+    });
+    const tags = this.pickle.tags.map(tag => tag.name);
+    const tag: string = await getScenarioTag(tags);
+    const liveUrl = scenarioUrls[tag];
+
+    for (const key in liveUrl) {
+        await this.utils.visitPage(liveUrl[key].path);
+    }
+});
+/**
+ * Executes the step to visit beacon driven page in a specific browser dimension.
+ */
+When('I visit beacon driven page {string} with browser dimension {int} x {int}', async function (this:ICustomWorld, page, width, height) {
+    await this.page.setViewportSize({
+        width: width,
+        height: height,
+    });
+
+    await this.utils.visitPage(page);
+
+    // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
+    await this.page.waitForFunction(() => {
+        const beacon = document.querySelector('[data-name="wpr-wpr-beacon"]');
+        return beacon && beacon.getAttribute('beacon-completed') === 'true';
+    });
+});
+
+/**
  * Executes the step to scroll to the bottom of the page.
  */
 When('I scroll to bottom of page', async function (this:ICustomWorld) {
     await this.utils.scrollDownBottomOfAPage();
 });
 
+/**
+ * Executes the step to change permalink structure.
+ */
+When('permalink structure is changed to {string}', async function (this: ICustomWorld, structure: string) {
+    await this.utils.permalinkChanged(structure);
+});
+
+When('I enable option', async function (this: ICustomWorld) {
+    // If section does not exist and element is cacheLoggedUser, toggle the element in addons section.
+    if (!(await this.sections.doesSectionExist(this.wprSection))) {
+        if (this.wprOption === 'cacheLoggedUser') {
+            await this.sections.set('addons').visit();
+            await this.sections.state(true).toggle(this.wprOption);
+        }
+
+        return;
+    }   
+
+    await this.sections.set(this.wprSection).visit();
+    await this.sections.state(true).toggle(this.wprOption);
+    await this.utils.saveSettings();
+
+});
 /**
  * Executes the step to assert the presence of specific text.
  */
@@ -281,8 +371,8 @@ Then('I should see {string}', async function (this: ICustomWorld, text) {
  */
 Then('I must not see any error in debug.log', async function (this: ICustomWorld){
     // Goto WP Rocket dashboard
-    await this.utils.gotoWpr();
-    await this.page.waitForLoadState('load', { timeout: 30000 });
+    await this.utils.gotoPlugin();
+
     // Assert that there is no related error in debug.log
     await expect(this.page.locator('#wpr_debug_log_notice')).toBeHidden();
 });
@@ -290,7 +380,6 @@ Then('I must not see any error in debug.log', async function (this: ICustomWorld
 /**
  * Executes the step to clean up WP Rocket.
  */
-
 Then('clean up', async function (this: ICustomWorld) {
     await this.utils.cleanUp();
 });
@@ -300,6 +389,19 @@ Then('clean up', async function (this: ICustomWorld) {
  */
 Then('I must not see any visual regression {string}', async function (this: ICustomWorld, label: string) {
     await compareReference(label);
+});
+
+/**
+ * Executes the step to check for LRC visual regression.
+ */
+Then('I must not see any visual regression in scenario urls', async function (this: ICustomWorld) {
+    const tags = this.pickle.tags.map(tag => tag.name);
+    const tag: string = await getScenarioTag(tags);
+    const liveUrl = scenarioUrls[tag];
+
+    for (const key in liveUrl) {
+        await compareReference(key);
+    }
 });
 
 /**
@@ -368,18 +470,4 @@ Then('page navigated to the new page {string}', async function (this: ICustomWor
     const url = `${WP_BASE_URL}/${path}`;
     const regex = new RegExp(url);
     await expect(this.page).toHaveURL(regex);
-});
-
-/**
- * Executes the step to deactivate a specified WP plugin via CLI.
- */
-Given('plugin {word} is deactivated', async function (plugin) {
-    await deactivatePlugin(plugin)
-});
-
-/**
- * Executes the step to install a WP plugin from a remote url via CLI.
- */
-Given('I install plugin {string}', async function (pluginUrl) {
-    await installRemotePlugin(pluginUrl)
 });

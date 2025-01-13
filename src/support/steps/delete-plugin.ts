@@ -29,16 +29,8 @@ When('I delete plugin', async function (this: ICustomWorld) {
         await this.page.locator('text=Confirm').click();
     }
 
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-
     // Delete WPR.
-    await this.page.locator( '#delete-wp-rocket' ).click();
-
-    if (await this.page.getByRole('button', { name: 'Yes, delete these files and data' }).isVisible()) {
-        await this.page.getByRole('button', { name: 'Yes, delete these files and data' }).click();
-        await expect(this.page.locator('#activate-wp-rocket')).toBeHidden();
-        return;
-    }  
+    await this.utils.removeWprViaUi();
 });
 
 /**

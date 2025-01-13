@@ -24,15 +24,20 @@
  * @param {IWorldOptions} options - The options for configuring the world.
  */
 import { IWorldOptions, World, setWorldConstructor } from '@cucumber/cucumber';
+import { Pickle } from '@cucumber/messages';
 import { BrowserContext, Page } from '@playwright/test';
 import { Sections } from './sections';
 import { PageUtils } from '../../utils/page-utils';
+import type { Section } from "../../utils/types";
 
 export interface ICustomWorld extends World {
 	context?: BrowserContext;
 	page?: Page;
     sections?: Sections;
     utils?: PageUtils;
+	pickle?: Pickle;
+	wprSection?: Section;
+	wprOption?: string;
 }
 
 export class CustomWorld extends World implements ICustomWorld {

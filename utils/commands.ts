@@ -239,7 +239,7 @@ export async function activatePlugin(name: string): Promise<void>  {
 /**
  * Check if plugin is installed
  * @function
- * @name activatePlugin
+ * @name isPluginInstalled
  * @async
  * @param {string} name - The name of the plugin to be checked if installed.
  * @returns {Promise<boolean>} - A Promise that resolves when the check is completed.
@@ -248,6 +248,18 @@ export async function isPluginInstalled(name: string): Promise<boolean> {
     return await wp(`plugin is-installed ${name}`, false);
 }
 
+/**
+ * Delete a plugin if exist.
+ * Note: this is not ideal for wpr or imagify plugins as it doesn't delete DB data which relies on uninstall hook.
+ * @function
+ * @name deletePlugin
+ * @async
+ * @param {string} name - The name of the plugin to be deleted if installed.
+ * @returns {Promise<boolean>} - A Promise that resolves when the check is completed.
+ */
+export async function deletePlugin(name: string): Promise<boolean> {
+    return await wp(`plugin delete ${name}`, false);
+}
 
 /**
  * Install a WordPress plugin from a remote zip file using the WP-CLI command.
@@ -272,9 +284,38 @@ export async function installRemotePlugin(url: string): Promise<void>  {
  * @returns {Promise<void>} - A Promise that resolves when the uninstallation is completed.
  */
 export async function uninstallPlugin(plugin: string): Promise<void>  {
-    if(await isPluginInstalled(plugin)) {
-        await wp(`plugin uninstall --deactivate ${plugin}`);
+    const plugins = plugin.split(' ');
+    for (const p of plugins) {
+        if (await isPluginInstalled(p)) {
+            await wp(`plugin uninstall --deactivate ${p}`);
+        }
     }
+}
+
+/**
+ * Update Permalink.
+ *
+ * @function
+ * @name updatePermalinkStructure
+ * @async
+ * @param {string} structure - The permalink structure.
+ * @returns {Promise<void>} - A Promise that resolves when the permalink structure is updated.
+ */
+export async function updatePermalinkStructure(structure: string): Promise<void>  {
+    await wp(`option update permalink_structure ${structure}`);
+}
+
+/**
+ * Switch Theme.
+ *
+ * @function
+ * @name switchTheme
+ * @async
+ * @param {string} theme - The theme to activate.
+ * @returns {Promise<void>} - A Promise that resolves when the theme is activated.
+ */
+export async function switchTheme(theme: string): Promise<void> {
+    await wp(`theme activate ${theme}`);
 }
 
 /**
@@ -437,6 +478,58 @@ export async function testSshConnection(): Promise<string> {
         console.log(failMsg);
         throw new Error(failMsg);
     }
+}
+
+/**
+ * Performs a post search action by title using wp cli.
+ *
+ * @param   {string}   title  Post Title.
+ * @param   {string}   status  Post Status.
+ * @param   {string}   fields  Post fields to return.
+ * @return  {Promise<string>}  A Promise that resolves when the post search is executed.
+ */
+export async function getPostDataFromTitle(title: string, status: string, fields: string): Promise<string> {
+    const command = wrapSSHPrefix(`wp post list --post_status=${status} --post_type=page --fields=${fields} --title='${title}'
+`);
+    const result = exec(command, { silent: true });
+
+    if (result.code === 1) {
+        return '';
+    }
+
+    return result.stdout;
+}
+
+/**
+ * Updates post status using wp cli.
+ *
+ * @param   {string}   id  Post ID.
+ * @param   {string}   status  Post Status.
+ * @return  {Promise<void>}  A Promise that resolves when the post search is executed.
+ */
+export async function updatePostStatus(id: number, status: string): Promise<void> {
+    await wp(`post update ${id} --post_status=${status}`);
+}
+
+/**
+ * Read file on the server.
+ *
+ * @function
+ * @name readFile
+ * @async
+ * @param {string} path - The path to the file to be read.
+ * @returns {Promise<string>} - A Promise that resolves after file content is read.
+ */
+export async function readFile(path: string): Promise<string> {
+    const cwd = configurations.rootDir;
+    const command = wrapPrefix(`sudo cat ${path}`);
+    const result = exec(command, { cwd: cwd, async: false, silent: true });
+
+    if (result.code !== 0) {
+        return '';
+    }
+
+    return result.stdout;
 }
 
 export default wp;

@@ -1,4 +1,4 @@
-@smoke @local @setup
+@smoke @local @setup 
 Feature: C4466 - Should successfully delete the plugin
 
     Background:
@@ -13,9 +13,8 @@ Feature: C4466 - Should successfully delete the plugin
     Scenario: WP Rocket is installed and activated
         Given plugin is installed 'new_release'
         And plugin is activated
-        When I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And I enable all settings
-        And I delete plugin
+        When I delete plugin
         Then plugin should delete successfully
-        Then I must not see any error in debug.log
+        And I must not see any error in debug.log
         

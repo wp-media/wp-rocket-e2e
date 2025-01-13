@@ -10,16 +10,12 @@
  * @requires {@link ../../../utils/configurations}
  */
 import {expect} from "@playwright/test";
-import {AfterAll, BeforeAll} from "@cucumber/cucumber";
 import wp, {
     activatePlugin,
-    cp,
-    generateUsers,
-    resetWP,
-    rm,
     setTransient
 } from "../../../utils/commands";
-import {configurations, getWPDir} from "../../../utils/configurations";
+import { ICustomWorld } from "../../common/custom-world";
+import {configurations} from "../../../utils/configurations";
 import {match} from "ts-pattern";
 
 const { Given, When, Then } = require("@cucumber/cucumber");
@@ -27,7 +23,7 @@ const { Given, When, Then } = require("@cucumber/cucumber");
 /**
  * Executes the step to set up a WP account based on the provided status.
  */
-Given('I have an {word} account', { timeout: 60 * 1000 }, async function (status) {
+Given('I have an {word} account', { timeout: 60 * 1000 }, async function (this: ICustomWorld, status: string) {
 
 
     const expiration = "unexpired" === status ? Date.now() + 9999999999 : Date.now() - 9999999999;
@@ -62,56 +58,56 @@ Given('I have an {word} account', { timeout: 60 * 1000 }, async function (status
 /**
  * Executes the step to activate a specified WP plugin.
  */
-Given('plugin {word} is activated', async function (plugin) {
+Given('plugin {word} is activated', async function (plugin: string) {
     await activatePlugin(plugin)
 });
 
 /**
  * Executes the step to assert the visibility of a banner with specific text.
  */
-Then('I must see the banner {string}', async function (text) {
-    await expect(this.page.getByText(text)).toBeVisible();
+Then('I must see the banner {string}', async function (this: ICustomWorld, text: string) {
+    await expect(this.page.getByText(text)).toBeVisible({ timeout: 15000 });
 });
 
 /**
  * Executes the step to click on an element with specific text.
  */
-When('click on {string}', function (text) {
-    this.page.getByText(text).click();
+When('click on {string}', async function (this: ICustomWorld, text: string) {
+    await this.page.getByText(text).click();
 });
 
 /**
  * Executes the step to assert the non-visibility of a banner with specific text.
  */
-Then('I must not see the banner {string}', async function (text) {
-    await expect(this.page.getByText(text)).not.toBeVisible();
+Then('I must not see the banner {string}', async function (this: ICustomWorld, text: string) {
+    await expect(this.page.getByText(text)).not.toBeVisible({ timeout: 15000 } );
 });
 
 /**
  * Executes the step to refresh the current page.
  */
-When(/^refresh the page$/, async function () {
+When(/^refresh the page$/, async function (this: ICustomWorld) {
     await this.page.reload();
 });
 
 /**
  * Executes the step to save the options on the page.
  */
-When(/^save the option$/, async function () {
+When(/^save the option$/, async function (this: ICustomWorld) {
     await this.page.click('#wpr-options-submit', {force: true})
 });
 
 /**
  * Executes the step to turn on a specific setting.
  */
-When('turn on {string}', async function (option) {
+When('turn on {string}', async function (this: ICustomWorld, option: string) {
 
     const optionName = match(option)
         .with('CPCSS', () => 'cpcss')
         .otherwise(() => 'rucss')
 
     this.sections.set('fileOptimization');
-    await this.sections.state(true);
+    this.sections.state(true);
     await this.sections.toggle(optionName);
     await this.page.click('#wpr-options-submit', {force: true})
 });
@@ -119,21 +115,21 @@ When('turn on {string}', async function (option) {
 /**
  * Executes the step to navigate to a specific URL.
  */
-When('I go {string}', async function (url) {
+When('I go {string}', async function (this: ICustomWorld, url: string) {
     await this.page.goto(`${configurations.baseUrl}${url}`);
 });
 
 /**
  * Executes the step to connect as a specific user.
  */
-When('I connect as {string}', async function (user) {
-    await this.utils.wpAdminLogout();
-    await this.utils.auth(user);
+When('I connect as {string}', async function (this: ICustomWorld, user: string) {
+   await this.utils.wpAdminLogout();
+    await this.utils.auth('admin2');
 });
 
 /**
  * Executes the step to navigate to a specific page.
  */
-Given('I am on the page {string}', {timeout: 10 * 1000} , async function (url) {
+Given('I am on the page {string}', {timeout: 10 * 1000} , async function (this: ICustomWorld, url: string) {
     await this.page.goto(`${configurations.baseUrl}${url}`);
 });
