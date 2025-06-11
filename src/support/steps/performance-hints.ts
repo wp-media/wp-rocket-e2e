@@ -45,7 +45,7 @@ When('clear performance hints is clicked in admin bar', async function (this: IC
     await this.page.locator('#wp-admin-bar-wp-rocket').hover();
     await this.page.waitForSelector('#wp-admin-bar-clear-performance-hints', { state: 'visible' });
     await this.page.locator('#wp-admin-bar-clear-performance-hints').click(); 
-    await this.page.waitForSelector('text=WP Rocket: Critical images and Lazy Render data was cleared!', { state: 'visible' });
+    await this.page.waitForSelector('text=WP Rocket: Stored optimization data for Automatic Lazy Rendering, Critical Images, Preconnect to External Domains, and Preload Fonts has been cleared!', { state: 'visible' });
 });
 
 When('clear performance hints for this URL is clicked in admin bar', async function (this: ICustomWorld) {
