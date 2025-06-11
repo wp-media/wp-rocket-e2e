@@ -277,7 +277,7 @@ When('I clear cache', async function (this:ICustomWorld) {
 
     this.sections.set('dashboard');
 
-    const cacheButton = this.page.locator('p:has-text("Clear and preload all the cache files") + a').first();
+    const cacheButton = this.page.getByRole('link', { name: 'Clear and preload' });
     await cacheButton.click();
 
     await expect(this.page.getByText('WP Rocket: Cache cleared.')).toBeVisible();
