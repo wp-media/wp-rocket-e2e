@@ -41,3 +41,24 @@ Then('plugin should delete successfully', async function (this: ICustomWorld) {
     await this.page.waitForSelector('#wp-rocket-deleted');
     await expect(this.page.locator('#wp-rocket-deleted')).toBeVisible(); 
 });
+
+/**
+ * Executes the step to delete the WP Rocket plugin.
+ */
+When('I delete backwpup plugin', async function (this: ICustomWorld) {
+
+    // Goto plugins page.
+    await this.utils.gotoPlugin();
+
+    // Ensure WPR is deactivated.
+    await this.utils.togglePluginActivation('backwpup-pro', false);
+
+    // Check for deactivation modal.
+    if (await this.page.locator('label[for=deactivate]').isVisible()) {
+        await this.page.locator('label[for=deactivate]').click();
+        await this.page.locator('text=Confirm').click();
+    }
+
+    // Delete WPR.
+    await this.utils.removeBackWpViaUi();
+});

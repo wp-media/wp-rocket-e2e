@@ -3,6 +3,7 @@ Feature: BackWpUp Onboarding
 
   Background:
     Given I am logged in
+    And I delete backwpup plugin
     And plugin is installed 'backwpup-pro'
     And plugin is activated
 

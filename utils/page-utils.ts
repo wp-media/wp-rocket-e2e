@@ -591,11 +591,6 @@ export class PageUtils {
             await uninstallPlugin('wp-rocket force-wp-mobile');
         }
 
-        if(plugin === 'backwpup') {
-            // Remove helper plugin.
-            await uninstallPlugin('backwpup-pro backwpup');
-        }
-
         // Deactivate WPML.
         await deactivatePlugin('sitepress-multilingual-cms');
 
@@ -613,6 +608,46 @@ export class PageUtils {
 
             await this.removeWprViaUi();
         }
+    }
+
+    public removeBackWpViaUi = async (): Promise<void> => {
+        await this.gotoPlugin();
+
+        this.page.on('dialog', async(dialog) => {
+            expect(dialog.type()).toContain('confirm');
+            expect(dialog.message()).toContain('Are you sure you want to delete BackWPup Pro and its data?');
+            await dialog.accept();
+        });
+
+        const pluginName = 'BackWPup Pro';
+        const pluginRow = this.page.locator('tr').filter({ hasText: pluginName });
+        const isActivated = await pluginRow.getByText('Deactivate').isVisible();
+        const isInstalled = await pluginRow.getByText('Activate').isVisible();
+
+        if(!isActivated && !isInstalled) {
+            console.log('hello')
+            return;
+        }
+
+        await this.togglePluginActivation('backwpup-pro', false);
+
+        if (isActivated) {
+            await this.page.locator('label[for=deactivate]').click();
+            await this.page.locator('text=Confirm').click();
+        }
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        await this.page.locator( '#delete-backwpup-pro' ).click();
+
+        if (await this.page.getByRole('button', { name: 'Yes, delete these files and data' }).isVisible()) {
+            await this.page.getByRole('button', { name: 'Yes, delete these files and data' }).click();
+            await expect(this.page.locator('#activate-backwpup-pro')).toBeHidden();
+        }
+
+        // Assert that Backwpup is deleted successfully
+        await this.page.waitForSelector('#backwpup-pro-deleted');
+        await expect(this.page.locator('#backwpup-pro-deleted')).toBeVisible();
     }
 
     /**
