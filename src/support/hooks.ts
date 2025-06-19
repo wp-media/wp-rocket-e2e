@@ -149,23 +149,6 @@ Before({tags: '@setup'}, async function(this: ICustomWorld, {pickle}) {
 });
 
 /**
- * Before each test scenario with the @bwpsetup tag, performs setup tasks.
- */
-Before({tags: '@bwpsetup'}, async function(this: ICustomWorld, {pickle}) {
-    this.context = await browser.newContext({
-        recordVideo: {
-            dir: "test-results/videos",
-        },
-    });
-    this.page = await this.context.newPage();
-    this.sections = new Sections(this.page, pluginSelectors);
-    this.utils = new PageUtils(this.page, this.sections);
-
-    await this.utils.cleanUp('backwpup');
-    this.pickle = pickle;
-});
-
-/**
  * Before each test scenario with the @delaylcp tag, performs setup tasks.
  */
 Before({tags: '@delaylcp'}, async function (this: ICustomWorld) {
