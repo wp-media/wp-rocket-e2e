@@ -20,8 +20,8 @@
   ],
   "engine": "puppeteer",
   "engineOptions": {
-    "waitTimeout": 90000,
-    "gotoTimeout": 90000,
+    "readyTimeout": 30000,
+    "gotoTimeout": 30000,
     "args": [
       "--no-sandbox"
     ],

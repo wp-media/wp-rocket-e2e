@@ -97,10 +97,7 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public visitPage = async ( pageUrl: string ): Promise<void> => {
-          await this.page.goto(WP_BASE_URL + '/' + pageUrl,{
-          waitUntil: 'load', 
-          timeout: 90000 
-        });
+        await this.page.goto(WP_BASE_URL + '/' + pageUrl);
     }
 
     /**
