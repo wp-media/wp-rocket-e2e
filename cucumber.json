@@ -12,7 +12,8 @@
     "require": [
       "src/support/steps/**/*.ts",
       "src/support/hooks.ts",
-      "src/backwpup/support/hooks.ts"
+      "src/backwpup/support/hooks.ts",
+      "src/backwpup/steps/**/*.ts"
     ],
     "requireModule": [
       "ts-node/register"
@@ -33,7 +34,9 @@
     "dryRun": false,
     "require": [
       "src/support/steps/**/*.ts",
-      "src/support/hooks.ts"
+      "src/support/hooks.ts",
+      "src/backwpup/support/hooks.ts",
+      "src/backwpup/steps/**/*.ts"
     ],
     "requireModule": [
       "ts-node/register"

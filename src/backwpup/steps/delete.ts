@@ -9,19 +9,18 @@
  * @requires {@link @cucumber/cucumber}
  */
 import { ICustomWorld } from "../../common/custom-world";
-import {expect} from "@playwright/test";
-import { When, Then } from '@cucumber/cucumber';
+import { When } from '@cucumber/cucumber';
 
 /**
  * Executes the step to delete the WP Rocket plugin.
  */
-When('I delete plugin', async function (this: ICustomWorld) {
+When('I delete backwpup plugin', async function (this: ICustomWorld) {
 
     // Goto plugins page.
     await this.utils.gotoPlugin();
 
     // Ensure WPR is deactivated.
-    await this.utils.togglePluginActivation('wp-rocket', false);
+    await this.utils.togglePluginActivation('backwpup-pro', false);
 
     // Check for deactivation modal.
     if (await this.page.locator('label[for=deactivate]').isVisible()) {
@@ -30,14 +29,5 @@ When('I delete plugin', async function (this: ICustomWorld) {
     }
 
     // Delete WPR.
-    await this.utils.removeWprViaUi();
-});
-
-/**
- * Executes the step to assert successful deletion of the WP Rocket plugin.
- */
-Then('plugin should delete successfully', async function (this: ICustomWorld) {
-    // Assert that WPR is deleted successfully
-    await this.page.waitForSelector('#wp-rocket-deleted');
-    await expect(this.page.locator('#wp-rocket-deleted')).toBeVisible(); 
+    await this.utils.removeBackWpViaUi();
 });
