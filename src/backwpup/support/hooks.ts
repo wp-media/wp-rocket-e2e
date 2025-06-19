@@ -5,10 +5,6 @@ import { PageUtils } from "../../../utils/page-utils";
 import { Before } from "@cucumber/cucumber";
 import {ChromiumBrowser} from "@playwright/test";
 
-/**
- * The Playwright Chromium browser instance used for testing.
- */
-let browser: ChromiumBrowser;
 
 /**
  * Before each test scenario with the @bwpsetup tag, performs setup tasks.
