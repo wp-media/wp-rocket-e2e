@@ -14,6 +14,5 @@ Before({tags: '@bwpsetup'}, async function(this: ICustomWorld, {pickle}) {
     this.sections = new Sections(this.page, pluginSelectors);
     this.utils = new PageUtils(this.page, this.sections);
 
-    await this.utils.cleanUp('backwpup');
     this.pickle = pickle;
 });

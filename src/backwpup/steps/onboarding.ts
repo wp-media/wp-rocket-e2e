@@ -1,5 +1,5 @@
 import {When} from "@cucumber/cucumber";
-import {ICustomWorld} from "../../../common/custom-world";
+import {ICustomWorld} from "../../common/custom-world";
 
 
 /**
