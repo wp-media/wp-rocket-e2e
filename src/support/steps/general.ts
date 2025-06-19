@@ -206,6 +206,11 @@ When('I click on {string}', async function (this: ICustomWorld, selector) {
     
 });
 
+When('click on {string} and wait for request', async function (this: ICustomWorld, text: string) {
+    await this.page.getByText(text).click();
+    await this.page.waitForLoadState('networkidle');
+});
+
 /**
  * Executes the step to enable all settings.
  */
