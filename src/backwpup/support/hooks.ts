@@ -3,7 +3,6 @@ import { Sections } from '../../common/sections';
 import { selectors as pluginSelectors } from "./../../common/selectors";
 import { PageUtils } from "../../../utils/page-utils";
 import { Before } from "@cucumber/cucumber";
-import {ChromiumBrowser} from "@playwright/test";
 
 
 /**
