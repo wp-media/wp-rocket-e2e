@@ -585,11 +585,9 @@ export class PageUtils {
      *
      * @return  {Promise<void>}
      */
-    public cleanUp = async (plugin = 'wp-rocket'): Promise<void> => {
-        if(plugin === 'wp-rocket') {
-            // Remove helper plugin.
-            await uninstallPlugin('wp-rocket force-wp-mobile');
-        }
+    public cleanUp = async (): Promise<void> => {
+        // Remove helper plugin.
+        await uninstallPlugin('wp-rocket force-wp-mobile');
 
         // Deactivate WPML.
         await deactivatePlugin('sitepress-multilingual-cms');
