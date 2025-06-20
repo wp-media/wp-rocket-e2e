@@ -611,19 +611,12 @@ export class PageUtils {
     public removeBackWpViaUi = async (): Promise<void> => {
         await this.gotoPlugin();
 
-        this.page.on('dialog', async(dialog) => {
-            expect(dialog.type()).toContain('confirm');
-            expect(dialog.message()).toContain('Are you sure you want to delete BackWPup Pro and its data?');
-            await dialog.accept();
-        });
-
         const pluginName = 'BackWPup Pro';
         const pluginRow = this.page.locator('tr').filter({ hasText: pluginName });
         const isActivated = await pluginRow.getByText('Deactivate').isVisible();
         const isInstalled = await pluginRow.getByText('Activate').isVisible();
 
         if(!isActivated && !isInstalled) {
-            console.log('hello')
             return;
         }
 
@@ -633,6 +626,12 @@ export class PageUtils {
             await this.page.locator('label[for=deactivate]').click();
             await this.page.locator('text=Confirm').click();
         }
+
+        this.page.on('dialog', async(dialog) => {
+            expect(dialog.type()).toContain('confirm');
+            expect(dialog.message()).toContain('Are you sure you want to delete BackWPup Pro and its data?');
+            await dialog.accept();
+        });
 
         await this.page.waitForLoadState('load', { timeout: 30000 });
 
