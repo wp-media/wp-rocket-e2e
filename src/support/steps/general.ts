@@ -309,7 +309,7 @@ When('I visit scenario urls', async function (this:ICustomWorld) {
 
     for (const key in liveUrl) {
 
-        await this.page.goto(WP_BASE_URL + '/' + (liveUrl[key].path),{
+        await this.page.goto(`${WP_BASE_URL}/${liveUrl[key].path}`,{
           waitUntil: 'load', 
           timeout: 90000 // Fixes #213 , if page loads fast, it won't wait the 90s
         }); 
