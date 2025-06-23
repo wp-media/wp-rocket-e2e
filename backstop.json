@@ -20,11 +20,12 @@
   ],
   "engine": "puppeteer",
   "engineOptions": {
+    "readyTimeout": 30000,
+    "gotoTimeout": 30000,
     "args": [
       "--no-sandbox"
     ],
-    "headless": false,
-    "timeout": 0
+    "headless": false
   },
   "asyncCaptureLimit": 5,
   "asyncCompareLimit": 50,
