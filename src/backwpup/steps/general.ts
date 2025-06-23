@@ -14,7 +14,6 @@ When('I click on common backup now button', async function (this: ICustomWorld) 
     await this.page.click('.js-backwpup-start-backup-now')
     initialRowCount = await this.page.locator('table#backwpup-backup-history tbody tr').count();
 
-    console.log('initial backup number -- ' + initialBackups.length)
     //Wait for 7 seconds, might be a lot but safer to avoid inconsistencies result
     await this.page.waitForTimeout(70000);
 });
@@ -33,8 +32,6 @@ Then('{string} backup is generated and added to history', async function (this: 
 
     //Validate the number of backup generated and added to history.
     const currentBackups = await captureBackupTableData(this.page)
-
-    console.log('initial backup number after generation -- ' + initialBackups.length)
 
     expect(currentBackups.length).toBe(initialBackups.length + parseInt(backupNumber));
 });
