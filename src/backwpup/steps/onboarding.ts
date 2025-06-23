@@ -2,7 +2,6 @@ import {Then, When} from "@cucumber/cucumber";
 import {ICustomWorld} from "../../common/custom-world";
 import {expect} from "@playwright/test";
 
-
 /**
  * Click on save and continue button during onboarding.
  *
