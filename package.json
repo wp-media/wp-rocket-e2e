@@ -25,7 +25,8 @@
     "healthcheck": "ts-node healthcheck.ts",
     "push-report": "ts-node report.ts",
     "wp-env": "wp-env",
-    "test:bwponboarding": "$npm_package_config_testCommand --tags @bwponboarding"
+    "test:bwpuponboarding": "$npm_package_config_testCommand --tags @bwponboarding",
+    "test:bwpupsmoke": "$npm_package_config_testCommand --tags @bwupsmoke"
   },
   "repository": {
     "type": "git",

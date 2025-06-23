@@ -1,4 +1,4 @@
-@bwpsetup @bwponboarding
+@bwupsetup @bwponboarding
 Feature: BackWpUp Onboarding
 
   Background:
@@ -14,6 +14,7 @@ Feature: BackWpUp Onboarding
     When I Configure web server storage
     And I go '/wp-admin/admin.php?page=backwpup'
     And I should see 'mixed' job cards
+    Then the backup should be added to the table
 
   Scenario: Onboarding with separate frequency
     And I go '/wp-admin/admin.php?page=backwpup'
