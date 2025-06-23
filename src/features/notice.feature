@@ -19,7 +19,7 @@ Feature: CPCSS Notice
     When I have an unexpired account
     And turn on 'CPCSS'
     Then I must see the banner 'We highly recommend the updated Remove Unused CSS for a better CSS optimization. Load CSS Asynchronously is always available as a back-up.'
-    When click on 'Stay with the old option'
+    When I click on 'Stay with the old option' and wait for request 
     And refresh the page
     Then I must not see the banner 'We highly recommend the updated Remove Unused CSS for a better CSS optimization. Load CSS Asynchronously is always available as a back-up.'
     When turn on 'RUCSS'
