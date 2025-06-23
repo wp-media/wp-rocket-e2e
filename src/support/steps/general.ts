@@ -207,6 +207,26 @@ When('I click on {string}', async function (this: ICustomWorld, selector) {
 });
 
 /**
+ * Executes the step to click on an element with specific text and wait for network requests to complete.
+ * This step is useful when clicking triggers AJAX requests or network activity that needs to complete
+ * before proceeding to the next step.
+ * 
+ * @param {string} text - The text content of the element to click on
+ * 
+ * @remarks
+ * - Uses Playwright's text-based selector to find clickable elements
+ * - Waits for 'networkidle' state (no network requests for 500ms) after clicking
+ * - Ideal for dismiss actions, form submissions, or AJAX-heavy interactions
+ * - More reliable than simple click when network activity is expected
+ * 
+ * @see {@link https://playwright.dev/docs/api/class-page#page-wait-for-load-state|waitForLoadState}
+ */
+When('I click on {string} and wait for request', async function (this: ICustomWorld, text: string) {
+    await this.page.getByText(text).click();
+    await this.page.waitForLoadState('networkidle');
+});
+
+/**
  * Executes the step to enable all settings.
  */
 When('I enable all settings', async function (this: ICustomWorld) {
