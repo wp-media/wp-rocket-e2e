@@ -7,7 +7,7 @@ Feature: Should be able to backup
     And plugin is installed 'backwpup-pro'
     And plugin is activated
 
-  Scenario: Onboarding For Mixed data
+  Scenario: Should common backup now generate files&DB locally
     And I go '/wp-admin/admin.php?page=backwpup'
     When I click '.js-backwpup-onboarding-step-2' button to continue
     And I click '.js-backwpup-onboarding-step-3' button to continue
