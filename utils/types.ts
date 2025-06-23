@@ -126,9 +126,3 @@ export interface LLImagesData {
         lazyloaded: string | boolean
     }
 }
-
-export interface BackupRowData {
-    date: string;
-    type: string;
-    storedOn: string;
-}

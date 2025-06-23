@@ -1,7 +1,8 @@
 import {Then, When} from "@cucumber/cucumber";
 import {ICustomWorld} from "../../common/custom-world";
 import {expect, Page} from "@playwright/test";
-import {BackupRowData} from "../../../utils/types";
+import {BackupRowData} from "../utils/types";
+
 
 let initialRowCount = 0,
     initialBackups;
@@ -15,7 +16,9 @@ When('I click on common backup now button', async function (this: ICustomWorld) 
     initialRowCount = await this.page.locator('table#backwpup-backup-history tbody tr').count();
 
     //Wait for 7 seconds, might be a lot but safer to avoid inconsistencies result
-    await this.page.waitForTimeout(70000);
+    await this.page.waitForLoadState('networkidle');
+
+    await this.page.waitForSelector('.js-backwpup-open-modal');
 });
 
 Then('the backup should be added to the table', async function (this: ICustomWorld) {
