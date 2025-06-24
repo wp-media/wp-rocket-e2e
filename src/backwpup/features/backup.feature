@@ -1,4 +1,4 @@
-@bwupsetup
+@bwupsetup @bwupsmoke
 Feature: Should be able to backup
 
   Background:

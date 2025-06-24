@@ -94,21 +94,25 @@ Then('I should see {string} job cards', async function (this: ICustomWorld, data
 });
 
 /**
- * Check database tables
+ * Check Files tables
 */
-Then('all database tables should be selected', async function (this: ICustomWorld) {
+Then('all files directory should be selected', async function (this: ICustomWorld) {
     await this.page.locator('button[data-content="select-files"][data-job-id="1"]').click();
 
     await validateCheckboxSelection(this.page, '.js-backwpup-tables-list [type="checkbox"]', true);
+
+    await this.page.locator('button#file-exclusions-submit').click();
 });
 
 /**
  * Check database tables
  */
-Then('all files directory should be selected', async function (this: ICustomWorld) {
-    await this.page.locator('button[data-content="select-tables"][data-job-id="2"]').click();
+Then('all database tables should be selected', async function (this: ICustomWorld) {
+    await this.page.locator('button[data-content="select-tables"][data-job-id="1"]').click();
 
     await validateCheckboxSelection(this.page, 'input[type="checkbox"].js-backwpup-toggle-exclude', true);
+
+    await this.page.locator('button#save-excluded-tables').click();
 });
 
 
