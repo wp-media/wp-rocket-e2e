@@ -1,19 +1,14 @@
 import {Then, When} from "@cucumber/cucumber";
 import {ICustomWorld} from "../../common/custom-world";
 import {expect} from "@playwright/test";
+import { clickContinueButton } from "../utils/helpers";
 
 /**
  * Click on save and continue button during onboarding.
  *
 */
 When('I click {string} button to continue', async function (this: ICustomWorld, button) {
-
-    await this.page.waitForSelector(button, {
-        state: 'visible',
-        timeout: 10000
-    });
-
-    await this.page.click(button);
+    await clickContinueButton(this.page, button);
 });
 
 When('I Configure web server storage', async function (this: ICustomWorld) {
