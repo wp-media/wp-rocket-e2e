@@ -1,6 +1,6 @@
 import {Then, When} from "@cucumber/cucumber";
 import {ICustomWorld} from "../../common/custom-world";
-import {expect} from "@playwright/test";
+import {expect, Page} from "@playwright/test";
 
 /**
  * Click on save and continue button during onboarding.
@@ -92,3 +92,36 @@ Then('I should see {string} job cards', async function (this: ICustomWorld, data
         await expect(this.page.locator('div.backwpup-job-mixed')).toBeVisible();
     }
 });
+
+/**
+ * Check database tables
+*/
+Then('all database tables should be selected', async function (this: ICustomWorld) {
+    await this.page.locator('button[data-content="select-files"][data-job-id="1"]').click();
+
+    await validateCheckboxSelection(this.page, '.js-backwpup-tables-list [type="checkbox"]', true);
+});
+
+/**
+ * Check database tables
+ */
+Then('all files directory should be selected', async function (this: ICustomWorld) {
+    await this.page.locator('button[data-content="select-tables"][data-job-id="2"]').click();
+
+    await validateCheckboxSelection(this.page, 'input[type="checkbox"].js-backwpup-toggle-exclude', true);
+});
+
+
+const validateCheckboxSelection = async (page: Page, containerSelector: string, shouldBeChecked: boolean = true): Promise<void> => {
+    const allCheckboxes = page.locator(`${containerSelector}`);
+    const count = await allCheckboxes.count();
+
+    for (let i = 0; i < count; i++) {
+        const checkbox = allCheckboxes.nth(i);
+        if (shouldBeChecked) {
+            await expect(checkbox).toBeChecked();
+        } else {
+            await expect(checkbox).not.toBeChecked();
+        }
+    }
+}
