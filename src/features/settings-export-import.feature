@@ -42,7 +42,7 @@ Feature: C2148 - Should not change the content of existing fields
     Scenario: All options are carried over after update
         Given plugin is installed 'previous_stable'
         And plugin is activated
-        And I all enable settings
+        And I enable all settings
         And I export data '1'
         When I updated plugin to 'new_release'
         And I save all settings
