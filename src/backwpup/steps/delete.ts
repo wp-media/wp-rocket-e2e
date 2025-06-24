@@ -19,7 +19,7 @@ When('I delete backwpup plugin', async function (this: ICustomWorld) {
     // Goto plugins page.
     await this.utils.gotoPlugin();
 
-    // Ensure WPR is deactivated.
+    // Ensure BWU is deactivated.
     await this.utils.togglePluginActivation('backwpup-pro', false);
 
     // Check for deactivation modal.
@@ -28,6 +28,6 @@ When('I delete backwpup plugin', async function (this: ICustomWorld) {
         await this.page.locator('text=Confirm').click();
     }
 
-    // Delete WPR.
+    // Delete BWU.
     await this.utils.removeBackWpViaUi();
 });
