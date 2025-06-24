@@ -1,7 +1,19 @@
-import {Then, When} from "@cucumber/cucumber";
+import {Given, Then, When} from "@cucumber/cucumber";
 import {ICustomWorld} from "../../common/custom-world";
 import {expect} from "@playwright/test";
 import { clickContinueButton, configureWebServerStorage } from "../utils/helpers";
+
+/**
+ * Given step to to do onboarding
+ */
+Given('First backup generated with default settings and local storage', async function (this: ICustomWorld) {
+    await this.utils.visitPage('/wp-admin/admin.php?page=backwpup');
+    await clickContinueButton(this.page, '.js-backwpup-onboarding-step-2');
+    await clickContinueButton(this.page, '.js-backwpup-onboarding-step-3');
+    await configureWebServerStorage(this.page);
+    await this.utils.visitPage('/wp-admin/admin.php?page=backwpup');
+    await expect(this.page.locator('div.backwpup-job-mixed')).toBeVisible();
+});
 
 /**
  * Click on save and continue button during onboarding.
