@@ -156,4 +156,3 @@ const validateCheckboxSelection = async (page: Page, containerSelector: string, 
         }
     }
 }
-
