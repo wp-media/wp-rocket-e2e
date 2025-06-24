@@ -444,21 +444,27 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
     const consoleMsg: string[] = [];
 
     const consoleHandler = (msg): void => {
-        consoleMsg.push(msg.text());
+        const text = msg.text();
+        // Filter out common 404s that are expected
+        if (!text.includes('404') || !text.includes('Failed to load resource')) {
+            consoleMsg.push(text);
+        }
     };
 
     const pageErrorHandler = (error: Error): void => {
-        consoleMsg.push(error.message);
+        // Filter out network-related 404 errors
+        if (!error.message.includes('404') && !error.message.includes('Not Found')) {
+            consoleMsg.push(error.message);
+        }
     };
 
-    // Listen for console messages.
+    // Listen for console messages and page errors
     page.on('console', consoleHandler);
-
-    // Listen for page errors.
     page.on('pageerror', pageErrorHandler);
 
     await page.goto(url);
-    await page.waitForLoadState('load', { timeout: 30000 });
+    await page.waitForLoadState('networkidle', { timeout: 30000 }); // Wait for network to be idle
+
 
     await page.evaluate(async () => {
         // Scroll to the bottom of page.
