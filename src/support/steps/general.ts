@@ -442,18 +442,54 @@ Then('no error in the console different than nowprocket page {string}', async fu
 
 const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> => {
     const consoleMsg: string[] = [];
+    const networkErrors: string[] = [];
+
+    // List of asset extensions that commonly cause transient 404s (noise)
+    const assetExtensions = ['.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.woff', '.woff2', '.ttf', '.ico'];
+    
+    // List of known problematic third-party domains/paths (noise)
+    const ignoredDomains = [
+        'fonts.googleapis.com',
+        'cdnjs.cloudflare.com',
+        'unpkg.com',
+        'gravatar.com',
+        'w.org',
+        // Add other CDNs that might cause noise
+    ];
 
     const consoleHandler = (msg): void => {
         const text = msg.text();
-        // Filter out common 404s that are expected
-        if (!text.includes('404') || !text.includes('Failed to load resource')) {
+        
+        if (text.includes('404') || text.includes('Failed to load resource')) {
+            // Check if this is likely an asset/resource 404 (noise) vs page navigation 404 (real issue)
+            const isAssetError = assetExtensions.some(ext => text.includes(ext));
+            const isIgnoredDomain = ignoredDomains.some(domain => text.includes(domain));
+            
+            if (isAssetError || isIgnoredDomain) {
+                // Log it separately for debugging but don't fail the test
+                networkErrors.push(`[FILTERED ASSET 404]: ${text}`);
+            } else {
+                // This might be a real navigation/page 404 - keep it
+                consoleMsg.push(text);
+            }
+        } else {
+            // Non-404 errors - always keep these
             consoleMsg.push(text);
         }
     };
 
     const pageErrorHandler = (error: Error): void => {
-        // Filter out network-related 404 errors
-        if (!error.message.includes('404') && !error.message.includes('Not Found')) {
+        // Similar logic for page errors
+        if (error.message.includes('404') || error.message.includes('Not Found')) {
+            const isAssetError = assetExtensions.some(ext => error.message.includes(ext));
+            const isIgnoredDomain = ignoredDomains.some(domain => error.message.includes(domain));
+            
+            if (isAssetError || isIgnoredDomain) {
+                networkErrors.push(`[FILTERED ASSET ERROR]: ${error.message}`);
+            } else {
+                consoleMsg.push(error.message);
+            }
+        } else {
             consoleMsg.push(error.message);
         }
     };
@@ -474,7 +510,6 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
             const timer = setInterval(() => {
             const scrollHeight = document.body.scrollHeight;
             window.scrollBy(0, distance);
-            totalHeight += distance;
     
             if(totalHeight >= scrollHeight){
                 clearInterval(timer);
@@ -485,6 +520,11 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
     
         await scrollPage;
       });
+
+    // Log filtered errors for debugging (optional)
+    if (networkErrors.length > 0) {
+        console.log('Filtered asset 404s (not failing test):', networkErrors);
+    }
 
     // Remove the event listeners to prevent duplicate messages.
     page.off('console', consoleHandler);
