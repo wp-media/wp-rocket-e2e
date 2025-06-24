@@ -6,9 +6,9 @@ import { Before } from "@cucumber/cucumber";
 
 
 /**
- * Before each test scenario with the @bwpsetup tag, performs setup tasks.
+ * Before each test scenario with the @bwupsetup tag, performs setup tasks.
  */
-Before({tags: '@bwpsetup'}, async function(this: ICustomWorld, {pickle}) {
+Before({tags: '@bwupsetup'}, async function(this: ICustomWorld, {pickle}) {
 
     this.page = await this.context.newPage();
     this.sections = new Sections(this.page, pluginSelectors);
