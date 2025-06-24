@@ -168,3 +168,25 @@ Then('I must not see changes in exported files', async function () {
 
     expect(!(counterCheck > 0), 'Exported data are not similar').toBeTruthy();
 });
+
+/**
+ * Executes the step to assert that nothing changed in settings between two exported files.
+ */
+Then('Nothing changed in settings {string} compared to {string}', async function (fileNo1: string, fileNo2: string) {
+    // Get exported settings data.
+    const jsonData1 = await readAnyFile(`./plugin/exported_settings/wp-rocket-settings-test-2023-00-0${fileNo2}-64e7ada0d3b70.json`);
+    const jsonData2 = await readAnyFile(`./plugin/exported_settings/wp-rocket-settings-test-2023-00-0${fileNo1}-64e7ada0d3b70.json`);
+
+    // Get excluded fields to ignore.
+    const regex = new RegExp(diffCheckerExclusions.toString().replaceAll(',', '|'));
+    const result = diff(JSON.parse(jsonData1), JSON.parse(jsonData2));  
+
+    let counterCheck = 0;
+    for (const key in result) {
+        if (! regex.test(key)) {
+            counterCheck++;
+        }
+    } 
+
+    expect(!(counterCheck > 0), `Settings changed between export '${fileNo2}' and '${fileNo1}'. Found ${counterCheck} differences.`).toBeTruthy();
+});

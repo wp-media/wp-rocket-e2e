@@ -38,3 +38,13 @@ Feature: C2148 - Should not change the content of existing fields
         And I go to 'hello-world'
         And I log in
         Then I must not see any error in debug.log
+
+    Scenario: All options are carried over after update
+        Given plugin is installed 'previous_stable'
+        And plugin is activated
+        And I enable settings
+        And I export data '1'
+        When I updated plugin to 'new_release'
+        And I save all settings
+        And I export data '2'
+        Then Nothing changed in settings '2' compared to '1'
