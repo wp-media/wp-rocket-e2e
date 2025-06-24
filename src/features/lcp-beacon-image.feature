@@ -8,9 +8,9 @@ Feature: Fetchpriority should be applied to image
     And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
     And I log out
   Scenario: Should add fetchpriority to lcp image
-    Given I visit page 'lcp_regular_image_template' with browser dimension 1600 x 700
-    When I am logged in
+    When I visit beacon driven page 'lcp_regular_image_template' with browser dimension 1600 x 700
+    And I am logged in
     And I clear cache
     And I log out
-    Then I visit page 'lcp_regular_image_template' with browser dimension 1600 x 700
-    And lcp image should have fetchpriority
+    And I visit page 'lcp_regular_image_template' with browser dimension 1600 x 700
+    Then lcp image should have fetchpriority
