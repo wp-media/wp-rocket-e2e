@@ -115,6 +115,33 @@ Then('all database tables should be selected', async function (this: ICustomWorl
     await this.page.locator('button#save-excluded-tables').click();
 });
 
+When('I uncheck the {string} from files backup option', async function (this: ICustomWorld, value: string) {
+    await this.page.locator('button[data-content="select-files"][data-job-id="1"]').click();
+
+    const checkbox = this.page.locator(`label:has(input[name="${value}"])`);
+    const isChecked = await checkbox.isChecked();
+
+    if (isChecked) {
+        await checkbox.click();
+    }
+
+    await expect(checkbox).not.toBeChecked();
+    await this.page.locator('button#file-exclusions-submit').click();
+});
+
+When('I uncheck the {string} from database backup option', async function (this: ICustomWorld, value: string) {
+    await this.page.locator('button[data-content="select-tables"][data-job-id="1"]').click();
+
+    const checkbox = this.page.locator(`label:has(input[value="${value}"])`);
+    const isChecked = await checkbox.isChecked();
+
+    if (isChecked) {
+        await checkbox.click();
+    }
+
+    await expect(checkbox).not.toBeChecked();
+    await this.page.locator('button#save-excluded-tables').click();
+});
 
 const validateCheckboxSelection = async (page: Page, containerSelector: string, shouldBeChecked: boolean = true): Promise<void> => {
     const allCheckboxes = page.locator(`${containerSelector}`);
@@ -129,3 +156,4 @@ const validateCheckboxSelection = async (page: Page, containerSelector: string, 
         }
     }
 }
+

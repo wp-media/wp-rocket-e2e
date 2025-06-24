@@ -40,7 +40,13 @@ Feature: BackWpUp Onboarding
     And I go '/wp-admin/admin.php?page=backwpup'
     And I should see 'both' job cards
 
-  #Scenario: Should respect data selection
-  #  And I go '/wp-admin/admin.php?page=backwpup'
-  #  Then all database tables should be selected
-  #  When I click '.js-backwpup-onboarding-step-2' button to continue
+  Scenario: Should respect data selection
+    And I go '/wp-admin/admin.php?page=backwpup'
+    And I uncheck the 'backupplugins' from files backup option
+    And I uncheck the 'wp_options' from database backup option
+    When I click '.js-backwpup-onboarding-step-2' button to continue
+    And I click '.js-backwpup-onboarding-step-3' button to continue
+    When I Configure web server storage
+    And I go '/wp-admin/admin.php?page=backwpup'
+    And 'backupplugins' is unchecked from files options
+    And 'wp_options' is unchecked from database options

@@ -39,6 +39,25 @@ Then('{string} backup is generated and added to history', async function (this: 
     expect(currentBackups.length).toBe(initialBackups.length + parseInt(backupNumber));
 });
 
+When('{string} is unchecked from files options', async function (this: ICustomWorld, value: string) {
+    await this.page.locator('button[data-content="settings-data-type"]').click();
+    await this.page.locator('button[data-mixed-data-content="files"]').click();
+    const checkbox = this.page.locator(`label:has(input[name="${value}"])`);
+
+    await expect(checkbox).not.toBeChecked();
+    await this.page.locator('button#file-exclusions-submit').click();
+    await waitForToastMessage(this.page , 'File exclusions saved successfully.')
+});
+
+When('{string} is unchecked from database options', async function (this: ICustomWorld, value: string) {
+    await this.page.locator('button[data-content="settings-data-type"]').click();
+    await this.page.locator('button[data-mixed-data-content="database"]').click();
+    const checkbox = this.page.locator(`label:has(input[value="${value}"])`);
+
+    await expect(checkbox).not.toBeChecked();
+    await this.page.locator('button#save-excluded-tables').click();
+    await waitForToastMessage(this.page , 'Excluded tables saved successfully.')
+});
 
 
 const captureBackupTableData = async (page: Page): Promise<BackupRowData[]> => {
@@ -54,4 +73,20 @@ const captureBackupTableData = async (page: Page): Promise<BackupRowData[]> => {
     }
 
     return backups;
+}
+
+const waitForToastMessage = async (page: Page, expectedMessage = null, timeout = 3000): Promise<boolean> => {
+    const toastContainer = page.locator('#bwp-settings-toast');
+
+    await toastContainer.locator('div').first().waitFor({
+        state: 'visible',
+        timeout
+    });
+
+    if (expectedMessage) {
+        const messageLocator = toastContainer.locator('p.text-sm.font-medium');
+        await expect(messageLocator).toContainText(expectedMessage);
+    }
+
+    return true;
 }
