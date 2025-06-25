@@ -109,6 +109,14 @@ export interface LcpData {
     }
 }
 
+export interface preloadFontsData {
+    [key: string]: {
+        url: string,
+        fonts: string,
+        comment: string
+    }
+}
+
 export interface Row {
     [key: string]: string
 }

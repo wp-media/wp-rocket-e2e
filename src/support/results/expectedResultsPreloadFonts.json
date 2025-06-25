@@ -1,0 +1,18 @@
+{
+  "preloadfonts_usedcss": {
+    "fonts": [
+      "https://fonts.gstatic.com/s/playfairdisplay/v39/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtM.woff2",
+      "https://fonts.gstatic.com/s/roboto/v48/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbVmUiAo.woff2"
+    ],
+
+    "enabled": true
+  },
+  "preloadfonts_fonticon": {
+    "fonts": [
+      "/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-upright-var.woff2",
+      "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/webfonts/fa-solid-900.woff2"
+    ],
+  
+    "enabled": true
+  }
+}
