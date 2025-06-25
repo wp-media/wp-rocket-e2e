@@ -100,7 +100,6 @@ Then('all files directory should be selected', async function (this: ICustomWorl
     await this.page.locator('button[data-content="select-files"][data-job-id="1"]').click();
 
     await validateCheckboxSelection(this.page, '.js-backwpup-tables-list [type="checkbox"]', true);
-    await this.page.pause()
 
     await this.page.locator('button#file-exclusions-submit').click();
 });

@@ -3,12 +3,12 @@ import {ICustomWorld} from "../../common/custom-world";
 import {expect, Page} from "@playwright/test";
 import {BackupRowData} from "../utils/types";
 
-let initialBackups;
 /**
  * Executes the step to enable all settings.
  */
 When('I click on common backup now button', async function (this: ICustomWorld) {
-    initialBackups = await captureBackupTableData(this.page)
+    this.initialBackups = await captureBackupTableData(this.page)
+
     await this.page.locator('#backwpup-backup-now').click();
     await this.page.click('.js-backwpup-start-backup-now')
 
@@ -29,11 +29,9 @@ Then('{string} backup is generated and added to history', async function (this: 
     await this.page.reload();
     await this.page.waitForLoadState('networkidle');
 
-    //Validate the number of backup generated and added to history.
     const currentBackups = await captureBackupTableData(this.page)
-console.log('current backup ' + currentBackups.length )
-console.log('initial backup ' + initialBackups.length )
-    expect(currentBackups.length).toBe(initialBackups.length + parseInt(backupNumber));
+await this.page.pause()
+    expect(currentBackups.length).toBe(this.initialBackups.length + parseInt(backupNumber));
 });
 
 When('{string} is unchecked from files options', async function (this: ICustomWorld, value: string) {
