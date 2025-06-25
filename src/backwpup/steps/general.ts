@@ -29,8 +29,14 @@ Then('{string} backup is generated and added to history', async function (this: 
     await this.page.reload();
     await this.page.waitForLoadState('networkidle');
 
+    const progressBar = this.page.locator('.progress-bar');
+    const progressText = this.page.locator('.progress-step span');
+    await progressBar.waitFor({ state: 'visible', timeout: 10000 });
+
+    await expect(progressText).toHaveText('100%', { timeout: 30000 });
+    await progressBar.waitFor({ state: 'hidden', timeout: 10000 });
+
     const currentBackups = await captureBackupTableData(this.page)
-await this.page.pause()
     expect(currentBackups.length).toBe(this.initialBackups.length + parseInt(backupNumber));
 });
 
