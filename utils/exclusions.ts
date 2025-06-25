@@ -60,5 +60,6 @@ export const diffChecker = [
     "minify_css_key",
     "minify_js_key",
     "cache_mobile",
-    "do_caching_mobile_files"
+    "do_caching_mobile_files",
+    "auto_preload_fonts"
 ];
