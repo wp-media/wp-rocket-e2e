@@ -31,7 +31,8 @@ Then('{string} backup is generated and added to history', async function (this: 
 
     //Validate the number of backup generated and added to history.
     const currentBackups = await captureBackupTableData(this.page)
-
+console.log('current backup ' + currentBackups.length )
+console.log('initial backup ' + initialBackups.length )
     expect(currentBackups.length).toBe(initialBackups.length + parseInt(backupNumber));
 });
 
