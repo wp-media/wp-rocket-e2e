@@ -3,8 +3,7 @@ import {ICustomWorld} from "../../common/custom-world";
 import {expect, Page} from "@playwright/test";
 import {BackupRowData} from "../utils/types";
 
-let initialRowCount = 0,
-    initialBackups;
+let initialBackups;
 /**
  * Executes the step to enable all settings.
  */
@@ -12,7 +11,6 @@ When('I click on common backup now button', async function (this: ICustomWorld) 
     initialBackups = await captureBackupTableData(this.page)
     await this.page.locator('#backwpup-backup-now').click();
     await this.page.click('.js-backwpup-start-backup-now')
-    initialRowCount = await this.page.locator('table#backwpup-backup-history tbody tr').count();
 
     await this.page.waitForLoadState('networkidle');
 
@@ -24,7 +22,7 @@ Then('the backup should be added to the table', async function (this: ICustomWor
     await this.page.waitForLoadState('networkidle');
 
     const newRowCount = await this.page.locator('table#backwpup-backup-history tbody tr').count();
-    expect(newRowCount).toBe(initialRowCount + 1);
+    expect(newRowCount).toBe(1);
 });
 
 Then('{string} backup is generated and added to history', async function (this: ICustomWorld, backupNumber: string) {
