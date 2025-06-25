@@ -10,7 +10,7 @@
  */
 import {ICustomWorld} from "../../common/custom-world";
 import {expect} from "@playwright/test";
-import {Then, When} from "@cucumber/cucumber";
+import {Then, When, Before} from "@cucumber/cucumber";
 import {LLImagesData, Row, SinglePageLCPImages} from "../../../utils/types";
 
 import {dbQuery, getWPTablePrefix} from "../../../utils/commands";
@@ -177,6 +177,7 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
             }
         }
     }
+
 });
 
 /**
@@ -186,12 +187,14 @@ Then('{string} should be as expected for {string}', async function (this: ICusto
     // Log fail messages from DB query before failing test.
     if (failMsg !== '') {
         console.log('\x1b[31m%s\x1b[0m',failMsg);
+         // Fail test when no DB result is found.
         expect(isDbResultAvailable).toBeTruthy();
         return;
     }
 
     truthy = true;
 
+    // Iterate over the data
     for (const key in jsonData) {
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
             const expected = jsonData[key];
@@ -216,22 +219,30 @@ Then('{string} should be as expected for {string}', async function (this: ICusto
                     if (!actual[key].lcp.includes(lcp)) {
                         truthy = false;
                         failMsg += `Expected LCP for ${formFactor} - ${lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                        // Highlighted log for missing LCP
+                        console.log('\x1b[43m\x1b[30m[HIGHLIGHTED] LCP MISMATCH for', key, '\x1b[0m');
+                        console.log('\x1b[33mExpected lcp:\x1b[0m', expected.lcp);
+                        console.log('\x1b[36mActual lcp:\x1b[0m', actual[key].lcp);
                     }
                 }
                 for (const viewport of expected.viewport) {
                     if (!actual[key].viewport.includes(viewport)) {
                         truthy = false;
                         failMsg += `Expected Viewport for ${formFactor} - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                        // Highlighted log for missing Viewport
+                        console.log('\x1b[41m\x1b[37m[HIGHLIGHTED] VIEWPORT MISMATCH for', key, '\x1b[0m');
+                        console.log('\x1b[33mExpected viewport:\x1b[0m', expected.viewport);
+                        console.log('\x1b[36mActual viewport:\x1b[0m', actual[key].viewport);
                     }
                 }
             }
         }
     }
-
+// Log fail message from Expectation mismatch before failing test.
     if (failMsg !== '') {
         console.log('\x1b[31m%s\x1b[0m',failMsg);
     }
-
+// Fail test when there is expectation mismatch.
     expect(truthy).toBeTruthy();
 });
 
@@ -368,4 +379,16 @@ When('I visit page {string} and check for lcp', async function (this:ICustomWorl
         lcp: resultFromStdout[0].lcp,
         viewport: resultFromStdout[0].viewport
     }
+});
+
+// Reset all shared state before each scenario to ensure test isolation
+Before(function () {
+    failMsg = '';
+    isDbResultAvailable = true;
+    truthy = true;
+    lcpLLImages = {};
+    singlePageLcp = { url: '', lcp: '', viewport: '' };
+    // Reset actual and jsonData
+    for (const key in actual) delete actual[key];
+    jsonData = {};
 });
