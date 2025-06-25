@@ -56,9 +56,50 @@ Given('I updated plugin to {string}', async function (this: ICustomWorld, plugin
  * Executes the step to activate the WP Rocket plugin.
  */
 Given('plugin is activated', async function (this: ICustomWorld) {
-    // Activate WPR
-    await this.page.waitForSelector('a:has-text("Activate Plugin")');
-    await this.page.locator('a:has-text("Activate Plugin")').click();
+    // Wait for page to be fully loaded
+    await this.page.waitForLoadState('networkidle', { timeout: 30000 });
+    
+    // Check if plugin is already activated
+    const isAlreadyActivated = await this.page.locator('a:has-text("Deactivate")').isVisible();
+    
+    if (isAlreadyActivated) {
+        console.log('Plugin is already activated');
+        return;
+    }
+    
+    // Wait for the activate button with multiple strategies
+    try {
+        // First, wait for the activate button to be present
+        await this.page.waitForSelector('a:has-text("Activate Plugin")', { timeout: 15000 });
+        
+        // Ensure the button is visible and clickable using Playwright's built-in methods
+        await this.page.locator('a:has-text("Activate Plugin")').waitFor({ 
+            state: 'visible', 
+            timeout: 10000 
+        });
+        
+        // Click the activate button
+        await this.page.locator('a:has-text("Activate Plugin")').click();
+        
+        // Wait for activation to complete
+        await this.page.waitForLoadState('networkidle', { timeout: 30000 });
+        
+        // Verify activation was successful
+        await this.page.waitForSelector('a:has-text("Deactivate")', { timeout: 15000 });
+        
+    } catch (error) {
+        // If the standard approach fails, try alternative selectors
+        console.log('Standard activation failed, trying alternative approach...');
+        
+        // Try with more specific selector
+        const activateLink = this.page.locator('a[href*="action=activate"]').first();
+        if (await activateLink.isVisible()) {
+            await activateLink.click();
+            await this.page.waitForLoadState('networkidle', { timeout: 30000 });
+        } else {
+            throw new Error('Could not find or click the Activate Plugin button');
+        }
+    }
 });
 
 /**
