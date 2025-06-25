@@ -202,17 +202,110 @@ Given('plugin {word} is deactivated', async function (plugin) {
 });
 
 /**
- * Executes the step to install a WP plugin from a remote url via CLI.
+ * Executes the step to install a WP plugin from a remote url via CLI with retry logic.
  */
-Given('I install plugin {string}', async function (pluginUrl) {
-    await installRemotePlugin(pluginUrl)
+Given('I install plugin {string}', async function (this: ICustomWorld, pluginUrl: string) {
+    const maxAttempts = 3;
+    let attempts = 0;
+    let lastError: Error | null = null;
+
+    while (attempts < maxAttempts) {
+        try {
+            attempts++;
+            console.log(`Plugin installation attempt ${attempts}/${maxAttempts} for: ${pluginUrl}`);
+
+            // Add delay between attempts to allow system to stabilize
+            if (attempts > 1) {
+                console.log(`Waiting 5 seconds before retry attempt ${attempts}...`);
+                await this.page.waitForTimeout(5000);
+            }
+
+            // Attempt to install the plugin
+            await installRemotePlugin(pluginUrl);
+            
+            // Verify installation was successful by checking if plugin exists
+            await this.page.waitForTimeout(2000); // Brief pause for file system operations
+            
+            // If we reach here, installation was successful
+            console.log(`Plugin installation successful on attempt ${attempts}`);
+            return;
+
+        } catch (error) {
+            lastError = error as Error;
+            console.log(`Plugin installation attempt ${attempts} failed: ${error.message}`);
+            
+            // If this is the last attempt, throw the error
+            if (attempts === maxAttempts) {
+                throw new Error(`Failed to install plugin '${pluginUrl}' after ${maxAttempts} attempts. Last error: ${lastError.message}`);
+            }
+        }
+    }
 });
 
 /**
- * Executes the step to log in.
+ * Executes the step to log in with retry logic.
  */
 When('I log in', async function (this: ICustomWorld) {
-    await this.utils.auth();
+    const maxAttempts = 3;
+    let attempts = 0;
+    let lastError: Error | null = null;
+
+    while (attempts < maxAttempts) {
+        try {
+            attempts++;
+            console.log(`Login attempt ${attempts}/${maxAttempts}`);
+
+            // Add delay between attempts
+            if (attempts > 1) {
+                console.log(`Waiting 3 seconds before retry attempt ${attempts}...`);
+                await this.page.waitForTimeout(3000);
+            }
+
+            // Clear any existing sessions/cookies on retry
+            if (attempts > 1) {
+                await this.page.context().clearCookies();
+            }
+
+            // Attempt login
+            await this.utils.auth();
+            
+            // Verify login was successful by checking for admin elements
+            await this.page.waitForSelector('#wpadminbar, .wp-admin, [id*="admin"]', { 
+                timeout: 10000 
+            });
+            
+            // Additional verification - check URL contains wp-admin or we're not on login page
+            await this.page.waitForFunction(() => {
+                return window.location.href.includes('wp-admin') || 
+                       !window.location.href.includes('wp-login.php');
+            }, { timeout: 5000 });
+
+            console.log(`Login successful on attempt ${attempts}`);
+            return;
+
+        } catch (error) {
+            lastError = error as Error;
+            console.log(`Login attempt ${attempts} failed: ${error.message}`);
+            
+            // Log current page URL for debugging
+            const currentUrl = this.page.url();
+            console.log(`Current page URL: ${currentUrl}`);
+            
+            // If this is the last attempt, throw comprehensive error
+            if (attempts === maxAttempts) {
+                const errorMessage = `Failed to log in after ${maxAttempts} attempts.\n` +
+                    `Last error: ${lastError.message}\n` +
+                    `Current URL: ${currentUrl}\n` +
+                    `Possible issues:\n` +
+                    `- Network connectivity\n` +
+                    `- Login credentials\n` +
+                    `- WordPress site availability\n` +
+                    `- Session/cookie conflicts`;
+                
+                throw new Error(errorMessage);
+            }
+        }
+    }
 });
 
 /**
