@@ -39,6 +39,17 @@ Then('{string} backup is generated and added to history', async function (this: 
     expect(currentBackups.length).toBe(initialBackups.length + parseInt(backupNumber));
 });
 
+When('I clicked on {string} storage button', async function (this: ICustomWorld, storageProvider: string){
+    await this.page.locator('.backwpup-job-card button[data-content="storages"]').first().click();
+    const storageType = storageProvider.toUpperCase();
+
+    const configureButton = this.page.locator(`button[data-storage="${storageType}"].js-backwpup-toggle-storage`);
+
+    await expect(configureButton).toBeVisible();
+    await configureButton.click();
+
+    await this.storage.setupMSAzure();
+});
 
 
 const captureBackupTableData = async (page: Page): Promise<BackupRowData[]> => {
