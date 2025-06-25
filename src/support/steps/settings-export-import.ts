@@ -165,25 +165,30 @@ Then('I must not see changes in exported files', async function () {
     for (const key in result) {
         if (!regex.test(key)) {
             counterCheck++;
-            foundDifferences.push(`${key}: ${JSON.stringify(result[key])}`);
+            foundDifferences.push(`"${key}": ${JSON.stringify(result[key], null, 2)}`);
         }
     }
 
-    // Log the differences for debugging
     if (counterCheck > 0) {
-        console.log('\x1b[31m%s\x1b[0m', '=== FOUND DIFFERENCES IN EXPORTED FILES ===');
-        console.log('\x1b[33m%s\x1b[0m', `Total differences found: ${counterCheck}`);
-        console.log('\x1b[33m%s\x1b[0m', 'Differences:');
-        foundDifferences.forEach((diff, index) => {
-            console.log(`  ${index + 1}. ${diff}`);
-        });
-        console.log('\x1b[33m%s\x1b[0m', '=== END DIFFERENCES ===');
-        
-        // Also log excluded fields for reference
-        console.log('\x1b[36m%s\x1b[0m', 'Excluded fields (ignored):', diffCheckerExclusions);
+        const errorMessage = `
+=== FOUND ${counterCheck} DIFFERENCES IN EXPORTED FILES ===
+
+DIFFERENCES:
+${foundDifferences.map((diff, index) => `${index + 1}. ${diff}`).join('\n')}
+
+EXCLUDED FIELDS (ignored): ${diffCheckerExclusions.join(', ')}
+
+FILE 1: ./plugin/exported_settings/wp-rocket-settings-test-2023-00-02-64e7ada0d3b70.json
+FILE 2: ./plugin/exported_settings/wp-rocket-settings-test-2023-00-03-64e7ada0d3b70.json
+
+FULL DIFF RESULT:
+${JSON.stringify(result, null, 2)}
+=== END DIFFERENCES ===`;
+
+        throw new Error(errorMessage);
     }
 
-    expect(!(counterCheck > 0), `Found ${counterCheck} differences in exported data. See console output for details.`).toBeTruthy();
+    expect(true, 'No differences found in exported data').toBeTruthy();
 });
 
 /**
