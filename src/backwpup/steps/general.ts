@@ -26,9 +26,6 @@ Then('the backup should be added to the table', async function (this: ICustomWor
 });
 
 Then('{string} backup is generated and added to history', async function (this: ICustomWorld, backupNumber: string) {
-    await this.page.reload();
-    await this.page.waitForLoadState('networkidle');
-
     const progressBar = this.page.locator('.progress-bar');
     const progressText = this.page.locator('.progress-step span');
     await progressBar.waitFor({ state: 'visible', timeout: 10000 });
