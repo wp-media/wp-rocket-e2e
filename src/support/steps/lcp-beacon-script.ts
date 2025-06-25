@@ -11,7 +11,7 @@
 import {ICustomWorld} from "../../common/custom-world";
 import {expect} from "@playwright/test";
 import {Then, When} from "@cucumber/cucumber";
-import {LcpData, preloadFontsData, LLImagesData, Row, SinglePageLCPImages} from "../../../utils/types";
+import {LLImagesData, Row, SinglePageLCPImages} from "../../../utils/types";
 
 import {dbQuery, getWPTablePrefix} from "../../../utils/commands";
 import {checkLcpOrViewport, extractFromStdout} from "../../../utils/helpers";

@@ -109,7 +109,7 @@ export interface LcpData {
     }
 }
 
-export interface preloadFontsData {
+export interface PreloadFontsData {
     [key: string]: {
         url: string,
         fonts: string,
