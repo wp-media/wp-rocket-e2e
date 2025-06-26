@@ -1,5 +1,5 @@
 import {Then, When} from "@cucumber/cucumber";
-import {ICustomWorld} from "../../common/custom-world";
+import {ICustomWorld} from "../common/custom-world";
 import {expect, Page} from "@playwright/test";
 import {BackupRowData} from "../utils/types";
 
