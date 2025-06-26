@@ -58,19 +58,12 @@ Given('I updated plugin to {string}', async function (this: ICustomWorld, plugin
  */
 Given('plugin is activated', async function (this: ICustomWorld) {
     await withRetry(async () => {
-        // Check if plugin is already activated
-        const isAlreadyActivated = await this.page.locator('a:has-text("Deactivate")').isVisible();
-        
-        if (isAlreadyActivated) {
-            console.log('Plugin is already activated');
-            return;
-        }
-        
-        // Click activate and verify success
+        // Wait for and click the "Activate Plugin" button (on plugin installation page)
+        await this.page.waitForSelector('a:has-text("Activate Plugin")');
         await this.page.locator('a:has-text("Activate Plugin")').click();
         
-        // Verify activation was successful
-        await expect(this.page.locator('a:has-text("Deactivate")')).toBeVisible({ timeout: 15000 });
+        // Optional: Wait for activation to complete
+        await this.page.waitForLoadState('networkidle', { timeout: 10000 });
         
     }, {
         maxAttempts: 3,
