@@ -10,7 +10,7 @@
  */
 import {ICustomWorld} from "../../common/custom-world";
 import {expect} from "@playwright/test";
-import {Then, When, Before} from "@cucumber/cucumber";
+import {Then, When} from "@cucumber/cucumber";
 import {LLImagesData, Row, SinglePageLCPImages} from "../../../utils/types";
 
 import {dbQuery, getWPTablePrefix} from "../../../utils/commands";
@@ -379,16 +379,4 @@ When('I visit page {string} and check for lcp', async function (this:ICustomWorl
         lcp: resultFromStdout[0].lcp,
         viewport: resultFromStdout[0].viewport
     }
-});
-
-// Reset all shared state before each scenario to ensure test isolation
-Before(function () {
-    failMsg = '';
-    isDbResultAvailable = true;
-    truthy = true;
-    lcpLLImages = {};
-    singlePageLcp = { url: '', lcp: '', viewport: '' };
-    // Reset actual and jsonData
-    for (const key in actual) delete actual[key];
-    jsonData = {};
 });
