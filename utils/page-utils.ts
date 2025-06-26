@@ -94,7 +94,7 @@ export class PageUtils {
      * Visit a page with retry logic
      */
     public visitPage = async (path: string): Promise<void> => {
-        const url = path.startsWith('http') ? path : `${WP_BASE_URL}${path}`;
+        const url = path.startsWith('http') ? path : WP_BASE_URL + '/' + path.replace(/^\//, '');
         
         await withRetry(async () => {
             await this.page.goto(url, { 
