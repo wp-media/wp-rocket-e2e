@@ -23,7 +23,7 @@ import {
     deactivatePlugin, installRemotePlugin,
 } from "../../../utils/commands";
 import backstop from 'backstopjs';
-import { withRetry, RetryConditions } from "../../../utils/retry-helper";
+import { withRetry, RETRY_CONDITIONS } from "../../../utils/retry-helper";
 
 /**
  * Executes the step to log in.
@@ -68,7 +68,7 @@ Given('plugin is activated', async function (this: ICustomWorld) {
     }, {
         maxAttempts: 3,
         delay: 2000,
-        retryCondition: RetryConditions.networkErrors
+        retryCondition: RETRY_CONDITIONS.networkErrors
     });
 });
 
@@ -196,7 +196,7 @@ When('I go to {string}', async function (this: ICustomWorld, path: string) {
     }, {
         maxAttempts: 3,
         delay: 1500,
-        retryCondition: RetryConditions.networkErrors
+        retryCondition: RETRY_CONDITIONS.networkErrors
     });
 });
 
@@ -213,7 +213,7 @@ When('I visit {string}', async function (this: ICustomWorld, url: string) {
         maxAttempts: 3,
         delay: 2000,
         backoff: true, // Use exponential backoff for navigation
-        retryCondition: RetryConditions.networkErrors
+        retryCondition: RETRY_CONDITIONS.networkErrors
     });
 });
 
@@ -229,7 +229,7 @@ When('I click on {string}', async function (this: ICustomWorld, selector: string
     }, {
         maxAttempts: 3,
         delay: 1000,
-        retryCondition: RetryConditions.elementErrors
+        retryCondition: RETRY_CONDITIONS.elementErrors
     });
 });
 

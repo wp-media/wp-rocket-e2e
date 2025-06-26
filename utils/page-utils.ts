@@ -17,7 +17,7 @@ import fs from "fs/promises";
 
 import {WP_BASE_URL, WP_PASSWORD, WP_PASSWORD2, WP_USERNAME, WP_USERNAME2} from '../config/wp.config';
 import { uninstallPlugin, updatePermalinkStructure, deactivatePlugin, switchTheme } from "./commands";
-import { withRetry, RetryConditions } from "./retry-helper";
+import { withRetry, RETRY_CONDITIONS } from "./retry-helper";
 
 /**
  * Utility class for interacting with a Playwright Page instance in WordPress testing.
@@ -104,7 +104,7 @@ export class PageUtils {
         }, {
             maxAttempts: 3,
             delay: 2000,
-            retryCondition: RetryConditions.networkErrors
+            retryCondition: RETRY_CONDITIONS.networkErrors
         });
     }
 
@@ -593,7 +593,7 @@ export class PageUtils {
         }, {
             maxAttempts: 2,
             delay: 1500,
-            retryCondition: RetryConditions.elementErrors
+            retryCondition: RETRY_CONDITIONS.elementErrors
         });
     }
 
