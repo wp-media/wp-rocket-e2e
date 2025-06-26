@@ -1,4 +1,4 @@
-@bwpsetup @bwpdownloadrestore @bwupsmoke
+@bwupsetup @bwupdownloadrestore @bwupsmoke
 Feature: BackWpUp Download and Restore
 
     Scenario: Should download backup
