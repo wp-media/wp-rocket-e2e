@@ -1,3 +1,5 @@
+@bwupsetup @bwpupstorage @bwupsmoke
+
 Feature: Should be able to setup other storage
 
   Background:

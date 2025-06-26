@@ -49,6 +49,8 @@ When('I clicked on {string} storage button', async function (this: ICustomWorld,
     await configureButton.click();
 
     await this.storage.setupMSAzure();
+
+    await this.page.pause()
 });
 
 

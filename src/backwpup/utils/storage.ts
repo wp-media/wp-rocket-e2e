@@ -1,7 +1,7 @@
 import {Page} from "@playwright/test";
 import {Locators, Selector} from "../../../utils/types";
 import {Sections} from "../../common/sections";
-import {WP_PASSWORD, WP_PASSWORD2, WP_USERNAME, WP_USERNAME2} from "../../../config/wp.config";
+import {BACKWPUP_INFOS} from "../../../config/wp.config";
 
 export class StorageUtils {
     /**
@@ -58,15 +58,11 @@ export class StorageUtils {
      * @return {Promise<void>}
      */
     public setupMSAzure = async (): Promise<void> => {
-        const username = WP_USERNAME2;
-        const password = WP_PASSWORD;
 
         await this.page.click('#msazureaccname');
-        await this.page.fill('#msazureaccname', username);
-        await this.page.click('#msazureaccname');
-        await this.page.fill('#msazurekey', password);
-        await this.page.click('#msazureaccname');
-        await this.page.fill('#msazurekey', password);
+        await this.page.fill('#msazureaccname', BACKWPUP_INFOS.msAccountName);
+        await this.page.click('#msazurekey');
+        await this.page.fill('#msazurekey', BACKWPUP_INFOS.msAccessKey);
 
         // Click login.
         await this.page.click('.js-backwpup-test-MSAZURE-storage');
