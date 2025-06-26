@@ -47,6 +47,11 @@ When('I clicked on {string} storage button', async function (this: ICustomWorld,
     await expect(configureButton).toBeVisible();
     await configureButton.click();
 
+    await this.page.waitForResponse(response =>
+        response.url().includes('/backwpup/v1/getblock') &&
+        response.status() === 200
+    );
+
     await this.storage.setupMSAzure();
 
     await this.page.pause()

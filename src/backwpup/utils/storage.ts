@@ -64,6 +64,13 @@ export class StorageUtils {
         await this.page.click('#msazurekey');
         await this.page.fill('#msazurekey', BACKWPUP_INFOS.msAccessKey);
 
+        await this.page.waitForResponse(response =>
+            response.url().includes('admin-ajax.php') &&
+            response.status() === 200
+        );
+
+        await this.page.waitForSelector('#msazurecontainer', { state: 'visible' });
+
         // Click login.
         await this.page.click('.js-backwpup-test-MSAZURE-storage');
     }
