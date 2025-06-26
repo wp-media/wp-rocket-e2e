@@ -59,7 +59,8 @@ Then('{string} storage should be selected', async function (this: ICustomWorld, 
     const storageType = storageProvider.toUpperCase();
     await this.page.locator('.backwpup-job-card button[data-content="storages"]').first().click();
 
-    await expect(this.page.locator(`#destination-${storageType}`)).toBeChecked();
+    const isChecked  = await this.page.isChecked(`#destination-${storageType}`);
+    expect(isChecked).toBe(true);
 
     await this.page.locator('button.js-backwpup-close-sidebar').click()
 });
