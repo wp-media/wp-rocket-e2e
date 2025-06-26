@@ -71,5 +71,10 @@ export class StorageUtils {
 
         // Click login.
         await this.page.click('.js-backwpup-test-MSAZURE-storage');
+
+        await this.page.waitForResponse(response =>
+            response.url().includes('/backwpup/v1/cloudsaveandtest') &&
+            response.status() === 200
+        );
     }
 }
