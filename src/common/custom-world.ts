@@ -29,7 +29,6 @@ import { BrowserContext, Page } from '@playwright/test';
 import { Sections } from './sections';
 import { PageUtils } from '../../utils/page-utils';
 import type { Section } from "../../utils/types";
-import {StorageUtils} from "../backwpup/utils/storage";
 
 export interface ICustomWorld extends World {
 	context?: BrowserContext;
@@ -39,7 +38,6 @@ export interface ICustomWorld extends World {
 	pickle?: Pickle;
 	wprSection?: Section;
 	wprOption?: string;
-	storage?: StorageUtils
 }
 
 export class CustomWorld extends World implements ICustomWorld {

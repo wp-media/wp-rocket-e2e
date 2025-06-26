@@ -27,8 +27,9 @@
     "push-report": "ts-node report.ts",
     "wp-env": "wp-env",
     "test:bwpuponboarding": "$npm_package_config_testCommand --tags @bwpuponboarding",
-    "test:bwpupsmoke": "$npm_package_config_testCommand --tags @bwupsmoke",
-    "test:bwpupstorage": "$npm_package_config_testCommand --tags @bwpupstorage"
+    "test:bwpupstorage": "$npm_package_config_testCommand --tags @bwpupstorage",
+    "test:bwpupsmoke": "$npm_package_config_testCommand --tags @bwupsmoke ; npm run open-report",
+    "open-report": "ts-node open-report.ts"
   },
   "repository": {
     "type": "git",
