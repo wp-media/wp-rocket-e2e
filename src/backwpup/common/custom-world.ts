@@ -1,4 +1,4 @@
-import {World} from "@cucumber/cucumber";
+import {IWorldOptions, setWorldConstructor, World} from "@cucumber/cucumber";
 import {BrowserContext, Page} from "@playwright/test";
 import {Sections} from "../../common/sections";
 import {PageUtils} from "../../../utils/page-utils";
@@ -18,3 +18,11 @@ export interface ICustomWorld extends World {
     initialBackups?: BackupRowData[];
     storage?: StorageUtils;
 }
+
+export class CustomWorld extends World implements ICustomWorld {
+    constructor(options: IWorldOptions) {
+        super(options)
+    }
+}
+
+setWorldConstructor(CustomWorld)
