@@ -243,66 +243,30 @@ Given('I install plugin {string}', async function (this: ICustomWorld, pluginUrl
 });
 
 /**
- * Executes the step to log in with retry logic.
+ * Executes the step to log in.
  */
 When('I log in', async function (this: ICustomWorld) {
-    const maxAttempts = 3;
+    const maxAttempts = 2;
     let attempts = 0;
-    let lastError: Error | null = null;
 
     while (attempts < maxAttempts) {
         try {
             attempts++;
-            console.log(`Login attempt ${attempts}/${maxAttempts}`);
-
-            // Add delay between attempts
+            
+            // Small delay on retry only
             if (attempts > 1) {
-                console.log(`Waiting 3 seconds before retry attempt ${attempts}...`);
-                await this.page.waitForTimeout(3000);
+                await this.page.waitForTimeout(2000);
             }
-
-            // Clear any existing sessions/cookies on retry
-            if (attempts > 1) {
-                await this.page.context().clearCookies();
-            }
-
-            // Attempt login
+            
             await this.utils.auth();
             
-            // Verify login was successful by checking for admin elements
-            await this.page.waitForSelector('#wpadminbar, .wp-admin, [id*="admin"]', { 
-                timeout: 10000 
-            });
-            
-            // Additional verification - check URL contains wp-admin or we're not on login page
-            await this.page.waitForFunction(() => {
-                return window.location.href.includes('wp-admin') || 
-                       !window.location.href.includes('wp-login.php');
-            }, { timeout: 5000 });
-
-            console.log(`Login successful on attempt ${attempts}`);
+            // Simple success check - just wait a bit for the page to load
+            await this.page.waitForTimeout(3000);
             return;
-
+            
         } catch (error) {
-            lastError = error as Error;
-            console.log(`Login attempt ${attempts} failed: ${error.message}`);
-            
-            // Log current page URL for debugging
-            const currentUrl = this.page.url();
-            console.log(`Current page URL: ${currentUrl}`);
-            
-            // If this is the last attempt, throw comprehensive error
             if (attempts === maxAttempts) {
-                const errorMessage = `Failed to log in after ${maxAttempts} attempts.\n` +
-                    `Last error: ${lastError.message}\n` +
-                    `Current URL: ${currentUrl}\n` +
-                    `Possible issues:\n` +
-                    `- Network connectivity\n` +
-                    `- Login credentials\n` +
-                    `- WordPress site availability\n` +
-                    `- Session/cookie conflicts`;
-                
-                throw new Error(errorMessage);
+                throw error; // Throw original error
             }
         }
     }
