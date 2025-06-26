@@ -41,13 +41,12 @@ When('I Configure web server storage', async function (this: ICustomWorld) {
  * @param {string} period - Period option (Available options are monthly, hourly, weekly and daily).
 */
 When('I set {string} backup frequency to {string}', async function (this: ICustomWorld, dataType: string, period: string) {
-    if(dataType === 'files') {
-        await this.page.selectOption('select[name="job_2_frequency"]', period);
-    }
-
-    if(dataType === 'database') {
-        await this.page.selectOption('select[name="job_3_frequency"]', period);
-    }
+      const dataTypes: { [key: string]: string } = {
+          files: 'job_2',
+          database: 'job_3',
+      };
+      
+      await this.page.selectOption(`select[name="${dataTypes[dataType]}_frequency"]`, period);
 })
 
 /**
