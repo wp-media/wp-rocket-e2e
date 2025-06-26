@@ -53,15 +53,13 @@ When('I set up {string} storage', async function (this: ICustomWorld, storagePro
     );
 
     await this.storage.setupMSAzure();
-
-    await this.page.pause()
 });
 
 Then('{string} storage should be selected', async function (this: ICustomWorld, storageProvider: string) {
     const storageType = storageProvider.toUpperCase();
     await this.page.locator('.backwpup-job-card button[data-content="storages"]').first().click();
 
-    await expect(this.page.locator(`#destination-"${storageType}`)).toBeChecked();
+    await expect(this.page.locator(`#destination-${storageType}`)).toBeChecked();
 
     await this.page.locator('button.js-backwpup-close-sidebar').click()
 });
