@@ -16,6 +16,6 @@ Feature: Should be able to setup other storage
     And I go '/wp-admin/admin.php?page=backwpup'
     And I should see 'mixed' job cards
     And I set up 'msazure' storage
-    And 'mzaure' storage should be selected
+    And 'mszaure' storage should be selected
     And I click on manual backup of a job
     And '2' backup is generated and added to history
