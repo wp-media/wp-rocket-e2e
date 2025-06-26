@@ -38,7 +38,7 @@ Then('{string} backup is generated and added to history', async function (this: 
 });
 
 
-When('I clicked on {string} storage button', async function (this: ICustomWorld, storageProvider: string) {
+When('I set up {string} storage', async function (this: ICustomWorld, storageProvider: string) {
     await this.page.locator('.backwpup-job-card button[data-content="storages"]').first().click();
     const storageType = storageProvider.toUpperCase();
 
@@ -55,6 +55,15 @@ When('I clicked on {string} storage button', async function (this: ICustomWorld,
     await this.storage.setupMSAzure();
 
     await this.page.pause()
+});
+
+Then('{string} storage should be selected', async function (this: ICustomWorld, storageProvider: string) {
+    const storageType = storageProvider.toUpperCase();
+    await this.page.locator('.backwpup-job-card button[data-content="storages"]').first().click();
+
+    await expect(this.page.locator(`#destination-"${storageType}`)).toBeChecked();
+
+    await this.page.locator('button.js-backwpup-close-sidebar').click()
 });
 
 When('{string} is unchecked from files options', async function (this: ICustomWorld, value: string) {
@@ -77,6 +86,15 @@ When('{string} is unchecked from database options', async function (this: ICusto
     await waitForToastMessage(this.page , 'Excluded tables saved successfully.')
 });
 
+Then('I click on manual backup of a job', async function (this: ICustomWorld, value: string) {
+    this.initialBackups = await captureBackupTableData(this.page)
+    await this.page.locator('button[data-content="backup-job"].js-backwpup-load-and-open-modal').click();
+    await this.page.waitForSelector('#sidebar-backup-job', { state: 'visible' });
+
+    await this.page.locator('button.js-backwpup-start-backup-job').click();
+
+    await this.page.waitForLoadState('networkidle');
+});
 
 const captureBackupTableData = async (page: Page): Promise<BackupRowData[]> => {
     const rows = await page.locator('table tbody tr').all();
