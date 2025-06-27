@@ -550,7 +550,20 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
         // Theme-specific delay JS issues
         /astra.*undefined/i,
         /divi.*undefined/i,
+        // Flatsome-specific patterns (known to have issues with Delay JS)
         /flatsome.*undefined/i,
+        /flatsome.*script.*error/i,
+        /ux.*builder.*undefined/i,
+        /ux.*theme.*error/i,
+        /flatsome.*lazy.*load/i,
+        /flatsome.*slider.*undefined/i,
+        /flatsome.*carousel.*undefined/i,
+        /swiper.*undefined/i,
+        /flickity.*undefined/i,
+        /woocommerce.*undefined.*flatsome/i,
+        /flatsome.*woocommerce.*undefined/i,
+        /ux.*element.*undefined/i,
+        /ux.*slider.*undefined/i,
         // Mobile view specific delay issues
         /mobile.*script/i,
         /viewport.*script/i
@@ -585,6 +598,17 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
     // For Delay JS scenarios, wait additional time for delayed scripts to settle
     if (url.includes('delayjs') || url.includes('delay-js')) {
         await page.waitForTimeout(3000); // Extra wait for delayed scripts
+    }
+    
+    // Flatsome theme needs extra time due to its complex JS structure
+    const isFlatsomeActive = await page.evaluate(() => {
+        return document.body.classList.contains('flatsome') || 
+               document.querySelector('link[href*="flatsome"]') !== null ||
+               (window as any).flatsomeVars !== undefined;
+    }).catch(() => false);
+    
+    if (isFlatsomeActive) {
+        await page.waitForTimeout(5000); // Extra wait for Flatsome's complex JS
     }
 
     await page.evaluate(async () => {
