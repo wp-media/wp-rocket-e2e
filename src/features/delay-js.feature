@@ -32,6 +32,6 @@ Feature: No Regression with delayjs script udpate
 
         Examples:
             | theme                  |
-            | flatsome               |
-            # | astra                  |
-            # | Divi                   |
+            | astra                  |
+            | Divi                   |
+            # | flatsome               | # Disabled - known issues with Delay JS timing
