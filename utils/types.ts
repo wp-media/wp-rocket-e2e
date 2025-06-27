@@ -100,11 +100,10 @@ export type Viewport = {
     height: number;
 };
 
-export interface LcpData {
+export interface PreloadFontsData {
     [key: string]: {
         url: string,
-        lcp: string,
-        viewport: string,
+        fonts: string,
         comment: string
     }
 }

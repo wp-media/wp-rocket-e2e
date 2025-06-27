@@ -10,7 +10,11 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint  . --ext .ts --fix",
+<<<<<<< HEAD
     "test:e2e": "$npm_package_config_testCommand  --tags \"not @vr and not @bwpupsmoke\" ; npm run push-report --tag=$npm_config_tag",
+=======
+    "test:e2e": "$npm_package_config_testCommand  --tags \"not @vr and not @delayjs and not @bwpupsmoke\" ; npm run push-report --tag=$npm_config_tag",
+>>>>>>> develop
     "test:smoke": "$npm_package_config_testCommand --tags @smoke ; npm run push-report --tag=$npm_config_tag",
     "test:local": "$npm_package_config_testCommand --tags @local",
     "test:export": "$npm_package_config_testCommand --tags @export",
@@ -19,6 +23,8 @@
     "test:llcssbg": "$npm_package_config_testCommand --tags @llcssbg",
     "test:delayjs": "$npm_package_config_testCommand --tags @delayjs",
     "test:lcp": "$npm_package_config_testCommand --tags @lcp",
+    "test:priorityelements": "$npm_package_config_testCommand --tags @priorityelements",
+    "test:preloadfonts": "$npm_package_config_testCommand --tags @preloadfonts",
     "test:test": "$npm_package_config_testCommand --tags @test",
     "test:lrc": "$npm_package_config_testCommand --tags @lrc",
     "test:cpcss": "$npm_package_config_testCommand --tags @cpcss",
@@ -27,6 +33,7 @@
     "push-report": "ts-node report.ts",
     "wp-env": "wp-env",
     "test:bwpupstorage": "$npm_package_config_testCommand --tags @bwpupstorage",
+    "test:bwpuponboarding": "$npm_package_config_testCommand --tags @bwpuponboarding",
     "test:bwpupsmoke": "$npm_package_config_testCommand --tags @bwpupsmoke ; npm run open-report",
     "open-report": "ts-node open-report.ts"
   },

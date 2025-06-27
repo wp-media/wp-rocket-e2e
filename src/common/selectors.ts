@@ -139,6 +139,11 @@ export const selectors: Selectors = {
                 type: FieldType.checkbox,
                 element: "#image_dimensions",
                 target: "label[for=image_dimensions]"
+            },
+            preloadFonts:{
+                type: FieldType.checkbox,
+                element: "#auto_preload_fonts",
+                target: "label[for=auto_preload_fonts]"
             }
         }
     },

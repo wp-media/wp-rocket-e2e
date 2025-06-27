@@ -8,14 +8,14 @@
  * @requires {@link @playwright/test}
  * @requires {@link @cucumber/cucumber}
  */
-import { ICustomWorld } from "../../common/custom-world";
-import { When } from '@cucumber/cucumber';
+import { ICustomWorld } from '../../common/custom-world';
+import { expect } from '@playwright/test';
+import { When, Then } from '@cucumber/cucumber';
 
 /**
  * Executes the step to delete the WP Rocket plugin.
  */
 When('I delete backwpup plugin', async function (this: ICustomWorld) {
-
     // Goto plugins page.
     await this.utils.gotoPlugin();
 
@@ -31,3 +31,15 @@ When('I delete backwpup plugin', async function (this: ICustomWorld) {
     // Delete BWU.
     await this.utils.removeBackWpViaUi();
 });
+
+/**
+ * Executes the step to assert successful deletion of the BackWPup plugin.
+ */
+Then(
+    'backwpup should delete successfully',
+    async function (this: ICustomWorld) {
+        // Assert that BackWPup is deleted successfully
+        await this.page.waitForSelector('#backwpup-pro-deleted');
+        await expect(this.page.locator('#backwpup-pro-deleted')).toBeVisible();
+    }
+);
