@@ -275,6 +275,7 @@ When('I log out', async function (this: ICustomWorld) {
  */
 When('I visit site url', async function (this: ICustomWorld) {
     await this.page.goto(WP_BASE_URL);
+    await this.page.waitForLoadState('networkidle');
 });
 
 /**
@@ -287,32 +288,39 @@ When('I visit {string} in mobile view', async function (this:ICustomWorld, page)
     });
 
     await this.utils.visitPage(page);
+    await this.page.waitForLoadState('networkidle');
 });
 
 /**
  * Executes the step to expand the mobile menu.
  */
 When('expand mobile menu', async function (this:ICustomWorld) {
-    let target: string;
-    const theme = process.env.THEME ? process.env.THEME : '';
+    await withRetry(async () => {
+        let target: string;
+        const theme = process.env.THEME ? process.env.THEME : '';
 
-    if (theme === '') {
-        return;
-    }
+        if (theme === '') {
+            return;
+        }
 
-    switch (theme) {
-        case 'flatsome':
-            target = '[data-open="#main-menu"]';
-            break;
-        case 'Divi':
-            target = '#et_mobile_nav_menu';
-            break;
-        case 'astra':
-            target = '.ast-mobile-menu-trigger-minimal';
-            break;
-    }
+        switch (theme) {
+            case 'flatsome':
+                target = '[data-open="#main-menu"]';
+                break;
+            case 'Divi':
+                target = '#et_mobile_nav_menu';
+                break;
+            case 'astra':
+                target = '.ast-mobile-menu-trigger-minimal';
+                break;
+        }
 
-    await this.page.locator(target).click();
+        await this.page.locator(target).click();
+    }, {
+        maxAttempts: 3,
+        delay: 1000,
+        retryCondition: RETRY_CONDITIONS.elementErrors
+    });
 });
 
 /**
