@@ -7,6 +7,7 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
 - You also need zip files of Backwpup pro, I'll explain:
     - zip the latest release - **rename the zip file name to `backwpup-pro.zip`. e.g `backwpup-5.3.1.zip` becomes `backwpup-pro.zip`**
     - Make sure to put the file in the `./plugin` folder in the root - Playwright will pick these files when needed and use them during tests.
+    - To generate the zip, you can follow the steps [here](https://www.notion.so/wpmedia/Generate-a-Branch-Zip-File-29d931ad50e945dab8df5a4302ea948a#1c3ed22a22f0801f9d84f22b0bd1bd93)
 
 
 ## Installation
@@ -39,4 +40,3 @@ You can also run `npx playwright test --headed` to view the tests being executed
 ## TODO
 - Add option for backwpup free plugin
 - Create helper function to read debug.log content
-- Automatically delete backup before and after tests.
