@@ -24,7 +24,6 @@ import {
 } from "../../../utils/commands";
 import { withRetry, RETRY_CONDITIONS } from "../../../utils/retry-helper";
 import backstop from 'backstopjs';
-import { withRetry, RETRY_CONDITIONS } from "../../../utils/retry-helper";
 
 /**
  * Executes the step to log in.
