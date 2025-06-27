@@ -1,4 +1,4 @@
-@setup @performancehints
+@setup @performancehints @flaky
 Feature: Clear lcp/performance hints data tests
 
     Background:

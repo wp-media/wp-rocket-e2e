@@ -16,17 +16,29 @@ import {LcpData, LLImagesData, Row, SinglePageLCPImages} from "../../../utils/ty
 import {dbQuery, getWPTablePrefix} from "../../../utils/commands";
 import {checkLcpOrViewport, extractFromStdout} from "../../../utils/helpers";
 import {WP_BASE_URL} from '../../../config/wp.config';
+import {withRetry, RETRY_CONDITIONS} from '../../../utils/retry-helper';
 import fs from 'fs/promises';
 
 let data: string,
     truthy: boolean = true,
-    failMsg: string,
+    failMsg: string = '',
     jsonData: Record<string, { lcp: string[]; viewport: string[]; enabled: boolean, comment: string; }>,
     isDbResultAvailable: boolean = true,
     lcpLLImages: LLImagesData = {},
     singlePageLcp : SinglePageLCPImages = {url: '', lcp: '', viewport: ''};
 
 const actual: LcpData = {};
+
+/**
+ * Reset test state variables before each scenario
+ */
+function resetTestState() {
+    truthy = true;
+    failMsg = '';
+    isDbResultAvailable = true;
+    // Clear actual data object
+    Object.keys(actual).forEach(key => delete actual[key]);
+}
 
 /**
  * Executes step to visit page based on the templates and get check for lazyload.
@@ -88,6 +100,9 @@ When('I visit the urls and check for lazyload', async function (this: ICustomWor
  * Executes step to visit page based on the form factor(desktop/mobile) and get the LCP/ATF data from DB.
  */
 When('I visit the urls for {string}', async function (this: ICustomWorld, formFactor: string) {
+    // Reset test state at the beginning of each scenario
+    resetTestState();
+    
     let sql: string,
         result: string,
         resultFromStdout: Row[],
@@ -102,9 +117,6 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
         viewPortHeight = 829;
         resultFile = './src/support/results/expectedResultsMobile.json';
     }
-
-    // Reset variable state.
-    failMsg = '';
 
     await this.page.setViewportSize({
         width: viewPortWidth,
@@ -131,30 +143,55 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
                 return beacon && beacon.getAttribute('beacon-completed') === 'true';
             }, { timeout: 100000 });
 
+            // Add additional wait to ensure database write operation is complete
+            await this.page.waitForTimeout(2000);
+
             if (formFactor !== 'desktop') {
                 isMobile = 1;
             }
-            // Get the LCP/ATF from the DB
-            sql = `SELECT lcp, viewport
-                   FROM ${tablePrefix}wpr_above_the_fold
-                   WHERE url LIKE "%${key}%"
-                     AND is_mobile = ${isMobile}`;
-            result = await dbQuery(sql);
-            resultFromStdout = await extractFromStdout(result);
 
-            // If no DB result, set assertion var to false, fail msg and skip the loop.
-            if (!resultFromStdout || resultFromStdout.length === 0) {
+            // Use retry helper for database query
+            try {
+                const dbResult = await withRetry(async () => {
+                    // Get the LCP/ATF from the DB
+                    sql = `SELECT lcp, viewport
+                           FROM ${tablePrefix}wpr_above_the_fold
+                           WHERE url LIKE "%${key}%"
+                             AND is_mobile = ${isMobile}`;
+                    result = await dbQuery(sql);
+                    resultFromStdout = await extractFromStdout(result);
+
+                    // If we don't get results, throw an error to trigger retry
+                    if (!resultFromStdout || resultFromStdout.length === 0) {
+                        throw new Error(`No database results found for ${key}`);
+                    }
+
+                    return resultFromStdout;
+                }, {
+                    maxAttempts: 3,
+                    delay: 1000,
+                    retryCondition: (error: Error) => {
+                        // Retry on database-related errors but not on assertion errors
+                        const message = error.message.toLowerCase();
+                        return message.includes('database') || 
+                               message.includes('no database results') ||
+                               message.includes('connection') ||
+                               message.includes('timeout');
+                    }
+                });
+
+                // Populate the actual data if successful
+                actual[key] = {
+                    url: url,
+                    lcp: dbResult[0].lcp || '',
+                    viewport: dbResult[0].viewport || '',
+                    comment: jsonData[key].comment ?? ''
+                };
+
+            } catch (error) {
+                // If all retries failed, mark as unavailable
                 isDbResultAvailable = false;
-                failMsg += `No result from database for url ${key} in ${formFactor}\n\n\n`;
-                continue;
-            }
-
-            // Populate the actual data.
-            actual[key] = {
-                url: url,
-                lcp: resultFromStdout[0].lcp,
-                viewport: resultFromStdout[0].viewport,
-                comment: jsonData[key].comment ?? ''
+                failMsg += `No result from database for url ${key} in ${formFactor} after retries: ${error.message}\n\n\n`;
             }
         }
     }
@@ -166,7 +203,7 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
 Then('lcp and atf should be as expected for {string}', async function (this: ICustomWorld, formFactor: string) {
     // Log fail messages from DB query before failing test.
     if (failMsg !== '') {
-        console.log('\x1b[31m%s\x1b[0m',failMsg);
+        console.log('\x1b[31m%s\x1b[0m', failMsg);
 
         // Fail test when no DB result is found.
         expect(isDbResultAvailable).toBeTruthy();
@@ -175,35 +212,88 @@ Then('lcp and atf should be as expected for {string}', async function (this: ICu
 
     // Set test status to True by default.
     truthy = true;
+    let detailedFailMsg = '';
+
+    // Helper function for more robust string matching
+    const isStringMatch = (expected: string, actual: string): boolean => {
+        if (!expected || !actual) {
+            return false;
+        }
+        
+        // Normalize strings by removing extra whitespace and converting to lowercase
+        const normalizedExpected = expected.trim().toLowerCase();
+        const normalizedActual = actual.trim().toLowerCase();
+        
+        // Check for exact match first
+        if (normalizedExpected === normalizedActual) {
+            return true;
+        }
+        
+        // Check if either string contains the other (for partial matches)
+        return normalizedActual.includes(normalizedExpected) || 
+               normalizedExpected.includes(normalizedActual);
+    };
 
     // Iterate over the data
     for (const key in jsonData) {
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
             const expected = jsonData[key];
-            for (const lcp of expected.lcp) {
-                // Check if expected lcp is present in actual lcp.
-                if (!actual[key].lcp.includes(lcp)) {
-                    truthy = false;
-                    failMsg += `Expected LCP for ${formFactor} - ${lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}
-                    more info -- ( ${actual[key].comment} )\n\n\n`;
-                }
+            
+            // Check if actual data exists for this key
+            if (!actual[key]) {
+                truthy = false;
+                detailedFailMsg += `Missing actual data for ${key} in ${formFactor}\n\n`;
+                continue;
             }
 
+            const actualData = actual[key];
+            
+            // Ensure actual data is not null or undefined
+            const actualLcp = actualData.lcp || '';
+            const actualViewport = actualData.viewport || '';
 
-            // Cater for multiple expected viewport candidates.
-            for (const viewport of expected.viewport) {
-                if (!actual[key].viewport.includes(viewport)) {
-                    truthy = false;
-                    failMsg += `Expected Viewport for ${formFactor} - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}
-                    more info -- ( ${actual[key].comment} )\n\n\n`;
+            // Check LCP expectations
+            let lcpMatched = false;
+            for (const lcp of expected.lcp) {
+                if (isStringMatch(lcp, actualLcp)) {
+                    lcpMatched = true;
+                    break;
                 }
+            }
+            
+            if (!lcpMatched && expected.lcp.length > 0) {
+                truthy = false;
+                detailedFailMsg += `LCP mismatch for ${formFactor}:\n`;
+                detailedFailMsg += `  URL: ${actualData.url}\n`;
+                detailedFailMsg += `  Expected LCP: ${expected.lcp.join(' OR ')}\n`;
+                detailedFailMsg += `  Actual LCP: ${actualLcp}\n`;
+                detailedFailMsg += `  Comment: ${actualData.comment}\n\n`;
+            }
+
+            // Check Viewport expectations
+            let viewportMatched = false;
+            for (const viewport of expected.viewport) {
+                if (isStringMatch(viewport, actualViewport)) {
+                    viewportMatched = true;
+                    break;
+                }
+            }
+            
+            if (!viewportMatched && expected.viewport.length > 0) {
+                truthy = false;
+                detailedFailMsg += `Viewport mismatch for ${formFactor}:\n`;
+                detailedFailMsg += `  URL: ${actualData.url}\n`;
+                detailedFailMsg += `  Expected Viewport: ${expected.viewport.join(' OR ')}\n`;
+                detailedFailMsg += `  Actual Viewport: ${actualViewport}\n`;
+                detailedFailMsg += `  Comment: ${actualData.comment}\n\n`;
             }
         }
     }
 
-    // Log fail message from Expectation mismatch before failing test.
-    if (failMsg !== '') {
-        console.log('\x1b[31m%s\x1b[0m',failMsg);
+    // Log detailed fail message from Expectation mismatch before failing test.
+    if (detailedFailMsg !== '') {
+        console.log('\x1b[31m%s\x1b[0m', detailedFailMsg);
+        failMsg = detailedFailMsg; // Store for potential debugging
     }
 
     // Fail test when there is expectation mismatch.

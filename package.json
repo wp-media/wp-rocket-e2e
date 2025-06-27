@@ -23,6 +23,7 @@
     "test:lrc": "$npm_package_config_testCommand --tags @lrc",
     "test:cpcss": "$npm_package_config_testCommand --tags @cpcss",
     "test:performancehints": "$npm_package_config_testCommand --tags @performancehints",
+    "test:flaky": "$npm_package_config_testCommand --tags @flaky",
     "healthcheck": "ts-node healthcheck.ts",
     "push-report": "ts-node report.ts",
     "wp-env": "wp-env",
