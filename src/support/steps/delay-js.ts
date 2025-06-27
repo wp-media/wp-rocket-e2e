@@ -24,6 +24,7 @@ When('move the mouse', async function (this: ICustomWorld) {
  */
 When('I click on link', async function (this:ICustomWorld) {
     await withRetry(async () => {
+        await this.page.waitForLoadState('networkidle');
         await this.page.getByRole('link', { name: 'About Us' }).click();
     }, {
         maxAttempts: 3,

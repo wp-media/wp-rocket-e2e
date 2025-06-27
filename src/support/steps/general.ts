@@ -559,7 +559,7 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
     page.on('pageerror', pageErrorHandler);
 
     await page.goto(url);
-    await page.waitForLoadState('load', { timeout: 30000 });
+    await page.waitForLoadState('networkidle');
 
     await page.evaluate(async () => {
         // Scroll to the bottom of page.

@@ -26,12 +26,13 @@ Then('rollback version must be the same as in the button', async function (this:
     await withRetry(async () => {
         // Navigate to helper plugin page.
         await this.utils.gotoHelper();
+        await this.page.waitForLoadState('networkidle');
         // Go to tools tab
         await this.page.locator('#tools_tab').click();
         await this.page.waitForSelector('#wpr_last_major_version_equals_current');
         await expect(this.page.locator('#wpr_last_major_version_equals_current')).toHaveText(/Returned True/);
     }, {
-        maxAttempts: 3,
+        maxAttempts: 5,
         delay: 2000,
         retryCondition: RETRY_CONDITIONS.elementErrors
     });
