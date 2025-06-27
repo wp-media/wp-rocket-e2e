@@ -17,5 +17,5 @@ Feature: Should be able to setup other storage
     Then I should see 'mixed' job cards
     And I set up 'msazure' storage
     Then 'msazure' storage should be selected
-    Then I click on manual backup of a job
+    When I click on manual backup of a job
     Then '2' backup is generated and added to history

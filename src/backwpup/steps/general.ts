@@ -87,7 +87,7 @@ When('{string} is unchecked from database options', async function (this: ICusto
     await waitForToastMessage(this.page , 'Excluded tables saved successfully.')
 });
 
-Then('I click on manual backup of a job', async function (this: ICustomWorld) {
+When('I click on manual backup of a job', async function (this: ICustomWorld) {
     this.initialBackups = await captureBackupTableData(this.page)
     await this.page.locator('button[data-content="backup-job"].js-backwpup-load-and-open-modal').click();
     await this.page.waitForSelector('#sidebar-backup-job', { state: 'visible' });
