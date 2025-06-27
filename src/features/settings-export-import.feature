@@ -39,7 +39,7 @@ Feature: C2148 - Should not change the content of existing fields
         And I log in
         Then I must not see any error in debug.log
 
-    Scenario: All options are carried over after update
+    Scenario: Should not change enabled fields with update
         Given plugin is installed 'previous_stable'
         And plugin is activated
         And I enable all settings
