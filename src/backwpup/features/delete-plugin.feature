@@ -1,4 +1,4 @@
-@bwpsetup @bwpplugindeletion @bwupsmoke
+@bwpsetup @bwpplugindeletion @bwpupsmoke
 Feature: Should successfully delete BackWPup plugin
 
     Background:
