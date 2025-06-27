@@ -11,7 +11,7 @@
 import {ICustomWorld} from "../../common/custom-world";
 import {expect} from "@playwright/test";
 import {Then, When} from "@cucumber/cucumber";
-import {LcpData, LLImagesData, Row, SinglePageLCPImages} from "../../../utils/types";
+import {LLImagesData, Row, SinglePageLCPImages} from "../../../utils/types";
 
 import {dbQuery, getWPTablePrefix} from "../../../utils/commands";
 import {checkLcpOrViewport, extractFromStdout} from "../../../utils/helpers";
@@ -22,23 +22,19 @@ import fs from 'fs/promises';
 let data: string,
     truthy: boolean = true,
     failMsg: string = '',
-    jsonData: Record<string, { lcp: string[]; viewport: string[]; enabled: boolean, comment: string; }>,
+    jsonData: Record<string, { lcp: string[]; viewport: string[]; fonts: string[]; enabled: boolean, comment: string; }>,
     isDbResultAvailable: boolean = true,
     lcpLLImages: LLImagesData = {},
     singlePageLcp : SinglePageLCPImages = {url: '', lcp: '', viewport: ''};
 
-const actual: LcpData = {};
-
-/**
- * Reset test state variables before each scenario
- */
-function resetTestState() {
-    truthy = true;
-    failMsg = '';
-    isDbResultAvailable = true;
-    // Clear actual data object
-    Object.keys(actual).forEach(key => delete actual[key]);
-}
+type ActualData = {
+  url: string;
+  lcp?: string;
+  viewport?: string;
+  fonts?: string;
+  comment?: string;
+};
+const actual: Record<string, ActualData> = {};
 
 /**
  * Executes step to visit page based on the templates and get check for lazyload.
@@ -59,6 +55,8 @@ When('I visit the urls and check for lazyload', async function (this: ICustomWor
         if ( jsonData[key].enabled === true ) {
             // Visit the page url.
             await this.utils.visitPage(key);
+            await this.page.waitForLoadState('networkidle');
+
 
             lcpLLImages = await this.page.evaluate((url) => {
                 const images = document.querySelectorAll('img'),
@@ -100,8 +98,6 @@ When('I visit the urls and check for lazyload', async function (this: ICustomWor
  * Executes step to visit page based on the form factor(desktop/mobile) and get the LCP/ATF data from DB.
  */
 When('I visit the urls for {string}', async function (this: ICustomWorld, formFactor: string) {
-    // Reset test state at the beginning of each scenario
-    resetTestState();
     
     let sql: string,
         result: string,
@@ -116,6 +112,8 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
         viewPortWidth = 389;
         viewPortHeight = 829;
         resultFile = './src/support/results/expectedResultsMobile.json';
+    } else if (formFactor === 'preloadfonts') {
+        resultFile = './src/support/results/expectedResultsPreloadFonts.json';
     }
 
     await this.page.setViewportSize({
@@ -130,7 +128,7 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
 
     // Visit page.
     for (const key in jsonData) {
-        if ( jsonData[key].enabled === true ) {
+        if (jsonData[key].enabled === true) {
             // Construct page url.
             const url: string = `${WP_BASE_URL}/${key}`;
 
@@ -139,79 +137,91 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
             await this.page.waitForLoadState('networkidle');
 
             // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
-            await this.page.waitForFunction(() => {
-                const beacon = document.querySelector('[data-name="wpr-wpr-beacon"]');
-                return beacon && beacon.getAttribute('beacon-completed') === 'true';
-            }, { timeout: 100000 });
+            await withRetry(async () => {
+                await this.page.waitForFunction(() => {
+                    const beacon = document.querySelector('[data-name="wpr-wpr-beacon"]');
+                    return beacon && beacon.getAttribute('beacon-completed') === 'true';
+                }, { timeout: 100000 });
+            }, {
+                maxAttempts: 3,
+                delay: 2000,
+                retryCondition: RETRY_CONDITIONS.networkErrors
+            });
 
-            // Add additional wait to ensure database write operation is complete
-            await this.page.waitForTimeout(2000);
-
-            if (formFactor !== 'desktop') {
+            if (formFactor !== 'desktop' && formFactor !== 'preloadfonts') {
                 isMobile = 1;
             }
 
-            // Use retry helper for database query
-            try {
-                const dbResult = await withRetry(async () => {
-                    // Get the LCP/ATF from the DB
-                    sql = `SELECT lcp, viewport
-                           FROM ${tablePrefix}wpr_above_the_fold
-                           WHERE url LIKE "%${key}%"
-                             AND is_mobile = ${isMobile}`;
-                    result = await dbQuery(sql);
-                    resultFromStdout = await extractFromStdout(result);
+            // Get the LCP/ATF or Preload Fonts from the DB
+            const dbResult = await withRetry(async () => {
+                if (formFactor === 'preloadfonts') {
+                    sql = `SELECT fonts FROM ${tablePrefix}wpr_preload_fonts WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`;
+                } else {
+                    sql = `SELECT lcp, viewport FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`;
+                }
+                result = await dbQuery(sql);
+                resultFromStdout = await extractFromStdout(result);
+                
+                // If no result, throw error to trigger retry
+                if (!resultFromStdout || resultFromStdout.length === 0) {
+                    throw new Error(`No database result for url ${key} in ${formFactor}`);
+                }
+                
+                return resultFromStdout;
+            }, {
+                maxAttempts: 3,
+                delay: 2000,
+                retryCondition: (error: Error) => {
+                    const message = error.message.toLowerCase();
+                    // Retry on database connection issues but not on genuine "no data" scenarios
+                    return message.includes('database') || 
+                           message.includes('connection') || 
+                           message.includes('timeout') ||
+                           message.includes('no database result');
+                }
+            });
 
-                    // If we don't get results, throw an error to trigger retry
-                    if (!resultFromStdout || resultFromStdout.length === 0) {
-                        throw new Error(`No database results found for ${key}`);
-                    }
+            // If withRetry also fails, set assertion var to false
+            if (!dbResult) {
+                isDbResultAvailable = false;
+                failMsg += `No result from database for url ${key} in ${formFactor} after retries\n\n\n`;
+                continue;
+            }
 
-                    return resultFromStdout;
-                }, {
-                    maxAttempts: 3,
-                    delay: 1000,
-                    retryCondition: (error: Error) => {
-                        // Retry on database-related errors but not on assertion errors
-                        const message = error.message.toLowerCase();
-                        return message.includes('database') || 
-                               message.includes('no database results') ||
-                               message.includes('connection') ||
-                               message.includes('timeout');
-                    }
-                });
+            resultFromStdout = dbResult;
 
-                // Populate the actual data if successful
+            // Populate the actual data.
+            if (formFactor === 'preloadfonts') {
                 actual[key] = {
                     url: url,
-                    lcp: dbResult[0].lcp || '',
-                    viewport: dbResult[0].viewport || '',
+                    fonts: resultFromStdout[0].fonts,
                     comment: jsonData[key].comment ?? ''
                 };
-
-            } catch (error) {
-                // If all retries failed, mark as unavailable
-                isDbResultAvailable = false;
-                failMsg += `No result from database for url ${key} in ${formFactor} after retries: ${error.message}\n\n\n`;
+            } else {
+                actual[key] = {
+                    url: url,
+                    lcp: resultFromStdout[0].lcp,
+                    viewport: resultFromStdout[0].viewport,
+                    comment: jsonData[key].comment ?? ''
+                };
             }
         }
     }
+
 });
 
 /**
  * Executes the step to assert that LCP & ATF should be as expected.
  */
-Then('lcp and atf should be as expected for {string}', async function (this: ICustomWorld, formFactor: string) {
+Then('{string} should be as expected for {string}', async function (this: ICustomWorld, type: string, formFactor: string) {
     // Log fail messages from DB query before failing test.
     if (failMsg !== '') {
-        console.log('\x1b[31m%s\x1b[0m', failMsg);
-
-        // Fail test when no DB result is found.
+        console.log('\x1b[31m%s\x1b[0m',failMsg);
+         // Fail test when no DB result is found.
         expect(isDbResultAvailable).toBeTruthy();
         return;
     }
 
-    // Set test status to True by default.
     truthy = true;
     let detailedFailMsg = '';
 
@@ -239,65 +249,51 @@ Then('lcp and atf should be as expected for {string}', async function (this: ICu
     for (const key in jsonData) {
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
             const expected = jsonData[key];
-            
-            // Check if actual data exists for this key
-            if (!actual[key]) {
-                truthy = false;
-                detailedFailMsg += `Missing actual data for ${key} in ${formFactor}\n\n`;
-                continue;
-            }
-
-            const actualData = actual[key];
-            
-            // Ensure actual data is not null or undefined
-            const actualLcp = actualData.lcp || '';
-            const actualViewport = actualData.viewport || '';
-
-            // Check LCP expectations
-            let lcpMatched = false;
-            for (const lcp of expected.lcp) {
-                if (isStringMatch(lcp, actualLcp)) {
-                    lcpMatched = true;
-                    break;
+            if (type === 'fonts') {
+                // Compare fonts arrays (containment, not exact match)
+                const expectedFonts = expected.fonts || [];
+                let actualFonts: string[] = [];
+                try {
+                    actualFonts = JSON.parse(actual[key].fonts || '[]');
+                } catch (e) {
+                    actualFonts = (actual[key].fonts || '').split(',').map(f => f.trim()).filter(Boolean);
                 }
-            }
-            
-            if (!lcpMatched && expected.lcp.length > 0) {
-                truthy = false;
-                detailedFailMsg += `LCP mismatch for ${formFactor}:\n`;
-                detailedFailMsg += `  URL: ${actualData.url}\n`;
-                detailedFailMsg += `  Expected LCP: ${expected.lcp.join(' OR ')}\n`;
-                detailedFailMsg += `  Actual LCP: ${actualLcp}\n`;
-                detailedFailMsg += `  Comment: ${actualData.comment}\n\n`;
-            }
-
-            // Check Viewport expectations
-            let viewportMatched = false;
-            for (const viewport of expected.viewport) {
-                if (isStringMatch(viewport, actualViewport)) {
-                    viewportMatched = true;
-                    break;
+                for (const font of expectedFonts) {
+                    if (!actualFonts.some(actualFont => actualFont.includes(font))) {
+                        truthy = false;
+                        failMsg += `Expected preload font for ${formFactor} - ${font} for ${actual[key].url} is not present in actual - ${actualFonts}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                    }
                 }
-            }
-            
-            if (!viewportMatched && expected.viewport.length > 0) {
-                truthy = false;
-                detailedFailMsg += `Viewport mismatch for ${formFactor}:\n`;
-                detailedFailMsg += `  URL: ${actualData.url}\n`;
-                detailedFailMsg += `  Expected Viewport: ${expected.viewport.join(' OR ')}\n`;
-                detailedFailMsg += `  Actual Viewport: ${actualViewport}\n`;
-                detailedFailMsg += `  Comment: ${actualData.comment}\n\n`;
+            } else if (type === 'lcp and atf') {
+                // Run both LCP and ATF logic
+                for (const lcp of expected.lcp) {
+                    if (!actual[key].lcp.includes(lcp)) {
+                        truthy = false;
+                        failMsg += `Expected LCP for ${formFactor} - ${lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                        // Highlighted log for missing LCP
+                        console.log('\x1b[43m\x1b[30m[HIGHLIGHTED] LCP MISMATCH for', key, '\x1b[0m');
+                        console.log('\x1b[33mExpected lcp:\x1b[0m', expected.lcp);
+                        console.log('\x1b[36mActual lcp:\x1b[0m', actual[key].lcp);
+                    }
+                }
+                for (const viewport of expected.viewport) {
+                    if (!actual[key].viewport.includes(viewport)) {
+                        truthy = false;
+                        failMsg += `Expected Viewport for ${formFactor} - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                        // Highlighted log for missing Viewport
+                        console.log('\x1b[41m\x1b[37m[HIGHLIGHTED] VIEWPORT MISMATCH for', key, '\x1b[0m');
+                        console.log('\x1b[33mExpected viewport:\x1b[0m', expected.viewport);
+                        console.log('\x1b[36mActual viewport:\x1b[0m', actual[key].viewport);
+                    }
+                }
             }
         }
     }
-
-    // Log detailed fail message from Expectation mismatch before failing test.
-    if (detailedFailMsg !== '') {
-        console.log('\x1b[31m%s\x1b[0m', detailedFailMsg);
-        failMsg = detailedFailMsg; // Store for potential debugging
+// Log fail message from Expectation mismatch before failing test.
+    if (failMsg !== '') {
+        console.log('\x1b[31m%s\x1b[0m',failMsg);
     }
-
-    // Fail test when there is expectation mismatch.
+// Fail test when there is expectation mismatch.
     expect(truthy).toBeTruthy();
 });
 
@@ -365,7 +361,15 @@ When('I visit the {string} and check lcp-atf are not lazyloaded', async function
         height: 700
     });
 
-    await this.utils.visitPage(url);
+    await withRetry(async () => {
+        await this.utils.visitPage(url);
+        await this.page.waitForLoadState('networkidle');
+
+    }, {
+        maxAttempts: 3,
+        delay: 2000,
+        retryCondition: RETRY_CONDITIONS.networkErrors
+    });
 
     const allImages = await this.page.evaluate((url) => {
         const images = document.querySelectorAll('img'),
@@ -409,6 +413,8 @@ When('I visit page {string} and check for lcp', async function (this:ICustomWorl
     });
 
     await this.utils.visitPage(page);
+    await this.page.waitForLoadState('networkidle');
+
 
     // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
     await this.page.waitForFunction(() => {
