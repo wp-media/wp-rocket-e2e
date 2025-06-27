@@ -9,6 +9,7 @@
  */
 import { ICustomWorld } from "../../common/custom-world";
 import { When, Given } from '@cucumber/cucumber';
+import { withRetry, RETRY_CONDITIONS } from "../../../utils/retry-helper";
 
 /**
  * Executes the step to move the mouse.
@@ -22,7 +23,13 @@ When('move the mouse', async function (this: ICustomWorld) {
  * Executes the step to click on about us link.
  */
 When('I click on link', async function (this:ICustomWorld) {
-    await this.page.getByRole('link', { name: 'About Us' }).click()
+    await withRetry(async () => {
+        await this.page.getByRole('link', { name: 'About Us' }).click();
+    }, {
+        maxAttempts: 3,
+        delay: 1500,
+        retryCondition: RETRY_CONDITIONS.elementErrors
+    });
 });
 
 /**
