@@ -16,4 +16,4 @@ Feature: Should be able to backup
     And I should see 'mixed' job cards
     Then the backup should be added to the table
     When I click on common backup now button
-    And '1' backup is generated and added to history
+    Then '1' backup is generated and added to history
