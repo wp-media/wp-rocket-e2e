@@ -109,7 +109,8 @@ When('turn on {string}', async function (this: ICustomWorld, option: string) {
     this.sections.set('fileOptimization');
     this.sections.state(true);
     await this.sections.toggle(optionName);
-    await this.page.click('#wpr-options-submit', {force: true})
+    await this.page.click('#wpr-options-submit', {force: true});
+    await this.page.waitForLoadState('networkidle');
 });
 
 /**
