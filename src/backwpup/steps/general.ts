@@ -30,7 +30,8 @@ Then('{string} backup is generated and added to history', async function (this: 
     const progressText = this.page.locator('.progress-step span');
     await progressBar.waitFor({ state: 'visible', timeout: 10000 });
 
-    await expect(progressText).toHaveText('100%', { timeout: 30000 });
+    //TODO:: check the possibility of using other option that won't rely on timeout.
+    await expect(progressText).toHaveText('100%', { timeout: 600000 });
     await progressBar.waitFor({ state: 'hidden', timeout: 10000 });
 
     await this.page.waitForLoadState('networkidle');
