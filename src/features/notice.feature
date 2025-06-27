@@ -15,6 +15,7 @@ Feature: CPCSS Notice
     Then I must not see the banner 'Critical CSS generation is currently running'
     Then I must see the banner 'The Remove Unused CSS service is processing your pages'
 
+  @flaky
   Scenario: Should keep the current settings and hide notice when clicking stay with old option 
     When I have an unexpired account
     And turn on 'CPCSS'

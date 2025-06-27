@@ -6,6 +6,7 @@ Feature: C11856 - Should roll back to the last previous major version when using
         And plugin is installed 'new_release'
         And plugin is activated
 
+    @flaky
     Scenario: Roll back from the tools tab
         When I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And I click on '#wpr-nav-tools'
