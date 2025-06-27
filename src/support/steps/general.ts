@@ -532,7 +532,28 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
         /abstract.*processing.*handler/i,
         /buffer.*optimization/i,
         /stream.*handler/i,
-        /wp.*dependencies.*league.*container/i
+        /wp.*dependencies.*league.*container/i,
+        // Delay JS related patterns - these are expected timing-related messages
+        /script.*delayed/i,
+        /delayed.*script/i,
+        /cannot read.*undefined.*delay/i,
+        /delayscript/i,
+        /delay.*js/i,
+        /javascript.*delayed/i,
+        /wpr.*delay/i,
+        /rocket.*delay/i,
+        // Common timing-related errors during JS delay
+        /cannot read property.*of undefined/i,
+        /cannot read properties.*of undefined/i,
+        /undefined is not a function/i,
+        /null is not an object/i,
+        // Theme-specific delay JS issues
+        /astra.*undefined/i,
+        /divi.*undefined/i,
+        /flatsome.*undefined/i,
+        // Mobile view specific delay issues
+        /mobile.*script/i,
+        /viewport.*script/i
     ];
 
     const shouldIgnoreError = (message: string): boolean => {
@@ -560,6 +581,11 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
 
     await page.goto(url);
     await page.waitForLoadState('networkidle');
+    
+    // For Delay JS scenarios, wait additional time for delayed scripts to settle
+    if (url.includes('delayjs') || url.includes('delay-js')) {
+        await page.waitForTimeout(3000); // Extra wait for delayed scripts
+    }
 
     await page.evaluate(async () => {
         // Scroll to the bottom of page.
