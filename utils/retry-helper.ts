@@ -1,3 +1,5 @@
+import type { Page } from '@playwright/test';
+
 /**
  * Retry utility for handling flaky operations in Playwright tests
  */
@@ -86,7 +88,7 @@ export const RETRY_CONDITIONS = {
 export async function retryFormInteraction<T>(
   operation: () => Promise<T>,
   formSelector: string,
-  page: any
+  page: Page
 ): Promise<T> {
   return withRetry(async () => {
     // Ensure form is loaded before operation

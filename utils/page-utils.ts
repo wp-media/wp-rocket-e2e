@@ -17,6 +17,7 @@ import fs from "fs/promises";
 
 import {WP_BASE_URL, WP_PASSWORD, WP_PASSWORD2, WP_USERNAME, WP_USERNAME2} from '../config/wp.config';
 import { uninstallPlugin, updatePermalinkStructure, deactivatePlugin, switchTheme } from "./commands";
+import { withRetry, RETRY_CONDITIONS } from "./retry-helper";
 
 /**
  * Utility class for interacting with a Playwright Page instance in WordPress testing.
@@ -90,14 +91,21 @@ export class PageUtils {
     }
 
     /**
-     * Performs a goto action on parsed url.
-     *
-     * @param {string} pageUrl Page url.
-     *
-     * @return  {Promise<void>}
+     * Visit a page with retry logic
      */
-    public visitPage = async ( pageUrl: string ): Promise<void> => {
-        await this.page.goto(WP_BASE_URL + '/' + pageUrl);
+    public visitPage = async (path: string): Promise<void> => {
+        const url = path.startsWith('http') ? path : WP_BASE_URL + '/' + path.replace(/^\//, '');
+        
+        await withRetry(async () => {
+            await this.page.goto(url, { 
+                waitUntil: 'networkidle',
+                timeout: 30000 
+            });
+        }, {
+            maxAttempts: 3,
+            delay: 2000,
+            retryCondition: RETRY_CONDITIONS.networkErrors
+        });
     }
 
     /**
@@ -570,14 +578,23 @@ export class PageUtils {
     }
 
     /**
-     * Performs the save settings action on WP Rocket.
-     *
-     * @return {Promise<void>}
+     * Save settings with retry logic
      */
     public saveSettings = async (): Promise<void> => {
-        await this.page.waitForSelector('#wpr-options-submit');
-        // save settings
-        await this.page.locator('#wpr-options-submit').click();
+        await withRetry(async () => {
+            await this.page.waitForSelector('#wpr-options-submit');
+            await this.page.locator('#wpr-options-submit').click();
+            
+            // Wait for success message or page load
+            await Promise.race([
+                this.page.waitForSelector('.notice-success', { timeout: 10000 }),
+                this.page.waitForLoadState('networkidle', { timeout: 10000 })
+            ]);
+        }, {
+            maxAttempts: 2,
+            delay: 1500,
+            retryCondition: RETRY_CONDITIONS.elementErrors
+        });
     }
 
     /**

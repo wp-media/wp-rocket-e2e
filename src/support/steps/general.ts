@@ -24,6 +24,7 @@ import {
 } from "../../../utils/commands";
 import { withRetry, RETRY_CONDITIONS } from "../../../utils/retry-helper";
 import backstop from 'backstopjs';
+import { withRetry, RETRY_CONDITIONS } from "../../../utils/retry-helper";
 
 /**
  * Executes the step to log in.
@@ -57,9 +58,19 @@ Given('I updated plugin to {string}', async function (this: ICustomWorld, plugin
  * Executes the step to activate the WP Rocket plugin.
  */
 Given('plugin is activated', async function (this: ICustomWorld) {
-    // Activate WPR
-    await this.page.waitForSelector('a:has-text("Activate Plugin")');
-    await this.page.locator('a:has-text("Activate Plugin")').click();
+    await withRetry(async () => {
+        // Wait for and click the "Activate Plugin" button (on plugin installation page)
+        await this.page.waitForSelector('a:has-text("Activate Plugin")');
+        await this.page.locator('a:has-text("Activate Plugin")').click();
+        
+        // Optional: Wait for activation to complete
+        await this.page.waitForLoadState('networkidle', { timeout: 10000 });
+        
+    }, {
+        maxAttempts: 3,
+        delay: 2000,
+        retryCondition: RETRY_CONDITIONS.networkErrors
+    });
 });
 
 /**
@@ -178,33 +189,49 @@ When('I log in', async function (this: ICustomWorld) {
 /**
  * Executes the step to visit a specific page.
  */
-When('I go to {string}', async function (this: ICustomWorld, page) {
-    await this.utils.visitPage(page);
+When('I go to {string}', async function (this: ICustomWorld, path: string) {
+    await withRetry(async () => {
+        await this.utils.visitPage(path);
+        // Wait for page to be ready
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+    }, {
+        maxAttempts: 3,
+        delay: 1500,
+        retryCondition: RETRY_CONDITIONS.networkErrors
+    });
 });
 
 /**
- * Executes the step to click on a specific button.
+ * Executes the step to visit a URL.
  */
-When('I click on {string}', async function (this: ICustomWorld, selector) {
-    if (selector === '.wpr-tools:nth-child(4) a') {
-        /**
-         * Save WP Rocket last major version.
-         */
-        // Navigate to helper plugin page.
-        await this.utils.gotoHelper();
-        // Go to tools tab
-        await this.page.locator('#tools_tab').click();
-        await this.page.waitForSelector('#save_last_major_version');
-        await this.page.locator('#save_last_major_version').click();
-        await this.utils.gotoWpr();
-        await this.page.locator('#wpr-nav-tools').click();
+When('I visit {string}', async function (this: ICustomWorld, url: string) {
+    await withRetry(async () => {
+        await this.page.goto(url, { 
+          waitUntil: 'networkidle',
+          timeout: 90000 // Fixes #213 , if page loads fast, it won't wait the 90s
+        });
+    }, {
+        maxAttempts: 3,
+        delay: 2000,
+        backoff: true, // Use exponential backoff for navigation
+        retryCondition: RETRY_CONDITIONS.networkErrors
+    });
+});
+
+/**
+ * Executes the step to click on a button or element.
+ */
+When('I click on {string}', async function (this: ICustomWorld, selector: string) {
+    await withRetry(async () => {
+        await this.page.locator(selector).waitFor({ state: 'visible', timeout: 10000 });
         await this.page.locator(selector).click();
-        await this.page.waitForLoadState('load', { timeout: 70000 });
-    }
-    else{
-        await this.page.locator(selector).click();
-    }
-    
+        // Small wait to ensure click is processed
+        await this.page.waitForTimeout(500);
+    }, {
+        maxAttempts: 3,
+        delay: 1000,
+        retryCondition: RETRY_CONDITIONS.elementErrors
+    });
 });
 
 /**
