@@ -1,4 +1,4 @@
-@delayjs @setup @flaky
+@delayjs @setup
 Feature: No Regression with delayjs script udpate
 
     Background:

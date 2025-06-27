@@ -192,7 +192,7 @@ When('I go to {string}', async function (this: ICustomWorld, path: string) {
     await withRetry(async () => {
         await this.utils.visitPage(path);
         // Wait for page to be ready
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+        await this.page.waitForLoadState('networkidle');
     }, {
         maxAttempts: 3,
         delay: 1500,
@@ -380,6 +380,7 @@ When('I visit beacon driven page {string} with browser dimension {int} x {int}',
     });
 
     await this.utils.visitPage(page);
+    await this.page.waitForLoadState('networkidle');
 
     // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
     await this.page.waitForFunction(() => {
