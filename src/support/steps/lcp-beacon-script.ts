@@ -133,6 +133,7 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
 
             // Visit the page url.
             await this.utils.visitPage(key);
+            await this.page.waitForLoadState('networkidle');
 
             // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
             await this.page.waitForFunction(() => {

@@ -116,6 +116,7 @@ export class PageUtils {
      */
     public gotoWpr = async (): Promise<void> => {
         await this.page.goto(WP_BASE_URL + '/wp-admin/options-general.php?page=wprocket#dashboard');
+        await this.page.waitForLoadState('networkidle');
     }
 
     /**
@@ -276,6 +277,7 @@ export class PageUtils {
      */
         public gotoPages = async (): Promise<void> => {
             await this.page.goto(WP_BASE_URL + '/wp-admin/edit.php?post_type=page');
+            await this.page.waitForLoadState('networkidle');
         }
 
         /**
