@@ -16,6 +16,7 @@ import {LLImagesData, Row, SinglePageLCPImages} from "../../../utils/types";
 import {dbQuery, getWPTablePrefix} from "../../../utils/commands";
 import {checkLcpOrViewport, extractFromStdout} from "../../../utils/helpers";
 import {WP_BASE_URL} from '../../../config/wp.config';
+import {withRetry, RETRY_CONDITIONS} from "../../../utils/retry-helper";
 import fs from 'fs/promises';
 
 let data: string,
@@ -185,66 +186,72 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
  * Executes the step to assert that LCP & ATF should be as expected.
  */
 Then('{string} should be as expected for {string}', async function (this: ICustomWorld, type: string, formFactor: string) {
-    // Log fail messages from DB query before failing test.
-    if (failMsg !== '') {
-        console.log('\x1b[31m%s\x1b[0m',failMsg);
-         // Fail test when no DB result is found.
-        expect(isDbResultAvailable).toBeTruthy();
-        return;
-    }
+    await withRetry(async () => {
+        // Log fail messages from DB query before failing test.
+        if (failMsg !== '') {
+            console.log('\x1b[31m%s\x1b[0m',failMsg);
+             // Fail test when no DB result is found.
+            expect(isDbResultAvailable).toBeTruthy();
+            return;
+        }
 
-    truthy = true;
+        truthy = true;
 
-    // Iterate over the data
-    for (const key in jsonData) {
-        if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
-            const expected = jsonData[key];
-            if (type === 'fonts') {
-                // Compare fonts arrays (containment, not exact match)
-                const expectedFonts = expected.fonts || [];
-                let actualFonts: string[] = [];
-                try {
-                    actualFonts = JSON.parse(actual[key].fonts || '[]');
-                } catch (e) {
-                    actualFonts = (actual[key].fonts || '').split(',').map(f => f.trim()).filter(Boolean);
-                }
-                for (const font of expectedFonts) {
-                    if (!actualFonts.some(actualFont => actualFont.includes(font))) {
-                        truthy = false;
-                        failMsg += `Expected preload font for ${formFactor} - ${font} for ${actual[key].url} is not present in actual - ${actualFonts}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+        // Iterate over the data
+        for (const key in jsonData) {
+            if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
+                const expected = jsonData[key];
+                if (type === 'fonts') {
+                    // Compare fonts arrays (containment, not exact match)
+                    const expectedFonts = expected.fonts || [];
+                    let actualFonts: string[] = [];
+                    try {
+                        actualFonts = JSON.parse(actual[key].fonts || '[]');
+                    } catch (e) {
+                        actualFonts = (actual[key].fonts || '').split(',').map(f => f.trim()).filter(Boolean);
                     }
-                }
-            } else if (type === 'lcp and atf') {
-                // Run both LCP and ATF logic
-                for (const lcp of expected.lcp) {
-                    if (!actual[key].lcp.includes(lcp)) {
-                        truthy = false;
-                        failMsg += `Expected LCP for ${formFactor} - ${lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
-                        // Highlighted log for missing LCP
-                        console.log('\x1b[43m\x1b[30m[HIGHLIGHTED] LCP MISMATCH for', key, '\x1b[0m');
-                        console.log('\x1b[33mExpected lcp:\x1b[0m', expected.lcp);
-                        console.log('\x1b[36mActual lcp:\x1b[0m', actual[key].lcp);
+                    for (const font of expectedFonts) {
+                        if (!actualFonts.some(actualFont => actualFont.includes(font))) {
+                            truthy = false;
+                            failMsg += `Expected preload font for ${formFactor} - ${font} for ${actual[key].url} is not present in actual - ${actualFonts}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                        }
                     }
-                }
-                for (const viewport of expected.viewport) {
-                    if (!actual[key].viewport.includes(viewport)) {
-                        truthy = false;
-                        failMsg += `Expected Viewport for ${formFactor} - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
-                        // Highlighted log for missing Viewport
-                        console.log('\x1b[41m\x1b[37m[HIGHLIGHTED] VIEWPORT MISMATCH for', key, '\x1b[0m');
-                        console.log('\x1b[33mExpected viewport:\x1b[0m', expected.viewport);
-                        console.log('\x1b[36mActual viewport:\x1b[0m', actual[key].viewport);
+                } else if (type === 'lcp and atf') {
+                    // Run both LCP and ATF logic
+                    for (const lcp of expected.lcp) {
+                        if (!actual[key].lcp.includes(lcp)) {
+                            truthy = false;
+                            failMsg += `Expected LCP for ${formFactor} - ${lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                            // Highlighted log for missing LCP
+                            console.log('\x1b[43m\x1b[30m[HIGHLIGHTED] LCP MISMATCH for', key, '\x1b[0m');
+                            console.log('\x1b[33mExpected lcp:\x1b[0m', expected.lcp);
+                            console.log('\x1b[36mActual lcp:\x1b[0m', actual[key].lcp);
+                        }
+                    }
+                    for (const viewport of expected.viewport) {
+                        if (!actual[key].viewport.includes(viewport)) {
+                            truthy = false;
+                            failMsg += `Expected Viewport for ${formFactor} - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                            // Highlighted log for missing Viewport
+                            console.log('\x1b[41m\x1b[37m[HIGHLIGHTED] VIEWPORT MISMATCH for', key, '\x1b[0m');
+                            console.log('\x1b[33mExpected viewport:\x1b[0m', expected.viewport);
+                            console.log('\x1b[36mActual viewport:\x1b[0m', actual[key].viewport);
+                        }
                     }
                 }
             }
         }
-    }
-// Log fail message from Expectation mismatch before failing test.
-    if (failMsg !== '') {
-        console.log('\x1b[31m%s\x1b[0m',failMsg);
-    }
-// Fail test when there is expectation mismatch.
-    expect(truthy).toBeTruthy();
+    // Log fail message from Expectation mismatch before failing test.
+        if (failMsg !== '') {
+            console.log('\x1b[31m%s\x1b[0m',failMsg);
+        }
+    // Fail test when there is expectation mismatch.
+        expect(truthy).toBeTruthy();
+    }, {
+        maxAttempts: 3,
+        delay: 2000,
+        retryCondition: RETRY_CONDITIONS.notAssertionErrors
+    });
 });
 
 let lcpImages: Array<{ src: string; fetchpriority: string | boolean; lazyloaded: string | boolean }> = [];

@@ -13,6 +13,7 @@ import { WP_BASE_URL } from '../../../config/wp.config';
 import { When, Then, Given } from '@cucumber/cucumber';
 import { dbQuery, getWPTablePrefix, getPostDataFromTitle, updatePostStatus } from "../../../utils/commands";
 import { extractFromStdout, seedData, checkData } from "../../../utils/helpers";
+import { withRetry, RETRY_CONDITIONS } from "../../../utils/retry-helper";
 
 /*
  * Executes step to add hardcoded data to DB: ATF & LRC tables
@@ -42,16 +43,28 @@ Given('performance hints data added to DB', async function (this: ICustomWorld) 
 });
 
 When('clear performance hints is clicked in admin bar', async function (this: ICustomWorld) {
-    await this.page.locator('#wp-admin-bar-wp-rocket').hover();
-    await this.page.waitForSelector('#wp-admin-bar-clear-performance-hints', { state: 'visible' });
-    await this.page.locator('#wp-admin-bar-clear-performance-hints').click(); 
-    await this.page.waitForSelector('text=WP Rocket: Stored optimization data for Automatic Lazy Rendering, Critical Images, Preconnect to External Domains, and Preload Fonts has been cleared!', { state: 'visible' });
+    await withRetry(async () => {
+        await this.page.locator('#wp-admin-bar-wp-rocket').hover();
+        await this.page.waitForSelector('#wp-admin-bar-clear-performance-hints', { state: 'visible' });
+        await this.page.locator('#wp-admin-bar-clear-performance-hints').click(); 
+        await this.page.waitForSelector('text=WP Rocket: Stored optimization data for Automatic Lazy Rendering, Critical Images, Preconnect to External Domains, and Preload Fonts has been cleared!', { state: 'visible' });
+    }, {
+        maxAttempts: 3,
+        delay: 1000,
+        retryCondition: RETRY_CONDITIONS.elementErrors
+    });
 });
 
 When('clear performance hints for this URL is clicked in admin bar', async function (this: ICustomWorld) {
-    await this.page.locator('#wp-admin-bar-wp-rocket').hover();
-    await this.page.waitForSelector('#wp-admin-bar-clear-performance-hints-data-url', { state: 'visible' });
-    await this.page.locator('#wp-admin-bar-clear-performance-hints-data-url').click(); 
+    await withRetry(async () => {
+        await this.page.locator('#wp-admin-bar-wp-rocket').hover();
+        await this.page.waitForSelector('#wp-admin-bar-clear-performance-hints-data-url', { state: 'visible' });
+        await this.page.locator('#wp-admin-bar-clear-performance-hints-data-url').click(); 
+    }, {
+        maxAttempts: 3,
+        delay: 1000,
+        retryCondition: RETRY_CONDITIONS.elementErrors
+    });
 });
 
 /*
