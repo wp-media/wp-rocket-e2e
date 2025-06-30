@@ -30,11 +30,41 @@ Then('{string} backup is generated and added to history', async function (this: 
     const progressText = this.page.locator('.progress-step span');
     await progressBar.waitFor({ state: 'visible', timeout: 10000 });
 
-    await expect(progressText).toHaveText('100%', { timeout: 30000 });
+    //TODO:: check the possibility of using other option that won't rely on timeout.
+    await expect(progressText).toHaveText('100%', { timeout: 600000 });
     await progressBar.waitFor({ state: 'hidden', timeout: 10000 });
 
+    await this.page.waitForLoadState('networkidle');
     const currentBackups = await captureBackupTableData(this.page)
     expect(currentBackups.length).toBe(this.initialBackups.length + parseInt(backupNumber));
+});
+
+
+When('I set up {string} storage', async function (this: ICustomWorld, storageProvider: string) {
+    await this.page.locator('.backwpup-job-card button[data-content="storages"]').first().click();
+    const storageType = storageProvider.toUpperCase();
+
+    const configureButton = this.page.locator(`button[data-storage="${storageType}"].js-backwpup-toggle-storage`);
+
+    await expect(configureButton).toBeVisible();
+    await configureButton.click();
+
+    await this.page.waitForResponse(response =>
+        response.url().includes('/backwpup/v1/getblock') &&
+        response.status() === 200
+    );
+
+    await this.storage.setupMSAzure();
+});
+
+Then('{string} storage should be selected', async function (this: ICustomWorld, storageProvider: string) {
+    const storageType = storageProvider.toUpperCase();
+    await this.page.locator('.backwpup-job-card button[data-content="storages"]').first().click();
+
+    const isChecked  = await this.page.isChecked(`#destination-${storageType}`);
+    expect(isChecked).toBe(true);
+
+    await this.page.locator('#sidebar-storages button.js-backwpup-close-sidebar').first().click()
 });
 
 When('{string} is unchecked from files options', async function (this: ICustomWorld, value: string) {
@@ -57,6 +87,15 @@ When('{string} is unchecked from database options', async function (this: ICusto
     await waitForToastMessage(this.page , 'Excluded tables saved successfully.')
 });
 
+When('I click on manual backup of a job', async function (this: ICustomWorld) {
+    this.initialBackups = await captureBackupTableData(this.page)
+    await this.page.locator('button[data-content="backup-job"].js-backwpup-load-and-open-modal').click();
+    await this.page.waitForSelector('#sidebar-backup-job', { state: 'visible' });
+
+    await this.page.locator('button.js-backwpup-start-backup-job').click();
+
+    await this.page.waitForLoadState('networkidle');
+});
 
 const captureBackupTableData = async (page: Page): Promise<BackupRowData[]> => {
     const rows = await page.locator('table tbody tr').all();

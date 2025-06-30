@@ -26,6 +26,15 @@ const IMAGIFY_INFOS = {
 } as const;
 
 /**
+ * Backwpup settings information
+ */
+const BACKWPUP_INFOS = {
+	msAccountName: '',
+	msAccessKey: '',
+	msContainer: ''
+} as const;
+
+/**
  * Extracted environment variables related to WordPress configuration.
  * Uses default values if environment variables are not set.
  * @constant
@@ -94,5 +103,6 @@ export {
 	WP_SSH_ADDRESS,
 	WP_SSH_KEY,
 	WP_SSH_ROOT_DIR,
-	IMAGIFY_INFOS
+	IMAGIFY_INFOS,
+	BACKWPUP_INFOS
 };
