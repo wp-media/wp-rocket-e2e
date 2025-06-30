@@ -345,6 +345,7 @@ When('I visit beacon driven page {string} with browser dimension {int} x {int}',
     });
 
     await this.utils.visitPage(page);
+    await this.page.waitForLoadState('networkidle');
 
     // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
     await this.page.waitForFunction(() => {
