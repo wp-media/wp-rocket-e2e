@@ -4,14 +4,16 @@ import { selectors as pluginSelectors } from "./../../common/selectors";
 import { PageUtils } from "../../../utils/page-utils";
 import {After, Before} from "@cucumber/cucumber";
 import {StorageUtils} from "../utils/storage";
-import {Page} from "@playwright/test";
 import {configurations} from "../../../utils/configurations";
+import {rm, testSshConnection} from "../../../utils/commands";
+import {WP_SSH_ROOT_DIR} from "../../../config/wp.config";
+import {Page} from "@playwright/test";
 
 
 /**
- * Before each test scenario with the @bwupsetup tag, performs setup tasks.
+ * Before each test scenario with the @bwpupsetup tag, performs setup tasks.
  */
-Before({tags: '@bwupsetup'}, async function(this: ICustomWorld, {pickle}) {
+Before({tags: '@bwpupsetup'}, async function(this: ICustomWorld, {pickle}) {
 
     this.page = await this.context.newPage();
     this.sections = new Sections(this.page, pluginSelectors);
@@ -24,9 +26,20 @@ Before({tags: '@bwupsetup'}, async function(this: ICustomWorld, {pickle}) {
 /**
  * After each scenario delete data
  */
-After({ tags: '@bwupsetup' }, async function (this: ICustomWorld) {
+After({ tags: '@bwpupsetup' }, async function (this: ICustomWorld) {
     // This runs after each scenario
     await deleteAllData(this.page);
+    try {
+        await testSshConnection();
+
+        const backwpupFolder = `${WP_SSH_ROOT_DIR}wp-content/uploads/backwpup`;
+        await rm(backwpupFolder);
+        const backwpupRestoreFolder = `${WP_SSH_ROOT_DIR}wp-content/uploads/backwpup-restore`;
+        await rm(backwpupRestoreFolder);
+    } catch (error) {
+        console.error('Setup failed: ', error.message);
+        throw new Error('Setup failed: ' + error.message);
+    }
 });
 
 async function deleteAllData(page: Page): Promise<void> {

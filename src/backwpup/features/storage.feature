@@ -1,4 +1,4 @@
-@bwupsetup @bwpupstorage @bwpupsmoke
+@bwpupsetup @bwpupstorage @bwpupsmoke
 
 Feature: Should be able to setup other storage
 
