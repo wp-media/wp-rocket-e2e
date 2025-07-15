@@ -77,6 +77,11 @@ export class StorageUtils {
             response.status() === 200
         );
     }
+    /**
+     * Configures FTP storage settings and tests the connection.
+     *
+     * @return {Promise<void>}
+     */
     public setupFTP = async (): Promise<void> => {
         await this.page.locator('#ftphost').fill(BACKWPUP_INFOS.ftp.host);
         await this.page.locator('#ftpuser').fill(BACKWPUP_INFOS.ftp.username);
