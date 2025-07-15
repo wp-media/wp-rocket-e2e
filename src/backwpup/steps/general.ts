@@ -53,8 +53,11 @@ When('I set up {string} storage', async function (this: ICustomWorld, storagePro
         response.url().includes('/backwpup/v1/getblock') &&
         response.status() === 200
     );
-
-    await this.storage.setupMSAzure();
+    if (storageType === 'MSAZURE') {
+        await this.storage.setupMSAzure();
+    } else if (storageType === 'FTP') {
+        await this.storage.setupFTP();
+    }
 });
 
 Then('{string} storage should be selected', async function (this: ICustomWorld, storageProvider: string) {

@@ -77,4 +77,17 @@ export class StorageUtils {
             response.status() === 200
         );
     }
+    public setupFTP = async (): Promise<void> => {
+        await this.page.locator('#ftphost').fill(BACKWPUP_INFOS.ftp.host);
+        await this.page.locator('#ftpuser').fill(BACKWPUP_INFOS.ftp.username);
+        await this.page.locator('#ftppass').fill(BACKWPUP_INFOS.ftp.password);
+        await this.page.locator('#ftphostport').fill(BACKWPUP_INFOS.ftp.port ?? '21');
+
+        await this.page.click('.js-backwpup-test-FTP-storage');
+
+        await this.page.waitForResponse(response =>
+            response.url().includes('/backwpup/v1/cloudsaveandtest') &&
+            response.status() === 200
+        );
+    }
 }
