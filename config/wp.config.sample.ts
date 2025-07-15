@@ -33,6 +33,12 @@ const BACKWPUP_INFOS = {
         accountName: '',
         accessKey: '',
         container: ''
+    },
+    ftp: {
+        host: '',
+        username: '',
+        password: '',
+        port: '21'
     }
 } as const;
 
