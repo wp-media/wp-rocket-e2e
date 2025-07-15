@@ -59,8 +59,8 @@ export class StorageUtils {
      */
     public setupMSAzure = async (): Promise<void> => {
 
-        await this.page.type('#msazureaccname', BACKWPUP_INFOS.msAccountName);
-        await this.page.type('#msazurekey', BACKWPUP_INFOS.msAccessKey);
+        await this.page.type('#msazureaccname', BACKWPUP_INFOS.msazure.accountName);
+        await this.page.type('#msazurekey', BACKWPUP_INFOS.msazure.accessKey);
 
         await this.page.waitForResponse(response =>
             response.url().includes('admin-ajax.php') &&

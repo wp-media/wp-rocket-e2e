@@ -29,9 +29,11 @@ const IMAGIFY_INFOS = {
  * Backwpup settings information
  */
 const BACKWPUP_INFOS = {
-	msAccountName: '',
-	msAccessKey: '',
-	msContainer: ''
+    msazure: {
+        accountName: '',
+        accessKey: '',
+        container: ''
+    }
 } as const;
 
 /**
