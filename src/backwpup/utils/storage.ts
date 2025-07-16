@@ -59,8 +59,8 @@ export class StorageUtils {
      */
     public setupMSAzure = async (): Promise<void> => {
 
-        await this.page.type('#msazureaccname', BACKWPUP_INFOS.msAccountName);
-        await this.page.type('#msazurekey', BACKWPUP_INFOS.msAccessKey);
+        await this.page.type('#msazureaccname', BACKWPUP_INFOS.msazure.accountName);
+        await this.page.type('#msazurekey', BACKWPUP_INFOS.msazure.accessKey);
 
         await this.page.waitForResponse(response =>
             response.url().includes('admin-ajax.php') &&
@@ -71,6 +71,36 @@ export class StorageUtils {
 
         // Click login.
         await this.page.click('.js-backwpup-test-MSAZURE-storage');
+
+        await this.page.waitForResponse(response =>
+            response.url().includes('/backwpup/v1/cloudsaveandtest') &&
+            response.status() === 200
+        );
+    }
+    /**
+     * Configures SugarSync storage settings and tests the connection.
+     *
+     * @return {Promise<void>}
+     */
+    public setupSugarSync = async (): Promise<void> => {
+        const loginOverlaySelector =
+            '#sidebar-storage-SUGARSYNC > div.backwpup-loading-overlay';
+        await this.page.locator('#sugaremail').fill(BACKWPUP_INFOS.sugarsync.email);
+        await this.page.locator('#sugarpass').fill(BACKWPUP_INFOS.sugarsync.password);
+        await this.page.click('.js-backwpup-authenticate-sugar-sync');
+        await this.page.waitForSelector(
+            loginOverlaySelector,
+            {
+                state: 'visible'
+            }
+        );
+        await this.page.waitForSelector(
+            loginOverlaySelector,
+            {
+                state: 'hidden'
+            }
+        );
+        await this.page.click('.js-backwpup-test-SUGARSYNC-storage');
 
         await this.page.waitForResponse(response =>
             response.url().includes('/backwpup/v1/cloudsaveandtest') &&

@@ -54,7 +54,11 @@ When('I set up {string} storage', async function (this: ICustomWorld, storagePro
         response.status() === 200
     );
 
-    await this.storage.setupMSAzure();
+    if (storageType === 'MSAZURE') {
+        await this.storage.setupMSAzure();
+    } else if (storageType === 'SUGARSYNC') {
+        await this.storage.setupSugarSync();
+    }
 });
 
 Then('{string} storage should be selected', async function (this: ICustomWorld, storageProvider: string) {
