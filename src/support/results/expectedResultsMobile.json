@@ -338,5 +338,65 @@
       "/wp-content/rocket-test-data/images/lcp/testwebp.webp"
     ],
     "enabled": true
+  },
+    "lcp_invisibleatf": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif"
+    ],
+    "enabled": true
+  },
+    "lcp_invisibleatf2": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/2.4-MB.PNG"
+    ],
+    "enabled": true
+  },
+    "lcp_invisibleatf3": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/2.4-MB.PNG"
+    ],
+    "enabled": true
+  },
+    "lcp_hidden_visibility": {
+    "lcp": [
+      "not found"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_invisibleatf4": {
+    "comment": "This template has bug not fixed yet #7536",
+    "lcp": [
+      "not found"
+    ],
+    "viewport": [],
+    "enabled": false
+  },
+  "lcp_invisibleatf5": {
+    "comment": "This template has bug not fixed yet #7536",
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif"
+    ],
+    "viewport": [ "/wp-content/rocket-test-data/images/lcp/testavif.avif"],
+    "enabled": false
+  },
+    "lcp_responsive_image": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif", "/wp-content/rocket-test-data/images/lcp/testwebp.webp 400w, /wp-content/rocket-test-data/images/lcp/testjpg.jpg 800w, /wp-content/rocket-test-data/images/lcp/testPng.png 1600w"
+    ],
+    "viewport": [
+     "/wp-content/rocket-test-data/images/lcp/testjpg.jpg","/wp-content/rocket-test-data/images/lcp/testjpg2.jpg 500w, /wp-content/rocket-test-data/images/lcp/testjpg3.jpg 1000w, /wp-content/rocket-test-data/images/lcp/testjpg4.jpg 1500w"
+    ],
+    "enabled": true
   }
+ 
 }
