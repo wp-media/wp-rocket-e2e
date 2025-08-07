@@ -114,6 +114,13 @@
     ],
     "enabled": true
   },
+  "lcp_dynamicvisibility": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/flowers.jpg"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
   "lcp_attribute_template": {
     "lcp": [
       "/wp-content/rocket-test-data/images/wp-rocket.svg"
@@ -413,14 +420,14 @@
      ],
     "enabled": true
   },
-    "lcp_multiple_background_pseudo_bg_template": {
+  "lcp_multiple_background_pseudo_bg_template": {
     "lcp": [
       "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/image/test3.webp", "/wp-content/rocket-test-data/image/file_example_JPG_100kB.jpg"
     ],
     "viewport": [],
     "enabled": true
   },
-     "lcp_pseudo_class_element": {
+  "lcp_pseudo_class_element": {
     "lcp": [
       "/wp-content/rocket-test-data/images/lcp/testavif.avif"],
     "viewport": [],
@@ -536,6 +543,43 @@
       "/wp-content/rocket-test-data/images/maxime-lebrun-6g3Akg708E0-unsplash.jpg",
       "/wp-content/rocket-test-data/images/lcp/testPng.png",
       "/wp-content/rocket-test-data/images/lcp/ocean.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_images_intersecting_b": {
+    "comment":"this template may have problem ad image B shall be LCP, current test data is actual ones not expected",
+    "lcp": [
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/imageA.jpg"
+    ],
+    "viewport": [
+     "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/imageB.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_images_intersecting_a": {
+   "lcp": [
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/imageA.jpg"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_transformed_images_template": {
+   "lcp": [
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/istockphoto-1419410282-1024x1024-1.jpg"
+    ],
+    "viewport": [
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/istockphoto-870755932-1024x1024-1.jpg",
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/istockphoto-1432956286-1024x1024-1.jpg"
+    ],
+    "enabled": true
+  },
+   "lcp_nested_images_template": {
+   "lcp": [
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/istockphoto-1433432507-1024x1024-1.jpg"
+    ],
+    "viewport": [
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/istockphoto-1394055240-1024x1024-1.jpg",
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/istockphoto-1474373344-1024x1024-1.jpg"
     ],
     "enabled": true
   }
