@@ -338,5 +338,236 @@
       "/wp-content/rocket-test-data/images/lcp/testwebp.webp"
     ],
     "enabled": true
+  },
+  "lcp_invisibleatf": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif"
+    ],
+    "enabled": true
+  },
+  "lcp_invisibleatf2": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/2.4-MB.PNG"
+    ],
+    "enabled": true
+  },
+  "lcp_invisibleatf3": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/2.4-MB.PNG"
+    ],
+    "enabled": true
+  },
+  "lcp_hidden_visibility": {
+    "lcp": [
+      "not found"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_invisibleatf4": {
+    "comment": "This template has bug not fixed yet #7536",
+    "lcp": [
+      "not found"
+    ],
+    "viewport": [],
+    "enabled": false
+  },
+  "lcp_invisibleatf5": {
+    "comment": "This template has bug not fixed yet #7536",
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif"
+    ],
+    "viewport": [ "/wp-content/rocket-test-data/images/lcp/testavif.avif"],
+    "enabled": false
+  },
+  "lcp_responsive_image": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif", "/wp-content/rocket-test-data/images/lcp/testwebp.webp 400w, /wp-content/rocket-test-data/images/lcp/testjpg.jpg 800w, /wp-content/rocket-test-data/images/lcp/testPng.png 1600w"
+    ],
+    "viewport": [
+     "/wp-content/rocket-test-data/images/lcp/testjpg.jpg","/wp-content/rocket-test-data/images/lcp/testjpg2.jpg 500w, /wp-content/rocket-test-data/images/lcp/testjpg3.jpg 1000w, /wp-content/rocket-test-data/images/lcp/testjpg4.jpg 1500w"
+    ],
+    "enabled": true
+  },
+  "lcp_bg_responsive_imgset_template": {
+    "comment":"lcp is included in atf",
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif", "/wp-content/rocket-test-data/images/lcp/testwebp.webp"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif", "/wp-content/rocket-test-data/images/lcp/testwebp.webp",
+      "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8", "https://rocketlabsqa.ovh/wp-content/rocket-test-data/images/fixtheissue.jpg"
+     ],
+    "enabled": true
+  },
+  "lcp_multiple_background_pseudo_bg_template": {
+    "lcp": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/image/test3.webp", "/wp-content/rocket-test-data/image/file_example_JPG_100kB.jpg"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+    "lcp_pseudo_class_element": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif"],
+    "viewport": [],
+    "enabled": true
+  },
+    "lcp_picture_type": {
+    "comment": "Has a bug currently in UI#7547",
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/marchlarge1-scaled.jpg.avif", "/wp-content/rocket-test-data/images/lcp/marchlarge1-scaled.jpg.webp", 
+    "/wp-content/rocket-test-data/images/lcp/marchlarge1-scaled.jpg"],
+    "viewport": ["https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-600x338.jpg.avif", "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-600x338.jpg.webp", 
+    "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-1024x576.jpg", "/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png.avif",
+    "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png.webp", "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png"],
+    "enabled": false
+  },
+  "lcp_picture_responsive_type": {
+    "comment": "Has a bug currently in UI#7547",
+     "lcp": [
+      "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-600x338.jpg.avif 1024w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-100x100.jpg.avif 768w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-1536x864.jpg.avif 1536w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-450x450.jpg.avif 1200w" ,
+      "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-600x338.jpg.webp 1024w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-450x450.jpg.webp 300w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-100x100.jpg.webp 768w",
+      "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-%E2%80%94-kopia-1024x576.jpg", "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-%E2%80%94-kopia-450x450.jpg 1024w"
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-300x186.jpg.avif 1024w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-150x150.jpg.avif 768w",
+      "/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1.jpg.webp 1024w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-450x380.jpg.webp 450w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-600x373.jpg.webp 600w",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1.jpg", "/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-600x373.jpg 1024w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-450x380.jpg 1920w"
+  ],
+    "enabled": false
+  },
+  "lcp_picture_template2_maxheight": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/test3.gif",
+      "/wp-content/rocket-test-data/images/lcp/testjpg3.jpg",
+      "/wp-content/rocket-test-data/images/lcp/testjpg2.jpg"
+    ],
+    "viewport": ["/wp-content/rocket-test-data/images/paper.jpeg",
+    "/wp-content/rocket-test-data/images/lcp/testjpeg.jpeg",
+    "/wp-content/rocket-test-data/images/lcp/testwebp.webp"],
+    "enabled": true
+  },
+  "lcp_picture_responsive_type_mixed": {
+    "comment": "Has a bug currently in UI#7547",
+    "lcp": [
+      "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-600x338.jpg.avif 1024w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-100x100.jpg.avif 768w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-1536x864.jpg.avif 1536w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-450x450.jpg.avif 1200w" ,
+      "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-600x338.jpg.webp 1024w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-450x450.jpg.webp 300w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-100x100.jpg.webp 768w",
+      "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-1024x576.jpg", "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-450x450.jpg 1024w"
+
+    ],
+    "viewport": [
+      "/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-300x186.jpg.avif 1024w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-150x150.jpg.avif 768w",
+      "/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1.jpg.webp 1024w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-450x380.jpg.webp 450w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-600x373.jpg.webp 600w",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1.jpg", "/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-600x373.jpg 1024w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-450x380.jpg 1920w"
+  ],
+    "enabled": false
+  },
+  "lcp_picture_issue": {
+    "lcp": [
+      "https://plrofthemonth.club/wp-content/uploads/2022/05/header_with_Text_2_Small_New.jpg.webp 1366w, https://plrofthemonth.club/wp-content/uploads/2022/05/header_with_Text_2_Small_New-1280x487.jpg.webp 1280w, https://plrofthemonth.club/wp-content/uploads/2022/05/header_with_Text_2_Small_New-980x373.jpg.webp 980w, https://plrofthemonth.club/wp-content/uploads/2022/05/header_with_Text_2_Small_New-480x183.jpg.webp 480w"
+      ],
+    "viewport": [],
+    "enabled": true
+  },
+   "lcp_specialchar_template": {
+    "lcp": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/kot%C5%82.PNG"
+    ],
+    "viewport": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/image%20folder/ocean-1867285_640.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_specialchar2": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/%D7%A2%D7%93%D7%99-%D7%A8%D7%99%D7%93%D7%9C%D7%9E%D7%9F-%D7%A8%D7%90%D7%A9%D7%99-%D7%90%D7%A8%D7%95%D7%9A-200x400.jpeg"
+    ],
+    "viewport": [
+      "/%D7%A2%D7%93%D7%99-%D7%A8%D7%99%D7%93%D7%9C%D7%9E%D7%9F-%D7%A8%D7%90%D7%A9%D7%99-%D7%90%D7%A8%D7%95%D7%9A-300x300.jpg",
+      "/wp-content/rocket-test-data/images/lcp/%D7%A2%D7%93%D7%99-%D7%A8%D7%99%D7%93%D7%9C%D7%9E%D7%9F-%D7%A8%D7%90%D7%A9%D7%99-%D7%90%D7%A8%D7%95%D7%9A-200x300.webp"
+    ],
+    "enabled": true
+  },
+  "lcp_images_in_root": {
+    "lcp": [
+     "https://e2e.rocketlabsqa.ovh/lcp_test5.webp"
+    ],
+    "viewport": [
+      "https://e2e.rocketlabsqa.ovh/lcp_test4.webp", "https://e2e.rocketlabsqa.ovh/lcp_test3.jpg",
+      "/lcp_test2.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_before_after": {
+    "lcp": [
+     "/wp-content/rocket-test-data/images/lcp/testavif.avif"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_resposive_imagegrid": {
+    "comment":"has on going discussion that without meta only 1 image is atf but it should be all except lcp",
+    "lcp": [
+      "/wp-content/rocket-test-data/images/lcp/rocks.jpg"
+    ],
+    "viewport": [
+     "/wp-content/rocket-test-data/images/lcp/wedding.jpg" ],
+    "enabled": true
+  },
+    "lcp_dynamicvisibility": {
+    "lcp": [
+      "/wp-content/rocket-test-data/images/flowers.jpg"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_images_intersecting_b": {
+    "comment":"this template may have problem ad image B shall be LCP, current test data is actual ones not expected",
+    "lcp": [
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/imageB.jpg"
+    ],
+    "viewport": [
+     "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/imageA.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_images_intersecting_a": {
+   "lcp": [
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/imageB.jpg"
+    ],
+    "viewport": [],
+    "enabled": true
+  },
+  "lcp_transformed_images_template": {
+   "lcp": [
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/istockphoto-1419410282-1024x1024-1.jpg"
+    ],
+    "viewport": [
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/istockphoto-870755932-1024x1024-1.jpg",
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/istockphoto-1432956286-1024x1024-1.jpg"
+    ],
+    "enabled": true
+  },
+  "lcp_nested_images_template": {
+   "lcp": [
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/istockphoto-1433432507-1024x1024-1.jpg"
+    ],
+    "viewport": [
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/istockphoto-1394055240-1024x1024-1.jpg",
+      "https://rocketlabsqa.ovh/wp-content/uploads/2024/04/istockphoto-1474373344-1024x1024-1.jpg"
+    ],
+    "enabled": true
   }
+
+ 
 }
