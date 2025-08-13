@@ -13,6 +13,7 @@ import { WP_BASE_URL } from '../../../config/wp.config';
 import { When, Then, Given } from '@cucumber/cucumber';
 import { dbQuery, getWPTablePrefix, getPostDataFromTitle, updatePostStatus } from "../../../utils/commands";
 import { extractFromStdout, seedData, checkData } from "../../../utils/helpers";
+import {Row} from "../../../utils/types";
 
 /*
  * Executes step to add hardcoded data to DB: ATF & LRC tables
@@ -141,4 +142,47 @@ Then ('untrash and republish {string} page', async function (this: ICustomWorld,
     const postDataStdout = await getPostDataFromTitle(permalink, 'trash', 'ID,post_title');
     const postData = await extractFromStdout(postDataStdout);
     await updatePostStatus(parseInt(postData[0].ID, 10), 'publish');
+});
+
+When('I changed homepage to {string}', async function(this: ICustomWorld, page: string){
+    await this.page.locator('input[name="show_on_front"][value="page"]').click();
+    await this.page.pause()
+    await this.page.selectOption('select#page_on_front', { label: page });
+    await this.page.locator('#submit').click();
+})
+
+Then('homepage and n URLs is added to Database', async function (this: ICustomWorld) {
+    let sql: string,
+        result: string,
+        resultFromStdout: Row[];
+
+    const tablePrefix: string = await getWPTablePrefix();
+
+    const links = await this.page.locator('ul li:not(li:has(comment)) a')
+        .evaluateAll((elements) => {
+            return elements.map(el => {
+                const href = el.getAttribute('href') || '';
+                try {
+                    const url = new URL(href);
+                    return url.pathname;
+                } catch {
+                    return href;
+                }
+            });
+        });
+
+    for (const link in links) {
+        sql = `SELECT lcp, viewport
+                   FROM ${tablePrefix}wpr_above_the_fold
+                   WHERE url LIKE "%${link}%"
+                     AND is_mobile = 0`;
+        result = await dbQuery(sql);
+        resultFromStdout = await extractFromStdout(result);
+
+        console.log(resultFromStdout)
+    }
+});
+
+When('only homepage is added to Database', async function (this: ICustomWorld) {
+    //
 });
