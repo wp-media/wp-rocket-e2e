@@ -89,17 +89,6 @@
     ],
     "enabled": true
   },
-  "lcp_bg_reponsive_imgset_template": {
-    "lcp": [
-      "/wp-content/rocket-test-data/images/lcp/testavif.avif",
-      "/wp-content/rocket-test-data/images/lcp/testwebp.webp"
-    ],
-    "viewport": [
-      "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8",
-      "https://rocketlabsqa.ovh/wp-content/rocket-test-data/images/fixtheissue.jpg"
-    ],
-    "enabled": true
-  },
   "lcp_rsponsive_imagegrid": {
     "lcp": [
       "/wp-content/rocket-test-data/images/lcp/underwater.jpg"
@@ -410,9 +399,9 @@
     "enabled": true
   },
   "lcp_bg_responsive_imgset_template": {
-    "comment":"lcp is included in atf",
+    "comment":"lcp is included in atf and 7559",
     "lcp": [
-      "/wp-content/rocket-test-data/images/lcp/testavif.avif", "/wp-content/rocket-test-data/images/lcp/testwebp.webp"
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif"
     ],
     "viewport": [
       "/wp-content/rocket-test-data/images/lcp/testavif.avif", "/wp-content/rocket-test-data/images/lcp/testwebp.webp",
