@@ -8,6 +8,7 @@
       "/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.woff2"
     ],
 
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7493#issuecomment-3079723626",
     "enabled": false
   },
   "preloadfonts_inlinestyle": {
@@ -18,6 +19,7 @@
       "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.woff2"
     ],
 
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7493#issuecomment-3079723626",
     "enabled": false
   },
     "preloadfonts_pseudo": {
@@ -29,6 +31,7 @@
       "/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.woff2"
     ],
 
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7416",
     "enabled": false
   },
     "preloadfonts_cssfile": {
@@ -39,6 +42,7 @@
       "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ceviche-one-v11-latin-regular.woff2"
     ],
 
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7493#issuecomment-3079723626",
     "enabled": false
   },
 
@@ -79,7 +83,7 @@
       "/wp-content/rocket-test-data/fonts/fa-solid-900.woff2"
     ],
 
-    "enabled": false
+    "enabled": true
   },
   "preloadfonts_dynammicfont": {
     "fonts": [
@@ -108,6 +112,7 @@
       "https://mega.wp-rocket.me/avada/wp-content/rocket-test-data/fonts/bellefair-v6-latin-regular.woff2"
     ],
 
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7493#issuecomment-3079723626",
     "enabled": false
   },
   "preloadfonts_withfeatures": {
@@ -158,6 +163,7 @@
       "https://fonts.gstatic.com/s/lora/v36/0QIvMX1D_JOuMwr7I_FMl_E.woff2"
     ],
 
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7493#issuecomment-3079723626",
     "enabled": false
   },
   "preloadfonts_withsyncscript": {
@@ -217,7 +223,7 @@
       "/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-upright-var.woff2"
     ],
 
-    "enabled": false
+    "enabled": true
   },
   "preloadfonts_displaywithscript2": {
     "fonts": [
@@ -227,6 +233,7 @@
       "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.woff2"
     ],
 
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7493#issuecomment-3079723626",
     "enabled": false
   },
   "preloadfonts_pseudo_simple_local": {
@@ -266,6 +273,7 @@
       "https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.woff2?t=1734404658139"
     ],
 
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7417",
     "enabled": false
   },
   "preloadfonts_20btf_differentweight-style": {
@@ -385,6 +393,7 @@
       "https://fonts.gstatic.com/s/ptserif/v18/EJRVQgYoZZY2vCFuvAFWzr-_dSb_.woff2"
     ],
 
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7493",
     "enabled": false
   },
   "preloadfonts_10atf_10btf_system": {
