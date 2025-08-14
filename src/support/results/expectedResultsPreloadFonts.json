@@ -166,7 +166,7 @@
     "comment": "https://github.com/wp-media/wp-rocket/issues/7493#issuecomment-3079723626",
     "enabled": false
   },
-  "preloadfonts_withsyncscript": {
+  "preloadfonts_withsynscript": {
     "fonts": [
       "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.woff2",
       "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/bellefair-v6-latin-regular.woff2"
