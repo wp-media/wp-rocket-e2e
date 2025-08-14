@@ -240,7 +240,7 @@ Then('{string} should be as expected for {string}', async function (this: ICusto
     }
 // Log fail message from Expectation mismatch before failing test.
     if (failMsg !== '') {
-        console.log('\x1b[31m%s\x1b[0m',failMsg);
+        throw new Error(failMsg);
     }
 // Fail test when there is expectation mismatch.
     expect(truthy).toBeTruthy();
