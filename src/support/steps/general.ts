@@ -451,8 +451,7 @@ Then('no error in the console different than nowprocket page {string}', async fu
 When('validate that all urls in {string} not having console errors different than nowprocket', async function (this: ICustomWorld, formFactor: string) {
     let viewPortWidth: number = 1600,
         viewPortHeight: number = 700,
-        resultFile: string = './src/support/results/expectedResultsDesktop.json',
-        isMobile = 0;
+        resultFile: string = './src/support/results/expectedResultsDesktop.json'
 
     // Set page to be visited in mobile or for preload fonts
     if (formFactor === 'mobile') {
