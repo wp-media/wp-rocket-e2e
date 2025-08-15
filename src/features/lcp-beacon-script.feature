@@ -7,11 +7,15 @@ Feature: Beacon script captures the right images.
         And plugin is activated
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And plugin 'sitepress-multilingual-cms' is deactivated
-
+@test
     Scenario: Beacon captures expected images in desktop
-        When I log out
+        Given I log out
         And I visit the urls for 'desktop'
-        Then 'lcp and atf' should be as expected for 'desktop'
+        When 'lcp and atf' should be as expected for 'desktop'
+        And I am logged in
+        And I clear cache
+        And I log out
+        Then validate that all urls in 'desktop' not having console errors different than nowprocket
 
     Scenario: Beacon captures expected images in mobile
         Given I install plugin 'https://github.com/wp-media/wp-rocket-e2e-test-helper/raw/main/helper-plugin/force-wp-mobile.zip'

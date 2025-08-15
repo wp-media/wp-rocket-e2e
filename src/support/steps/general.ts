@@ -23,6 +23,7 @@ import {
     deactivatePlugin, installRemotePlugin,
 } from "../../../utils/commands";
 import backstop from 'backstopjs';
+import fs from 'fs/promises';
 
 /**
  * Executes the step to log in.
@@ -442,6 +443,63 @@ Then('no error in the console different than nowprocket page {string}', async fu
         expect(consoleMsg2).toEqual(consoleMsg1);
     }
 });
+
+
+/**
+ * Executes the step to check for that there is no console error different from the nowprocket pages version.
+ */
+When('validate that all urls in {string} not having console errors different than nowprocket', async function (this: ICustomWorld, formFactor: string) {
+    let viewPortWidth: number = 1600,
+        viewPortHeight: number = 700,
+        resultFile: string = './src/support/results/expectedResultsDesktop.json',
+        isMobile = 0;
+
+    // Set page to be visited in mobile or for preload fonts
+    if (formFactor === 'mobile') {
+        viewPortWidth = 389;
+        viewPortHeight = 829;
+        resultFile = './src/support/results/expectedResultsMobile.json';
+    } else if (formFactor === 'preloadfonts') {
+        resultFile = './src/support/results/expectedResultsPreloadFonts.json';
+    }
+
+    const data = await fs.readFile(resultFile, 'utf8');
+    const jsonData = JSON.parse(data);
+
+    await this.page.setViewportSize({
+        width: viewPortWidth,
+        height: viewPortHeight
+    });
+
+    const errors: string[] = [];
+
+    for (const key in jsonData) {
+        if (jsonData[key].enabled === true) {
+            const url = `${WP_BASE_URL}/${key}`;
+            const urlNowprocket = `${url}?nowprocket`;
+
+            const consoleMsgNowprocket = await getConsoleMsg(this.page, urlNowprocket);
+            const consoleMsgActual = await getConsoleMsg(this.page, url);
+
+            if (consoleMsgActual.length !== 0) {
+                try {
+                    expect(consoleMsgActual).toEqual(consoleMsgNowprocket);
+                } catch (e) {
+                    // Highlight the URL in the error using ANSI escape codes for color
+                    errors.push(
+                        `\x1b[41m\x1b[37mConsole difference detected for: ${url}\x1b[0m\n` +
+                        `nowprocket console: ${consoleMsgNowprocket}\nactual console: ${consoleMsgActual}`
+                    );
+                }
+            }
+        }
+    }
+
+    if (errors.length > 0) {
+        throw new Error(errors.join('\n\n'));
+    }
+});
+
 
 const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> => {
     const consoleMsg: string[] = [];

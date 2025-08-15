@@ -391,10 +391,10 @@
   },
   "lcp_responsive_image": {
     "lcp": [
-      "/wp-content/rocket-test-data/images/lcp/testavif.avif", "/wp-content/rocket-test-data/images/lcp/testwebp.webp 400w, /wp-content/rocket-test-data/images/lcp/testjpg.jpg 800w, /wp-content/rocket-test-data/images/lcp/testPng.png 1600w"
+          "/wp-content/rocket-test-data/images/lcp/testjpg.jpg","/wp-content/rocket-test-data/images/lcp/testjpg2.jpg 500w, /wp-content/rocket-test-data/images/lcp/testjpg3.jpg 1000w, /wp-content/rocket-test-data/images/lcp/testjpg4.jpg 1500w"
     ],
     "viewport": [
-     "/wp-content/rocket-test-data/images/lcp/testjpg.jpg","/wp-content/rocket-test-data/images/lcp/testjpg2.jpg 500w, /wp-content/rocket-test-data/images/lcp/testjpg3.jpg 1000w, /wp-content/rocket-test-data/images/lcp/testjpg4.jpg 1500w"
+       "/wp-content/rocket-test-data/images/lcp/testavif.avif", "/wp-content/rocket-test-data/images/lcp/testwebp.webp 400w, /wp-content/rocket-test-data/images/lcp/testjpg.jpg 800w, /wp-content/rocket-test-data/images/lcp/testPng.png 1600w"
     ],
     "enabled": true
   },
@@ -422,14 +422,15 @@
     "viewport": [],
     "enabled": true
   },
-    "lcp_picture_type": {
+"lcp_picture_type": {
     "comment": "Has a bug currently in UI#7547",
     "lcp": [
-      "/wp-content/rocket-test-data/images/lcp/marchlarge1-scaled.jpg.avif", "/wp-content/rocket-test-data/images/lcp/marchlarge1-scaled.jpg.webp", 
-    "/wp-content/rocket-test-data/images/lcp/marchlarge1-scaled.jpg"],
-    "viewport": ["https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-600x338.jpg.avif", "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-600x338.jpg.webp", 
-    "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-1024x576.jpg", "/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png.avif",
-    "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png.webp", "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png"],
+      "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-600x338.jpg.avif"],
+
+    "viewport": [
+    "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png.webp", "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png",
+    "/wp-content/rocket-test-data/images/lcp/WF4.jpg.avif", "/wp-content/rocket-test-data/images/lcp/WF4.jpg.webp", 
+    "/wp-content/rocket-test-data/images/lcp/WF4.jpg"],
     "enabled": false
   },
   "lcp_picture_responsive_type": {
