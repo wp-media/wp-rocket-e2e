@@ -267,7 +267,7 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
 
 });
 
-Then(
+When(
     '{string} should be as expected for {string} at {string}',
     async function (this: ICustomWorld, type: string, formFactor: string, templateKey: string) {
         // Log fail messages from DB query before failing test.
@@ -279,6 +279,10 @@ Then(
         }
 
         truthy = true;
+
+        const resultFile: string = './src/support/results/expectedResultsDesktop.json';
+        data = await fs.readFile(resultFile, 'utf8');
+        jsonData = JSON.parse(data);
 
         // Only check the current templateKey
         if (!jsonData[templateKey] || !jsonData[templateKey].enabled) {

@@ -12,7 +12,7 @@ Feature: Beacon script captures the right images.
   Scenario Outline: Beacon captures expected images and no console errors in desktop for <url>
     Given I log out
     And I visit the url "<url>" for 'desktop'
-    Then 'lcp and atf' should be as expected for 'desktop' at "<url>"
+    When 'lcp and atf' should be as expected for 'desktop' at "<url>"
     And I am logged in
     And I clear cache
     And I log out
