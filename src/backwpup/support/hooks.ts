@@ -2,10 +2,10 @@ import { ICustomWorld } from "../common/custom-world";
 import { Sections } from '../../common/sections';
 import { selectors as pluginSelectors } from "./../../common/selectors";
 import { PageUtils } from "../../../utils/page-utils";
-import {After, Before} from "@cucumber/cucumber";
+import { Before, BeforeAll} from "@cucumber/cucumber";
 import {StorageUtils} from "../utils/storage";
 import {configurations} from "../../../utils/configurations";
-import {rm, testSshConnection} from "../../../utils/commands";
+import {rm, testSshConnection, uninstallPlugin} from "../../../utils/commands";
 import {WP_SSH_ROOT_DIR} from "../../../config/wp.config";
 import {Page} from "@playwright/test";
 
@@ -24,10 +24,9 @@ Before({tags: '@bwpupsetup'}, async function(this: ICustomWorld, {pickle}) {
 });
 
 /**
- * After each scenario delete data
+ * Before all tests, delete data
  */
-After({ tags: '@bwpupsetup' }, async function (this: ICustomWorld) {
-    // This runs after each scenario
+BeforeAll(async function (this: ICustomWorld) {
     await deleteAllData(this.page);
     try {
         await testSshConnection();
@@ -36,6 +35,8 @@ After({ tags: '@bwpupsetup' }, async function (this: ICustomWorld) {
         await rm(backwpupFolder);
         const backwpupRestoreFolder = `${WP_SSH_ROOT_DIR}wp-content/uploads/backwpup-restore`;
         await rm(backwpupRestoreFolder);
+
+        await uninstallPlugin('backwpup-pro');
     } catch (error) {
         console.error('Setup failed: ', error.message);
         throw new Error('Setup failed: ' + error.message);
