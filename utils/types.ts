@@ -100,11 +100,10 @@ export type Viewport = {
     height: number;
 };
 
-export interface LcpData {
+export interface PreloadFontsData {
     [key: string]: {
         url: string,
-        lcp: string,
-        viewport: string,
+        fonts: string,
         comment: string
     }
 }
@@ -125,4 +124,10 @@ export interface LLImagesData {
         url: string | boolean;
         lazyloaded: string | boolean
     }
+}
+
+export interface BackupRowData {
+    date: string;
+    type: string;
+    storedOn: string;
 }

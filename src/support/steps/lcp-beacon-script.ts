@@ -11,7 +11,7 @@
 import {ICustomWorld} from "../../common/custom-world";
 import {expect} from "@playwright/test";
 import {Then, When} from "@cucumber/cucumber";
-import {LcpData, LLImagesData, Row, SinglePageLCPImages} from "../../../utils/types";
+import {LLImagesData, Row, SinglePageLCPImages} from "../../../utils/types";
 
 import {dbQuery, getWPTablePrefix} from "../../../utils/commands";
 import {checkLcpOrViewport, extractFromStdout} from "../../../utils/helpers";
@@ -21,12 +21,19 @@ import fs from 'fs/promises';
 let data: string,
     truthy: boolean = true,
     failMsg: string,
-    jsonData: Record<string, { lcp: string[]; viewport: string[]; enabled: boolean, comment: string; }>,
+    jsonData: Record<string, { lcp: string[]; viewport: string[]; fonts: string[];enabled: boolean, comment: string; }>,
     isDbResultAvailable: boolean = true,
     lcpLLImages: LLImagesData = {},
     singlePageLcp : SinglePageLCPImages = {url: '', lcp: '', viewport: ''};
 
-const actual: LcpData = {};
+type ActualData = {
+  url: string;
+  lcp?: string;
+  viewport?: string;
+  fonts?: string;
+  comment?: string;
+};
+const actual: Record<string, ActualData> = {};
 
 /**
  * Executes step to visit page based on the templates and get check for lazyload.
@@ -101,6 +108,8 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
         viewPortWidth = 389;
         viewPortHeight = 829;
         resultFile = './src/support/results/expectedResultsMobile.json';
+    } else if (formFactor === 'preloadfonts') {
+        resultFile = './src/support/results/expectedResultsPreloadFonts.json';
     }
 
     // Reset variable state.
@@ -118,7 +127,7 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
 
     // Visit page.
     for (const key in jsonData) {
-        if ( jsonData[key].enabled === true ) {
+        if (jsonData[key].enabled === true) {
             // Construct page url.
             const url: string = `${WP_BASE_URL}/${key}`;
 
@@ -131,14 +140,16 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
                 return beacon && beacon.getAttribute('beacon-completed') === 'true';
             }, { timeout: 100000 });
 
-            if (formFactor !== 'desktop') {
+            if (formFactor !== 'desktop' && formFactor !== 'preloadfonts') {
                 isMobile = 1;
             }
-            // Get the LCP/ATF from the DB
-            sql = `SELECT lcp, viewport
-                   FROM ${tablePrefix}wpr_above_the_fold
-                   WHERE url LIKE "%${key}%"
-                     AND is_mobile = ${isMobile}`;
+
+            // Get the LCP/ATF or Preload Fonts from the DB
+            if (formFactor === 'preloadfonts') {
+                sql = `SELECT fonts FROM ${tablePrefix}wpr_preload_fonts WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`;
+            } else {
+                sql = `SELECT lcp, viewport FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`;
+            }
             result = await dbQuery(sql);
             resultFromStdout = await extractFromStdout(result);
 
@@ -150,63 +161,88 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
             }
 
             // Populate the actual data.
-            actual[key] = {
-                url: url,
-                lcp: resultFromStdout[0].lcp,
-                viewport: resultFromStdout[0].viewport,
-                comment: jsonData[key].comment ?? ''
+            if (formFactor === 'preloadfonts') {
+                actual[key] = {
+                    url: url,
+                    fonts: resultFromStdout[0].fonts,
+                    comment: jsonData[key].comment ?? ''
+                };
+            } else {
+                actual[key] = {
+                    url: url,
+                    lcp: resultFromStdout[0].lcp,
+                    viewport: resultFromStdout[0].viewport,
+                    comment: jsonData[key].comment ?? ''
+                };
             }
         }
     }
+
 });
 
 /**
  * Executes the step to assert that LCP & ATF should be as expected.
  */
-Then('lcp and atf should be as expected for {string}', async function (this: ICustomWorld, formFactor: string) {
+Then('{string} should be as expected for {string}', async function (this: ICustomWorld, type: string, formFactor: string) {
     // Log fail messages from DB query before failing test.
     if (failMsg !== '') {
         console.log('\x1b[31m%s\x1b[0m',failMsg);
-
-        // Fail test when no DB result is found.
+         // Fail test when no DB result is found.
         expect(isDbResultAvailable).toBeTruthy();
         return;
     }
 
-    // Set test status to True by default.
     truthy = true;
 
     // Iterate over the data
     for (const key in jsonData) {
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
             const expected = jsonData[key];
-            for (const lcp of expected.lcp) {
-                // Check if expected lcp is present in actual lcp.
-                if (!actual[key].lcp.includes(lcp)) {
-                    truthy = false;
-                    failMsg += `Expected LCP for ${formFactor} - ${lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}
-                    more info -- ( ${actual[key].comment} )\n\n\n`;
+            if (type === 'fonts') {
+                // Compare fonts arrays (containment, not exact match)
+                const expectedFonts = expected.fonts || [];
+                let actualFonts: string[] = [];
+                try {
+                    actualFonts = JSON.parse(actual[key].fonts || '[]');
+                } catch (e) {
+                    actualFonts = (actual[key].fonts || '').split(',').map(f => f.trim()).filter(Boolean);
                 }
-            }
-
-
-            // Cater for multiple expected viewport candidates.
-            for (const viewport of expected.viewport) {
-                if (!actual[key].viewport.includes(viewport)) {
-                    truthy = false;
-                    failMsg += `Expected Viewport for ${formFactor} - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}
-                    more info -- ( ${actual[key].comment} )\n\n\n`;
+                for (const font of expectedFonts) {
+                    if (!actualFonts.some(actualFont => actualFont.includes(font))) {
+                        truthy = false;
+                        failMsg += `Expected preload font for ${formFactor} - ${font} for ${actual[key].url} is not present in actual - ${actualFonts}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                    }
+                }
+            } else if (type === 'lcp and atf') {
+                // Run both LCP and ATF logic
+                for (const lcp of expected.lcp) {
+                    if (!actual[key].lcp.includes(lcp)) {
+                        truthy = false;
+                        failMsg += `Expected LCP for ${formFactor} - ${lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                        // Highlighted log for missing LCP
+                        console.log('\x1b[43m\x1b[30m[HIGHLIGHTED] LCP MISMATCH for', key, '\x1b[0m');
+                        console.log('\x1b[33mExpected lcp:\x1b[0m', expected.lcp);
+                        console.log('\x1b[36mActual lcp:\x1b[0m', actual[key].lcp);
+                    }
+                }
+                for (const viewport of expected.viewport) {
+                    if (!actual[key].viewport.includes(viewport)) {
+                        truthy = false;
+                        failMsg += `Expected Viewport for ${formFactor} - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                        // Highlighted log for missing Viewport
+                        console.log('\x1b[41m\x1b[37m[HIGHLIGHTED] VIEWPORT MISMATCH for', key, '\x1b[0m');
+                        console.log('\x1b[33mExpected viewport:\x1b[0m', expected.viewport);
+                        console.log('\x1b[36mActual viewport:\x1b[0m', actual[key].viewport);
+                    }
                 }
             }
         }
     }
-
-    // Log fail message from Expectation mismatch before failing test.
+// Log fail message from Expectation mismatch before failing test.
     if (failMsg !== '') {
-        console.log('\x1b[31m%s\x1b[0m',failMsg);
+        throw new Error(failMsg);
     }
-
-    // Fail test when there is expectation mismatch.
+// Fail test when there is expectation mismatch.
     expect(truthy).toBeTruthy();
 });
 

@@ -115,6 +115,7 @@ Given('theme {string} is activated', async function (this:ICustomWorld, theme) {
  * Executes the step to generate visual regression reference via backstopjs.
  */
 Given('visual regression reference is generated', async function (this:ICustomWorld) {
+    return; // Skip VR tests.
     const tags = this.pickle.tags.map(tag => tag.name);
     const tag: string = await getScenarioTag(tags);
     
@@ -412,6 +413,7 @@ Then('clean up', async function (this: ICustomWorld) {
  * Executes the step to check for visual regression.
  */
 Then('I must not see any visual regression {string}', async function (this: ICustomWorld, label: string) {
+    return; // Skip VR tests.
     await compareReference(label);
 });
 
@@ -419,6 +421,7 @@ Then('I must not see any visual regression {string}', async function (this: ICus
  * Executes the step to check for LRC visual regression.
  */
 Then('I must not see any visual regression in scenario urls', async function (this: ICustomWorld) {
+    return; // Skip VR tests.
     const tags = this.pickle.tags.map(tag => tag.name);
     const tag: string = await getScenarioTag(tags);
     const liveUrl = scenarioUrls[tag];

@@ -44,3 +44,5 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
 If you ever get failed tests like the one below, it indicates that WP Rocket has some related errors in debug.log
 ![Screenshot 2023-04-27 at 09 55 37](https://user-images.githubusercontent.com/38788055/234812244-c1cd0c87-702a-49a9-baf6-0fab7afd2cd0.png)
 
+### BackWpUp Doc
+- [BackWpUp Documentation](src/backwpup/README.md)
