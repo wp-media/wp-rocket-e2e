@@ -408,13 +408,14 @@
     "viewport": [],
     "enabled": true
   },
-  "lcp_picture_type": {
-    "comment": "Has a bug currently in UI #7547",
+   "lcp_picture_type": {
+    "comment": "Has a bug currently in UI#7547",
     "lcp": [
-      "/wp-content/rocket-test-data/images/lcp/marchlarge1-scaled.jpg.avif", "/wp-content/rocket-test-data/images/lcp/marchlarge1-scaled.jpg.webp", 
-    "/wp-content/rocket-test-data/images/lcp/marchlarge1-scaled.jpg"],
-    "viewport": ["https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-600x338.jpg.avif", "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-600x338.jpg.webp", 
-    "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-%E2%80%94-kopia-1024x576.jpg"],
+      "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-600x338.jpg.avif"],
+
+    "viewport": [
+    "/wp-content/rocket-test-data/images/lcp/WF4.jpg.avif", "/wp-content/rocket-test-data/images/lcp/WF4.jpg.webp", 
+    "/wp-content/rocket-test-data/images/lcp/WF4.jpg"],
     "enabled": true
   },
   "lcp_picture_responsive_type": {
