@@ -77,6 +77,22 @@ export class StorageUtils {
             response.status() === 200
         );
     }
+    public setupFTPOnboarding = async (): Promise<void> => {
+        const ftpButton =
+            '#backwpup-onboarding-panes .js-backwpup-toggle-storage[data-storage="FTP"]';
+        const ftpSidebar = '#backwpup-sidebar #sidebar-storage-FTP';
+        await this.page
+            .click(
+                ftpButton
+            );
+        await this.page.waitForSelector(
+            ftpSidebar,
+            {
+                state: 'visible'
+            }
+        );
+        await this.setupFTP();
+    }
     /**
      * Configures FTP storage settings and tests the connection.
      *
@@ -87,7 +103,10 @@ export class StorageUtils {
         await this.page.locator('#ftpuser').fill(BACKWPUP_INFOS.ftp.username);
         await this.page.locator('#ftppass').fill(BACKWPUP_INFOS.ftp.password);
         await this.page.locator('#ftphostport').fill(BACKWPUP_INFOS.ftp.port ?? '21');
-
+        const currentValue = await this.page.locator('#ftpdir').inputValue();
+        const timestamp = Date.now();
+        // Changing the directory name to prevent old backups to appear and affect the test
+        await this.page.locator('#ftpdir').fill(`${currentValue}${timestamp}`);
         await this.page.click('.js-backwpup-test-FTP-storage');
 
         await this.page.waitForResponse(response =>

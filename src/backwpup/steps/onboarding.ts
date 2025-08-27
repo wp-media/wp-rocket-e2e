@@ -33,6 +33,17 @@ When('I Configure web server storage', async function (this: ICustomWorld) {
     await this.page.click(closeButton)
 });
 
+Then('I save and submit the onboarding form', async function (this: ICustomWorld) {
+    //Save and submit onboarding form
+    await this.page.click('.js-backwpup-onboarding-submit-form');
+
+    const closeButton = '#showworkingclose';
+    await this.page.waitForSelector(closeButton, {
+        state: 'visible',
+        timeout: 100000
+    });
+    await this.page.click(closeButton);
+});
 
 /**
  * Set backup frequency to a specific period

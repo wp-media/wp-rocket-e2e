@@ -39,7 +39,15 @@ Then('{string} backup is generated and added to history', async function (this: 
     expect(currentBackups.length).toBe(this.initialBackups.length + parseInt(backupNumber));
 });
 
-
+When(
+    'I set up {string} storage for first backup',
+    async function (this: ICustomWorld, storageProvider: string) {
+        const storageType = storageProvider.toUpperCase();
+        if (storageType === 'FTP') {
+            await this.storage.setupFTPOnboarding();
+        }
+    }
+);
 When('I set up {string} storage', async function (this: ICustomWorld, storageProvider: string) {
     await this.page.locator('.backwpup-job-card button[data-content="storages"]').first().click();
     const storageType = storageProvider.toUpperCase();
@@ -59,7 +67,11 @@ When('I set up {string} storage', async function (this: ICustomWorld, storagePro
         await this.storage.setupFTP();
     }
 });
-
+Then('{string} storage should be selected for first backup', async function (this: ICustomWorld, storageProvider: string) {
+    const storageType = storageProvider.toUpperCase();
+    const isChecked  = await this.page.isChecked(`#destination-${storageType}`);
+    expect(isChecked).toBe(true);
+});
 Then('{string} storage should be selected', async function (this: ICustomWorld, storageProvider: string) {
     const storageType = storageProvider.toUpperCase();
     await this.page.locator('.backwpup-job-card button[data-content="storages"]').first().click();
