@@ -416,7 +416,7 @@
     "viewport": [
     "/wp-content/rocket-test-data/images/lcp/WF4.jpg.avif", "/wp-content/rocket-test-data/images/lcp/WF4.jpg.webp", 
     "/wp-content/rocket-test-data/images/lcp/WF4.jpg"],
-    "enabled": false
+    "enabled": true
   },
   "lcp_picture_responsive_type": {
     "comment": "Has a bug currently in UI#7547",
