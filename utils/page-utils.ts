@@ -87,6 +87,13 @@ export class PageUtils {
 
         // Click login.
         await this.page.click('#wp-submit');
+        
+        // Confirm login worked
+        await this.page.waitForURL('**/wp-admin/**', { timeout: 5000 });
+
+        if (!this.page.url().includes('/wp-admin')) {
+            throw new Error('❌ Login failed: User not redirected to dashboard.');
+        }
     }
 
     /**
