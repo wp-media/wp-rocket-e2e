@@ -407,8 +407,8 @@
     "lcp": [
        "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-600x338.jpg.avif"],
     "viewport": [  "/wp-content/rocket-test-data/images/lcp/WF4.jpg.avif", "/wp-content/rocket-test-data/images/lcp/WF4.jpg.webp", 
-      "/wp-content/rocket-test-data/images/lcp/WF4.jpg", "/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png.avif",
-      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png.webp", "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png"],
+    "/wp-content/rocket-test-data/images/lcp/WF4.jpg", "/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png.avif",
+    "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png.webp", "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png"],
     "enabled": false
   },
   "lcp_picture_responsive_type": {
