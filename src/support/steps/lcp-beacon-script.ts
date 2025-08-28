@@ -96,8 +96,6 @@ When(
     'I visit the url {string} for {string}',
     async function (this: ICustomWorld, templateKey: string, formFactor: string) {
         let sql: string,
-            result: string,
-            resultFromStdout: Row[],
             viewPortWidth: number = 1600,
             viewPortHeight: number = 700,
             resultFile: string = './src/support/results/expectedResultsDesktop.json',
@@ -150,8 +148,8 @@ When(
         } else {
             sql = `SELECT lcp, viewport FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${templateKey}%" AND is_mobile = ${isMobile}`;
         }
-        result = await dbQuery(sql);
-        resultFromStdout = await extractFromStdout(result);
+        const result = await dbQuery(sql);
+        const resultFromStdout = await extractFromStdout(result);
 
         // If no DB result, set assertion var to false, fail msg and return
         if (!resultFromStdout || resultFromStdout.length === 0) {

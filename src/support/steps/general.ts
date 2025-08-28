@@ -479,8 +479,8 @@ When(
         const url = `${WP_BASE_URL}/${templateKey}`;
         const urlNowprocket = `${url}?nowprocket`;
 
-        const consoleMsgNowprocket = await getConsoleMsg(this.page, urlNowprocket);
-        const consoleMsgActual = await getConsoleMsg(this.page, url);
+        const consoleMsgNowprocket = await getConsoleMsgNoScroll(this.page, urlNowprocket);
+        const consoleMsgActual = await getConsoleMsgNoScroll(this.page, url);
 
         if (consoleMsgActual.length !== 0) {
             try {
@@ -494,6 +494,33 @@ When(
         }
     }
 );
+
+const getConsoleMsgNoScroll = async (page: Page, url: string): Promise<Array<string>> => {
+    const consoleMsg: string[] = [];
+
+    const consoleHandler = (msg): void => {
+        consoleMsg.push(msg.text());
+    };
+
+    const pageErrorHandler = (error: Error): void => {
+        consoleMsg.push(error.message);
+    };
+
+    // Listen for console messages.
+    page.on('console', consoleHandler);
+
+    // Listen for page errors.
+    page.on('pageerror', pageErrorHandler);
+
+    await page.goto(url);
+    await page.waitForLoadState('load', { timeout: 30000 });
+
+    // Remove the event listeners to prevent duplicate messages.
+    page.off('console', consoleHandler);
+    page.off('pageerror', pageErrorHandler);
+
+    return consoleMsg;
+}
 
 
 const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> => {
