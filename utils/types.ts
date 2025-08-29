@@ -91,7 +91,7 @@ export interface VRurlConfig {
     }
 }
 export interface Pickle {
-    name: string;
+    name: string;   
 }
 
 export type Viewport = {
@@ -106,6 +106,17 @@ export interface PreloadFontsData {
         fonts: string,
         comment: string
     }
+}
+
+export interface SelfHostGoogleFontsData {
+    fonts: string[];
+    gf_parameters?: string;
+    enabled: boolean;
+    comment?: string;
+}
+
+export interface SelfHostGoogleFontsConfig {
+    [key: string]: SelfHostGoogleFontsData;
 }
 
 export interface Row {
