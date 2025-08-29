@@ -387,7 +387,7 @@
       "/wp-content/rocket-test-data/images/lcp/testavif.avif", "/wp-content/rocket-test-data/images/lcp/testwebp.webp",
       "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8", "https://rocketlabsqa.ovh/wp-content/rocket-test-data/images/fixtheissue.jpg"
      ],
-    "enabled": false
+    "enabled": true
   },
   "lcp_multiple_background_pseudo_bg_template": {
     "lcp": [

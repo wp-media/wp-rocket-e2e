@@ -66,6 +66,7 @@
     "enabled": true
   },
   "lcp_bg_responsive_webkit_template": {
+    "comment":"Has GH 7563",
     "lcp": [
       "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8",
       "/wp-content/rocket-test-data/images/fixtheissue.jpg"
@@ -221,6 +222,7 @@
     "enabled": true
   },
   "lcp_picture_template": {
+    "comment":"related issue #7584 which will affect console error scenario",
     "lcp": [
       "/wp-content/rocket-test-data/images/test3.gif",
       "/rocket-test-data/images/lcp/testjpg2.jpg",
@@ -393,7 +395,7 @@
       "/wp-content/rocket-test-data/images/lcp/testavif.avif", "/wp-content/rocket-test-data/images/lcp/testwebp.webp",
       "https://fastly.picsum.photos/id/976/200/300.jpg?hmac=s1Uz9fgJv32r8elfaIYn7pLpQXps7X9oYNwC5XirhO8", "https://rocketlabsqa.ovh/wp-content/rocket-test-data/images/fixtheissue.jpg"
      ],
-    "enabled": false
+    "enabled": true
   },
   "lcp_multiple_background_pseudo_bg_template": {
     "lcp": [
@@ -430,7 +432,7 @@
       "/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1.jpg.webp 1024w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-450x380.jpg.webp 450w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-600x373.jpg.webp 600w",
       "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1.jpg", "/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-600x373.jpg 1024w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-450x380.jpg 1920w"
   ],
-    "enabled": false
+    "enabled": true
   },
   "lcp_picture_template2_maxheight": {
     "lcp": [

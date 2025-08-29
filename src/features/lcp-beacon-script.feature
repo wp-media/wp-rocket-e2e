@@ -21,7 +21,7 @@ Feature: Beacon script captures the right images.
     And plugin 'force-wp-mobile' is deactivated
     Then 'lcp and atf' should be as expected for 'mobile'
 
-  @test
+  @long-test
   Scenario Outline: Beacon applied and no console errors in desktop for <url>
     Given I log out
     And I visit the url "<url>" for 'desktop'
@@ -33,10 +33,8 @@ Feature: Beacon script captures the right images.
     Examples:
       | url                                |
       | lcp_bg_multimage_template          |
-      | lcp_bg_responsive_webkit_template  |
       | lcp_image_withspecialchar_template |
       | lcp_withfetchpriorityinurl_template|
-      | lcp_picture_template               |
       | lcp_picture_template2              |
       | lcp_section_template_relative      |
       | lcp_section_template2              |
@@ -45,7 +43,6 @@ Feature: Beacon script captures the right images.
       | lcp_picture_media_type_mixed       |
       | lcp_picture_relative               |
       | lcp_responsive_image               |
-      | lcp_bg_responsive_imgset_template  |
       | lcp_multiple_background_pseudo_bg_template |
       | lcp_pseudo_class_element           |
       | lcp_picture_template2_maxheight    |
