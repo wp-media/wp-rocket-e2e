@@ -110,7 +110,7 @@ export interface PreloadFontsData {
 
 export interface SelfHostGoogleFontsData {
     fonts: string[];
-    gf_parameters?: string;
+    gfParameters?: string;
     enabled: boolean;
     comment?: string;
 }

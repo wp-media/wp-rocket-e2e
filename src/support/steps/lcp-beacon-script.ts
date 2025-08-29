@@ -126,13 +126,13 @@ When('I visit the urls and check for self-hosted google fonts', async function (
   // Set consistent viewport size
   await this.page.setViewportSize({ width: 1600, height: 700 });
 
-  const handler = (route: Route) => {
-    const url = route.request().url();
-    if (url.includes('fonts.googleapis.com') || url.includes('/wp-content/cache/fonts')) {
-      console.log(`Font request: ${url}`);
-    }
-    route.continue();
-  };
+  const handler = async (route: Route): Promise<void> => {
+  const url = route.request().url();
+  if (url.includes('fonts.googleapis.com') || url.includes('/wp-content/cache/fonts')) {
+    console.log(`Font request: ${url}`);
+  }
+  await route.continue();
+};
   await this.page.route('**/*', handler);
 
   // Collect mismatches for reporting at the end
@@ -178,8 +178,8 @@ When('I visit the urls and check for self-hosted google fonts', async function (
             .filter(link => !!link.parameters);
         });
 
-        const normalizeFontPath = (u: string) => {
-          try { const p = new URL(u); return p.pathname + p.search; } catch { return u; }
+        const normalizeFontPath = (u: string): string => {
+        try { const p = new URL(u); return p.pathname + p.search; } catch { return u; }
         };
 
         const expectedFonts = (entry.fonts || []).map(f => f.trim()).sort();
@@ -192,7 +192,7 @@ When('I visit the urls and check for self-hosted google fonts', async function (
         const missingFonts = expectedFonts.filter(f => !actualFonts.includes(f));
         const unexpectedFonts = actualFonts.filter(f => !expectedFonts.includes(f));
 
-        const expectedParams = entry.gf_parameters ? normalizeParams(entry.gf_parameters) : {};
+        const expectedParams = entry.gfParameters ? normalizeParams(entry.gfParameters) : {};
         const combinedActualParams = fontLinks.reduce<Record<string,string>>((acc, link) => {
           const actual = normalizeParams(link.parameters);
           return { ...acc, ...actual };
@@ -216,7 +216,7 @@ When('I visit the urls and check for self-hosted google fonts', async function (
             );
           }
           parts.push(
-            `Expected Parameters: ${entry.gf_parameters}`,
+            `Expected Parameters: ${entry.gfParameters}`,
             `Actual Parameters Found:\n${fontLinks.map(f => `- ${f.parameters}`).join('\n')}`
           );
           mismatches.push(parts.join('\n'));
@@ -245,7 +245,7 @@ Then('hosted Google Fonts parameters should match expected for all enabled entri
 
   for (const key in selfHostJsonData) {
     const entry = selfHostJsonData[key];
-    if (!entry?.enabled || !entry.gf_parameters) continue;
+    if (!entry?.enabled || !entry.gfParameters) continue;
 
     console.log(`Checking parameters for: ${key}`);
     await this.utils.visitPage(key);
@@ -256,7 +256,7 @@ Then('hosted Google Fonts parameters should match expected for all enabled entri
         .map(link => link.getAttribute('data-wpr-hosted-gf-parameters') || '')
     );
 
-    const expectedNormalized = normalizeParams(entry.gf_parameters);
+    const expectedNormalized = normalizeParams(entry.gfParameters);
 
     // Merge parameters from all found link tags, since some themes split families across multiple tags
     const combinedActualNormalized = actualParamsList.reduce<Record<string, string>>((acc, actual) => {
@@ -269,7 +269,7 @@ Then('hosted Google Fonts parameters should match expected for all enabled entri
 
     if (!matched) {
       mismatches.push(
-        `Template: ${key}\nExpected: ${entry.gf_parameters}\n` +
+        `Template: ${key}\nExpected: ${entry.gfParameters}\n` +
         `Actual found:\n${actualParamsList.map(p => `- ${p}`).join('\n')}\n`
       );
     }
