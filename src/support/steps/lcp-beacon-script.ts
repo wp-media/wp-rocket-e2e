@@ -95,11 +95,9 @@ When('I visit the urls and check for lazyload', async function (this: ICustomWor
 When(
     'I visit the url {string} for {string}',
     async function (this: ICustomWorld, templateKey: string, formFactor: string) {
-        let sql: string,
-            viewPortWidth: number = 1600,
+        let viewPortWidth: number = 1600,
             viewPortHeight: number = 700,
-            resultFile: string = './src/support/results/expectedResultsDesktop.json',
-            isMobile = 0;
+            resultFile: string = './src/support/results/expectedResultsDesktop.json';
 
         // Set device viewport and result file based on formFactor
         if (formFactor === 'mobile') {
@@ -110,8 +108,6 @@ When(
             resultFile = './src/support/results/expectedResultsPreloadFonts.json';
         }
 
-        failMsg = '';
-
         await this.page.setViewportSize({
             width: viewPortWidth,
             height: viewPortHeight
@@ -120,14 +116,11 @@ When(
         const data = await fs.readFile(resultFile, 'utf8');
         const jsonData = JSON.parse(data);
 
-        const tablePrefix: string = await getWPTablePrefix();
 
         // Only process one templateKey
         if (!jsonData[templateKey] || !jsonData[templateKey].enabled) {
             throw new Error(`Template key "${templateKey}" not found or not enabled in ${resultFile}`);
         }
-
-        const url: string = `${WP_BASE_URL}/${templateKey}`;
 
         // Visit the page url
         await this.utils.visitPage(templateKey);
