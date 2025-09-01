@@ -213,7 +213,7 @@
   "lcp_picture_template2": {
     "lcp": [
       "/rocket-test-data/images/test3.gif",
-      "/rocket-test-data/images/testjpg3.jpg",
+      "/rocket-test-data/images/lcp/testjpg3.jpg",
       "/rocket-test-data/images/lcp/testjpg2.jpg"
     ],
     "viewport": [
