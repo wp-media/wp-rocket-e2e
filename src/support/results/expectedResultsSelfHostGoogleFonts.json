@@ -3,18 +3,14 @@
     "fonts": [
       "/wp-content/cache/fonts/1/google-fonts/css/b/0/e/c20c0038dca463f0adee9b315f221.css"
     ],
-    "gfParameters": [
-    "family=Roboto%3A400%2C100%2C300%2C100italic%2C300italic%2C400italic%2C500%2C500italic%2C700%2C700italic%2C900%2C900italic%7CPT%20Sans%3A400%2C700%2C400italic%2C700italic%7CPoppins%3A100%2C300%2C400%7CMontserrat%3A400%2C400i%2C500%2C500i%7CMontserrat%20display%3A400%2C400i%2C500%2C500i%7CAnonymous%20Pro&display=swap"
-    ],
+    "gfParameters": "family=Roboto%3A400%2C100%2C300%2C100italic%2C300italic%2C400italic%2C500%2C500italic%2C700%2C700italic%2C900%2C900italic%7CPT%20Sans%3A400%2C700%2C400italic%2C700italic%7CPoppins%3A100%2C300%2C400%7CMontserrat%3A400%2C400i%2C500%2C500i%7CMontserrat%20display%3A400%2C400i%2C500%2C500i%7CAnonymous%20Pro&display=swap",
     "enabled": true
   },
 "combine_v2fonts": {
     "fonts": [
       "/wp-content/cache/fonts/1/google-fonts/css/9/9/c/ae0a9cd068045d89a3697f0fbefc9.css"
     ],
-    "gfParameters": [
-    "family=Goldman:wght@400;700&family=Xanh+Mono:ital@0;1&family=Markazi+Text:wght@450&family=Raleway:wght@600;700&family=Noto+Serif+JP:wght@400;700&family=Noto+Serif+JP+display:wght@400;700&display=swap"
-    ],
+    "gfParameters": "family=Goldman:wght@400;700&family=Xanh+Mono:ital@0;1&family=Markazi+Text:wght@450&family=Raleway:wght@600;700&family=Noto+Serif+JP:wght@400;700&family=Noto+Serif+JP+display:wght@400;700&display=swap",
     "enabled": true
   },
 "combine_v1v2fonts": {
