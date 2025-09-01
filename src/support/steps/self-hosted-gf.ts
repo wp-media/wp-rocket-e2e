@@ -10,7 +10,6 @@
  * @requires {@link @cucumber/cucumber}
  */
 import {ICustomWorld} from "../../common/custom-world";
-import {expect} from "@playwright/test";
 import {Then, When} from "@cucumber/cucumber";
 import type { Route } from '@playwright/test';
 import {SelfHostGoogleFontsConfig} from "../../../utils/types";
