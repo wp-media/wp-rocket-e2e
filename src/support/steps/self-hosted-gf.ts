@@ -37,6 +37,17 @@ const normalizeParams = (paramStr: string | string[]): Record<string,string> => 
   return Object.fromEntries(params);
 };
 
+/** Normalize a font URL into a path + search string */
+function normalizeFontPath(u: string): string {
+  try {
+    const p = new URL(u);
+    return p.pathname + p.search;
+  } catch {
+    return u;
+  }
+}
+
+
 /**
  * Executes step to visit page based on the templates and check for self-hosted Google Fonts.
  */
@@ -100,16 +111,15 @@ Given('I visit the urls and check for self-hosted google fonts', async function 
             .filter(link => !!link.parameters);
         });
 
-        const normalizeFontPath = (u: string): string => {
-        try { const p = new URL(u); return p.pathname + p.search; } catch { return u; }
-        };
+        const expectedFonts = (entry.fonts || [])
+        .map(f => normalizeFontPath(f.trim()))   // normalize expected items
+        .sort();
 
-        const expectedFonts = (entry.fonts || []).map(f => f.trim()).sort();
         const actualFonts = fontLinks
-          .map(f => f.href.trim())
-          .filter(href => href.length > 0 && href.includes('/wp-content/cache/fonts'))
-          .map(href => normalizeFontPath(href))
-          .sort();
+        .map(f => f.href.trim())
+        .filter(href => href.length > 0 && href.includes('/wp-content/cache/fonts'))
+        .map(href => normalizeFontPath(href))     // normalize actual items
+        .sort();
 
         const missingFonts = expectedFonts.filter(f => !actualFonts.includes(f));
         const unexpectedFonts = actualFonts.filter(f => !expectedFonts.includes(f));
@@ -123,7 +133,7 @@ Given('I visit the urls and check for self-hosted google fonts', async function 
           ([k, v]) => combinedActualParams[k] === v
         );
 
-        const shouldReportFontDiff = (expectedFonts.length > 0) && (actualFonts.length > 0);
+        const shouldReportFontDiff = (expectedFonts.length > 0) || (actualFonts.length > 0);
         if ((shouldReportFontDiff && (missingFonts.length || unexpectedFonts.length)) || !allParamsMatch) {
           const parts: string[] = [
             `Template: ${templateKey}`,
