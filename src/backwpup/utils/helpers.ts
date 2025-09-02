@@ -29,12 +29,10 @@ export const configureWebServerStorage = async (page: ICustomWorld['page']): Pro
         //Save and submit onboarding form
         await page.click('.js-backwpup-onboarding-submit-form');
     
-        await page.waitForTimeout(60000);
-    
         const closeButton = '#showworkingclose'
         await page.waitForSelector(closeButton, {
             state: 'visible',
-            timeout: 10000
+            timeout: 100000
         });
         await page.click(closeButton);
 };
