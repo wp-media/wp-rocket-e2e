@@ -440,87 +440,16 @@ Then('no error in the console different than nowprocket page {string}', async fu
     const consoleMsg2 = await getConsoleMsg(this.page, `${WP_BASE_URL}/${path}`);
 
     if (consoleMsg2.length !== 0) {
-        expect(consoleMsg2).toEqual(consoleMsg1);
-    }
-});
-
-
-/**
- * Executes the step to check for that there is no console error different from the nowprocket pages version.
- */
-When(
-    "validate that url {string} in {string} does not have console errors different than nowprocket",
-    async function (this: ICustomWorld, templateKey: string, formFactor: string) {
-        let viewPortWidth: number = 1600,
-            viewPortHeight: number = 700,
-            resultFile: string = './src/support/results/expectedResultsDesktop.json';
-
-        if (formFactor === 'mobile') {
-            viewPortWidth = 389;
-            viewPortHeight = 829;
-            resultFile = './src/support/results/expectedResultsMobile.json';
-        } else if (formFactor === 'preloadfonts') {
-            resultFile = './src/support/results/expectedResultsPreloadFonts.json';
-        }
-
-        const data = await fs.readFile(resultFile, 'utf8');
-        const jsonData = JSON.parse(data);
-
-        await this.page.setViewportSize({
-            width: viewPortWidth,
-            height: viewPortHeight
-        });
-
-        // Handle missing/disabled templateKey gracefully
-        if (!jsonData[templateKey] || !jsonData[templateKey].enabled) {
-            throw new Error(`Template key "${templateKey}" not found or not enabled in ${resultFile}`);
-        }
-
-        const url = `${WP_BASE_URL}/${templateKey}`;
-        const urlNowprocket = `${url}?nowprocket`;
-
-        const consoleMsgNowprocket = await getConsoleMsgNoScroll(this.page, urlNowprocket);
-        const consoleMsgActual = await getConsoleMsgNoScroll(this.page, url);
-
-        if (consoleMsgActual.length !== 0) {
-            try {
-                expect(consoleMsgActual).toEqual(consoleMsgNowprocket);
+         try {
+                expect(consoleMsg2).toEqual(consoleMsg1);
             } catch (e) {
                 throw new Error(
-                    `\x1b[41m\x1b[37mConsole difference detected for: ${url}\x1b[0m\n` +
-                    `nowprocket console: ${consoleMsgNowprocket}\nactual console: ${consoleMsgActual}`
+                    `\x1b[41m\x1b[37mConsole difference detected for: ${WP_BASE_URL}/${path}\x1b[0m\n` +
+                    `nowprocket console: ${consoleMsg1}\nactual console: ${consoleMsg2}`
                 );
             }
-        }
     }
-);
-
-const getConsoleMsgNoScroll = async (page: Page, url: string): Promise<Array<string>> => {
-    const consoleMsg: string[] = [];
-
-    const consoleHandler = (msg): void => {
-        consoleMsg.push(msg.text());
-    };
-
-    const pageErrorHandler = (error: Error): void => {
-        consoleMsg.push(error.message);
-    };
-
-    // Listen for console messages.
-    page.on('console', consoleHandler);
-
-    // Listen for page errors.
-    page.on('pageerror', pageErrorHandler);
-
-    await page.goto(url);
-    await page.waitForLoadState('load', { timeout: 30000 });
-
-    // Remove the event listeners to prevent duplicate messages.
-    page.off('console', consoleHandler);
-    page.off('pageerror', pageErrorHandler);
-
-    return consoleMsg;
-}
+});
 
 
 const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> => {
@@ -543,6 +472,7 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
     await page.goto(url);
     await page.waitForLoadState('load', { timeout: 30000 });
 
+    // use this if you need to scroll till end of page
     await page.evaluate(async () => {
         // Scroll to the bottom of page.
         const scrollPage: Promise<void> = new Promise((resolve) => {

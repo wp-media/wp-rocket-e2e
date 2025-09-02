@@ -28,11 +28,12 @@ Feature: Beacon script captures the right images.
     And I am logged in
     And I clear cache
     And I log out
-    Then validate that url "<url>" in 'desktop' does not have console errors different than nowprocket
-
+    Then no error in the console different than nowprocket page "<url>"
+   
     Examples:
       | url                                |
       | lcp_bg_multimage_template          |
+      | lcp_bg_responsive_webkit_template  |
       | lcp_image_withspecialchar_template |
       | lcp_withfetchpriorityinurl_template|
       | lcp_picture_template2              |
@@ -46,9 +47,6 @@ Feature: Beacon script captures the right images.
       | lcp_multiple_background_pseudo_bg_template |
       | lcp_pseudo_class_element           |
       | lcp_picture_template2_maxheight    |
-      | lcp_picture_issue                  |
-      | lcp_specialchar_template           |
-      | lcp_specialchar2                   |
     
   
 

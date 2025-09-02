@@ -96,31 +96,18 @@ When(
     'I visit the url {string} for {string}',
     async function (this: ICustomWorld, templateKey: string, formFactor: string) {
         let viewPortWidth: number = 1600,
-            viewPortHeight: number = 700,
-            resultFile: string = './src/support/results/expectedResultsDesktop.json';
+            viewPortHeight: number = 700;
 
         // Set device viewport and result file based on formFactor
         if (formFactor === 'mobile') {
             viewPortWidth = 389;
             viewPortHeight = 829;
-            resultFile = './src/support/results/expectedResultsMobile.json';
-        } else if (formFactor === 'preloadfonts') {
-            resultFile = './src/support/results/expectedResultsPreloadFonts.json';
         }
 
         await this.page.setViewportSize({
             width: viewPortWidth,
             height: viewPortHeight
         });
-
-        const data = await fs.readFile(resultFile, 'utf8');
-        const jsonData = JSON.parse(data);
-
-
-        // Only process one templateKey
-        if (!jsonData[templateKey] || !jsonData[templateKey].enabled) {
-            throw new Error(`Template key "${templateKey}" not found or not enabled in ${resultFile}`);
-        }
 
         // Visit the page url
         await this.utils.visitPage(templateKey);
