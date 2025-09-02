@@ -23,7 +23,6 @@ import {
     deactivatePlugin, installRemotePlugin,
 } from "../../../utils/commands";
 import backstop from 'backstopjs';
-import fs from 'fs/promises';
 
 /**
  * Executes the step to log in.
