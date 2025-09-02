@@ -40,7 +40,7 @@ const normalizeParams = (paramStr: string | string[]): Record<string,string> => 
 /**
  * Executes step to visit page based on the templates and check for self-hosted Google Fonts.
  */
-When('I visit the urls and check for self-hosted google fonts', async function (this: ICustomWorld) {
+Given('I visit the urls and check for self-hosted google fonts', async function (this: ICustomWorld) {
   // Load expected results from JSON file
   const resultFile = './src/support/results/expectedResultsSelfHostGoogleFonts.json';
   const fileData: string = await fs.readFile(resultFile, 'utf8');
