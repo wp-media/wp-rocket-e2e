@@ -423,14 +423,12 @@
   "lcp_picture_responsive_type": {
     "comment": "Has a bug currently in UI#7547",
     "lcp": [
-      "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-600x338.jpg.avif 1024w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-100x100.jpg.avif 768w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-1536x864.jpg.avif 1536w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-450x450.jpg.avif 1200w" ,
-      "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-600x338.jpg.webp 1024w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-450x450.jpg.webp 300w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-100x100.jpg.webp 768w",
-      "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-%E2%80%94-kopia-1024x576.jpg", "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-%E2%80%94-kopia-450x450.jpg 1024w"
+      "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-600x338.jpg.avif 1024w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-100x100.jpg.avif 768w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-1536x864.jpg.avif 1536w, https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-450x450.jpg.avif 1200w"
     ],
     "viewport": [
       "/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-300x186.jpg.avif 1024w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-150x150.jpg.avif 768w",
       "/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1.jpg.webp 1024w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-450x380.jpg.webp 450w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-600x373.jpg.webp 600w",
-      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1.jpg", "/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-600x373.jpg 1024w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-450x380.jpg 1920w"
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1.jpg"
   ],
     "enabled": true
   },
