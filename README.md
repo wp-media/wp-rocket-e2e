@@ -29,7 +29,8 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
  ## Running Tests
  - Don't forget to install the [helper plugin](https://github.com/wp-media/wp-rocket-e2e-test-helper)
  - To run tests on playwright, simply run `npx playwright test` or `npm run test:e2e` which ever you prefer.
- 
+- To run Visual regression with certain feature run 
+`npm run test:vr --wproption=lazyloadCssBgImg` This means to run visual regression for the pages defined for this feature LLCSSBG after enabling it
  
  ## Debugging Tests
  Use `npx playwright test --debug` to control and get a view of each test step.
