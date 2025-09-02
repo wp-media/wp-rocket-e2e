@@ -1,4 +1,4 @@
-@smoke @selfhostgooglefonts @setup @priorityelements
+@smoke @selfhostgooglefonts @setup
 
 Feature: Google Fonts are self-hosted
 
