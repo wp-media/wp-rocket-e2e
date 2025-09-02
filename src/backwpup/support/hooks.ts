@@ -2,7 +2,7 @@ import { ICustomWorld } from "../common/custom-world";
 import { Sections } from '../../common/sections';
 import { selectors as pluginSelectors } from "./../../common/selectors";
 import { PageUtils } from "../../../utils/page-utils";
-import { Before, BeforeAll} from "@cucumber/cucumber";
+import { Before, After} from "@cucumber/cucumber";
 import {StorageUtils} from "../utils/storage";
 import {configurations} from "../../../utils/configurations";
 import {rm, testSshConnection, uninstallPlugin} from "../../../utils/commands";
@@ -24,9 +24,9 @@ Before({tags: '@bwpupsetup'}, async function(this: ICustomWorld, {pickle}) {
 });
 
 /**
- * Before all tests, delete data
+ * After every test, delete data
  */
-BeforeAll(async function (this: ICustomWorld) {
+After(async function (this: ICustomWorld) {
     await deleteAllData(this.page);
     try {
         await testSshConnection();
@@ -44,7 +44,11 @@ BeforeAll(async function (this: ICustomWorld) {
 });
 
 async function deleteAllData(page: Page): Promise<void> {
-    await page.goto(`${configurations.baseUrl}/wp-admin/admin.php?page=backwpup`);
+    const response = await page.goto(`${configurations.baseUrl}/wp-admin/admin.php?page=backwpup`);
+    // We check status, because for some tests, the plugin will be uninstalled before getting here
+    if (!response || response.status() !== 200) {
+        return;
+    }
     await page.waitForLoadState('networkidle');
     const hasItems = await page.locator('table#backwpup-backup-history tbody tr').count() > 0;
     if (!hasItems) {
