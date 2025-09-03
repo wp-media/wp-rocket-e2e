@@ -1,6 +1,7 @@
 import {Then, When} from "@cucumber/cucumber";
 import {ICustomWorld} from "../../common/custom-world";
 import {expect, Page} from "@playwright/test";
+import { waitForBackupJobCompletion } from "../utils/helpers";
 
 /**
  * Click on save and continue button during onboarding.
@@ -22,26 +23,17 @@ When('I Configure web server storage', async function (this: ICustomWorld) {
 
     //Save and submit onboarding form
     await this.page.click('.js-backwpup-onboarding-submit-form');
+    await waitForBackupJobCompletion(this.page);
 
-    await this.page.waitForTimeout(60000);
-
-    const closeButton = '#showworkingclose'
-    await this.page.waitForSelector(closeButton, {
-        state: 'visible',
-        timeout: 10000
-    });
-    await this.page.click(closeButton)
+    const closeButton = '#showworkingclose';
+    await this.page.click(closeButton);
 });
 
 Then('I save and submit the onboarding form', async function (this: ICustomWorld) {
+    const closeButton = 'button#showworkingclose';
     //Save and submit onboarding form
     await this.page.click('.js-backwpup-onboarding-submit-form');
-
-    const closeButton = '#showworkingclose';
-    await this.page.waitForSelector(closeButton, {
-        state: 'visible',
-        timeout: 100000
-    });
+    await waitForBackupJobCompletion(this.page);
     await this.page.click(closeButton);
 });
 
