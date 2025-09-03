@@ -21,6 +21,7 @@
     "test:lcp": "$npm_package_config_testCommand --tags @lcp",
     "test:priorityelements": "$npm_package_config_testCommand --tags @priorityelements",
     "test:preloadfonts": "$npm_package_config_testCommand --tags @preloadfonts",
+    "test:selfhostgooglefonts": "$npm_package_config_testCommand --tags @selfhostgooglefonts",
     "test:test": "$npm_package_config_testCommand --tags @test",
     "test:lrc": "$npm_package_config_testCommand --tags @lrc",
     "test:cpcss": "$npm_package_config_testCommand --tags @cpcss",

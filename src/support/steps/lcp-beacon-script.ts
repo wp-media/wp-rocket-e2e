@@ -15,7 +15,7 @@ import {LLImagesData, Row, SinglePageLCPImages} from "../../../utils/types";
 
 import {dbQuery, getWPTablePrefix} from "../../../utils/commands";
 import {checkLcpOrViewport, extractFromStdout} from "../../../utils/helpers";
-import {WP_BASE_URL} from '../../../config/wp.config';
+import {WP_BASE_URL} from "../../../config/wp.config";
 import fs from 'fs/promises';
 
 let data: string,
@@ -91,6 +91,7 @@ When('I visit the urls and check for lazyload', async function (this: ICustomWor
         }
     }
 });
+
 /**
  * Executes step to visit page based on the form factor(desktop/mobile) and get the LCP/ATF data from DB.
  */
