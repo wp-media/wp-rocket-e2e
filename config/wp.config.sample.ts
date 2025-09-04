@@ -38,7 +38,9 @@ const BACKWPUP_INFOS = {
         host: '',
         username: '',
         password: '',
-        port: '21'
+        port: '21',
+        ssl: false,
+        passiveMode: true
     }
 } as const;
 

@@ -99,10 +99,14 @@ export class StorageUtils {
      * @return {Promise<void>}
      */
     public setupFTP = async (): Promise<void> => {
+        // Text fields
         await this.page.locator('#ftphost').fill(BACKWPUP_INFOS.ftp.host);
         await this.page.locator('#ftpuser').fill(BACKWPUP_INFOS.ftp.username);
         await this.page.locator('#ftppass').fill(BACKWPUP_INFOS.ftp.password);
         await this.page.locator('#ftphostport').fill(BACKWPUP_INFOS.ftp.port ?? '21');
+        // Checkboxes
+        await this.page.locator('#ftpssl').setChecked(BACKWPUP_INFOS.ftp.ssl, { force: true });
+        await this.page.locator('#ftppasv').setChecked(BACKWPUP_INFOS.ftp.passiveMode, { force: true });
         const currentValue = await this.page.locator('#ftpdir').inputValue();
         const timestamp = Date.now();
         // Changing the directory name to prevent old backups to appear and affect the test
