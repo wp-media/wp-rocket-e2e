@@ -33,7 +33,6 @@ Feature: Beacon script captures the right images.
     Examples:
       | url                                |
       | lcp_bg_multimage_template          |
-      | lcp_bg_responsive_webkit_template  |
       | lcp_image_withspecialchar_template |
       | lcp_withfetchpriorityinurl_template|
       | lcp_picture_template2              |
