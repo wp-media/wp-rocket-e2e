@@ -1,0 +1,51 @@
+{
+"combine_v1fonts": {
+    "fonts": [
+      "/wp-content/cache/fonts/1/google-fonts/css/b/0/e/c20c0038dca463f0adee9b315f221.css"
+    ],
+    "gfParameters": "family=Roboto%3A400%2C100%2C300%2C100italic%2C300italic%2C400italic%2C500%2C500italic%2C700%2C700italic%2C900%2C900italic%7CPT%20Sans%3A400%2C700%2C400italic%2C700italic%7CPoppins%3A100%2C300%2C400%7CMontserrat%3A400%2C400i%2C500%2C500i%7CMontserrat%20display%3A400%2C400i%2C500%2C500i%7CAnonymous%20Pro&display=swap",
+    "enabled": true
+  },
+"combine_v2fonts": {
+    "fonts": [
+      "/wp-content/cache/fonts/1/google-fonts/css/9/9/c/ae0a9cd068045d89a3697f0fbefc9.css"
+    ],
+    "gfParameters": "family=Goldman:wght@400;700&family=Xanh+Mono:ital@0;1&family=Markazi+Text:wght@450&family=Raleway:wght@600;700&family=Noto+Serif+JP:wght@400;700&family=Noto+Serif+JP+display:wght@400;700&display=swap",
+    "enabled": true
+  },
+"combine_v1v2fonts": {
+    "fonts": [
+      "/wp-content/cache/fonts/1/google-fonts/css/3/b/a/9c5a25cb2f895c2ae2fe32414448a.css",
+      "/wp-content/cache/fonts/1/google-fonts/css/6/0/e/746fea88eb57a3ff2534f041ba222.css"
+    ],
+    "gfParameters": [
+    "family=Goldman:wght@400;700&family=Xanh+Mono:ital@0;1&family=Epilogue:ital,wght@0,300;1,400;1,500&family=Oswald:wght@200;600&family=Lora:ital,wght@1,500&family=Lora:ital,wght@1,700&family=Alatsi&family=Alata&family=Ubuntu&family=Noto+Sans+SC:wght@300&family=Cairo:wght@200&family=Amiri:ital,wght@0,400;0,700;1,700&family=Cairo:wght@200&family=Amiri:ital,wght@0,400;0,700;1,700&family=Cairo:wght@200&family=Roboto:wght@100;300&display=swap", 
+    "family=Roboto%3A400%2C100%2C300%2C100italic%2C300italic%2C400italic%2C500%2C500italic%2C700%2C700italic%2C900%2C900italic%7CPT%20Sans%3A400%2C700%2C400italic%7CMontserrat%3A400%2C600%2C700%7CTangerine&display=swap" 
+    ],
+    "enabled": true
+  },
+"combine_GF_v2new": {
+    "fonts": [
+      "/wp-content/cache/fonts/1/google-fonts/css/6/e/c/dcfb58c5bdea701499aad9bb56fe9.css",
+      "/wp-content/cache/fonts/1/google-fonts/css/f/d/b/08e34b0efbe96d78a2d5391c482ee.css"
+    ],
+    "gfParameters": [
+      "family=Roboto&family=Open+Sans&family=Lora&family=Oswald&family=Poppins&family=Montserrat&family=Playfair+Display&family=Raleway&family=Quicksand&family=Phetsarath:wght@400;700&display=swap",
+      "family=Roboto:wght@400;700&display=swap&subset=latin,latin-ext"
+    ],
+    "enabled": false
+  },
+"combine_GF_v3new": {
+    "fonts": [
+      "/wp-content/cache/fonts/1/google-fonts/css/0/9/d/255a5c328a4212f7accc3d7cb6ec5.css",
+      "/wp-content/cache/fonts/1/google-fonts/css/7/0/0/07db17c4065853029ddb01190b1c2.css",
+      "/wp-content/cache/fonts/1/google-fonts/css/0/2/b/ea195e62e66bf1bd54c17d2dff32a.css"
+    ],
+    "gfParameters": [
+      "family=Open+Sans:wght@400;700&italic&display=swap&subset=latin,latin-ext",
+      "family=Lora:wght@400;700&display=swap&subset=latin,latin-ext",
+      "family=Roboto+Slab:wght@400;700&display=swap&subset=latin,latin-ext,cyrillic"
+    ],
+    "enabled": false
+  }
+}

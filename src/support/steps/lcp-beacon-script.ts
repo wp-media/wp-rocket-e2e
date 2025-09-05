@@ -15,7 +15,7 @@ import {LLImagesData, Row, SinglePageLCPImages} from "../../../utils/types";
 
 import {dbQuery, getWPTablePrefix} from "../../../utils/commands";
 import {checkLcpOrViewport, extractFromStdout} from "../../../utils/helpers";
-import {WP_BASE_URL} from '../../../config/wp.config';
+import {WP_BASE_URL} from "../../../config/wp.config";
 import fs from 'fs/promises';
 
 let data: string,
