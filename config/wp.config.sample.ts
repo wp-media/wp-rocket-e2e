@@ -29,9 +29,19 @@ const IMAGIFY_INFOS = {
  * Backwpup settings information
  */
 const BACKWPUP_INFOS = {
-	msAccountName: '',
-	msAccessKey: '',
-	msContainer: ''
+    msazure: {
+        accountName: '',
+        accessKey: '',
+        container: ''
+    },
+    ftp: {
+        host: '',
+        username: '',
+        password: '',
+        port: '21',
+        ssl: false,
+        passiveMode: true
+    }
 } as const;
 
 /**
