@@ -92,6 +92,34 @@ When('I visit the urls and check for lazyload', async function (this: ICustomWor
     }
 });
 
+When(
+    'I visit the url {string} for {string}',
+    async function (this: ICustomWorld, templateKey: string, formFactor: string) {
+        let viewPortWidth: number = 1600,
+            viewPortHeight: number = 700;
+
+        // Set device viewport and result file based on formFactor
+        if (formFactor === 'mobile') {
+            viewPortWidth = 389;
+            viewPortHeight = 829;
+        }
+
+        await this.page.setViewportSize({
+            width: viewPortWidth,
+            height: viewPortHeight
+        });
+
+        // Visit the page url
+        await this.utils.visitPage(templateKey);
+
+        // Wait for beacon attribute 
+        await this.page.waitForFunction(() => {
+            const beacon = document.querySelector('[data-name="wpr-wpr-beacon"]');
+            return beacon && beacon.getAttribute('beacon-completed') === 'true';
+        }, { timeout: 100000 });
+    }
+);
+
 /**
  * Executes step to visit page based on the form factor(desktop/mobile) and get the LCP/ATF data from DB.
  */
@@ -180,6 +208,7 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
     }
 
 });
+
 
 /**
  * Executes the step to assert that LCP & ATF should be as expected.

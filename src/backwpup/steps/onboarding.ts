@@ -1,9 +1,9 @@
 import {Given, Then, When} from "@cucumber/cucumber";
 import {ICustomWorld} from "../../common/custom-world";
-
 import {expect, Page} from "@playwright/test";
 import { clickContinueButton, configureWebServerStorage } from "../utils/helpers";
 import { WP_BASE_URL } from "../../../config/wp.config";
+import { waitForBackupJobCompletion } from "../utils/helpers";
 
 /**
  * Given step to to do onboarding
@@ -28,6 +28,13 @@ When('I Configure web server storage', async function (this: ICustomWorld) {
     await configureWebServerStorage(this.page);
 });
 
+Then('I save and submit the onboarding form', async function (this: ICustomWorld) {
+    const closeButton = 'button#showworkingclose';
+    //Save and submit onboarding form
+    await this.page.click('.js-backwpup-onboarding-submit-form');
+    await waitForBackupJobCompletion(this.page);
+    await this.page.click(closeButton);
+});
 
 /**
  * Set backup frequency to a specific period

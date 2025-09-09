@@ -67,11 +67,12 @@ export const clickContinueButton = async (page: ICustomWorld['page'], button: st
 export const configureWebServerStorage = async (page: ICustomWorld['page']): Promise<void> => {
         await page.locator('.js-backwpup-toggle-storage').first().click();
         await page.click('.js-backwpup-test-FOLDER-storage')
+        await page.waitForTimeout(2000);
+        const closeButton = '#showworkingclose'
     
         //Save and submit onboarding form
         await page.click('.js-backwpup-onboarding-submit-form');
-    
-        const closeButton = '#showworkingclose'
+        // Wait for sidebar closing animation
         await waitForBackupJobCompletion(page);
         await page.click(closeButton);
 };

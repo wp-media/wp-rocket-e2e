@@ -2,6 +2,8 @@ import {Then, When} from "@cucumber/cucumber";
 import {ICustomWorld} from "../common/custom-world";
 import {expect, Page} from "@playwright/test";
 import {BackupRowData} from "../utils/types";
+import { waitForBackupJobCompletion } from "../utils/helpers";
+import { configurations } from '../../../utils/configurations';
 
 /**
  * Executes the step to enable all settings.
@@ -26,20 +28,26 @@ Then('the backup should be added to the table', async function (this: ICustomWor
 });
 
 Then('{string} backup is generated and added to history', async function (this: ICustomWorld, backupNumber: string) {
-    const progressBar = this.page.locator('.progress-bar');
-    const progressText = this.page.locator('.progress-step span');
-    await progressBar.waitFor({ state: 'visible', timeout: 10000 });
-
-    //TODO:: check the possibility of using other option that won't rely on timeout.
-    await expect(progressText).toHaveText('100%', { timeout: 600000 });
-    await progressBar.waitFor({ state: 'hidden', timeout: 10000 });
-
-    await this.page.waitForLoadState('networkidle');
+    await waitForBackupJobCompletion(this.page);
+    // Make sure we are on the backup history page (Dashboard) and the new backups are visible (After page loads)
+    await this.page.goto(
+        `${configurations.baseUrl}/wp-admin/admin.php?page=backwpup`, {
+            waitUntil: 'networkidle'
+        }
+    );
     const currentBackups = await captureBackupTableData(this.page)
     expect(currentBackups.length).toBe(this.initialBackups.length + parseInt(backupNumber));
 });
 
-
+When(
+    'I set up {string} storage for first backup',
+    async function (this: ICustomWorld, storageProvider: string) {
+        const storageType = storageProvider.toUpperCase();
+        if (storageType === 'FTP') {
+            await this.storage.setupFTPOnboarding();
+        }
+    }
+);
 When('I set up {string} storage', async function (this: ICustomWorld, storageProvider: string) {
     await this.page.locator('.backwpup-job-card button[data-content="storages"]').first().click();
     const storageType = storageProvider.toUpperCase();
@@ -53,10 +61,17 @@ When('I set up {string} storage', async function (this: ICustomWorld, storagePro
         response.url().includes('/backwpup/v1/getblock') &&
         response.status() === 200
     );
-
-    await this.storage.setupMSAzure();
+    if (storageType === 'MSAZURE') {
+        await this.storage.setupMSAzure();
+    } else if (storageType === 'FTP') {
+        await this.storage.setupFTP();
+    }
 });
-
+Then('{string} storage should be selected for first backup', async function (this: ICustomWorld, storageProvider: string) {
+    const storageType = storageProvider.toUpperCase();
+    const isChecked  = await this.page.isChecked(`#destination-${storageType}`);
+    expect(isChecked).toBe(true);
+});
 Then('{string} storage should be selected', async function (this: ICustomWorld, storageProvider: string) {
     const storageType = storageProvider.toUpperCase();
     await this.page.locator('.backwpup-job-card button[data-content="storages"]').first().click();
