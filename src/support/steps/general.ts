@@ -439,9 +439,17 @@ Then('no error in the console different than nowprocket page {string}', async fu
     const consoleMsg2 = await getConsoleMsg(this.page, `${WP_BASE_URL}/${path}`);
 
     if (consoleMsg2.length !== 0) {
-        expect(consoleMsg2).toEqual(consoleMsg1);
+         try {
+                expect(consoleMsg2).toEqual(consoleMsg1);
+            } catch (e) {
+                throw new Error(
+                    `\x1b[41m\x1b[37mConsole difference detected for: ${WP_BASE_URL}/${path}\x1b[0m\n` +
+                    `nowprocket console: ${consoleMsg1}\nactual console: ${consoleMsg2}`
+                );
+            }
     }
 });
+
 
 const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> => {
     const consoleMsg: string[] = [];
@@ -463,6 +471,7 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
     await page.goto(url);
     await page.waitForLoadState('load', { timeout: 30000 });
 
+    // use this if you need to scroll till end of page
     await page.evaluate(async () => {
         // Scroll to the bottom of page.
         const scrollPage: Promise<void> = new Promise((resolve) => {

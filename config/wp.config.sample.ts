@@ -37,6 +37,14 @@ const BACKWPUP_INFOS = {
     sugarsync: {
        email: '',
        password: ''
+	},
+    ftp: {
+        host: '',
+        username: '',
+        password: '',
+        port: '21',
+        ssl: false,
+        passiveMode: true
     }
 } as const;
 

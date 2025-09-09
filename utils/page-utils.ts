@@ -82,11 +82,23 @@ export class PageUtils {
         // Fill username & password.
         await this.page.click('#user_login');
         await this.page.fill('#user_login', username);
+        // Confirm username is filled correctly
+        await expect(this.page.locator('#user_login')).toHaveValue(username);
+
         await this.page.click('#user_pass');
         await this.page.fill('#user_pass', password);
+        // Confirm password is filled correctly
+        await expect(this.page.locator('#user_pass')).toHaveValue(password);
 
         // Click login.
         await this.page.click('#wp-submit');
+
+        // Confirm login worked
+        await this.page.waitForURL('**/wp-admin/**', { timeout: 5000 });
+
+        if (!this.page.url().includes('/wp-admin')) {
+            throw new Error('❌ Login failed: User not redirected to dashboard.');
+        }
     }
 
     /**
