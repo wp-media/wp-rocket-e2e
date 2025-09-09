@@ -1,14 +1,12 @@
-@bwpupsetup @bwpupstorage @bwpupsmoke
+@bwupsetup @bwpupstorage @bwpupsmoke @bwpupstoragemsazure
 
-Feature: Should be able to setup other storage
+Feature: Should be able to work with Microsoft Azure storage
 
-  Background:
+  Scenario: Setup Microsoft Azure Storage
     Given I am logged in
     And I delete backwpup plugin
     And plugin is installed 'backwpup-pro'
     And plugin is activated
-
-  Scenario: Setup Microsoft Azure Storage
     And I go '/wp-admin/admin.php?page=backwpup'
     When I click '.js-backwpup-onboarding-step-2' button to continue
     And I click '.js-backwpup-onboarding-step-3' button to continue
