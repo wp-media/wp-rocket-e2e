@@ -53,6 +53,40 @@ export class StorageUtils {
     }
 
     /**
+     * Sets up storage provider configuration during the onboarding process.
+     * Handles the UI interaction for selecting a storage provider and configures
+     * it based on the provider type.
+     *
+     * @param storageProvider - The name of the storage provider to configure (e.g., 'ftp', 'sugarsync').
+     *                          Case-insensitive.
+     * @returns A promise that resolves when the storage provider setup is complete.
+     * @throws {Error} Throws an error if no handler is found for the specified storage type.
+     *
+     * @example
+     * ```typescript
+     * await storage.setupStorageOnboarding('ftp');
+     * await storage.setupStorageOnboarding('SugarSync');
+     * ```
+     */
+    public setupStorageOnboarding = async (storageProvider: string): Promise<void> => {
+        const storageType = storageProvider.toUpperCase();
+        const storageHandlers: Record<string, () => Promise<void>> = {
+            ftp: () => this.setupFTP(),
+            sugarsync: () => this.setupSugarSync()
+        } as const;
+        const storageButton = `#backwpup-onboarding-panes .js-backwpup-toggle-storage[data-storage="${storageType}"]`;
+        const storageSidebar = `#backwpup-sidebar #sidebar-storage-${storageType}`;
+        await this.page.click(storageButton);
+        await this.page.waitForSelector(storageSidebar,
+            {
+                state: 'visible'
+            }
+        );
+        const handler = storageHandlers[storageType.toLowerCase()];
+        if (!handler) throw new Error(`No handler found for storage type: ${storageType}`);
+        await handler();
+    }
+    /**
      * Performs a Login action on WordPress.
      *
      * @return {Promise<void>}
@@ -76,22 +110,6 @@ export class StorageUtils {
             response.url().includes('/backwpup/v1/cloudsaveandtest') &&
             response.status() === 200
         );
-    }
-    public setupFTPOnboarding = async (): Promise<void> => {
-        const ftpButton =
-            '#backwpup-onboarding-panes .js-backwpup-toggle-storage[data-storage="FTP"]';
-        const ftpSidebar = '#backwpup-sidebar #sidebar-storage-FTP';
-        await this.page
-            .click(
-                ftpButton
-            );
-        await this.page.waitForSelector(
-            ftpSidebar,
-            {
-                state: 'visible'
-            }
-        );
-        await this.setupFTP();
     }
     /**
      * Configures FTP storage settings and tests the connection.
