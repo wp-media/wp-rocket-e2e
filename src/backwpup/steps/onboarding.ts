@@ -1,32 +1,31 @@
-import {Then, When} from "@cucumber/cucumber";
+import {Given, Then, When} from "@cucumber/cucumber";
 import {ICustomWorld} from "../../common/custom-world";
 import {expect, Page} from "@playwright/test";
+import { clickContinueButton, configureWebServerStorage } from "../utils/helpers";
+import { WP_BASE_URL } from "../../../config/wp.config";
 import { waitForBackupJobCompletion } from "../utils/helpers";
+
+/**
+ * Given step to to do onboarding
+ */
+Given('First backup generated with default settings and local storage', async function (this: ICustomWorld) {
+    await this.page.goto(WP_BASE_URL + '/wp-admin/admin.php?page=backwpup');
+    await clickContinueButton(this.page, '.js-backwpup-onboarding-step-2');
+    await clickContinueButton(this.page, '.js-backwpup-onboarding-step-3');
+    await configureWebServerStorage(this.page);
+    await this.page.goto(WP_BASE_URL + '/wp-admin/admin.php?page=backwpup');
+});
 
 /**
  * Click on save and continue button during onboarding.
  *
 */
 When('I click {string} button to continue', async function (this: ICustomWorld, button) {
-
-    await this.page.waitForSelector(button, {
-        state: 'visible',
-        timeout: 10000
-    });
-
-    await this.page.click(button);
+    await clickContinueButton(this.page, button);
 });
 
 When('I Configure web server storage', async function (this: ICustomWorld) {
-    await this.page.locator('.js-backwpup-toggle-storage').first().click();
-    await this.page.click('.js-backwpup-test-FOLDER-storage')
-
-    //Save and submit onboarding form
-    await this.page.click('.js-backwpup-onboarding-submit-form');
-    await waitForBackupJobCompletion(this.page);
-
-    const closeButton = '#showworkingclose';
-    await this.page.click(closeButton);
+    await configureWebServerStorage(this.page);
 });
 
 Then('I save and submit the onboarding form', async function (this: ICustomWorld) {
