@@ -1,4 +1,4 @@
-@bwupsetup @bwpupstorage @bwpupsmoke @bwpupstorageftp
+@bwpup @bwpupsetup @bwpupstorage @bwpupsmoke @bwpupstorageftp
 
 Feature: Should be able to work with FTP storage
   Background:

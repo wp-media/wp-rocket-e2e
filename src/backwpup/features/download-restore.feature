@@ -1,4 +1,4 @@
-@bwupsetup @bwupdownload @bwupsmoke
+@bwpup @bwpupsetup @bwpupdownload @bwpupsmoke
 Feature: BackWPUp Download backup
     Background:
         Given I am logged in

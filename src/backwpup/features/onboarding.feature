@@ -1,4 +1,4 @@
-@bwpupsetup @bwpupsmoke
+@bwpup @bwpupsetup @bwpupsmoke
 Feature: BackWpUp Onboarding
 
   Background:
