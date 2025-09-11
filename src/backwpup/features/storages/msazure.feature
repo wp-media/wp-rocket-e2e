@@ -1,4 +1,4 @@
-@bwupsetup @bwpupstorage @bwpupsmoke @bwpupstoragemsazure
+@bwpup @bwpupsetup @bwpupstorage @bwpupsmoke @bwpupstoragemsazure
 
 Feature: Should be able to work with Microsoft Azure storage
 
