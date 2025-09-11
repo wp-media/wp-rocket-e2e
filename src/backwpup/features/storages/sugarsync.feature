@@ -1,4 +1,4 @@
-@bwupsetup @bwpupstorage @bwpupsmoke @bwpupstoragesugarsync
+@bwpup @bwpupsetup @bwpupstorage @bwpupsmoke @bwpupstoragesugarsync
 
 Feature: Should be able to work with SugarSync storage
   Background:
