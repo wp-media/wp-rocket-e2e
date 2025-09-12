@@ -619,7 +619,19 @@ export class PageUtils {
             await this.removeWprViaUi();
         }
     }
+    public deactivateBackWpViaUi = async (): Promise<void> => {
+        // Goto plugins page.
+        await this.gotoPlugin();
 
+        // Ensure BWU is deactivated.
+        await this.togglePluginActivation('backwpup-pro', false);
+
+        // Check for deactivation modal.
+        if (await this.page.locator('label[for=deactivate]').isVisible()) {
+            await this.page.locator('label[for=deactivate]').click();
+            await this.page.locator('text=Confirm').click();
+        }
+    }
     public removeBackWpViaUi = async (): Promise<void> => {
         await this.gotoPlugin();
 
