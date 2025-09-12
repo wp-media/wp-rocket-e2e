@@ -29,11 +29,9 @@ When('I Configure web server storage', async function (this: ICustomWorld) {
 });
 
 Then('I save and submit the onboarding form', async function (this: ICustomWorld) {
-    const closeButton = 'button#showworkingclose';
     //Save and submit onboarding form
     await this.page.click('.js-backwpup-onboarding-submit-form');
     await waitForBackupJobCompletion(this.page);
-    await this.page.click(closeButton);
 });
 
 /**
