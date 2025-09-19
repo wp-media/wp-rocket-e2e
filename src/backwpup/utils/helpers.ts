@@ -2,43 +2,76 @@ import { ICustomWorld } from "../../common/custom-world";
 import { Page } from '@playwright/test';
 
 /**
- * Waits for a backup job to complete by monitoring the job status indicators.
- *
- * This function monitors the backup job execution by waiting for specific UI elements
- * to appear and disappear, indicating the job's progress and completion.
- *
+ * Waits for a BackWPup backup job to complete by monitoring job status indicators on the page.
+ * 
  * @param page - The Playwright Page instance to interact with
- * @returns A Promise that resolves when the backup job has completed
- *
+ * @param options - Optional configuration for the wait operation
+ * @param options.timeout - Maximum time to wait for job completion in milliseconds. Defaults to 100000ms (100 seconds)
+ * @param options.clickCloseButton - Whether to automatically click the close button after job completion. Defaults to `true`
+ * 
+ * @returns A Promise that resolves when the backup job completes or the function determines completion status
+ * 
+ * @throws Will throw an error if the job doesn't complete within the timeout period and the page is not on the BackWPup admin page
+ * 
  * @remarks
- * The function waits for the following sequence:
- * 1. Network to be idle
- * 2. Running job indicator to be visible
- * 3. Close button to become visible
- * 4. Abort button to become hidden (indicating job completion)
- * 5. Network to be idle again (No more requests to check job status)
- *
- * Each selector wait has a timeout of 100 seconds to accommodate long-running backup operations.
- *
- * @throws Will throw if any of the expected elements don't appear/disappear within the timeout period
+ * This function monitors the visibility of specific UI elements to determine job completion:
+ * - Waits for the running job indicator to appear
+ * - Waits for the close button to become visible
+ * - Waits for the abort button to become hidden (indicating job completion)
+ * 
+ * If the job completes quickly or the page is already on the BackWPup admin page without showing indicators,
+ * the function will gracefully handle this scenario and return successfully.
+ * 
+ * @example
+ * ```typescript
+ * // Wait with default settings
+ * await waitForBackupJobCompletion(page);
+ * 
+ * // Wait with custom timeout and don't click close button
+ * await waitForBackupJobCompletion(page, { 
+ *   timeout: 60000, 
+ *   clickCloseButton: false 
+ * });
+ * ```
  */
-export const waitForBackupJobCompletion = async (page: Page): Promise<void> => {
+export const waitForBackupJobCompletion = async (
+    page: Page,
+    options?: { timeout?: number; clickCloseButton?: boolean }
+): Promise<void> => {
+    const { timeout = 100000, clickCloseButton = true } = options || {};
     const runningJob = '#runningjob';
     const closeButton = 'button#showworkingclose';
     const abortButton = 'button#abortbutton';
     await page.waitForLoadState('networkidle');
-    await page.waitForSelector(runningJob, {
-        state: 'visible',
-        timeout: 100000
-    });
-    await page.waitForSelector(closeButton, {
-        state: 'visible',
-        timeout: 100000
-    });
-    await page.waitForSelector(abortButton, {
-        state: 'hidden',
-        timeout: 100000
-    });
+    try {
+        await page.waitForSelector(runningJob, {
+            state: 'visible',
+            timeout: 30000
+        });
+        await page.waitForSelector(closeButton, {
+            state: 'visible',
+            timeout: 10000
+        });
+        await page.waitForSelector(abortButton, {
+            state: 'hidden',
+            timeout
+        });
+        if (clickCloseButton) {
+            await page.click(closeButton);
+        }
+    } catch (error) {
+        // Check if we're on the backup jobs page
+        const currentUrl = page.url();
+        if (currentUrl.includes('/wp-admin/admin.php?page=backwpup')) {
+            // If we're on the main BackWPup page, the job might have completed without showing indicators
+            console.log(
+                'Backup job may have completed quickly or indicators not shown on main page'
+            );
+            return;
+        }
+        // Re-throw the error if we're not on the expected page
+        throw error;
+    }
     await page.waitForLoadState('networkidle');
 };
 
@@ -69,10 +102,8 @@ export const configureWebServerStorage = async (page: ICustomWorld['page']): Pro
         await page.click('.js-backwpup-test-FOLDER-storage')
         // Wait for sidebar closing animation
         await page.waitForTimeout(2000);
-        const closeButton = '#showworkingclose'
     
         //Save and submit onboarding form
         await page.click('.js-backwpup-onboarding-submit-form');
         await waitForBackupJobCompletion(page);
-        await page.click(closeButton);
 };

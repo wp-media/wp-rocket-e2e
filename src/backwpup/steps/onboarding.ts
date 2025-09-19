@@ -29,11 +29,9 @@ When('I Configure web server storage', async function (this: ICustomWorld) {
 });
 
 Then('I save and submit the onboarding form', async function (this: ICustomWorld) {
-    const closeButton = 'button#showworkingclose';
     //Save and submit onboarding form
     await this.page.click('.js-backwpup-onboarding-submit-form');
     await waitForBackupJobCompletion(this.page);
-    await this.page.click(closeButton);
 });
 
 /**
@@ -118,8 +116,10 @@ Then('all database tables should be selected', async function (this: ICustomWorl
 
 When('I uncheck the {string} from files backup option', async function (this: ICustomWorld, value: string) {
     await this.page.locator('button[data-content="select-files"][data-job-id="1"]').click();
+    await this.page.waitForSelector('#sidebar-select-files', { state: 'visible' });
 
     const checkbox = this.page.locator(`label:has(input[name="${value}"])`);
+    await checkbox.scrollIntoViewIfNeeded();
     const isChecked = await checkbox.isChecked();
 
     if (isChecked) {
@@ -128,12 +128,15 @@ When('I uncheck the {string} from files backup option', async function (this: IC
 
     await expect(checkbox).not.toBeChecked();
     await this.page.locator('button#file-exclusions-submit').click();
+    await expect(this.page.locator('#sidebar-select-files')).not.toBeInViewport();
 });
 
 When('I uncheck the {string} from database backup option', async function (this: ICustomWorld, value: string) {
     await this.page.locator('button[data-content="select-tables"][data-job-id="1"]').click();
+    await this.page.waitForSelector('#sidebar-select-tables', { state: 'visible' });
 
     const checkbox = this.page.locator(`label:has(input[value="${value}"])`);
+    await checkbox.scrollIntoViewIfNeeded();
     const isChecked = await checkbox.isChecked();
 
     if (isChecked) {
@@ -142,6 +145,7 @@ When('I uncheck the {string} from database backup option', async function (this:
 
     await expect(checkbox).not.toBeChecked();
     await this.page.locator('button#save-excluded-tables').click();
+    await expect(this.page.locator('#sidebar-select-tables')).not.toBeInViewport();
 });
 
 const validateCheckboxSelection = async (page: Page, containerSelector: string, shouldBeChecked: boolean = true): Promise<void> => {

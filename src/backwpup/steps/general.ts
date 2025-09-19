@@ -28,7 +28,7 @@ Then('the backup should be added to the table', async function (this: ICustomWor
 });
 
 Then('{string} backup is generated and added to history', async function (this: ICustomWorld, backupNumber: string) {
-    await waitForBackupJobCompletion(this.page);
+    await waitForBackupJobCompletion(this.page, { clickCloseButton: false });
     // Make sure we are on the backup history page (Dashboard) and the new backups are visible (After page loads)
     await this.page.goto(
         `${configurations.baseUrl}/wp-admin/admin.php?page=backwpup`, {
