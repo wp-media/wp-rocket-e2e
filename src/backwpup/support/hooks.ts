@@ -5,7 +5,7 @@ import { PageUtils } from "../../../utils/page-utils";
 import { Before, After} from "@cucumber/cucumber";
 import {StorageUtils} from "../utils/storage";
 import {configurations} from "../../../utils/configurations";
-import {rm, testSshConnection, uninstallPlugin} from "../../../utils/commands";
+import {rm, testSshConnection} from "../../../utils/commands";
 import {WP_SSH_ROOT_DIR} from "../../../config/wp.config";
 import {Page} from "@playwright/test";
 
@@ -36,7 +36,9 @@ After(async function (this: ICustomWorld) {
         const backwpupRestoreFolder = `${WP_SSH_ROOT_DIR}wp-content/uploads/backwpup-restore`;
         await rm(backwpupRestoreFolder);
 
-        await uninstallPlugin('backwpup-pro');
+        // Remove BackWPup plugin
+        await this.utils.deactivateBackWpViaUi();
+        await this.utils.removeBackWpViaUi();
     } catch (error) {
         console.error('Setup failed: ', error.message);
         throw new Error('Setup failed: ' + error.message);
