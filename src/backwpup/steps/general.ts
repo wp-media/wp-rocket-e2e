@@ -39,18 +39,19 @@ Then('{string} backup is generated and added to history', async function (this: 
     expect(currentBackups.length).toBe(this.initialBackups.length + parseInt(backupNumber));
 });
 
-When(
-    'I set up {string} storage for first backup',
+When('I set up {string} storage for first backup',
     async function (this: ICustomWorld, storageProvider: string) {
-        const storageType = storageProvider.toUpperCase();
-        if (storageType === 'FTP') {
-            await this.storage.setupFTPOnboarding();
-        }
+        await this.storage.setupStorageOnboarding(storageProvider);
     }
 );
 When('I set up {string} storage', async function (this: ICustomWorld, storageProvider: string) {
     await this.page.locator('.backwpup-job-card button[data-content="storages"]').first().click();
     const storageType = storageProvider.toUpperCase();
+    const storageHandlers: Record<string, () => Promise<void>> = {
+        msazure: () => this.storage.setupMSAzure(),
+        ftp: () => this.storage.setupFTP(),
+        sugarsync: () => this.storage.setupSugarSync(),
+    } as const;
 
     const configureButton = this.page.locator(`button[data-storage="${storageType}"].js-backwpup-toggle-storage`);
 
@@ -61,11 +62,10 @@ When('I set up {string} storage', async function (this: ICustomWorld, storagePro
         response.url().includes('/backwpup/v1/getblock') &&
         response.status() === 200
     );
-    if (storageType === 'MSAZURE') {
-        await this.storage.setupMSAzure();
-    } else if (storageType === 'FTP') {
-        await this.storage.setupFTP();
-    }
+
+    const handler = storageHandlers[storageType.toLowerCase()];
+    if (!handler) throw new Error(`No handler found for storage type: ${storageType}`);
+    await handler();
 });
 Then('{string} storage should be selected for first backup', async function (this: ICustomWorld, storageProvider: string) {
     const storageType = storageProvider.toUpperCase();
