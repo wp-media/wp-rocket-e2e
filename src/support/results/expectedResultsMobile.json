@@ -370,13 +370,16 @@
     "enabled": false
   },
   "lcp_responsive_image": {
+    "comment": "this template is flaky",
     "lcp": [
-          "/wp-content/rocket-test-data/images/lcp/testjpg.jpg","/wp-content/rocket-test-data/images/lcp/testjpg2.jpg 500w, /wp-content/rocket-test-data/images/lcp/testjpg3.jpg 1000w, /wp-content/rocket-test-data/images/lcp/testjpg4.jpg 1500w"
+      
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg","/wp-content/rocket-test-data/images/lcp/testjpg2.jpg 500w, /wp-content/rocket-test-data/images/lcp/testjpg3.jpg 1000w, /wp-content/rocket-test-data/images/lcp/testjpg4.jpg 1500w"
+
     ],
     "viewport": [
-       "/wp-content/rocket-test-data/images/lcp/testavif.avif", "/wp-content/rocket-test-data/images/lcp/testwebp.webp 400w, /wp-content/rocket-test-data/images/lcp/testjpg.jpg 800w, /wp-content/rocket-test-data/images/lcp/testPng.png 1600w"
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif", "/wp-content/rocket-test-data/images/lcp/testwebp.webp 400w, /wp-content/rocket-test-data/images/lcp/testjpg.jpg 800w, /wp-content/rocket-test-data/images/lcp/testPng.png 1600w"
     ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_bg_responsive_imgset_template": {
     "comment":"lcp is included in atf and 7559 , 7563",
