@@ -92,6 +92,9 @@ When('I visit the urls and check for lazyload', async function (this: ICustomWor
     }
 });
 
+
+
+// visit URL
 When(
     'I visit the url {string} for {string}',
     async function (this: ICustomWorld, templateKey: string, formFactor: string) {
