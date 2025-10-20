@@ -1,4 +1,3 @@
-import ScenarioUrls from "./scenarioUrls.json";
 /**
  * The default WordPress admin user configuration for both local and live environments.
  * @constant
@@ -24,6 +23,29 @@ const WP_ADMIN_USER = {
  */
 const IMAGIFY_INFOS = {
 	apiKey: ''
+} as const;
+
+/**
+ * Backwpup settings information
+ */
+const BACKWPUP_INFOS = {
+    msazure: {
+        accountName: '',
+        accessKey: '',
+        container: ''
+    },
+    sugarsync: {
+        email: '',
+        password: ''
+	},
+    ftp: {
+        host: '',
+        username: '',
+        password: '',
+        port: '21',
+        ssl: false,
+        passiveMode: true
+    }
 } as const;
 
 /**
@@ -63,21 +85,6 @@ const {
 } = process.env;
 
 /**
- * Exported Scenario urls to be used for visual regression testing with backstopjs
- * @exports
- * @type {{
- * [key: string]: {
- *	 path?: string,
- *	 disableJs?: boolean,
- *	 theme?: string,
- *	 mobile?: boolean
- *	}
- * }}
- */
-const scriptName = process.env.npm_lifecycle_event;
-const SCENARIO_URLS = ScenarioUrls[scriptName];
-
-/**
  * Exported WordPress environment configuration.
  * @exports
  * @type {{
@@ -94,12 +101,6 @@ const SCENARIO_URLS = ScenarioUrls[scriptName];
  *   WP_SSH_ADDRESS: string;
  *   WP_SSH_KEY: string;
  *   WP_SSH_ROOT_DIR: string;
- * 	 SCENARIO_URLS: {
- * 		home: string;
- * 		llcss: string;	
- * 		noJsLlcss: string;
- * 		elementorLlcss: string;
- * 	 },
  * }}
  */
 export { 
@@ -116,6 +117,6 @@ export {
 	WP_SSH_ADDRESS,
 	WP_SSH_KEY,
 	WP_SSH_ROOT_DIR,
-	SCENARIO_URLS,
-	IMAGIFY_INFOS
+	IMAGIFY_INFOS,
+	BACKWPUP_INFOS
 };

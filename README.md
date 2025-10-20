@@ -27,11 +27,10 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
  You can find this [here](https://github.com/wp-media/wp-rocket-e2e/blob/trunk/config/wp.config.sample.ts)
  
  ## Running Tests
- - Please delete the debug.log from your test site before running tests, We will automate this step in the future.
  - Don't forget to install the [helper plugin](https://github.com/wp-media/wp-rocket-e2e-test-helper)
  - To run tests on playwright, simply run `npx playwright test` or `npm run test:e2e` which ever you prefer.
- 
- **NB:** By default, test will run in headless mode.
+- To run Visual regression with certain feature run 
+`npm run test:vr --wproption=lazyloadCssBgImg` This means to run visual regression for the pages defined for this feature LLCSSBG after enabling it
  
  ## Debugging Tests
  Use `npx playwright test --debug` to control and get a view of each test step.
@@ -39,8 +38,13 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
  You can also run `npx playwright test --headed` to view the tests being executed on the browser.
  
  ## Reporting
- At the end of a failed test cycle, playwright will launch a temporary server and open reports with videos and screenshot of failed tests.
+ - In order to have report at the shared folder /var/shared/rocket-e2e-reports on remote e2e server, we can run this "WPRversion_e2e_testType_branch"
+ `npm run test:e2e --tag=wpr3.19.4_e2e_all_dev` This means the test ran using WPR version 3.19.4 and e2e develop branch to run all tests
+
+ - At the end of a failed test cycle, playwright will launch a temporary server and open reports with videos and screenshot of failed tests.
  
 If you ever get failed tests like the one below, it indicates that WP Rocket has some related errors in debug.log
 ![Screenshot 2023-04-27 at 09 55 37](https://user-images.githubusercontent.com/38788055/234812244-c1cd0c87-702a-49a9-baf6-0fab7afd2cd0.png)
 
+### BackWpUp Doc
+- [BackWpUp Documentation](src/backwpup/README.md)

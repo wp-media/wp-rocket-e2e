@@ -1,9 +1,7 @@
 /config/wp.config.ts
 /node_modules
 /artifacts
-/plugin/new_release.zip
-/plugin/previous_stable.zip
-/plugin/wp-rocket_3.10.9.zip
+/plugin/*.zip
 /plugin/exported_settings/wp-rocket-settings-test-2023-00-01-64e7ada0d3b70.json
 /plugin/exported_settings/wp-rocket-settings-test-2023-00-02-64e7ada0d3b70.json
 /plugin/exported_settings/wp-rocket-settings-test-2023-00-03-64e7ada0d3b70.json
@@ -15,3 +13,4 @@
 .DS_Store
 .idea
 backstop.json
+/temp
