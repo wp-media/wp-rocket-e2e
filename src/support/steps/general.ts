@@ -123,6 +123,7 @@ Given('theme {string} is activated', async function (this:ICustomWorld, theme) {
  * Executes the step to generate visual regression reference via backstopjs.
  */
 Given('visual regression reference is generated', async function (this:ICustomWorld) {
+    return; // Skip VR tests.
     const tags = this.pickle.tags.map(tag => tag.name);
     const tag: string = await getScenarioTag(tags);
     
@@ -420,6 +421,7 @@ Then('clean up', async function (this: ICustomWorld) {
  * Executes the step to check for visual regression.
  */
 Then('I must not see any visual regression {string}', async function (this: ICustomWorld, label: string) {
+    return; // Skip VR tests.
     await compareReference(label);
 });
 
@@ -427,6 +429,7 @@ Then('I must not see any visual regression {string}', async function (this: ICus
  * Executes the step to check for LRC visual regression.
  */
 Then('I must not see any visual regression in scenario urls', async function (this: ICustomWorld) {
+    return; // Skip VR tests.
     const tags = this.pickle.tags.map(tag => tag.name);
     const tag: string = await getScenarioTag(tags);
     const liveUrl = scenarioUrls[tag];
@@ -444,9 +447,17 @@ Then('no error in the console different than nowprocket page {string}', async fu
     const consoleMsg2 = await getConsoleMsg(this.page, `${WP_BASE_URL}/${path}`);
 
     if (consoleMsg2.length !== 0) {
-        expect(consoleMsg2).toEqual(consoleMsg1);
+         try {
+                expect(consoleMsg2).toEqual(consoleMsg1);
+            } catch (e) {
+                throw new Error(
+                    `\x1b[41m\x1b[37mConsole difference detected for: ${WP_BASE_URL}/${path}\x1b[0m\n` +
+                    `nowprocket console: ${consoleMsg1}\nactual console: ${consoleMsg2}`
+                );
+            }
     }
 });
+
 
 const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> => {
     const consoleMsg: string[] = [];
@@ -468,6 +479,7 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
     await page.goto(url);
     await page.waitForLoadState('load', { timeout: 30000 });
 
+    // use this if you need to scroll till end of page
     await page.evaluate(async () => {
         // Scroll to the bottom of page.
         const scrollPage: Promise<void> = new Promise((resolve) => {

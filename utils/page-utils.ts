@@ -82,11 +82,23 @@ export class PageUtils {
         // Fill username & password.
         await this.page.click('#user_login');
         await this.page.fill('#user_login', username);
+        // Confirm username is filled correctly
+        await expect(this.page.locator('#user_login')).toHaveValue(username);
+
         await this.page.click('#user_pass');
         await this.page.fill('#user_pass', password);
+        // Confirm password is filled correctly
+        await expect(this.page.locator('#user_pass')).toHaveValue(password);
 
         // Click login.
         await this.page.click('#wp-submit');
+
+        // Confirm login worked
+        await this.page.waitForURL('**/wp-admin/**', { timeout: 5000 });
+
+        if (!this.page.url().includes('/wp-admin')) {
+            throw new Error('❌ Login failed: User not redirected to dashboard.');
+        }
     }
 
     /**
@@ -607,15 +619,21 @@ export class PageUtils {
             await this.removeWprViaUi();
         }
     }
-
-    public removeBackWpViaUi = async (): Promise<void> => {
+    public deactivateBackWpViaUi = async (): Promise<void> => {
+        // Goto plugins page.
         await this.gotoPlugin();
 
-        this.page.on('dialog', async(dialog) => {
-            expect(dialog.type()).toContain('confirm');
-            expect(dialog.message()).toContain('Are you sure you want to delete BackWPup Pro and its data?');
-            await dialog.accept();
-        });
+        // Ensure BWU is deactivated.
+        await this.togglePluginActivation('backwpup-pro', false);
+
+        // Check for deactivation modal.
+        if (await this.page.locator('label[for=deactivate]').isVisible()) {
+            await this.page.locator('label[for=deactivate]').click();
+            await this.page.locator('text=Confirm').click();
+        }
+    }
+    public removeBackWpViaUi = async (): Promise<void> => {
+        await this.gotoPlugin();
 
         const pluginName = 'BackWPup Pro';
         const pluginRow = this.page.locator('tr').filter({ hasText: pluginName });
@@ -623,7 +641,7 @@ export class PageUtils {
         const isInstalled = await pluginRow.getByText('Activate').isVisible();
 
         if(!isActivated && !isInstalled) {
-            console.log('hello')
+
             return;
         }
 
@@ -633,6 +651,13 @@ export class PageUtils {
             await this.page.locator('label[for=deactivate]').click();
             await this.page.locator('text=Confirm').click();
         }
+
+
+        this.page.on('dialog', async(dialog) => {
+            expect(dialog.type()).toContain('confirm');
+            expect(dialog.message()).toContain('Are you sure you want to delete BackWPup Pro and its data?');
+            await dialog.accept();
+        });
 
         await this.page.waitForLoadState('load', { timeout: 30000 });
 

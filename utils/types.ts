@@ -91,7 +91,7 @@ export interface VRurlConfig {
     }
 }
 export interface Pickle {
-    name: string;
+    name: string;   
 }
 
 export type Viewport = {
@@ -100,13 +100,23 @@ export type Viewport = {
     height: number;
 };
 
-export interface LcpData {
+export interface PreloadFontsData {
     [key: string]: {
         url: string,
-        lcp: string,
-        viewport: string,
+        fonts: string,
         comment: string
     }
+}
+
+export interface SelfHostGoogleFontsData {
+    fonts: string[];
+    gfParameters?: string;
+    enabled: boolean;
+    comment?: string;
+}
+
+export interface SelfHostGoogleFontsConfig {
+    [key: string]: SelfHostGoogleFontsData;
 }
 
 export interface Row {
@@ -125,4 +135,10 @@ export interface LLImagesData {
         url: string | boolean;
         lazyloaded: string | boolean
     }
+}
+
+export interface BackupRowData {
+    date: string;
+    type: string;
+    storedOn: string;
 }

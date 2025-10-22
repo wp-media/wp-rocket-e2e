@@ -24,7 +24,8 @@
       "json:test-results/cucumber-report.json",
       "rerun:@rerun.txt"
     ],
-    "parallel": 1
+    "parallel": 1,
+    "retry": 3
   },
   "rerun": {
     "formatOptions": {

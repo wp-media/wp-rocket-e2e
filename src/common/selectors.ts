@@ -63,7 +63,6 @@ export const selectors: Selectors = {
                }
             },
 
-
             rucss:{
                 type: FieldType.checkbox,
                 element: "#optimize_css_delivery",
@@ -142,12 +141,12 @@ export const selectors: Selectors = {
                 element: "#image_dimensions",
                 target: "label[for=image_dimensions]"
             },
-            preloadfonts: {
+            preloadFonts:{
                 type: FieldType.checkbox,
                 element: "#auto_preload_fonts",
                 target: "label[for=auto_preload_fonts]"
             },
-            selfhostedgooglefonts: {
+            selfHostGoogleFonts:{
                 type: FieldType.checkbox,
                 element: "#host_fonts_locally",
                 target: "label[for=host_fonts_locally]"
