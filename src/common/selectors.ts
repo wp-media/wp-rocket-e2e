@@ -141,6 +141,16 @@ export const selectors: Selectors = {
                 type: FieldType.checkbox,
                 element: "#image_dimensions",
                 target: "label[for=image_dimensions]"
+            },
+            preloadfonts: {
+                type: FieldType.checkbox,
+                element: "#auto_preload_fonts",
+                target: "label[for=auto_preload_fonts]"
+            },
+            selfhostedgooglefonts: {
+                type: FieldType.checkbox,
+                element: "#host_fonts_locally",
+                target: "label[for=host_fonts_locally]"
             }
         }
     },
