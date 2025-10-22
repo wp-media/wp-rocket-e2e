@@ -147,49 +147,7 @@ Then('data {string} is exported correctly', async function (fileNo: string) {
     expect(validatedExportedSettings, 'Settings was not exported correctly.').toBeTruthy();
 });
 
-/**
- * Executes the step to assert that there are no changes in exported files.
- */
-Then('I must not see changes in exported files', async function () {
-    // Get exported settings data.
-    const jsonData1 = await readAnyFile('./plugin/exported_settings/wp-rocket-settings-test-2023-00-02-64e7ada0d3b70.json');
-    const jsonData2 = await readAnyFile('./plugin/exported_settings/wp-rocket-settings-test-2023-00-03-64e7ada0d3b70.json');
 
-    // Get excluded fields to ignore.
-    const regex = new RegExp(diffCheckerExclusions.toString().replaceAll(',', '|'));
-    const result = diff(JSON.parse(jsonData1), JSON.parse(jsonData2));  
-
-    let counterCheck = 0;
-    const foundDifferences: string[] = [];
-    
-    for (const key in result) {
-        if (!regex.test(key)) {
-            counterCheck++;
-            foundDifferences.push(`"${key}": ${JSON.stringify(result[key], null, 2)}`);
-        }
-    }
-
-    if (counterCheck > 0) {
-        const errorMessage = `
-=== FOUND ${counterCheck} DIFFERENCES IN EXPORTED FILES ===
-
-DIFFERENCES:
-${foundDifferences.map((diff, index) => `${index + 1}. ${diff}`).join('\n')}
-
-EXCLUDED FIELDS (ignored): ${diffCheckerExclusions.join(', ')}
-
-FILE 1: ./plugin/exported_settings/wp-rocket-settings-test-2023-00-02-64e7ada0d3b70.json
-FILE 2: ./plugin/exported_settings/wp-rocket-settings-test-2023-00-03-64e7ada0d3b70.json
-
-FULL DIFF RESULT:
-${JSON.stringify(result, null, 2)}
-=== END DIFFERENCES ===`;
-
-        throw new Error(errorMessage);
-    }
-
-    expect(true, 'No differences found in exported data').toBeTruthy();
-});
 
 /**
  * Executes the step to assert that nothing changed in settings between two exported files.
