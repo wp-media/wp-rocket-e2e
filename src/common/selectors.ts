@@ -62,15 +62,8 @@ export const selectors: Selectors = {
                     await activateFromPopUp(page, state, "text=Activate combine CSS") 
                }
             },
-            cpcss:{
-                type: FieldType.checkbox,
-                element: "#optimize_css_delivery",
-                target: "label[for=optimize_css_delivery]",
-                after: async (page: Page): Promise<void> => {
-                    await page.locator("#wpr-radio-async_css").click();
-                },
-            },
-    
+
+
             rucss:{
                 type: FieldType.checkbox,
                 element: "#optimize_css_delivery",
@@ -83,6 +76,15 @@ export const selectors: Selectors = {
                     await page.locator("text=Activate Remove Unused CSS").click();
                 }
             },
+            cpcss:{
+                type: FieldType.checkbox,
+                element: "#optimize_css_delivery",
+                target: "label[for=optimize_css_delivery]",
+                after: async (page: Page): Promise<void> => {
+                    await page.locator("#wpr-radio-async_css").click();
+                },
+            },
+    
             minifyJs: {
                 type: FieldType.checkbox,
                 element: "#minify_js",
