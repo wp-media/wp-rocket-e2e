@@ -26,7 +26,7 @@ Before({tags: '@bwpupsetup'}, async function(this: ICustomWorld, {pickle}) {
 /**
  * After every test, delete data
  */
-After({tags: '@bwpupsetup'}, async function (this: ICustomWorld) {
+After({ tags: '@bwpup' }, async function (this: ICustomWorld) {
     await deleteAllData(this.page);
     try {
         await testSshConnection();
@@ -35,6 +35,9 @@ After({tags: '@bwpupsetup'}, async function (this: ICustomWorld) {
         await rm(backwpupFolder);
         const backwpupRestoreFolder = `${WP_SSH_ROOT_DIR}wp-content/uploads/backwpup-restore`;
         await rm(backwpupRestoreFolder);
+        // Remove any BackWPup plugin zip files that may have been uploaded during tests.
+        const backwpupPluginZips = `${WP_SSH_ROOT_DIR}wp-content/uploads/**/**/backwpup-pro*.zip`;
+        await rm(backwpupPluginZips);
 
         // Remove BackWPup plugin
         await this.utils.deactivateBackWpViaUi();
