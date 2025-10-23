@@ -26,7 +26,7 @@ Before({tags: '@bwpupsetup'}, async function(this: ICustomWorld, {pickle}) {
 /**
  * After every test, delete data
  */
-After(async function (this: ICustomWorld) {
+After({tags: '@bwpupsetup'}, async function (this: ICustomWorld) {
     await deleteAllData(this.page);
     try {
         await testSshConnection();
