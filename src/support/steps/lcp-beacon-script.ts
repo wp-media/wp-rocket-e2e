@@ -51,7 +51,7 @@ const matchesExpected = (expected: string, actualUrl: string): boolean => {
   return actualUrl === expected || actualUrl.includes(expected);
 };
 
-const findUnmatchedExpectations = (expectedList: string[], actualList: string[]) => {
+const findUnmatchedExpectations = (expectedList: string[], actualList: string[]): string[] => {
   const unmatched: string[] = [];
   for (const exp of expectedList) {
     const hit = actualList.some(act => matchesExpected(exp, act));
