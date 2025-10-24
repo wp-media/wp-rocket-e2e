@@ -84,7 +84,6 @@
       "^https://fonts\\.gstatic\\.com/s/lora/v\\d+/.+\\.woff2$",
       "^https://fonts\\.gstatic\\.com/s/opensans/v\\d+/.+\\.woff2$"
     ],
-    "comment": "Expected vs. actual result differs for fonts.gstatic URLs — difference in endings. Needs investigation.",
     "enabled": true
   },
   "preloadfonts_incssonmega": {
@@ -93,7 +92,6 @@
       "https://mega.wp-rocket.me/avada/wp-content/rocket-test-data/fonts/bellefair-v6-latin-regular.woff2",
       "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$"
     ],
-    "comment": "Expected vs. actual result differs for fonts.gstatic URLs — difference in endings. Needs investigation.",
     "enabled": true
   },
   "preloadfonts_incssonmega2": {
@@ -113,7 +111,6 @@
       "^https://fonts\\.gstatic\\.com/s/lobster/v\\d+/.+\\.woff2$",
       "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$"
     ],
-    "comment": "Expected vs. actual result differs for fonts.gstatic URLs — difference in endings. Needs investigation.",
     "enabled": true
   },
   "preloadfonts_undefinedfont": {
@@ -133,7 +130,6 @@
       "/wp-content/rocket-test-data/fonts/OpenSans-Regular.woff2",
       "^https://fonts\\.gstatic\\.com/s/lora/v\\d+/.+\\.woff2$"
     ],
-    "comment": "Expected vs. actual result differs for fonts.gstatic URLs — difference in endings. Needs investigation.",
     "enabled": true
   },
   "preloadfonts_fontincsslocal": {
@@ -168,7 +164,6 @@
       "/wp-content/rocket-test-data/fonts/UnifrakturCook-Bold.woff2",
       "^https://fonts\\.gstatic\\.com/s/pacifico/v\\d+/.+\\.woff2$"
     ],
-    "comment": "Expected vs. actual result differs for fonts.gstatic URLs — difference in endings. Needs investigation.",
     "enabled": true
   },
   "preloadfonts_test_crossorigin": {
@@ -177,7 +172,6 @@
       "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$",
       "/wp-content/rocket-test-data/fonts/UnifrakturCook-Bold.woff2"
     ],
-    "comment": "Expected vs. actual result differs for fonts.gstatic URLs — difference in endings. Needs investigation.",
     "enabled": true
   },
   "preloadfonts_differentformats": {
@@ -272,7 +266,6 @@
       "^https://fonts\\.gstatic\\.com/s/ptserif/v\\d+/.+\\.woff2$",
       "^https://fonts\\.gstatic\\.com/s/nunito/v\\d+/.+\\.woff2$"
     ],
-    "comment": "Expected vs. actual result differs for fonts.gstatic URLs — difference in endings. Needs investigation.",
     "enabled": true
   },
   "preloadfonts_10atf_btf_gfonly_inlinestyle": {
@@ -288,7 +281,6 @@
       "^https://fonts\\.gstatic\\.com/s/raleway/v\\d+/.+\\.woff2$",
       "^https://fonts\\.gstatic\\.com/s/ptserif/v\\d+/.+\\.woff2$"
     ],
-    "comment": "Expected vs. actual result differs for fonts.gstatic URLs — difference in endings. Needs investigation.",
     "enabled": true
   },
   "preloadfonts_50atf_btf_gfonly_internalcss-3": {
@@ -338,7 +330,6 @@
       "^https://fonts\\.gstatic\\.com/s/exo2/v\\d+/.+\\.woff2$",
       "^https://fonts\\.gstatic\\.com/s/firasans/v\\d+/.+\\.woff2$"
     ],
-    "comment": "Expected vs. actual result differs for fonts.gstatic URLs — difference in endings. Needs investigation.",
     "enabled": true
   },
   "preloadfonts_10atf_btf_gfonly_internalstyle": {
@@ -355,7 +346,6 @@
       "^https://fonts\\.gstatic\\.com/s/raleway/v\\d+/.+\\.woff2$",
       "^https://fonts\\.gstatic\\.com/s/ptserif/v\\d+/.+\\.woff2$"
     ],
-    "comment": "Expected vs. actual result differs for fonts.gstatic URLs — difference in endings. Needs investigation.",
     "enabled": true
   },
   "preloadfonts_10atf_btf_gfonly_externalcsswithimport": {
