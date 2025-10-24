@@ -36,14 +36,6 @@ type ActualData = {
 const actual: Record<string, ActualData> = {};
 
 // --- Regex-aware helpers for preload-font expectations ---
-const toArray = (maybeCsv: unknown): string[] =>
-  Array.isArray(maybeCsv)
-    ? maybeCsv as string[]
-    : String(maybeCsv || '')
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean);
-
 const isRegexPattern = (s: string): boolean =>
   s.startsWith('^') && s.endsWith('$');
 
