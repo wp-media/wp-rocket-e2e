@@ -654,7 +654,7 @@ export class PageUtils {
 
         await this.page.waitForLoadState('load', { timeout: 30000 });
 
-        this.page.once('dialog', async(dialog) => {
+        this.page.once('dialog', async (dialog) => {
             expect(dialog.type()).toContain('confirm');
             expect(dialog.message()).toContain('Are you sure you want to delete BackWPup Pro and its data?');
             await dialog.accept();
