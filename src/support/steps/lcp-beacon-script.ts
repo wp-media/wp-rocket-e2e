@@ -35,6 +35,32 @@ type ActualData = {
 };
 const actual: Record<string, ActualData> = {};
 
+// --- Regex-aware helpers for preload-font expectations ---
+const isRegexPattern = (s: string): boolean =>
+  s.startsWith('^') && s.endsWith('$');
+
+const matchesExpected = (expected: string, actualUrl: string): boolean => {
+  if (isRegexPattern(expected)) {
+    try {
+      return new RegExp(expected).test(actualUrl);
+    } catch {
+      // If an invalid regex sneaks in, fall back to substring check
+      return actualUrl.includes(expected.replace(/^\^/, '').replace(/\$$/, ''));
+    }
+  }
+  return actualUrl === expected || actualUrl.includes(expected);
+};
+
+const findUnmatchedExpectations = (expectedList: string[], actualList: string[]): string[] => {
+  const unmatched: string[] = [];
+  for (const exp of expectedList) {
+    const hit = actualList.some(act => matchesExpected(exp, act));
+    if (!hit) unmatched.push(exp);
+  }
+  return unmatched;
+};
+// --- end helpers ---
+
 /**
  * Executes step to visit page based on the templates and get check for lazyload.
  */
@@ -232,18 +258,23 @@ Then('{string} should be as expected for {string}', async function (this: ICusto
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
             const expected = jsonData[key];
             if (type === 'fonts') {
-                // Compare fonts arrays (containment, not exact match)
-                const expectedFonts = expected.fonts || [];
+                const expectedFonts: string[] = expected.fonts || [];
                 let actualFonts: string[] = [];
                 try {
                     actualFonts = JSON.parse(actual[key].fonts || '[]');
                 } catch (e) {
-                    actualFonts = (actual[key].fonts || '').split(',').map(f => f.trim()).filter(Boolean);
+                    actualFonts = (actual[key].fonts || '')
+                        .split(',')
+                        .map(f => f.trim())
+                        .filter(Boolean);
                 }
-                for (const font of expectedFonts) {
-                    if (!actualFonts.some(actualFont => actualFont.includes(font))) {
-                        truthy = false;
-                        failMsg += `Expected preload font for ${formFactor} - ${font} for ${actual[key].url} is not present in actual - ${actualFonts}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+
+                const missing = findUnmatchedExpectations(expectedFonts, actualFonts);
+
+                if (missing.length) {
+                    truthy = false;
+                    for (const m of missing) {
+                        failMsg += `Expected preload font for ${formFactor} - ${m} for ${actual[key].url} is not present in actual - ${actualFonts}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
                     }
                 }
             } else if (type === 'lcp and atf') {
