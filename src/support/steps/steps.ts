@@ -70,6 +70,15 @@ Then('I must see the banner {string}', async function (this: ICustomWorld, text:
 });
 
 /**
+ * Executes the step to assert the visibility of a banner in iframe with specific text.
+ */
+Then('I must see the banner {string} in iframe {string}', async function (this: ICustomWorld, text: string, iframeSelector: string) {
+  const frame = this.page.frameLocator(iframeSelector);
+  // Wait for frame content to load and the text to appear
+  await expect(frame.getByText(text)).toBeVisible({ timeout: 15000 });
+});
+
+/**
  * Executes the step to click on an element with specific text.
  */
 When('click on {string}', async function (this: ICustomWorld, text: string) {
