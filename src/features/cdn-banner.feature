@@ -10,5 +10,5 @@ Feature: CDN banner
   Scenario: Should validate that CDN purchase banner is displayed
     Given I must see the banner 'High performance Content Delivery Network (CDN) with'
     And I click on '.wpr-rocketcdn-open'
-    Then I must see the banner 'Log in to your WP Rocket Account to continue' in iframe '#rocketcdn-iframe'
+    Then I must see the banner 'Login in to your WP Rocket Account to continue' in iframe '#rocketcdn-iframe'
 
