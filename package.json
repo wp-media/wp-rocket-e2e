@@ -26,6 +26,7 @@
     "test:test": "$npm_package_config_testCommand --tags @test",
     "test:lrc": "$npm_package_config_testCommand --tags @lrc",
     "test:cpcss": "$npm_package_config_testCommand --tags @cpcss",
+    "test:cdn": "$npm_package_config_testCommand --tags @cdn",
     "test:performancehints": "$npm_package_config_testCommand --tags @performancehints",
     "healthcheck": "ts-node healthcheck.ts",
     "push-report": "ts-node report.ts",
