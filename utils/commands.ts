@@ -21,7 +21,6 @@ const {NodeSSH} = require('node-ssh')
  * @param sshConfig - Optional SSH configuration to override default settings
  * @param sshConfig.username - SSH username to use instead of the default
  * @param sshConfig.host - SSH host address to use instead of the default
- * @param sshConfig.privateKey - Path to SSH private key to use instead of the default
  * @returns The wrapped command string with appropriate prefix for Docker or SSH execution,
  *          or the original command if no specific server type is configured
  * 
