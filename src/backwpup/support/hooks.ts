@@ -49,13 +49,13 @@ After({ tags: '@bwpup or @bwpupsetup' }, async function (this: ICustomWorld) {
 });
 
 After({tags: '@bwpupstorageftp'}, async function(this: ICustomWorld) {
-    // Nothing to do if no SSH directory is set
-    if (!BACKWPUP_INFOS.ftp.sshDirectory) return;
+    // Nothing to do if no SSH access for FTP is set
+    if (!BACKWPUP_INFOS.ftp.sshDirectory || !BACKWPUP_INFOS.ftp.sshUsername) return;
     try {
         // Clear FTP storage
         const sshConfig = {
             host: BACKWPUP_INFOS.ftp.host,
-            username: BACKWPUP_INFOS.ftp.username
+            username: BACKWPUP_INFOS.ftp.sshUsername
         };
         await testSshConnection({...sshConfig});
         const domain = new URL(configurations.baseUrl).hostname;
