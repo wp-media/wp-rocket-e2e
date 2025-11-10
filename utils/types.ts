@@ -142,3 +142,8 @@ export interface BackupRowData {
     type: string;
     storedOn: string;
 }
+
+export type SSHConfig = {
+    host: string;
+    username: string;
+}
