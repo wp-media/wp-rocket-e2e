@@ -61,7 +61,7 @@ After({tags: '@bwpupstorageftp'}, async function(this: ICustomWorld) {
         const domain = new URL(configurations.baseUrl).hostname;
         const directoryName = domain.replace(/\./g, '-');
         const destination = `${BACKWPUP_INFOS.ftp.sshDirectory}/${directoryName}/*`;
-        rm(destination, {
+        await rm(destination, {
             ...sshConfig
         });
     } catch (error) {
