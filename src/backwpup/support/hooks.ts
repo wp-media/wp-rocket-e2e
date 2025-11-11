@@ -9,6 +9,7 @@ import {rm, testSshConnection} from "../../../utils/commands";
 import {WP_SSH_ROOT_DIR} from "../../../config/wp.config";
 import {Page} from "@playwright/test";
 import {BACKWPUP_INFOS} from "../../../config/wp.config";
+import { getFolderNameFromHost } from "../utils/helpers";
 
 /**
  * Before each test scenario with the @bwpupsetup tag, performs setup tasks.
@@ -58,8 +59,7 @@ After({tags: '@bwpupstorageftp'}, async function(this: ICustomWorld) {
             username: BACKWPUP_INFOS.ftp.sshUsername
         };
         await testSshConnection({...sshConfig});
-        const domain = new URL(configurations.baseUrl).hostname;
-        const directoryName = domain.replace(/\./g, '-');
+        const directoryName = getFolderNameFromHost();
         const destination = `${BACKWPUP_INFOS.ftp.sshDirectory}/${directoryName}/*`;
         await rm(destination, {
             ...sshConfig
