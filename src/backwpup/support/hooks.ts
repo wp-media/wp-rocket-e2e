@@ -8,7 +8,8 @@ import {configurations} from "../../../utils/configurations";
 import {rm, testSshConnection} from "../../../utils/commands";
 import {WP_SSH_ROOT_DIR} from "../../../config/wp.config";
 import {Page} from "@playwright/test";
-
+import {BACKWPUP_INFOS} from "../../../config/wp.config";
+import { getFolderNameFromHost } from "../utils/helpers";
 
 /**
  * Before each test scenario with the @bwpupsetup tag, performs setup tasks.
@@ -45,6 +46,27 @@ After({ tags: '@bwpup or @bwpupsetup' }, async function (this: ICustomWorld) {
     } catch (error) {
         console.error('Setup failed: ', error.message);
         throw new Error('Setup failed: ' + error.message);
+    }
+});
+
+After({tags: '@bwpupstorageftp'}, async function(this: ICustomWorld) {
+    // Nothing to do if no SSH access for FTP is set
+    if (!BACKWPUP_INFOS.ftp.sshDirectory || !BACKWPUP_INFOS.ftp.sshUsername) return;
+    try {
+        // Clear FTP storage
+        const sshConfig = {
+            host: BACKWPUP_INFOS.ftp.host,
+            username: BACKWPUP_INFOS.ftp.sshUsername
+        };
+        await testSshConnection({...sshConfig});
+        const directoryName = getFolderNameFromHost();
+        const destination = `${BACKWPUP_INFOS.ftp.sshDirectory}/${directoryName}/*`;
+        await rm(destination, {
+            ...sshConfig
+        });
+    } catch (error) {
+        // Catch error and fail silently, as FTP cleanup is not critical
+        console.error('FTP Cleanup failed: ', error.message);
     }
 });
 
