@@ -1,4 +1,4 @@
-@smoke @local @setup
+@smoke @local @setup 
 Feature: C1205 - Enabling all WP Rocket features should not throw any fatal errors
 
     Background:
@@ -8,7 +8,7 @@ Feature: C1205 - Enabling all WP Rocket features should not throw any fatal erro
 
     Scenario: Enable all features
         When I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
-        And I enable all settings
+        And I enable all settings with text inputs
         And I log out
         Then page loads successfully
         When I log in

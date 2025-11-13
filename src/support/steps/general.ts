@@ -246,6 +246,13 @@ When('I enable all settings', async function (this: ICustomWorld) {
 });
 
 /**
+ * Executes the step to enable all settings and validates text inputs.
+ */
+When('I enable all settings with text inputs', async function (this: ICustomWorld) {
+    await this.utils.enableAllOptionsWithTextInputs();
+});
+
+/**
  * Executes the step to log out.
  */
 When('I log out', async function (this: ICustomWorld) {

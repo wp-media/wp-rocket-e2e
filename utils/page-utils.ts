@@ -8,9 +8,9 @@
  * @requires {@link ../config/wp.config}
  * @requires {@link ./configurations}
  */
-import type {Page} from '@playwright/test';
+import type { Dialog, Page } from '@playwright/test';
 import type {Sections} from '../src/common/sections';
-import type {Locators, Selector, Pickle} from './types';
+import type {Locators, Selector, Pickle, SectionId} from './types';
 import {expect} from "@playwright/test";
 import { ICustomWorld } from '../src/common/custom-world';
 import fs from "fs/promises";
@@ -565,6 +565,150 @@ export class PageUtils {
         }
 
     
+    }
+
+    /**
+     * Enables all options and ensures every visible text input accepts arbitrary values without native validation dialogs.
+     *
+     * @return {Promise<void>}
+     */
+    public enableAllOptionsWithTextInputs = async (): Promise<void> => {
+        await this.enableAllOptions();
+        await this.validateTextInputsWithoutDialogs();
+    }
+
+    /**
+     * Iterates over every visible text field in each section, types a test value, presses Enter,
+     * and fails if a browser dialog appears (e.g. "Please enter a valid URL").
+     *
+     * The original field values are restored after each check, and form submissions are suppressed to avoid unwanted saves.
+     *
+     * @param {string} testValue - Value to use while validating the inputs.
+     *
+     * @return {Promise<void>}
+     */
+    private validateTextInputsWithoutDialogs = async (testValue: string = 'test'): Promise<void> => {
+        const sectionIds: SectionId[] = [
+            'dashboard',
+            'cache',
+            'file_optimization',
+            'media',
+            'preload',
+            'advanced_cache',
+            'database',
+            'page_cdn',
+            'heartbeat',
+            'addons',
+        ];
+        const allowedInputTypes = new Set(['', 'text', 'search', 'url', 'email']);
+        const dialogMessages: string[] = [];
+        let activeField = '';
+
+        await this.gotoWpr();
+        await this.suppressSettingsFormSubmit();
+
+        const handleDialog = async (dialog: Dialog): Promise<void> => {
+            dialogMessages.push(`${dialog.message()}${activeField ? ` (Field: ${activeField})` : ''}`);
+            await dialog.dismiss();
+        };
+
+        this.page.on('dialog', handleDialog);
+
+        try {
+            for (const sectionId of sectionIds) {
+                const navLocator = this.page.locator(`#wpr-nav-${sectionId}`);
+                if (!await navLocator.isVisible()) {
+                    continue;
+                }
+
+                await navLocator.scrollIntoViewIfNeeded();
+                await navLocator.click();
+                await this.page.locator(`#${sectionId}`).waitFor({ state: 'visible' });
+
+                const textInputs = this.page
+                    .locator(`#${sectionId}`)
+                    .locator('textarea, input[type="text"], input[type="search"], input[type="url"], input:not([type])');
+
+                const fieldCount = await textInputs.count();
+
+                for (let index = 0; index < fieldCount; index++) {
+                    const field = textInputs.nth(index);
+
+                    if (!await field.isVisible() || await field.isDisabled() || !await field.isEditable()) {
+                        continue;
+                    }
+
+                    const tagName = await field.evaluate((el) => el.tagName.toLowerCase());
+                    if (tagName === 'input') {
+                        const typeAttr = (await field.getAttribute('type'))?.toLowerCase() ?? '';
+                        if (!allowedInputTypes.has(typeAttr)) {
+                            continue;
+                        }
+                    }
+
+                    const fieldId = await field.getAttribute('id');
+                    const fieldName = await field.getAttribute('name');
+                    activeField = `${sectionId}:${fieldId ?? fieldName ?? `field-${index}`}`;
+
+                    const originalValue = await field.inputValue();
+
+                    await field.fill(testValue);
+                    await field.press('Enter', { noWaitAfter: true });
+                    await this.page.waitForTimeout(100);
+                    await field.fill(originalValue);
+                }
+            }
+        } finally {
+            this.page.off('dialog', handleDialog);
+            activeField = '';
+            await this.resumeSettingsFormSubmit();
+        }
+
+        if (dialogMessages.length > 0) {
+            throw new Error(`Unexpected validation dialog(s) triggered while interacting with text inputs: ${dialogMessages.join(' | ')}`);
+        }
+    }
+
+    /**
+     * Prevents the WP Rocket settings form from submitting while we simulate Enter presses on inputs.
+     *
+     * @return {Promise<void>}
+     */
+    private suppressSettingsFormSubmit = async (): Promise<void> => {
+        await this.page.waitForSelector('form[id$="_options"]');
+        await this.page.evaluate(() => {
+            const form = document.querySelector('form[id$="_options"]');
+            const win = window as typeof window & { __wprSubmitInterceptor?: (event: Event) => void };
+
+            if (!form || win.__wprSubmitInterceptor) {
+                return;
+            }
+
+            win.__wprSubmitInterceptor = (event: Event) => {
+                event.preventDefault();
+            };
+
+            form.addEventListener('submit', win.__wprSubmitInterceptor, true);
+        });
+    }
+
+    /**
+     * Restores the default submit behavior for the WP Rocket settings form.
+     *
+     * @return {Promise<void>}
+     */
+    private resumeSettingsFormSubmit = async (): Promise<void> => {
+        await this.page.evaluate(() => {
+            const form = document.querySelector('form[id$="_options"]');
+            const win = window as typeof window & { __wprSubmitInterceptor?: (event: Event) => void };
+
+            if (!form || !win.__wprSubmitInterceptor) {
+                return;
+            }
+
+            form.removeEventListener('submit', win.__wprSubmitInterceptor, true);
+            delete win.__wprSubmitInterceptor;
+        });
     }
 
     /**
