@@ -678,17 +678,17 @@ export class PageUtils {
         await this.page.waitForSelector('form[id$="_options"]');
         await this.page.evaluate(() => {
             const form = document.querySelector('form[id$="_options"]');
-            const win = window as typeof window & { __wprSubmitInterceptor?: (event: Event) => void };
+            const win = window as typeof window & { wprSubmitInterceptor?: (event: Event) => void };
 
-            if (!form || win.__wprSubmitInterceptor) {
+            if (!form || win.wprSubmitInterceptor) {
                 return;
             }
 
-            win.__wprSubmitInterceptor = (event: Event) => {
+            win.wprSubmitInterceptor = (event: Event): void => {
                 event.preventDefault();
             };
 
-            form.addEventListener('submit', win.__wprSubmitInterceptor, true);
+            form.addEventListener('submit', win.wprSubmitInterceptor, true);
         });
     }
 
@@ -700,14 +700,14 @@ export class PageUtils {
     private resumeSettingsFormSubmit = async (): Promise<void> => {
         await this.page.evaluate(() => {
             const form = document.querySelector('form[id$="_options"]');
-            const win = window as typeof window & { __wprSubmitInterceptor?: (event: Event) => void };
+            const win = window as typeof window & { wprSubmitInterceptor?: (event: Event) => void };
 
-            if (!form || !win.__wprSubmitInterceptor) {
+            if (!form || !win.wprSubmitInterceptor) {
                 return;
             }
 
-            form.removeEventListener('submit', win.__wprSubmitInterceptor, true);
-            delete win.__wprSubmitInterceptor;
+            form.removeEventListener('submit', win.wprSubmitInterceptor, true);
+            delete win.wprSubmitInterceptor;
         });
     }
 
