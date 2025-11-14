@@ -3,8 +3,6 @@ import { ICustomWorld } from '../../common/custom-world';
 import { listBackWPupJobsWPCLI } from '../utils/helpers';
 import { expect } from '@playwright/test';
 import { testSshConnection } from '../../../utils/commands';
-// import * as path from 'path';
-// import { promises as fs } from 'fs';
 
 Then(
     'I can see 1 job via WP-CLI command',
