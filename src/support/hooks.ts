@@ -19,6 +19,8 @@ import { ChromiumBrowser, chromium } from '@playwright/test';
 import { Sections } from '../common/sections';
 import { selectors as pluginSelectors } from "./../common/selectors";
 import { PageUtils } from "../../utils/page-utils";
+import { addFilterToTheme, removeFilterFromTheme } from "../../utils/commands";
+
 import { deleteFolder, isWprRelatedError } from "../../utils/helpers";
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
@@ -55,7 +57,10 @@ BeforeAll(async function (this: ICustomWorld) {
         await rm(debugLogPath);
 
         await deleteFolder('./backstop_data/bitmaps_test');
-        browser = await chromium.launch({ headless: false });
+
+         await addFilterToTheme('rocket_rocket_insights_enabled', '__return_false', 'twentytwenty');
+        
+         browser = await chromium.launch({ headless: false });
     } catch (error) {
         console.error('Setup failed: ', error.message);
         throw new Error('Setup failed: ' + error.message);
@@ -231,8 +236,10 @@ After({tags: '@delaylcp'}, async function (this: ICustomWorld) {
 //  })
 
 /**
- * After all tests, closes the Chromium browser.
+ * After all tests, closes the Chromium browser and remove filter added
  */
+
 AfterAll(async function () {
+    await removeFilterFromTheme('rocket_rocket_insights_enabled', '__return_false', 'twentytwenty');
     await browser.close();
 });

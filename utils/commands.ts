@@ -573,4 +573,104 @@ export async function readFile(path: string): Promise<string> {
     return result.stdout;
 }
 
+/**
+ * Add a filter to a WordPress theme's functions.php file using WP CLI.
+ *
+ * @function
+ * @name addFilterToTheme
+ * @async
+ * @param {string} filter - The filter hook to add (e.g., 'rocket_set_wp_cache_constant').
+ * @param {string} callback - The callback function (e.g., '__return_false').
+ * @param {string} themeName - The name of the theme.
+ * @returns {Promise<void>} - A Promise that resolves after filter is added to theme.
+ */
+export async function addFilterToTheme(filter: string, callback: string, themeName: string): Promise<void> {
+    const wpDir = getWPDir(configurations);
+    const functionsPath = `${wpDir}wp-content/themes/${themeName}/functions.php`;
+    
+    console.log('Adding filter to:', functionsPath);
+    
+    // Construct the filter line
+    const filterLine = `add_filter( '${filter}', '${callback}' );`;
+    
+    // Use a multi-step approach: create pattern file, check if exists, add if not found
+    const patternFile = `${wpDir}wp-content/themes/${themeName}/.filter_pattern.tmp`;
+    
+    // First check if the filter already exists, only add if not found
+    const command = wrapSSHPrefix(`cat > ${patternFile} << 'PHPEOF'
+${filterLine}
+PHPEOF
+if grep -q -F -f ${patternFile} ${functionsPath}; then
+    echo "Filter already exists, skipping addition"
+else
+    cat >> ${functionsPath} << 'PHPEOF'
+${filterLine}
+PHPEOF
+    echo "Filter added"
+fi
+rm ${patternFile}`);
+    
+    const result = exec(command, { async: false, silent: true });
+    
+    if (result.code !== 0) {
+        console.error(`Failed to add filter to ${themeName} theme:`, result.stderr);
+        throw new Error(`Failed to add filter: ${result.stderr}`);
+    }
+    
+    if (result.stdout.includes('Filter added')) {
+        console.log(`Filter '${filter}' => '${callback}' added to ${themeName} theme's functions.php`);
+    } else {
+        console.log(`Filter '${filter}' => '${callback}' already exists in ${themeName} theme's functions.php`);
+    }
+}
+
+/**
+ * Remove a filter from a WordPress theme's functions.php file.
+ *
+ * @function
+ * @name removeFilterFromTheme
+ * @async
+ * @param {string} filter - The filter hook to remove (e.g., 'rocket_set_wp_cache_constant').
+ * @param {string} callback - The callback function (e.g., '__return_false').
+ * @param {string} themeName - The name of the theme.
+ * @returns {Promise<void>} - A Promise that resolves after filter is removed from theme.
+ */
+export async function removeFilterFromTheme(filter: string, callback: string, themeName: string): Promise<void> {
+    const wpDir = getWPDir(configurations);
+    const functionsPath = `${wpDir}wp-content/themes/${themeName}/functions.php`;
+    
+    console.log('Removing filter from:', functionsPath);
+    
+    // Construct the filter line to remove (must match exactly what was added)
+    const filterLine = `add_filter( '${filter}', '${callback}' );`;
+    
+    // Use a multi-step approach: create pattern file, use grep, then cleanup
+    const patternFile = `${wpDir}wp-content/themes/${themeName}/.filter_pattern.tmp`;
+    
+    // First check if the filter exists, then remove it if found
+    const command = wrapSSHPrefix(`cat > ${patternFile} << 'PATTERNEOF'
+${filterLine}
+PATTERNEOF
+if grep -q -F -f ${patternFile} ${functionsPath}; then
+    grep -v -F -f ${patternFile} ${functionsPath} > ${functionsPath}.tmp && mv ${functionsPath}.tmp ${functionsPath}
+    echo "Filter removed"
+else
+    echo "Filter not found, skipping removal"
+fi
+rm ${patternFile}`);
+    
+    const result = exec(command, { async: false, silent: true });
+    
+    if (result.code !== 0) {
+        console.error(`Failed to remove filter from ${themeName} theme:`, result.stderr);
+        throw new Error(`Failed to remove filter: ${result.stderr}`);
+    }
+    
+    if (result.stdout.includes('Filter removed')) {
+        console.log(`Filter '${filter}' => '${callback}' removed from ${themeName} theme's functions.php`);
+    } else {
+        console.log(`Filter '${filter}' => '${callback}' not found in ${themeName} theme's functions.php`);
+    }
+}
+
 export default wp;
