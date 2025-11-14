@@ -112,6 +112,20 @@ When('I click on manual backup of a job', async function (this: ICustomWorld) {
     await this.page.waitForLoadState('networkidle');
 });
 
+When('I create one job', async function (this: ICustomWorld) {
+    await this.page.goto(
+        `${configurations.baseUrl}/wp-admin/admin.php?page=backwpup`,
+        {
+            waitUntil: 'load'
+        }
+    );
+    const createJobButton = this.page.locator(
+        'div#backwup-next-scheduled-backups div#js_backwpup_add_new_backup button'
+    );
+    await expect(createJobButton).toBeVisible();
+    await createJobButton.click();
+});
+
 const captureBackupTableData = async (page: Page): Promise<BackupRowData[]> => {
     const rows = await page.locator('table tbody tr').all();
     const backups: BackupRowData[] = [];
