@@ -1,4 +1,4 @@
-@smoke @local @setup 
+@smoke @local @setup
 Feature: C1205 - Enabling all WP Rocket features should not throw any fatal errors
 
     Background:

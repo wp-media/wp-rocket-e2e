@@ -600,7 +600,7 @@ export class PageUtils {
             'heartbeat',
             'addons',
         ];
-        const allowedInputTypes = new Set(['', 'text', 'search', 'url', 'email']);
+        const allowedInputTypes = new Set(['', 'text', 'search', 'url']);
         const dialogMessages: string[] = [];
         let activeField = '';
 
