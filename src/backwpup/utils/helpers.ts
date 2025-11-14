@@ -130,11 +130,13 @@ export const getFolderNameFromHost = (): string => {
     return directoryName;
 }
 
-export const listBackWPupJobsWPCLI = async (json?: boolean): Promise<string> => {
+export const listBackWPupJobsWPCLI = async (
+    json?: boolean
+): Promise<Array<Record<string, unknown>>> => {
     const useJson = json ? ' --format=json' : '';
     const result = await wpWithOutput(`backwpup jobs${useJson}`);
     if (result.failed) {
         throw new Error(`WP-CLI Error: ${result.stdout}\n${result.stderr}`);
     }
-    return JSON.parse(result.stdout);
+    return JSON.parse(result.stdout) as Array<Record<string, unknown>>;
 };
