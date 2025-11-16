@@ -22,7 +22,7 @@ import { PageUtils } from "../../utils/page-utils";
 import { deleteFolder, isWprRelatedError } from "../../utils/helpers";
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
-import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile} from "../../utils/commands";
+import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 // import {configurations, getWPDir} from "../../utils/configurations";
@@ -55,7 +55,19 @@ BeforeAll(async function (this: ICustomWorld) {
         await rm(debugLogPath);
 
         await deleteFolder('./backstop_data/bitmaps_test');
+        
+        // Check if template loader plugin is active, activate if not
+        const isTemplateLoaderActive = await isPluginActive('template-loader-plugin-master');
+        if (!isTemplateLoaderActive) {
+            console.log('Template loader plugin is not active, activating...');
+            await activatePlugin('template-loader-plugin-master');
+        } else {
+            console.log('Template loader plugin is already active');
+        }
+        
         browser = await chromium.launch({ headless: false });
+
+        
     } catch (error) {
         console.error('Setup failed: ', error.message);
         throw new Error('Setup failed: ' + error.message);
