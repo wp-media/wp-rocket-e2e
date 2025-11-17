@@ -62,6 +62,72 @@ const findUnmatchedExpectations = (expectedList: string[], actualList: string[])
 // --- end helpers ---
 
 /**
+ * Helper function to visit URLs and fetch data from database.
+ * Extracts common logic used by both LCP/ATF and preload fonts steps.
+ */
+async function visitUrlsAndFetchData(
+    context: ICustomWorld,
+    config: {
+        resultFile: string;
+        viewPortWidth: number;
+        viewPortHeight: number;
+        isMobile: number;
+        getSqlQuery: (tablePrefix: string, key: string, isMobile: number) => string;
+        populateActualData: (key: string, url: string, resultFromStdout: Row[]) => ActualData;
+        contextName: string;
+    }
+): Promise<void> {
+    let sql: string,
+        result: string,
+        resultFromStdout: Row[];
+
+    // Reset variable state.
+    failMsg = '';
+
+    await context.page.setViewportSize({
+        width: config.viewPortWidth,
+        height: config.viewPortHeight
+    });
+
+    data = await fs.readFile(config.resultFile, 'utf8');
+    jsonData = JSON.parse(data);
+
+    const tablePrefix: string = await getWPTablePrefix();
+
+    // Visit page.
+    for (const key in jsonData) {
+        if (jsonData[key].enabled === true) {
+            // Construct page url.
+            const url: string = `${WP_BASE_URL}/${key}`;
+
+            // Visit the page url.
+            await context.utils.visitPage(key);
+
+            // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
+            await context.page.waitForFunction(() => {
+                const beacon = document.querySelector('[data-name="wpr-wpr-beacon"]');
+                return beacon && beacon.getAttribute('beacon-completed') === 'true';
+            }, { timeout: 100000 });
+
+            // Get data from the DB
+            sql = config.getSqlQuery(tablePrefix, key, config.isMobile);
+            result = await dbQuery(sql);
+            resultFromStdout = await extractFromStdout(result);
+
+            // If no DB result, set assertion var to false, fail msg and skip the loop.
+            if (!resultFromStdout || resultFromStdout.length === 0) {
+                isDbResultAvailable = false;
+                failMsg += `No result from database for url ${key} in ${config.contextName}\n\n\n`;
+                continue;
+            }
+
+            // Populate the actual data.
+            actual[key] = config.populateActualData(key, url, resultFromStdout);
+        }
+    }
+}
+
+/**
  * Executes step to visit page based on the templates and get check for lazyload.
  */
 When('I visit the urls and check for lazyload', async function (this: ICustomWorld) {
@@ -153,10 +219,7 @@ When(
  * Executes step to visit page based on the form factor(desktop/mobile) and get the LCP/ATF data from DB.
  */
 When('I visit the urls for {string}', async function (this: ICustomWorld, formFactor: string) {
-    let sql: string,
-        result: string,
-        resultFromStdout: Row[],
-        viewPortWidth: number = 1600,
+    let viewPortWidth: number = 1600,
         viewPortHeight: number = 700,
         resultFile: string = './src/support/results/expectedResultsDesktop.json',
         isMobile = 0;
@@ -168,60 +231,25 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
         resultFile = './src/support/results/expectedResultsMobile.json';
     }
 
-    // Reset variable state.
-    failMsg = '';
-
-    await this.page.setViewportSize({
-        width: viewPortWidth,
-        height: viewPortHeight
-    });
-
-    data = await fs.readFile(resultFile, 'utf8');
-    jsonData = JSON.parse(data);
-
-    const tablePrefix: string = await getWPTablePrefix();
-
-    // Visit page.
-    for (const key in jsonData) {
-        if (jsonData[key].enabled === true) {
-            // Construct page url.
-            const url: string = `${WP_BASE_URL}/${key}`;
-
-            // Visit the page url.
-            await this.utils.visitPage(key);
-
-            // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
-            await this.page.waitForFunction(() => {
-                const beacon = document.querySelector('[data-name="wpr-wpr-beacon"]');
-                return beacon && beacon.getAttribute('beacon-completed') === 'true';
-            }, { timeout: 100000 });
-
-            if (formFactor !== 'desktop') {
-                isMobile = 1;
-            }
-
-            // Get the LCP/ATF from the DB
-            sql = `SELECT lcp, viewport FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`;
-            result = await dbQuery(sql);
-            resultFromStdout = await extractFromStdout(result);
-
-            // If no DB result, set assertion var to false, fail msg and skip the loop.
-            if (!resultFromStdout || resultFromStdout.length === 0) {
-                isDbResultAvailable = false;
-                failMsg += `No result from database for url ${key} in ${formFactor}\n\n\n`;
-                continue;
-            }
-
-            // Populate the actual data.
-            actual[key] = {
-                url: url,
-                lcp: resultFromStdout[0].lcp,
-                viewport: resultFromStdout[0].viewport,
-                comment: jsonData[key].comment ?? ''
-            };
-        }
+    if (formFactor !== 'desktop') {
+        isMobile = 1;
     }
 
+    await visitUrlsAndFetchData(this, {
+        resultFile,
+        viewPortWidth,
+        viewPortHeight,
+        isMobile,
+        getSqlQuery: (tablePrefix, key, isMobile) => 
+            `SELECT lcp, viewport FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`,
+        populateActualData: (key, url, resultFromStdout) => ({
+            url: url,
+            lcp: resultFromStdout[0].lcp,
+            viewport: resultFromStdout[0].viewport,
+            comment: jsonData[key].comment ?? ''
+        }),
+        contextName: formFactor
+    });
 });
 
 
@@ -229,63 +257,25 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
  * Executes step to visit page and get preload fonts data from DB.
  */
 When('I visit the urls for preload fonts', async function (this: ICustomWorld) {
-    let sql: string,
-        result: string,
-        resultFromStdout: Row[];
     const viewPortWidth: number = 1600,
         viewPortHeight: number = 700,
         resultFile: string = './src/support/results/expectedResultsPreloadFonts.json',
         isMobile = 0;
 
-    // Reset variable state.
-    failMsg = '';
-
-    await this.page.setViewportSize({
-        width: viewPortWidth,
-        height: viewPortHeight
+    await visitUrlsAndFetchData(this, {
+        resultFile,
+        viewPortWidth,
+        viewPortHeight,
+        isMobile,
+        getSqlQuery: (tablePrefix, key, isMobile) => 
+            `SELECT fonts FROM ${tablePrefix}wpr_preload_fonts WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`,
+        populateActualData: (key, url, resultFromStdout) => ({
+            url: url,
+            fonts: resultFromStdout[0].fonts,
+            comment: jsonData[key].comment ?? ''
+        }),
+        contextName: 'preload fonts'
     });
-
-    data = await fs.readFile(resultFile, 'utf8');
-    jsonData = JSON.parse(data);
-
-    const tablePrefix: string = await getWPTablePrefix();
-
-    // Visit page.
-    for (const key in jsonData) {
-        if (jsonData[key].enabled === true) {
-            // Construct page url.
-            const url: string = `${WP_BASE_URL}/${key}`;
-
-            // Visit the page url.
-            await this.utils.visitPage(key);
-
-            // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
-            await this.page.waitForFunction(() => {
-                const beacon = document.querySelector('[data-name="wpr-wpr-beacon"]');
-                return beacon && beacon.getAttribute('beacon-completed') === 'true';
-            }, { timeout: 100000 });
-
-            // Get the Preload Fonts from the DB
-            sql = `SELECT fonts FROM ${tablePrefix}wpr_preload_fonts WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`;
-            result = await dbQuery(sql);
-            resultFromStdout = await extractFromStdout(result);
-
-            // If no DB result, set assertion var to false, fail msg and skip the loop.
-            if (!resultFromStdout || resultFromStdout.length === 0) {
-                isDbResultAvailable = false;
-                failMsg += `No result from database for url ${key} in preload fonts\n\n\n`;
-                continue;
-            }
-
-            // Populate the actual data.
-            actual[key] = {
-                url: url,
-                fonts: resultFromStdout[0].fonts,
-                comment: jsonData[key].comment ?? ''
-            };
-        }
-    }
-
 });
 
 
