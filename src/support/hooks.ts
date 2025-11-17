@@ -27,6 +27,15 @@ import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 // import {configurations, getWPDir} from "../../utils/configurations";
 
+
+/**
+ * The name of the template loader plugin.
+ * This plugin must be active before running tests to avoid false positives.
+ * @constant {string}
+ */
+const TEMPLATE_LOADER_PLUGIN = 'template-loader-plugin-master';
+
+
 /**
  * The Playwright Chromium browser instance used for testing.
  */
@@ -57,10 +66,10 @@ BeforeAll(async function (this: ICustomWorld) {
         await deleteFolder('./backstop_data/bitmaps_test');
         
         // Check if template loader plugin is active, activate if not
-        const isTemplateLoaderActive = await isPluginActive('template-loader-plugin-master');
+        const isTemplateLoaderActive = await isPluginActive(TEMPLATE_LOADER_PLUGIN);
         if (!isTemplateLoaderActive) {
             console.log('Template loader plugin is not active, activating...');
-            await activatePlugin('template-loader-plugin-master');
+            await activatePlugin(TEMPLATE_LOADER_PLUGIN);
         } else {
             console.log('Template loader plugin is already active');
         }
