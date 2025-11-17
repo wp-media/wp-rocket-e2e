@@ -605,7 +605,7 @@ export class PageUtils {
         let activeField = '';
 
         await this.gotoWpr();
-        await this.suppressSettingsFormSubmit();
+        await this.preventSettingsFormSubmission();
 
         const handleDialog = async (dialog: Dialog): Promise<void> => {
             dialogMessages.push(`${dialog.message()}${activeField ? ` (Field: ${activeField})` : ''}`);
@@ -661,7 +661,7 @@ export class PageUtils {
         } finally {
             this.page.off('dialog', handleDialog);
             activeField = '';
-            await this.resumeSettingsFormSubmit();
+            await this.allowSettingsFormSubmission();
         }
 
         if (dialogMessages.length > 0) {
@@ -674,7 +674,7 @@ export class PageUtils {
      *
      * @return {Promise<void>}
      */
-    private suppressSettingsFormSubmit = async (): Promise<void> => {
+    private preventSettingsFormSubmission = async (): Promise<void> => {
         await this.page.waitForSelector('form[id$="_options"]');
         await this.page.evaluate(() => {
             const form = document.querySelector('form[id$="_options"]');
@@ -697,7 +697,7 @@ export class PageUtils {
      *
      * @return {Promise<void>}
      */
-    private resumeSettingsFormSubmit = async (): Promise<void> => {
+    private allowSettingsFormSubmission = async (): Promise<void> => {
         await this.page.evaluate(() => {
             const form = document.querySelector('form[id$="_options"]');
             const win = window as typeof window & { wprSubmitInterceptor?: (event: Event) => void };
