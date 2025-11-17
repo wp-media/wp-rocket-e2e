@@ -5,7 +5,7 @@ import { PageUtils } from "../../../utils/page-utils";
 import { Before, After} from "@cucumber/cucumber";
 import {StorageUtils} from "../utils/storage";
 import {configurations} from "../../../utils/configurations";
-import {rm, testSshConnection} from "../../../utils/commands";
+import {rm, testSshConnection, uninstallPlugin} from "../../../utils/commands";
 import {WP_SSH_ROOT_DIR} from "../../../config/wp.config";
 import {Page} from "@playwright/test";
 import {BACKWPUP_INFOS} from "../../../config/wp.config";
@@ -43,6 +43,7 @@ After({ tags: '@bwpup or @bwpupsetup' }, async function (this: ICustomWorld) {
         // Remove BackWPup plugin
         await this.utils.deactivateBackWpViaUi();
         await this.utils.removeBackWpViaUi();
+        await uninstallPlugin('show-time');
     } catch (error) {
         console.error('Setup failed: ', error.message);
         throw new Error('Setup failed: ' + error.message);
