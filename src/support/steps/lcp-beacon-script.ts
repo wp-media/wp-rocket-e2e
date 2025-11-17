@@ -292,7 +292,7 @@ When('I visit the urls for preload fonts', async function (this: ICustomWorld) {
 /**
  * Executes the step to assert that LCP & ATF should be as expected.
  */
-Then('{string} should be as expected for {string}', async function (this: ICustomWorld, type: string, formFactor: string) {
+Then('lcp and atf should be as expected for {string}', async function (this: ICustomWorld, formFactor: string) {
     // Log fail messages from DB query before failing test.
     if (failMsg !== '') {
         console.log('\x1b[31m%s\x1b[0m',failMsg);
@@ -307,27 +307,25 @@ Then('{string} should be as expected for {string}', async function (this: ICusto
     for (const key in jsonData) {
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
             const expected = jsonData[key];
-            if (type === 'lcp and atf') {
-                // Run both LCP and ATF logic
-                for (const lcp of expected.lcp) {
-                    if (!actual[key].lcp.includes(lcp)) {
-                        truthy = false;
-                        failMsg += `Expected LCP for ${formFactor} - ${lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
-                        // Highlighted log for missing LCP
-                        console.log('\x1b[43m\x1b[30m[HIGHLIGHTED] LCP MISMATCH for', key, '\x1b[0m');
-                        console.log('\x1b[33mExpected lcp:\x1b[0m', expected.lcp);
-                        console.log('\x1b[36mActual lcp:\x1b[0m', actual[key].lcp);
-                    }
+            // Run both LCP and ATF logic
+            for (const lcp of expected.lcp) {
+                if (!actual[key].lcp.includes(lcp)) {
+                    truthy = false;
+                    failMsg += `Expected LCP for ${formFactor} - ${lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                    // Highlighted log for missing LCP
+                    console.log('\x1b[43m\x1b[30m[HIGHLIGHTED] LCP MISMATCH for', key, '\x1b[0m');
+                    console.log('\x1b[33mExpected lcp:\x1b[0m', expected.lcp);
+                    console.log('\x1b[36mActual lcp:\x1b[0m', actual[key].lcp);
                 }
-                for (const viewport of expected.viewport) {
-                    if (!actual[key].viewport.includes(viewport)) {
-                        truthy = false;
-                        failMsg += `Expected Viewport for ${formFactor} - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
-                        // Highlighted log for missing Viewport
-                        console.log('\x1b[41m\x1b[37m[HIGHLIGHTED] VIEWPORT MISMATCH for', key, '\x1b[0m');
-                        console.log('\x1b[33mExpected viewport:\x1b[0m', expected.viewport);
-                        console.log('\x1b[36mActual viewport:\x1b[0m', actual[key].viewport);
-                    }
+            }
+            for (const viewport of expected.viewport) {
+                if (!actual[key].viewport.includes(viewport)) {
+                    truthy = false;
+                    failMsg += `Expected Viewport for ${formFactor} - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                    // Highlighted log for missing Viewport
+                    console.log('\x1b[41m\x1b[37m[HIGHLIGHTED] VIEWPORT MISMATCH for', key, '\x1b[0m');
+                    console.log('\x1b[33mExpected viewport:\x1b[0m', expected.viewport);
+                    console.log('\x1b[36mActual viewport:\x1b[0m', actual[key].viewport);
                 }
             }
         }
