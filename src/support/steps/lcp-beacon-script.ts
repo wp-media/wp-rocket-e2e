@@ -166,8 +166,6 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
         viewPortWidth = 389;
         viewPortHeight = 829;
         resultFile = './src/support/results/expectedResultsMobile.json';
-    } else if (formFactor === 'preloadfonts') {
-        resultFile = './src/support/results/expectedResultsPreloadFonts.json';
     }
 
     // Reset variable state.
@@ -198,16 +196,12 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
                 return beacon && beacon.getAttribute('beacon-completed') === 'true';
             }, { timeout: 100000 });
 
-            if (formFactor !== 'desktop' && formFactor !== 'preloadfonts') {
+            if (formFactor !== 'desktop') {
                 isMobile = 1;
             }
 
-            // Get the LCP/ATF or Preload Fonts from the DB
-            if (formFactor === 'preloadfonts') {
-                sql = `SELECT fonts FROM ${tablePrefix}wpr_preload_fonts WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`;
-            } else {
-                sql = `SELECT lcp, viewport FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`;
-            }
+            // Get the LCP/ATF from the DB
+            sql = `SELECT lcp, viewport FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`;
             result = await dbQuery(sql);
             resultFromStdout = await extractFromStdout(result);
 
@@ -219,20 +213,76 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
             }
 
             // Populate the actual data.
-            if (formFactor === 'preloadfonts') {
-                actual[key] = {
-                    url: url,
-                    fonts: resultFromStdout[0].fonts,
-                    comment: jsonData[key].comment ?? ''
-                };
-            } else {
-                actual[key] = {
-                    url: url,
-                    lcp: resultFromStdout[0].lcp,
-                    viewport: resultFromStdout[0].viewport,
-                    comment: jsonData[key].comment ?? ''
-                };
+            actual[key] = {
+                url: url,
+                lcp: resultFromStdout[0].lcp,
+                viewport: resultFromStdout[0].viewport,
+                comment: jsonData[key].comment ?? ''
+            };
+        }
+    }
+
+});
+
+
+/**
+ * Executes step to visit page and get preload fonts data from DB.
+ */
+When('I visit the urls for preload fonts', async function (this: ICustomWorld) {
+    let sql: string,
+        result: string,
+        resultFromStdout: Row[];
+    const viewPortWidth: number = 1600,
+        viewPortHeight: number = 700,
+        resultFile: string = './src/support/results/expectedResultsPreloadFonts.json',
+        isMobile = 0;
+
+    // Reset variable state.
+    failMsg = '';
+
+    await this.page.setViewportSize({
+        width: viewPortWidth,
+        height: viewPortHeight
+    });
+
+    data = await fs.readFile(resultFile, 'utf8');
+    jsonData = JSON.parse(data);
+
+    const tablePrefix: string = await getWPTablePrefix();
+
+    // Visit page.
+    for (const key in jsonData) {
+        if (jsonData[key].enabled === true) {
+            // Construct page url.
+            const url: string = `${WP_BASE_URL}/${key}`;
+
+            // Visit the page url.
+            await this.utils.visitPage(key);
+
+            // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
+            await this.page.waitForFunction(() => {
+                const beacon = document.querySelector('[data-name="wpr-wpr-beacon"]');
+                return beacon && beacon.getAttribute('beacon-completed') === 'true';
+            }, { timeout: 100000 });
+
+            // Get the Preload Fonts from the DB
+            sql = `SELECT fonts FROM ${tablePrefix}wpr_preload_fonts WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`;
+            result = await dbQuery(sql);
+            resultFromStdout = await extractFromStdout(result);
+
+            // If no DB result, set assertion var to false, fail msg and skip the loop.
+            if (!resultFromStdout || resultFromStdout.length === 0) {
+                isDbResultAvailable = false;
+                failMsg += `No result from database for url ${key} in preload fonts\n\n\n`;
+                continue;
             }
+
+            // Populate the actual data.
+            actual[key] = {
+                url: url,
+                fonts: resultFromStdout[0].fonts,
+                comment: jsonData[key].comment ?? ''
+            };
         }
     }
 
@@ -257,27 +307,7 @@ Then('{string} should be as expected for {string}', async function (this: ICusto
     for (const key in jsonData) {
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
             const expected = jsonData[key];
-            if (type === 'fonts') {
-                const expectedFonts: string[] = expected.fonts || [];
-                let actualFonts: string[] = [];
-                try {
-                    actualFonts = JSON.parse(actual[key].fonts || '[]');
-                } catch (e) {
-                    actualFonts = (actual[key].fonts || '')
-                        .split(',')
-                        .map(f => f.trim())
-                        .filter(Boolean);
-                }
-
-                const missing = findUnmatchedExpectations(expectedFonts, actualFonts);
-
-                if (missing.length) {
-                    truthy = false;
-                    for (const m of missing) {
-                        failMsg += `Expected preload font for ${formFactor} - ${m} for ${actual[key].url} is not present in actual - ${actualFonts}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
-                    }
-                }
-            } else if (type === 'lcp and atf') {
+            if (type === 'lcp and atf') {
                 // Run both LCP and ATF logic
                 for (const lcp of expected.lcp) {
                     if (!actual[key].lcp.includes(lcp)) {
@@ -298,6 +328,53 @@ Then('{string} should be as expected for {string}', async function (this: ICusto
                         console.log('\x1b[33mExpected viewport:\x1b[0m', expected.viewport);
                         console.log('\x1b[36mActual viewport:\x1b[0m', actual[key].viewport);
                     }
+                }
+            }
+        }
+    }
+// Log fail message from Expectation mismatch before failing test.
+    if (failMsg !== '') {
+        throw new Error(failMsg);
+    }
+// Fail test when there is expectation mismatch.
+    expect(truthy).toBeTruthy();
+});
+
+/**
+ * Executes the step to assert that preload fonts should be as expected.
+ */
+Then('preload fonts should be as expected', async function (this: ICustomWorld) {
+    // Log fail messages from DB query before failing test.
+    if (failMsg !== '') {
+        console.log('\x1b[31m%s\x1b[0m',failMsg);
+         // Fail test when no DB result is found.
+        expect(isDbResultAvailable).toBeTruthy();
+        return;
+    }
+
+    truthy = true;
+
+    // Iterate over the data
+    for (const key in jsonData) {
+        if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
+            const expected = jsonData[key];
+            const expectedFonts: string[] = expected.fonts || [];
+            let actualFonts: string[] = [];
+            try {
+                actualFonts = JSON.parse(actual[key].fonts || '[]');
+            } catch (e) {
+                actualFonts = (actual[key].fonts || '')
+                    .split(',')
+                    .map(f => f.trim())
+                    .filter(Boolean);
+            }
+
+            const missing = findUnmatchedExpectations(expectedFonts, actualFonts);
+
+            if (missing.length) {
+                truthy = false;
+                for (const m of missing) {
+                    failMsg += `Expected preload font - ${m} for ${actual[key].url} is not present in actual - ${actualFonts}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
                 }
             }
         }
