@@ -664,9 +664,10 @@ export class PageUtils {
             await this.allowSettingsFormSubmission();
         }
 
-        if (dialogMessages.length > 0) {
-            throw new Error(`Unexpected validation dialog(s) triggered while interacting with text inputs: ${dialogMessages.join(' | ')}`);
-        }
+        expect(
+            dialogMessages,
+            `Unexpected validation dialog(s) triggered while interacting with text inputs: ${dialogMessages.join(' | ')}`
+        ).toHaveLength(0);
     }
 
     /**
