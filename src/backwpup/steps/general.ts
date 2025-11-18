@@ -134,7 +134,7 @@ When('I Schedule backup', async function (this: ICustomWorld) {
 
     await this.page.waitForLoadState('networkidle');
 
-    await this.page.waitForTimeout(5 * 60 * 1000);
+    await this.page.waitForTimeout(3 * 60 * 1000);
 });
 
 const captureBackupTableData = async (page: Page): Promise<BackupRowData[]> => {

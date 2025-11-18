@@ -27,4 +27,5 @@ Feature: Should be able to backup
     When I Configure web server storage
     And I go '/wp-admin/admin.php?page=backwpup'
     And I Schedule backup
+    And I go '/wp-admin/admin.php?page=backwpup'
     Then '1' backup is generated and added to history
