@@ -58,9 +58,9 @@ BeforeAll(async function (this: ICustomWorld) {
 
         await deleteFolder('./backstop_data/bitmaps_test');
 
-         await addFilterToTheme('rocket_rocket_insights_enabled', '__return_false', 'twentytwenty');
+        await addFilterToTheme('rocket_rocket_insights_enabled', '__return_false', 'twentytwenty');
         
-         browser = await chromium.launch({ headless: false });
+        browser = await chromium.launch({ headless: false });
     } catch (error) {
         console.error('Setup failed: ', error.message);
         throw new Error('Setup failed: ' + error.message);

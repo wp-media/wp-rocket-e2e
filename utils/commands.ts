@@ -440,6 +440,39 @@ function wrapSSHPrefix(command: string): string {
 }
 
 /**
+ * Checks if functions.php file exists and is writable for a given theme.
+ *
+ * @function
+ * @name checkFunctionsPhpAccess
+ * @async
+ * @param {string} themeName - The name of the theme.
+ * @returns {Promise<string | null>} - A Promise that resolves with the functions.php file path if checks pass, or null if checks fail.
+ */
+async function checkFunctionsPhpAccess(themeName: string): Promise<string | null> {
+    const wpDir = getWPDir(configurations);
+    const functionsPath = `${wpDir}wp-content/themes/${themeName}/functions.php`;
+    
+    // Check if functions.php exists and is writable
+    const checkCommand = wrapSSHPrefix(`if [ ! -f ${functionsPath} ]; then echo "FILE_NOT_FOUND"; exit 1; fi; if [ ! -w ${functionsPath} ]; then echo "FILE_NOT_WRITABLE"; exit 1; fi; echo "FILE_OK"`);
+    const checkResult = exec(checkCommand, { async: false, silent: true });
+    
+    if (checkResult.code !== 0) {
+        if (checkResult.stdout.includes('FILE_NOT_FOUND')) {
+            console.warn(`⚠️  functions.php does not exist at ${functionsPath}. Skipping operation.`);
+            return null;
+        }
+        if (checkResult.stdout.includes('FILE_NOT_WRITABLE')) {
+            console.warn(`⚠️  functions.php is not writable at ${functionsPath}. Skipping operation.`);
+            return null;
+        }
+        console.warn(`⚠️  Failed to check functions.php: ${checkResult.stderr}. Skipping operation.`);
+        return null;
+    }
+    
+    return functionsPath;
+}
+
+/**
  * Performs a sql query using wp cli.
  *
  * @param   {string}   sql  SQL Query.
@@ -585,8 +618,14 @@ export async function readFile(path: string): Promise<string> {
  * @returns {Promise<void>} - A Promise that resolves after filter is added to theme.
  */
 export async function addFilterToTheme(filter: string, callback: string, themeName: string): Promise<void> {
+    const functionsPath = await checkFunctionsPhpAccess(themeName);
+    
+    // If file doesn't exist or isn't writable, return early
+    if (!functionsPath) {
+        return;
+    }
+    
     const wpDir = getWPDir(configurations);
-    const functionsPath = `${wpDir}wp-content/themes/${themeName}/functions.php`;
     
     console.log('Adding filter to:', functionsPath);
     
@@ -636,8 +675,14 @@ rm ${patternFile}`);
  * @returns {Promise<void>} - A Promise that resolves after filter is removed from theme.
  */
 export async function removeFilterFromTheme(filter: string, callback: string, themeName: string): Promise<void> {
+    const functionsPath = await checkFunctionsPhpAccess(themeName);
+    
+    // If file doesn't exist or isn't writable, return early
+    if (!functionsPath) {
+        return;
+    }
+    
     const wpDir = getWPDir(configurations);
-    const functionsPath = `${wpDir}wp-content/themes/${themeName}/functions.php`;
     
     console.log('Removing filter from:', functionsPath);
     
