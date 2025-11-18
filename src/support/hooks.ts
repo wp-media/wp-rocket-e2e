@@ -24,10 +24,19 @@ import { addFilterToTheme, removeFilterFromTheme } from "../../utils/commands";
 import { deleteFolder, isWprRelatedError } from "../../utils/helpers";
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
-import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile} from "../../utils/commands";
+import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 // import {configurations, getWPDir} from "../../utils/configurations";
+
+
+/**
+ * The name of the template loader plugin.
+ * This plugin must be active before running tests to avoid false positives.
+ * @constant {string}
+ */
+const TEMPLATE_LOADER_PLUGIN = 'template-loader-plugin-master';
+
 
 /**
  * The Playwright Chromium browser instance used for testing.
@@ -60,7 +69,23 @@ BeforeAll(async function (this: ICustomWorld) {
 
         await addFilterToTheme('rocket_rocket_insights_enabled', '__return_false', 'twentytwenty');
         
+        // Check if template loader plugin is installed and active, activate if needed
+        const isTemplateLoaderInstalled = await isPluginInstalled(TEMPLATE_LOADER_PLUGIN);
+        if (isTemplateLoaderInstalled) {
+            const isTemplateLoaderActive = await isPluginActive(TEMPLATE_LOADER_PLUGIN);
+            if (!isTemplateLoaderActive) {
+                console.log('Template loader plugin is not active, activating...');
+                await activatePlugin(TEMPLATE_LOADER_PLUGIN);
+            } else {
+                console.log('Template loader plugin is already active');
+            }
+        } else {
+            console.warn(`⚠️  Template loader plugin '${TEMPLATE_LOADER_PLUGIN}' is not installed. Skipping activation.`);
+        }
+        
         browser = await chromium.launch({ headless: false });
+
+        
     } catch (error) {
         console.error('Setup failed: ', error.message);
         throw new Error('Setup failed: ' + error.message);
