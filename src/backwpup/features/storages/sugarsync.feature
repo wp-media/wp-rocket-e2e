@@ -24,4 +24,4 @@ Feature: Should be able to work with SugarSync storage
     And I set up 'sugarsync' storage
     Then 'sugarsync' storage should be selected
     When I click on manual backup of a job
-    Then '1' backup is generated and added to history
+    Then '2' backup is generated and added to history

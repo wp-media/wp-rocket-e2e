@@ -16,4 +16,4 @@ Feature: Should be able to work with Microsoft Azure storage
     And I set up 'msazure' storage
     Then 'msazure' storage should be selected
     When I click on manual backup of a job
-    Then '1' backup is generated and added to history
+    Then '2' backup is generated and added to history
