@@ -138,7 +138,9 @@ When('I Schedule backup', async function (this: ICustomWorld) {
 });
 
 const captureBackupTableData = async (page: Page): Promise<BackupRowData[]> => {
-    const rows = await page.locator('table tbody tr').all();
+    const selector = 'table tbody tr';
+    await page.locator(selector).first().waitFor({ state: 'visible' }).catch(() => null);
+    const rows = await page.locator(selector).all();
     const backups: BackupRowData[] = [];
 
     for (const row of rows) {
