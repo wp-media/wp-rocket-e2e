@@ -436,7 +436,7 @@ Then('domains should be as expected', async function (this: ICustomWorld) {
             if (missing.length) {
                 truthy = false;
                 for (const m of missing) {
-                    failMsg += `Expected prefetch domain - ${m} for ${actual[key].url} is not present in actual - ${actualDomains}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                    failMsg += `Expected preconnect domain - ${m} for ${actual[key].url} is not present in actual - ${actualDomains}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
                 }
             }
         }
