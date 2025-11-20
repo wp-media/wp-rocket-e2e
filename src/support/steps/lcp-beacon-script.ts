@@ -21,7 +21,7 @@ import fs from 'fs/promises';
 let data: string,
     truthy: boolean = true,
     failMsg: string,
-    jsonData: Record<string, { lcp: string[]; viewport: string[]; fonts: string[];enabled: boolean, comment: string; }>,
+    jsonData: Record<string, { lcp: string[]; viewport: string[]; fonts: string[]; domains: string[]; enabled: boolean, comment: string; }>,
     isDbResultAvailable: boolean = true,
     lcpLLImages: LLImagesData = {},
     singlePageLcp : SinglePageLCPImages = {url: '', lcp: '', viewport: ''};
@@ -31,6 +31,7 @@ type ActualData = {
   lcp?: string;
   viewport?: string;
   fonts?: string;
+  domains?: string;
   comment?: string;
 };
 const actual: Record<string, ActualData> = {};
@@ -280,6 +281,32 @@ When('I visit the urls for preload fonts', async function (this: ICustomWorld) {
 
 
 /**
+ * Executes step to visit page and get prefetch external domain data from DB.
+ */
+When('I visit the urls for prefetch External Domain', async function (this: ICustomWorld) {
+    const viewPortWidth: number = 1600,
+        viewPortHeight: number = 700,
+        resultFile: string = './src/support/results/expectedResultsPrefetchExternalDomain.json',
+        isMobile = 0;
+
+    await visitUrlsAndFetchData(this, {
+        resultFile,
+        viewPortWidth,
+        viewPortHeight,
+        isMobile,
+        getSqlQuery: (tablePrefix, key, isMobile) => 
+            `SELECT domains FROM ${tablePrefix}wpr_preconnect_external_domains WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`,
+        populateActualData: (key, url, resultFromStdout) => ({
+            url: url,
+            domains: resultFromStdout[0].domains,
+            comment: jsonData[key].comment ?? ''
+        }),
+        contextName: 'prefetch external domain'
+    });
+});
+
+
+/**
  * Executes the step to assert that LCP & ATF should be as expected.
  */
 Then('lcp and atf should be as expected for {string}', async function (this: ICustomWorld, formFactor: string) {
@@ -363,6 +390,53 @@ Then('preload fonts should be as expected', async function (this: ICustomWorld) 
                 truthy = false;
                 for (const m of missing) {
                     failMsg += `Expected preload font - ${m} for ${actual[key].url} is not present in actual - ${actualFonts}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                }
+            }
+        }
+    }
+// Log fail message from Expectation mismatch before failing test.
+    if (failMsg !== '') {
+        throw new Error(failMsg);
+    }
+// Fail test when there is expectation mismatch.
+    expect(truthy).toBeTruthy();
+});
+
+/**
+ * Executes the step to assert that prefetch domains should be as expected.
+ */
+Then('domains should be as expected', async function (this: ICustomWorld) {
+    // Log fail messages from DB query before failing test.
+    if (failMsg !== '') {
+        console.log('\x1b[31m%s\x1b[0m',failMsg);
+         // Fail test when no DB result is found.
+        expect(isDbResultAvailable).toBeTruthy();
+        return;
+    }
+
+    truthy = true;
+
+    // Iterate over the data
+    for (const key in jsonData) {
+        if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
+            const expected = jsonData[key];
+            const expectedDomains: string[] = expected.domains || [];
+            let actualDomains: string[] = [];
+            try {
+                actualDomains = JSON.parse(actual[key].domains || '[]');
+            } catch (e) {
+                actualDomains = (actual[key].domains || '')
+                    .split(',')
+                    .map(d => d.trim())
+                    .filter(Boolean);
+            }
+
+            const missing = findUnmatchedExpectations(expectedDomains, actualDomains);
+
+            if (missing.length) {
+                truthy = false;
+                for (const m of missing) {
+                    failMsg += `Expected prefetch domain - ${m} for ${actual[key].url} is not present in actual - ${actualDomains}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
                 }
             }
         }
