@@ -9,5 +9,5 @@ Feature: Beacon script captures the prefetch external domains
     Scenario: Beacon captures expected external domains
         Given I log out
         And I visit the urls for prefetch External Domain
-        Then domains should be as expected 
+        Then domains should be as expected
 
