@@ -176,12 +176,6 @@ Given('I install plugin {string}', async function (pluginUrl) {
     await installRemotePlugin(pluginUrl)
 });
 
-/**
- * Executes the step to log in.
- */
-When('I log in', async function (this: ICustomWorld) {
-    await this.utils.auth();
-});
 
 /**
  * Executes the step to visit a specific page.

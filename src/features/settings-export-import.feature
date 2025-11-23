@@ -36,7 +36,7 @@ Feature: C2148 - Should not change the content of existing fields
         When I log out
         And I visit site url
         And I go to 'hello-world'
-        And I log in
+        And I am logged in
         Then I must not see any error in debug.log
 
     Scenario: Should not change enabled fields with update
