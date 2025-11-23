@@ -93,6 +93,12 @@ export class PageUtils {
         // Click login.
         await this.page.click('#wp-submit');
 
+        // Check if admin email confirmation form is displayed
+        if (await this.page.locator('#confirm_admin_email_nonce').isVisible()) {
+            await this.page.locator('#correct-admin-email').click();
+        }
+
+
         // Confirm login worked
         await this.page.waitForURL('**/wp-admin/**', { timeout: 5000 });
 
@@ -368,6 +374,7 @@ export class PageUtils {
         }
 
         await this.wpAdminLogin(user);
+
     }
 
     /**
