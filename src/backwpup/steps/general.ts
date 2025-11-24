@@ -124,6 +124,7 @@ When('I create one job', async function (this: ICustomWorld) {
     );
     await expect(createJobButton).toBeVisible();
     await createJobButton.click();
+});
 When('I Schedule backup', async function (this: ICustomWorld) {
     this.initialBackups = await captureBackupTableData(this.page)
     const timeText = await this.page.locator('#wp-admin-bar-current_time_display .ab-item').textContent();
