@@ -339,6 +339,18 @@ export async function isPluginInstalled(name: string): Promise<boolean> {
 }
 
 /**
+ * Check if plugin is active
+ * @function
+ * @name isPluginActive
+ * @async
+ * @param {string} name - The name of the plugin to be checked if active.
+ * @returns {Promise<boolean>} - A Promise that resolves to true if plugin is active, false otherwise.
+ */
+export async function isPluginActive(name: string): Promise<boolean> {
+    return await wp(`plugin is-active ${name}`, false);
+}
+
+/**
  * Delete a plugin if exist.
  * Note: this is not ideal for wpr or imagify plugins as it doesn't delete DB data which relies on uninstall hook.
  * @function

@@ -124,10 +124,35 @@ When('I create one job', async function (this: ICustomWorld) {
     );
     await expect(createJobButton).toBeVisible();
     await createJobButton.click();
+When('I Schedule backup', async function (this: ICustomWorld) {
+    this.initialBackups = await captureBackupTableData(this.page)
+    const timeText = await this.page.locator('#wp-admin-bar-current_time_display .ab-item').textContent();
+    const timeMatch = timeText.match(/(\d{2}):(\d{2}):(\d{2})/);
+    const currentHours = parseInt(timeMatch[1], 10);
+    const currentMinutes = parseInt(timeMatch[2], 10);
+
+    const totalMinutes = currentHours * 60 + currentMinutes + 2;
+    const scheduleHours = Math.floor(totalMinutes / 60) % 24;
+    const scheduleMinutes = totalMinutes % 60;
+
+    const timeValue = `${scheduleHours.toString().padStart(2, '0')}:${scheduleMinutes.toString().padStart(2, '0')}`;
+
+    await this.page.locator('button[data-content="frequency"].js-backwpup-load-and-open-sidebar').first().click();
+    await this.page.waitForSelector('#sidebar-frequency', { state: 'visible' });
+    await this.page.selectOption('#backwpup_frequency', 'daily');
+    await this.page.fill('input[name="start_time"]', timeValue);
+
+    await this.page.locator('button#save-job-settings').click();
+
+    await this.page.waitForLoadState('networkidle');
+
+    await this.page.waitForTimeout(3 * 60 * 1000);
 });
 
 const captureBackupTableData = async (page: Page): Promise<BackupRowData[]> => {
-    const rows = await page.locator('table tbody tr').all();
+    const selector = 'table tbody tr';
+    await page.locator(selector).first().waitFor({ state: 'visible' }).catch(() => null);
+    const rows = await page.locator(selector).all();
     const backups: BackupRowData[] = [];
 
     for (const row of rows) {

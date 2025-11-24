@@ -10,6 +10,6 @@ Feature: Beacon script captures the fonts ATF
 
     Scenario: Beacon captures expected atf fonts in desktop
         Given I log out
-        And I visit the urls for 'preloadfonts'
-        Then 'fonts' should be as expected for 'preloadfonts'
+        And I visit the urls for preload fonts
+        Then preload fonts should be as expected
 
