@@ -21,7 +21,7 @@ Feature: No Regression with delayjs script udpate
         And expand mobile menu 
         And I click on link
         Then page navigated to the new page 'about-us'
-        When I log in
+        When I am logged in
         And I go to 'wp-admin/plugins.php'
         And activate 'wpml-multilingual-cms' plugin
         And I go to 'wp-admin/admin.php?page=sitepress-multilingual-cms/menu/languages.php'
