@@ -16,7 +16,7 @@ import { ICustomWorld } from "../../common/custom-world";
 import { Given, When, Then } from '@cucumber/cucumber';
 import {WP_BASE_URL} from '../../../config/wp.config';
 import scenarioUrls from "./../../../config/scenarioUrls.json";
-import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl, setHelperFilter } from "../../../utils/helpers";
+import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl} from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
 import { Page } from '@playwright/test';
 import {
@@ -29,7 +29,6 @@ import backstop from 'backstopjs';
  */
 Given('I am logged in', async function (this: ICustomWorld) {
     await this.utils.auth();
- //   await setHelperFilter(this.page, 'rocket_rocket_insights_enabled', 'false');
 });
 
 /**
