@@ -280,9 +280,6 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
     
     if (formFactor === 'mobile') {
         resultFile = './src/support/results/expectedResultsMobile.json';
-    }
-
-    if (formFactor !== 'desktop') {
         isMobile = 1;
     }
 
