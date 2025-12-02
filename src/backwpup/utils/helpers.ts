@@ -1,3 +1,4 @@
+import { configurations } from "../../../utils/configurations";
 import { ICustomWorld } from "../../common/custom-world";
 import { Page } from '@playwright/test';
 
@@ -107,3 +108,23 @@ export const configureWebServerStorage = async (page: ICustomWorld['page']): Pro
         await page.click('.js-backwpup-onboarding-submit-form');
         await waitForBackupJobCompletion(page);
 };
+
+/**
+ * Generates a filesystem-friendly folder name derived from the configured base URL's hostname.
+ *
+ * The function parses `configurations.baseUrl`, extracts the hostname portion, and replaces
+ * all dot characters ('.') with hyphens ('-') to produce a directory-safe name.
+ *
+ * Examples:
+ * - "https://example.com"         -> "example-com"
+ * - "https://sub.domain.co.uk"    -> "sub-domain-co-uk"
+ *
+ * @returns The directory name based on the hostname with dots replaced by hyphens.
+ * @throws {TypeError} If `configurations.baseUrl` is not a valid URL and the URL constructor fails.
+ * @remarks Relies on the global/module `configurations.baseUrl` value being available.
+ */
+export const getFolderNameFromHost = (): string => {
+    const domain = new URL(configurations.baseUrl).hostname;
+    const directoryName = domain.replace(/\./g, '-');
+    return directoryName;
+}

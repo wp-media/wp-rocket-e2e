@@ -10,21 +10,34 @@
  */
 import {exec} from "shelljs";
 import {configurations, getWPDir, ServerType} from "./configurations";
+import { SSHConfig } from "./types";
 
 const {NodeSSH} = require('node-ssh')
 
 /**
- * Wraps a command with the appropriate prefix based on the server type.
- *
- * @param {string} command - The command to be wrapped.
- * @returns {string} - The wrapped command.
+ * Wraps a command with the appropriate prefix based on the server configuration type.
+ * 
+ * @param command - The command string to be wrapped
+ * @param sshConfig - Optional SSH configuration to override default settings
+ * @param sshConfig.username - SSH username to use instead of the default
+ * @param sshConfig.host - SSH host address to use instead of the default
+ * @returns The wrapped command string with appropriate prefix for Docker or SSH execution,
+ *          or the original command if no specific server type is configured
+ * 
+ * @remarks
+ * - For Docker configurations: wraps command with docker-compose exec
+ * - For external configurations: wraps command with SSH and escapes special characters
+ * - For other configurations: returns the command unchanged
  */
-function wrapPrefix(command: string): string {
-    if(configurations.type === ServerType.docker) {
+function wrapPrefix(command: string, sshConfig?: SSHConfig): string {
+    if (configurations.type === ServerType.docker) {
         return `docker-compose exec -T ${configurations.docker.container} ${command}`;
     }
-    if(configurations.type === ServerType.external) {
-        return `ssh ${configurations.ssh.username}@${configurations.ssh.address} -i ${configurations.ssh.key} ${command}`
+    if (configurations.type === ServerType.external) {
+        const username = sshConfig?.username || configurations.ssh.username;
+        const address = sshConfig?.host || configurations.ssh.address;
+        const privateKey = configurations.ssh.key;
+        return `ssh ${username}@${address} -i ${privateKey} ${command}`
             .replaceAll('"', '"\\"')
             .replaceAll('}', '\\}')
             .replaceAll('{', '\\{')
@@ -209,9 +222,9 @@ export async function unzip(file: string, destination: string): Promise<void> {
  * @param {string} destination - The path to the file or directory to be removed.
  * @returns {Promise<void>} - A Promise that resolves when the removal is completed.
  */
-export async function rm(destination: string): Promise<void> {
+export async function rm(destination: string, sshConfig?: SSHConfig): Promise<void> {
     const cwd = configurations.rootDir;
-    const command = wrapPrefix(`sudo rm -rf ${destination}`);
+    const command = wrapPrefix(`sudo rm -rf ${destination}`, sshConfig);
     await exec(command, {
         cwd: cwd,
         async: false
@@ -246,6 +259,18 @@ export async function activatePlugin(name: string): Promise<void>  {
  */
 export async function isPluginInstalled(name: string): Promise<boolean> {
     return await wp(`plugin is-installed ${name}`, false);
+}
+
+/**
+ * Check if plugin is active
+ * @function
+ * @name isPluginActive
+ * @async
+ * @param {string} name - The name of the plugin to be checked if active.
+ * @returns {Promise<boolean>} - A Promise that resolves to true if plugin is active, false otherwise.
+ */
+export async function isPluginActive(name: string): Promise<boolean> {
+    return await wp(`plugin is-active ${name}`, false);
 }
 
 /**
@@ -464,12 +489,40 @@ export async function getWPTablePrefix(): Promise<string> {
     return tablePrefix;
 }
 
-export async function testSshConnection(): Promise<string> {
+/**
+ * Tests the SSH connection to an external server using the provided or configured SSH credentials.
+ * 
+ * @param sshConfig - Optional SSH configuration object containing connection details
+ * @param sshConfig.username - SSH username to use for the connection
+ * @param sshConfig.host - SSH host address to connect to
+ * @param sshConfig.privateKey - Path to the private key file for SSH authentication
+ * 
+ * @returns A promise that resolves to a string result if the connection is successful,
+ *          or undefined if the server type is not external
+ * 
+ * @throws {Error} Throws an error if the SSH connection fails, indicating that the SSH
+ *                  configuration should be checked or internet connection verified
+ * 
+ * @example
+ * ```typescript
+ * // Using default configuration
+ * await testSshConnection();
+ * 
+ * // Using custom SSH configuration
+ * await testSshConnection({
+ *   username: 'myuser',
+ *   host: '192.168.1.1',
+ * });
+ * ```
+ */
+export async function testSshConnection(sshConfig?: SSHConfig): Promise<string> {
     if(configurations.type !== ServerType.external) {
         return;
     }
-    
-    const command: string = `ssh ${configurations.ssh.username}@${configurations.ssh.address} -i ${configurations.ssh.key} env`;
+    const username = sshConfig?.username || configurations.ssh.username;
+    const address = sshConfig?.host || configurations.ssh.address;
+    const privateKey = configurations.ssh.key;
+    const command: string = `ssh ${username}@${address} -i ${privateKey} env`;
     const result = exec(command, { silent: true });
 
     if (result.code !== 0) {

@@ -89,6 +89,14 @@ Given('I save settings {string} {string}', async function (this: ICustomWorld, s
 });
 
 /**
+ * Executes the step to save all WP Rocket settings.
+ */
+Given('I save all settings', async function (this: ICustomWorld) {
+        await this.utils.saveSettings();
+});
+
+
+/**
  * Executes the step to activate the WP plugin.
  */
 Given('activate {string} plugin', async function (this: ICustomWorld, plugin) {
@@ -168,12 +176,6 @@ Given('I install plugin {string}', async function (pluginUrl) {
     await installRemotePlugin(pluginUrl)
 });
 
-/**
- * Executes the step to log in.
- */
-When('I log in', async function (this: ICustomWorld) {
-    await this.utils.auth();
-});
 
 /**
  * Executes the step to visit a specific page.

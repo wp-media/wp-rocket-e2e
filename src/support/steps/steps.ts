@@ -70,6 +70,38 @@ Then('I must see the banner {string}', async function (this: ICustomWorld, text:
 });
 
 /**
+ * Executes the step to assert the visibility of a banner in iframe with specific text.
+ */
+Then('I must see the banner {string} in iframe {string}', async function (this: ICustomWorld, text: string, iframeSelector: string) {
+    const frameLocator = this.page.frameLocator(iframeSelector);
+
+    // Wait for the text to be present and visible inside the iframe
+    await expect(frameLocator.getByText(text)).toBeVisible({ timeout: 15000 });
+
+    // Ensure the iframe is visible and get its box
+    const iframeBox = await this.page.locator(iframeSelector).boundingBox();
+    if (!iframeBox) {
+        throw new Error(`Iframe ${iframeSelector} is not visible on the page`);
+    }
+
+    // Use the iframe center point on the main page to check topmost element
+    const centerX = iframeBox.x + iframeBox.width / 2;
+    const centerY = iframeBox.y + iframeBox.height / 2;
+
+    const iframeIsTopMost = await this.page.evaluate(({ x, y, sel }) => {
+        const el = document.elementFromPoint(x, y);
+        if (!el) return false;
+        const iframe = document.querySelector(sel);
+        // elementFromPoint returns the topmost element at viewport coords. If it's the iframe element, it's not covered.
+        return el === iframe;
+    }, { x: centerX, y: centerY, sel: iframeSelector });
+
+    if (!iframeIsTopMost) {
+        throw new Error(`Iframe ${iframeSelector} appears to be covered by another element at its center point`);
+    }
+});
+
+/**
  * Executes the step to click on an element with specific text.
  */
 When('click on {string}', async function (this: ICustomWorld, text: string) {

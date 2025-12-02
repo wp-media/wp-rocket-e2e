@@ -44,7 +44,11 @@ const BACKWPUP_INFOS = {
         password: '',
         port: '21',
         ssl: false,
-        passiveMode: true
+        passiveMode: true,
+		// Set this to string with the path of the FTP root directory if SSH access is available for it
+		sshDirectory: null,
+		// Set this to the SSH username if SSH access is available for it
+		sshUsername: null
     }
 } as const;
 

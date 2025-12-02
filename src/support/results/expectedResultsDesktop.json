@@ -418,7 +418,7 @@
     "viewport": [
     "/wp-content/rocket-test-data/images/lcp/WF4.jpg.avif", "/wp-content/rocket-test-data/images/lcp/WF4.jpg.webp", 
     "/wp-content/rocket-test-data/images/lcp/WF4.jpg"],
-    "enabled": true
+    "enabled": false
   },
   "lcp_picture_responsive_type": {
     "comment": "Has a bug currently in UI#7547",
@@ -430,7 +430,7 @@
       "/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1.jpg.webp 1024w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-450x380.jpg.webp 450w, /wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1-600x373.jpg.webp 600w",
       "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/istockphoto-1148323720-612x612-1.jpg"
   ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_picture_template2_maxheight": {
     "lcp": [

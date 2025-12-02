@@ -35,6 +35,98 @@ type ActualData = {
 };
 const actual: Record<string, ActualData> = {};
 
+// --- Regex-aware helpers for preload-font expectations ---
+const isRegexPattern = (s: string): boolean =>
+  s.startsWith('^') && s.endsWith('$');
+
+const matchesExpected = (expected: string, actualUrl: string): boolean => {
+  if (isRegexPattern(expected)) {
+    try {
+      return new RegExp(expected).test(actualUrl);
+    } catch {
+      // If an invalid regex sneaks in, fall back to substring check
+      return actualUrl.includes(expected.replace(/^\^/, '').replace(/\$$/, ''));
+    }
+  }
+  return actualUrl === expected || actualUrl.includes(expected);
+};
+
+const findUnmatchedExpectations = (expectedList: string[], actualList: string[]): string[] => {
+  const unmatched: string[] = [];
+  for (const exp of expectedList) {
+    const hit = actualList.some(act => matchesExpected(exp, act));
+    if (!hit) unmatched.push(exp);
+  }
+  return unmatched;
+};
+// --- end helpers ---
+
+/**
+ * Helper function to visit URLs and fetch data from database.
+ * Extracts common logic used by both LCP/ATF and preload fonts steps.
+ */
+async function visitUrlsAndFetchData(
+    context: ICustomWorld,
+    config: {
+        resultFile: string;
+        viewPortWidth: number;
+        viewPortHeight: number;
+        isMobile: number;
+        getSqlQuery: (tablePrefix: string, key: string, isMobile: number) => string;
+        populateActualData: (key: string, url: string, resultFromStdout: Row[]) => ActualData;
+        contextName: string;
+    }
+): Promise<void> {
+    let sql: string,
+        result: string,
+        resultFromStdout: Row[];
+
+    // Reset variable state.
+    failMsg = '';
+
+    await context.page.setViewportSize({
+        width: config.viewPortWidth,
+        height: config.viewPortHeight
+    });
+
+    data = await fs.readFile(config.resultFile, 'utf8');
+    jsonData = JSON.parse(data);
+
+    const tablePrefix: string = await getWPTablePrefix();
+
+    // Visit page.
+    for (const key in jsonData) {
+        if (jsonData[key].enabled === true) {
+            // Construct page url.
+            const url: string = `${WP_BASE_URL}/${key}`;
+
+            // Visit the page url.
+            await context.utils.visitPage(key);
+
+            // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
+            await context.page.waitForFunction(() => {
+                const beacon = document.querySelector('[data-name="wpr-wpr-beacon"]');
+                return beacon && beacon.getAttribute('beacon-completed') === 'true';
+            }, { timeout: 100000 });
+
+            // Get data from the DB
+            sql = config.getSqlQuery(tablePrefix, key, config.isMobile);
+            result = await dbQuery(sql);
+            resultFromStdout = await extractFromStdout(result);
+
+            // If no DB result, set assertion var to false, fail msg and skip the loop.
+            if (!resultFromStdout || resultFromStdout.length === 0) {
+                isDbResultAvailable = false;
+                failMsg += `No result from database for url ${key} in ${config.contextName}\n\n\n`;
+                continue;
+            }
+
+            // Populate the actual data.
+            actual[key] = config.populateActualData(key, url, resultFromStdout);
+        }
+    }
+}
+
 /**
  * Executes step to visit page based on the templates and get check for lazyload.
  */
@@ -127,10 +219,7 @@ When(
  * Executes step to visit page based on the form factor(desktop/mobile) and get the LCP/ATF data from DB.
  */
 When('I visit the urls for {string}', async function (this: ICustomWorld, formFactor: string) {
-    let sql: string,
-        result: string,
-        resultFromStdout: Row[],
-        viewPortWidth: number = 1600,
+    let viewPortWidth: number = 1600,
         viewPortHeight: number = 700,
         resultFile: string = './src/support/results/expectedResultsDesktop.json',
         isMobile = 0;
@@ -140,83 +229,60 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
         viewPortWidth = 389;
         viewPortHeight = 829;
         resultFile = './src/support/results/expectedResultsMobile.json';
-    } else if (formFactor === 'preloadfonts') {
-        resultFile = './src/support/results/expectedResultsPreloadFonts.json';
     }
 
-    // Reset variable state.
-    failMsg = '';
+    if (formFactor !== 'desktop') {
+        isMobile = 1;
+    }
 
-    await this.page.setViewportSize({
-        width: viewPortWidth,
-        height: viewPortHeight
+    await visitUrlsAndFetchData(this, {
+        resultFile,
+        viewPortWidth,
+        viewPortHeight,
+        isMobile,
+        getSqlQuery: (tablePrefix, key, isMobile) => 
+            `SELECT lcp, viewport FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`,
+        populateActualData: (key, url, resultFromStdout) => ({
+            url: url,
+            lcp: resultFromStdout[0].lcp,
+            viewport: resultFromStdout[0].viewport,
+            comment: jsonData[key].comment ?? ''
+        }),
+        contextName: formFactor
     });
+});
 
-    data = await fs.readFile(resultFile, 'utf8');
-    jsonData = JSON.parse(data);
 
-    const tablePrefix: string = await getWPTablePrefix();
+/**
+ * Executes step to visit page and get preload fonts data from DB.
+ */
+When('I visit the urls for preload fonts', async function (this: ICustomWorld) {
+    const viewPortWidth: number = 1600,
+        viewPortHeight: number = 700,
+        resultFile: string = './src/support/results/expectedResultsPreloadFonts.json',
+        isMobile = 0;
 
-    // Visit page.
-    for (const key in jsonData) {
-        if (jsonData[key].enabled === true) {
-            // Construct page url.
-            const url: string = `${WP_BASE_URL}/${key}`;
-
-            // Visit the page url.
-            await this.utils.visitPage(key);
-
-            // Wait the beacon to add an attribute `beacon-complete` to true before fetching from DB.
-            await this.page.waitForFunction(() => {
-                const beacon = document.querySelector('[data-name="wpr-wpr-beacon"]');
-                return beacon && beacon.getAttribute('beacon-completed') === 'true';
-            }, { timeout: 100000 });
-
-            if (formFactor !== 'desktop' && formFactor !== 'preloadfonts') {
-                isMobile = 1;
-            }
-
-            // Get the LCP/ATF or Preload Fonts from the DB
-            if (formFactor === 'preloadfonts') {
-                sql = `SELECT fonts FROM ${tablePrefix}wpr_preload_fonts WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`;
-            } else {
-                sql = `SELECT lcp, viewport FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`;
-            }
-            result = await dbQuery(sql);
-            resultFromStdout = await extractFromStdout(result);
-
-            // If no DB result, set assertion var to false, fail msg and skip the loop.
-            if (!resultFromStdout || resultFromStdout.length === 0) {
-                isDbResultAvailable = false;
-                failMsg += `No result from database for url ${key} in ${formFactor}\n\n\n`;
-                continue;
-            }
-
-            // Populate the actual data.
-            if (formFactor === 'preloadfonts') {
-                actual[key] = {
-                    url: url,
-                    fonts: resultFromStdout[0].fonts,
-                    comment: jsonData[key].comment ?? ''
-                };
-            } else {
-                actual[key] = {
-                    url: url,
-                    lcp: resultFromStdout[0].lcp,
-                    viewport: resultFromStdout[0].viewport,
-                    comment: jsonData[key].comment ?? ''
-                };
-            }
-        }
-    }
-
+    await visitUrlsAndFetchData(this, {
+        resultFile,
+        viewPortWidth,
+        viewPortHeight,
+        isMobile,
+        getSqlQuery: (tablePrefix, key, isMobile) => 
+            `SELECT fonts FROM ${tablePrefix}wpr_preload_fonts WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`,
+        populateActualData: (key, url, resultFromStdout) => ({
+            url: url,
+            fonts: resultFromStdout[0].fonts,
+            comment: jsonData[key].comment ?? ''
+        }),
+        contextName: 'preload fonts'
+    });
 });
 
 
 /**
  * Executes the step to assert that LCP & ATF should be as expected.
  */
-Then('{string} should be as expected for {string}', async function (this: ICustomWorld, type: string, formFactor: string) {
+Then('lcp and atf should be as expected for {string}', async function (this: ICustomWorld, formFactor: string) {
     // Log fail messages from DB query before failing test.
     if (failMsg !== '') {
         console.log('\x1b[31m%s\x1b[0m',failMsg);
@@ -231,42 +297,72 @@ Then('{string} should be as expected for {string}', async function (this: ICusto
     for (const key in jsonData) {
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
             const expected = jsonData[key];
-            if (type === 'fonts') {
-                // Compare fonts arrays (containment, not exact match)
-                const expectedFonts = expected.fonts || [];
-                let actualFonts: string[] = [];
-                try {
-                    actualFonts = JSON.parse(actual[key].fonts || '[]');
-                } catch (e) {
-                    actualFonts = (actual[key].fonts || '').split(',').map(f => f.trim()).filter(Boolean);
+            // Run both LCP and ATF logic
+            for (const lcp of expected.lcp) {
+                if (!actual[key].lcp.includes(lcp)) {
+                    truthy = false;
+                    failMsg += `Expected LCP for ${formFactor} - ${lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                    // Highlighted log for missing LCP
+                    console.log('\x1b[43m\x1b[30m[HIGHLIGHTED] LCP MISMATCH for', key, '\x1b[0m');
+                    console.log('\x1b[33mExpected lcp:\x1b[0m', expected.lcp);
+                    console.log('\x1b[36mActual lcp:\x1b[0m', actual[key].lcp);
                 }
-                for (const font of expectedFonts) {
-                    if (!actualFonts.some(actualFont => actualFont.includes(font))) {
-                        truthy = false;
-                        failMsg += `Expected preload font for ${formFactor} - ${font} for ${actual[key].url} is not present in actual - ${actualFonts}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
-                    }
+            }
+            for (const viewport of expected.viewport) {
+                if (!actual[key].viewport.includes(viewport)) {
+                    truthy = false;
+                    failMsg += `Expected Viewport for ${formFactor} - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+                    // Highlighted log for missing Viewport
+                    console.log('\x1b[41m\x1b[37m[HIGHLIGHTED] VIEWPORT MISMATCH for', key, '\x1b[0m');
+                    console.log('\x1b[33mExpected viewport:\x1b[0m', expected.viewport);
+                    console.log('\x1b[36mActual viewport:\x1b[0m', actual[key].viewport);
                 }
-            } else if (type === 'lcp and atf') {
-                // Run both LCP and ATF logic
-                for (const lcp of expected.lcp) {
-                    if (!actual[key].lcp.includes(lcp)) {
-                        truthy = false;
-                        failMsg += `Expected LCP for ${formFactor} - ${lcp} for ${actual[key].url} is not present in actual - ${actual[key].lcp}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
-                        // Highlighted log for missing LCP
-                        console.log('\x1b[43m\x1b[30m[HIGHLIGHTED] LCP MISMATCH for', key, '\x1b[0m');
-                        console.log('\x1b[33mExpected lcp:\x1b[0m', expected.lcp);
-                        console.log('\x1b[36mActual lcp:\x1b[0m', actual[key].lcp);
-                    }
-                }
-                for (const viewport of expected.viewport) {
-                    if (!actual[key].viewport.includes(viewport)) {
-                        truthy = false;
-                        failMsg += `Expected Viewport for ${formFactor} - ${viewport} for ${actual[key].url} is not present in actual - ${actual[key].viewport}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
-                        // Highlighted log for missing Viewport
-                        console.log('\x1b[41m\x1b[37m[HIGHLIGHTED] VIEWPORT MISMATCH for', key, '\x1b[0m');
-                        console.log('\x1b[33mExpected viewport:\x1b[0m', expected.viewport);
-                        console.log('\x1b[36mActual viewport:\x1b[0m', actual[key].viewport);
-                    }
+            }
+        }
+    }
+// Log fail message from Expectation mismatch before failing test.
+    if (failMsg !== '') {
+        throw new Error(failMsg);
+    }
+// Fail test when there is expectation mismatch.
+    expect(truthy).toBeTruthy();
+});
+
+/**
+ * Executes the step to assert that preload fonts should be as expected.
+ */
+Then('preload fonts should be as expected', async function (this: ICustomWorld) {
+    // Log fail messages from DB query before failing test.
+    if (failMsg !== '') {
+        console.log('\x1b[31m%s\x1b[0m',failMsg);
+         // Fail test when no DB result is found.
+        expect(isDbResultAvailable).toBeTruthy();
+        return;
+    }
+
+    truthy = true;
+
+    // Iterate over the data
+    for (const key in jsonData) {
+        if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
+            const expected = jsonData[key];
+            const expectedFonts: string[] = expected.fonts || [];
+            let actualFonts: string[] = [];
+            try {
+                actualFonts = JSON.parse(actual[key].fonts || '[]');
+            } catch (e) {
+                actualFonts = (actual[key].fonts || '')
+                    .split(',')
+                    .map(f => f.trim())
+                    .filter(Boolean);
+            }
+
+            const missing = findUnmatchedExpectations(expectedFonts, actualFonts);
+
+            if (missing.length) {
+                truthy = false;
+                for (const m of missing) {
+                    failMsg += `Expected preload font - ${m} for ${actual[key].url} is not present in actual - ${actualFonts}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
                 }
             }
         }

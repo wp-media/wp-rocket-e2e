@@ -17,3 +17,15 @@ Feature: Should be able to backup
     Then the backup should be added to the table
     When I click on common backup now button
     Then '1' backup is generated and added to history
+
+  Scenario: Schedule backup job to generate backup
+    Given I install plugin 'https://github.com/wp-media/wp-rocket-e2e-test-helper/raw/main/helper-plugin/show-time.zip'
+    And plugin 'show-time' is activated
+    And I go '/wp-admin/admin.php?page=backwpup'
+    When I click '.js-backwpup-onboarding-step-2' button to continue
+    And I click '.js-backwpup-onboarding-step-3' button to continue
+    When I Configure web server storage
+    And I go '/wp-admin/admin.php?page=backwpup'
+    And I Schedule backup
+    And I go '/wp-admin/admin.php?page=backwpup'
+    Then '1' backup is generated and added to history

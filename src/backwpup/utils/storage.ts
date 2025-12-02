@@ -2,6 +2,7 @@ import {Page} from "@playwright/test";
 import {Locators, Selector} from "../../../utils/types";
 import {Sections} from "../../common/sections";
 import {BACKWPUP_INFOS} from "../../../config/wp.config";
+import { getFolderNameFromHost } from "./helpers";
 
 export class StorageUtils {
     /**
@@ -125,10 +126,10 @@ export class StorageUtils {
         // Checkboxes
         await this.page.locator('#ftpssl').setChecked(BACKWPUP_INFOS.ftp.ssl, { force: true });
         await this.page.locator('#ftppasv').setChecked(BACKWPUP_INFOS.ftp.passiveMode, { force: true });
-        const currentValue = await this.page.locator('#ftpdir').inputValue();
         const timestamp = Date.now();
+        const directoryName = getFolderNameFromHost();
         // Changing the directory name to prevent old backups to appear and affect the test
-        await this.page.locator('#ftpdir').fill(`${currentValue}${timestamp}`);
+        await this.page.locator('#ftpdir').fill(`${directoryName}/${timestamp}`);
         await this.page.click('.js-backwpup-test-FTP-storage');
 
         await this.page.waitForResponse(response =>
