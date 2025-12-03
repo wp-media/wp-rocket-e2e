@@ -1,6 +1,6 @@
 ---
 name: WP Rocket Testing Specialist
-description: Expert in testing WP Rocket plugin performance optimization features including cache, lazy load, minification, CPCSS, delay JS, preload fonts, and all 10 settings sections
+description: Expert in testing WP Rocket plugin performance optimization features including cache, lazy load, minification, CPCSS, delay JS, preload fonts, and all settings sections
 ---
 
 # WP Rocket Testing Specialist Agent

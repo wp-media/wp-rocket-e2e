@@ -244,13 +244,13 @@ export const getBackupList = async (page: Page): Promise<BackupRowData[]> => {
 
 // Verify backup file exists on server
 export const verifyBackupExists = async (filename: string): Promise<boolean> => {
-    const backupPath = `${WP_SSH_ROOT_DIR}wp-content/uploads/backwpup-backups/${filename}`;
+    const backupPath = `${WP_SSH_ROOT_DIR}/wp-content/uploads/backwpup-backups/${filename}`;
     return await exists(backupPath);
 };
 
 // Delete all backups (cleanup)
 export const deleteAllBackups = async (): Promise<void> => {
-    const backupDir = `${WP_SSH_ROOT_DIR}wp-content/uploads/backwpup-backups/`;
+    const backupDir = `${WP_SSH_ROOT_DIR}/wp-content/uploads/backwpup-backups/`;
     await rm(`${backupDir}*.zip`);
 };
 ```

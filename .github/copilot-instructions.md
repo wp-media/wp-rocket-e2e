@@ -602,7 +602,7 @@ await this.utils.scrollDownBottomOfAPage();
 - Report location: `backstop_data/html_report/`
 
 **Timeout Errors:**
-- Default timeout: 60 seconds (600000ms)
+- Default timeout: 60 seconds (60000ms)
 - Increase for slow operations: `{ timeout: 120000 }`
 - Check waitForLoadState usage after navigation
 - Debug mode has infinite timeout (PWDEBUG=1)
@@ -618,7 +618,7 @@ await this.utils.scrollDownBottomOfAPage();
 - **Always clean up** after tests (use `@setup` tag or `cleanUp()` utility)
 - **Respect retries**: Default retry is 3 attempts (cucumber.json)
 - **Parallel execution**: Default parallel=1 (cucumber.json) - can be increased for speed but may cause conflicts
-- **Timeout management**: Default 60 seconds, infinite in debug mode (PWDEBUG=1)
+- **Timeout management**: Default 60 seconds (60000ms), infinite in debug mode (PWDEBUG=1)
 - **Browser state**: Each scenario gets fresh context, shared browser instance
 - **SSH vs Docker vs Local**: Configuration determines execution environment
 - **Debug logs**: Always check `wp-content/debug.log` for WP Rocket errors
