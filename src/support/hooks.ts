@@ -25,6 +25,7 @@ import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@
 import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
+import { setupPluginVersions, validatePluginFiles } from "../../utils/plugin-manager";
 // import {configurations, getWPDir} from "../../utils/configurations";
 
 
@@ -64,6 +65,16 @@ BeforeAll(async function (this: ICustomWorld) {
         await rm(debugLogPath);
 
         await deleteFolder('./backstop_data/bitmaps_test');
+        
+        // Setup plugin versions automatically
+        console.log('Checking plugin versions...');
+        const pluginsValid = await validatePluginFiles();
+        if (!pluginsValid) {
+            console.log('Some plugin files are missing, downloading/building them...');
+            await setupPluginVersions();
+        } else {
+            console.log('All required plugin files are present');
+        }
         
         // Check if template loader plugin is active, activate if not
         const isTemplateLoaderActive = await isPluginActive(TEMPLATE_LOADER_PLUGIN);
