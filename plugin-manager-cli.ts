@@ -18,7 +18,7 @@ const args = process.argv.slice(2);
 const command = args[0] || 'setup';
 const force = args.includes('--force') || args.includes('-f');
 
-async function main() {
+async function main(): Promise<void> {
     try {
         switch (command) {
             case 'setup':
@@ -33,7 +33,7 @@ async function main() {
                 await cleanPluginFiles();
                 break;
             
-            case 'validate':
+            case 'validate': {
                 const isValid = await validatePluginFiles();
                 if (isValid) {
                     console.log('✅ All required plugin files are present\n');
@@ -44,6 +44,7 @@ async function main() {
                     process.exit(1);
                 }
                 break;
+            }
             
             case 'help':
             case '--help':
@@ -57,12 +58,13 @@ async function main() {
                 process.exit(1);
         }
     } catch (error) {
-        console.error('Error:', error.message);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error('Error:', errorMessage);
         process.exit(1);
     }
 }
 
-function printHelp() {
+function printHelp(): void {
     console.log(`
 WP Rocket Plugin Manager
 
