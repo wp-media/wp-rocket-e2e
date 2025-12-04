@@ -4,13 +4,17 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
 ## Requirements
 - Do you still not have node installed? You'll be needing it.
 - Some tests don't come easy with just Playwright, so you need to install the [helper plugin](https://github.com/wp-media/wp-rocket-e2e-test-helper) on your test site. just download the zip from the repo.
-- You also need zip files of WP Rocket, I'll explain:
-  - zip for new release - **rename the zip file name to `new_release.zip`. e.g `wp-rocket_3.13.1.zip` becomes `new_release.zip`**
-  - zip for previous stable release - **rename the zip file name to `previous_stable`. e.g `wp-rocket_3.13.0.2.zip becomes `previous_stable.zip`**
-  - zip for 3.10.9 - **leave this as `wp-rocket_3.10.9.zip`**
-  - Make sure to put these files in the `./plugin` folder in the root - Playwright will pick these files when needed and use them during tests.
+- **WP Rocket plugin versions are now automatically managed!** 🎉
+  - Configure which versions to use in `config/plugin.config.ts`
+  - The test suite will automatically download/build the required versions
+  - Manual setup is no longer required unless you want to customize versions
   
-  **NB:** Files like the new release and previous stable release are not constant so make sure to always update as your tests fit.
+  **Optional manual management:**
+  - `npm run plugin:setup` - Download/build all configured versions
+  - `npm run plugin:list` - List all plugin files and their status
+  - `npm run plugin:clean` - Remove all plugin files
+  - `npm run plugin:validate` - Check if all required files exist
+  - `npm run plugin:setup -- --force` - Force rebuild even if files exist
   
  ## Installation
  - Clone this repo
@@ -25,6 +29,10 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
  Change the `live_username` & `live_password` & `WP_BASE_URL` to that of your test site.
  
  You can find this [here](https://github.com/wp-media/wp-rocket-e2e/blob/trunk/config/wp.config.sample.ts)
+ 
+ ### Plugin Version Configuration
+ 
+ Copy `config/plugin.config.sample.ts` to `config/plugin.config.ts` and configure which WP Rocket versions to use for testing. See the sample file for detailed examples and configuration options.
  
  ## Running Tests
  - Don't forget to install the [helper plugin](https://github.com/wp-media/wp-rocket-e2e-test-helper)
