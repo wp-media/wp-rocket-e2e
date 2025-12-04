@@ -11,9 +11,24 @@ import path from 'path';
 import https from 'https';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { pluginConfig, forceRebuild, PluginVersionConfig } from '../config/plugin.config';
 
 const execAsync = promisify(exec);
+
+// Gracefully handle missing config/plugin.config.ts
+let pluginConfig: PluginVersionConfig;
+
+try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const config = require('../config/plugin.config');
+    pluginConfig = config.pluginConfig;
+} catch (error) {
+    console.error('❌ Plugin configuration not found!');
+    console.error('Please copy config/plugin.config.sample.ts to config/plugin.config.ts and configure your plugin versions.');
+    process.exit(1);
+}
+
+// Import type separately
+import type { PluginVersionConfig } from '../config/plugin.config';
 
 /**
  * Plugin file mapping for different versions.
@@ -33,6 +48,12 @@ const PLUGIN_DIR = path.join(process.cwd(), 'plugin');
  * Temporary directory for building plugins.
  */
 const TEMP_DIR = path.join(process.cwd(), '.tmp-plugin-build');
+
+/**
+ * Global flag to track whether to force rebuild.
+ * Used internally by processVersion to check against CLI/hook parameter.
+ */
+let shouldForceRebuild = false;
 
 /**
  * Ensures the plugin directory exists.
@@ -63,6 +84,13 @@ function pluginFileExists(filename: string): boolean {
  * @return {Promise<void>}
  */
 async function downloadFile(url: string, destination: string): Promise<void> {
+    // Validate destination is within allowed directory
+    const resolvedDest = path.resolve(destination);
+    const pluginDir = path.resolve(PLUGIN_DIR);
+    if (!resolvedDest.startsWith(pluginDir + path.sep)) {
+        throw new Error('Invalid destination path: must be within plugin directory');
+    }
+    
     return new Promise((resolve, reject) => {
         const file = fs.createWriteStream(destination);
         
@@ -71,7 +99,11 @@ async function downloadFile(url: string, destination: string): Promise<void> {
             if (response.statusCode === 301 || response.statusCode === 302) {
                 file.close();
                 fs.unlinkSync(destination);
-                return downloadFile(response.headers.location!, destination)
+                const redirectUrl = response.headers.location;
+                if (!redirectUrl) {
+                    return reject(new Error('Redirect response missing Location header'));
+                }
+                return downloadFile(redirectUrl, destination)
                     .then(resolve)
                     .catch(reject);
             }
@@ -90,8 +122,10 @@ async function downloadFile(url: string, destination: string): Promise<void> {
             });
         }).on('error', (err) => {
             file.close();
-            if (fs.existsSync(destination)) {
+            try {
                 fs.unlinkSync(destination);
+            } catch {
+                // File may not exist, ignore
             }
             reject(err);
         });
@@ -107,6 +141,11 @@ async function downloadFile(url: string, destination: string): Promise<void> {
  * @return {Promise<void>}
  */
 async function downloadFromReleases(version: string, destination: string): Promise<void> {
+    // Validate version format: allow alphanumeric, dots, underscores, and hyphens
+    if (!/^[\w.-]+$/.test(version)) {
+        throw new Error(`Invalid version format: ${version}`);
+    }
+    
     // This URL structure may need to be adjusted based on actual WP Rocket release hosting
     // For now, this is a placeholder structure
     const url = `https://wp-rocket.me/releases/wp-rocket_${version}.zip`;
@@ -114,6 +153,34 @@ async function downloadFromReleases(version: string, destination: string): Promi
     console.log(`Downloading WP Rocket ${version} from releases...`);
     await downloadFile(url, destination);
     console.log(`✓ Downloaded WP Rocket ${version}`);
+}
+
+/**
+ * Sanitizes a string for use in shell commands.
+ * Validates against allowed patterns to prevent command injection.
+ * 
+ * @param {string} input - Input string to sanitize
+ * @param {string} type - Type of input ('ref', 'path', or 'url')
+ * @return {string} Sanitized string
+ */
+function sanitizeShellInput(input: string, type: 'ref' | 'path' | 'url'): string {
+    if (type === 'ref') {
+        // Branch/tag names should only contain safe characters
+        if (!/^[a-zA-Z0-9/_.-]+$/.test(input)) {
+            throw new Error(`Invalid ref name: ${input}. Only alphanumeric, /, _, ., and - are allowed.`);
+        }
+    } else if (type === 'path') {
+        // Paths should not contain suspicious patterns
+        if (input.includes(';') || input.includes('|') || input.includes('&') || input.includes('`')) {
+            throw new Error(`Invalid path: ${input}. Contains suspicious characters.`);
+        }
+    } else if (type === 'url') {
+        // URLs should start with https://
+        if (!input.startsWith('https://') && !input.startsWith('http://')) {
+            throw new Error(`Invalid URL: ${input}. Must start with http:// or https://.`);
+        }
+    }
+    return input;
 }
 
 /**
@@ -133,14 +200,19 @@ async function buildFromGitHub(
         throw new Error('Repository configuration is required for building from GitHub branches/tags');
     }
 
+    // Validate inputs to prevent command injection
+    const sanitizedRef = sanitizeShellInput(ref, 'ref');
+    const sanitizedDestination = sanitizeShellInput(destination, 'path');
+    
     const { owner, name, token } = repo;
-    const repoUrl = token 
-        ? `https://${token}@github.com/${owner}/${name}.git`
-        : `https://github.com/${owner}/${name}.git`;
+    
+    // Use git credential helper or SSH instead of embedding token in URL
+    // Note: For security, consider using SSH keys or git credential helpers
+    const repoUrl = `https://github.com/${owner}/${name}.git`;
     
     // Clean up temp directory if it exists
     if (fs.existsSync(TEMP_DIR)) {
-        await execAsync(`rm -rf ${TEMP_DIR}`);
+        await execAsync(`rm -rf "${TEMP_DIR}"`);
     }
     
     fs.mkdirSync(TEMP_DIR, { recursive: true });
@@ -150,32 +222,52 @@ async function buildFromGitHub(
         
         // Clone the repository
         console.log('  Cloning repository...');
-        await execAsync(`git clone --depth 1 --branch ${ref} ${repoUrl} ${TEMP_DIR}`);
+        
+        // If token provided, configure git credential for this clone operation
+        let cloneCmd = `git clone --depth 1 --branch "${sanitizedRef}" ${repoUrl} "${TEMP_DIR}"`;
+        if (token) {
+            // Use GIT_ASKPASS to provide token securely without exposing in URL
+            const tokenFile = path.join(TEMP_DIR, '..', '.git-credentials-temp');
+            fs.writeFileSync(tokenFile, `https://${token}:x-oauth-basic@github.com`, { mode: 0o600 });
+            cloneCmd = `GIT_TERMINAL_PROMPT=0 git -c credential.helper="store --file=${tokenFile}" clone --depth 1 --branch "${sanitizedRef}" ${repoUrl} "${TEMP_DIR}"`;
+            
+            try {
+                await execAsync(cloneCmd);
+            } finally {
+                // Clean up credential file immediately after clone
+                if (fs.existsSync(tokenFile)) {
+                    fs.unlinkSync(tokenFile);
+                }
+            }
+        } else {
+            await execAsync(cloneCmd);
+        }
         
         // Check if composer.json exists and install dependencies
         const composerFile = path.join(TEMP_DIR, 'composer.json');
         if (fs.existsSync(composerFile)) {
             console.log('  Installing Composer dependencies...');
-            await execAsync(`cd ${TEMP_DIR} && composer install --no-dev --optimize-autoloader`);
+            await execAsync(`cd "${TEMP_DIR}" && composer install --no-dev --optimize-autoloader`);
         }
         
         // Check if package.json exists and build assets
         const packageFile = path.join(TEMP_DIR, 'package.json');
         if (fs.existsSync(packageFile)) {
             console.log('  Building assets...');
-            await execAsync(`cd ${TEMP_DIR} && npm install && npm run build`);
+            await execAsync(`cd "${TEMP_DIR}" && npm install && npm run build`);
         }
         
         // Create zip file
         console.log('  Creating zip file...');
-        const pluginDirName = name;
-        await execAsync(`cd ${TEMP_DIR}/.. && zip -r ${destination} ${path.basename(TEMP_DIR)} -x "*.git*" "node_modules/*" "tests/*" "*.md"`);
+        const tempParent = path.dirname(TEMP_DIR);
+        const tempBasename = path.basename(TEMP_DIR);
+        await execAsync(`cd "${tempParent}" && zip -r "${sanitizedDestination}" "${tempBasename}" -x "*.git*" "node_modules/*" "tests/*" "*.md"`);
         
         console.log(`✓ Built WP Rocket from ${ref}`);
     } finally {
         // Clean up temp directory
         if (fs.existsSync(TEMP_DIR)) {
-            await execAsync(`rm -rf ${TEMP_DIR}`);
+            await execAsync(`rm -rf "${TEMP_DIR}"`);
         }
     }
 }
@@ -196,8 +288,8 @@ async function processVersion(
     const targetPath = path.join(PLUGIN_DIR, targetFilename);
     
     // Check if file already exists and we're not forcing rebuild
-    if (!forceRebuild && pluginFileExists(targetFilename)) {
-        console.log(`✓ ${targetFilename} already exists (use --force-plugin-rebuild to rebuild)`);
+    if (!shouldForceRebuild && pluginFileExists(targetFilename)) {
+        console.log(`✓ ${targetFilename} already exists (use --force to rebuild)`);
         return;
     }
     
@@ -229,6 +321,9 @@ export async function setupPluginVersions(force: boolean = false): Promise<void>
     console.log('\n🚀 WP Rocket Plugin Manager\n');
     console.log('Setting up plugin versions...\n');
     
+    // Set the internal flag based on parameter
+    shouldForceRebuild = force;
+    
     try {
         await ensurePluginDir();
         
@@ -255,7 +350,8 @@ export async function setupPluginVersions(force: boolean = false): Promise<void>
         
         console.log('\n✅ Plugin setup completed successfully!\n');
     } catch (error) {
-        console.error('\n❌ Plugin setup failed:', error.message);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error('\n❌ Plugin setup failed:', errorMessage);
         throw error;
     }
 }
