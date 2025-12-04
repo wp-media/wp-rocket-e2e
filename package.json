@@ -30,11 +30,16 @@
     "test:performancehints": "$npm_package_config_testCommand --tags @performancehints",
     "healthcheck": "ts-node healthcheck.ts",
     "push-report": "ts-node report.ts",
+    "open-report": "open ./test-results/cucumber-report.html",
     "wp-env": "wp-env",
     "test:bwpupstorage": "$npm_package_config_testCommand --tags @bwpupstorage",
     "test:bwpuponboarding": "$npm_package_config_testCommand --tags @bwpuponboarding",
     "test:bwpupsmoke": "$npm_package_config_testCommand --tags @bwpupsmoke",
-    "test:bwpup": "$npm_package_config_testCommand --tags @bwpup"
+    "test:bwpup": "$npm_package_config_testCommand --tags @bwpup",
+    "plugin:setup": "ts-node plugin-manager-cli.ts setup",
+    "plugin:list": "ts-node plugin-manager-cli.ts list",
+    "plugin:clean": "ts-node plugin-manager-cli.ts clean",
+    "plugin:validate": "ts-node plugin-manager-cli.ts validate"
   },
   "repository": {
     "type": "git",
