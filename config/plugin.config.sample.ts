@@ -94,7 +94,11 @@ export interface PluginVersionConfig {
 export const pluginConfig: PluginVersionConfig = {
     // Configure the versions you want to test here
     previousStable: '3.20.1',  // Previous stable version
-    newRelease: '3.20.2-beta5',      // Latest version to test
+    
+    // NOTE: Pre-release (beta) versions like '3.20.2-beta5' may not be available at the standard release URL.
+    // If you need to test a beta version, use a direct URL or a GitHub tag/branch instead (see examples above).
+    newRelease: '3.20.2',      // Latest stable version to test
+    
     specificVersion: '3.10.9',  // Specific version for rollback tests
     
     // Optional: Configure GitHub repository for branch-based builds
@@ -104,9 +108,3 @@ export const pluginConfig: PluginVersionConfig = {
         token: process.env.GITHUB_TOKEN,
     }
 };
-
-/**
- * Whether to force re-download/rebuild even if files exist.
- * Can be overridden via CLI flag: --force-plugin-rebuild
- */
-export const forceRebuild = process.env.npm_config_force_plugin_rebuild === 'true' || false;
