@@ -22,7 +22,7 @@ import { PageUtils } from "../../utils/page-utils";
 import { deleteFolder, isWprRelatedError } from "../../utils/helpers";
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
-import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive} from "../../utils/commands";
+import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 // import {configurations, getWPDir} from "../../utils/configurations";
@@ -65,13 +65,19 @@ BeforeAll(async function (this: ICustomWorld) {
 
         await deleteFolder('./backstop_data/bitmaps_test');
         
-        // Check if template loader plugin is active, activate if not
-        const isTemplateLoaderActive = await isPluginActive(TEMPLATE_LOADER_PLUGIN);
-        if (!isTemplateLoaderActive) {
-            console.log('Template loader plugin is not active, activating...');
-            await activatePlugin(TEMPLATE_LOADER_PLUGIN);
+        // Check if template loader plugin is installed
+        const isTemplateLoaderInstalled = await isPluginInstalled(TEMPLATE_LOADER_PLUGIN);
+        if (isTemplateLoaderInstalled) {
+            // Check if template loader plugin is active, activate if not
+            const isTemplateLoaderActive = await isPluginActive(TEMPLATE_LOADER_PLUGIN);
+            if (!isTemplateLoaderActive) {
+                console.log('Template loader plugin is not active, activating...');
+                await activatePlugin(TEMPLATE_LOADER_PLUGIN);
+            } else {
+                console.log('Template loader plugin is already active');
+            }
         } else {
-            console.log('Template loader plugin is already active');
+            console.log('Template loader plugin is not installed, skipping activation check');
         }
         
         browser = await chromium.launch({ headless: false });
