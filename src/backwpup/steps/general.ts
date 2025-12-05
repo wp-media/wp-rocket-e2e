@@ -152,6 +152,12 @@ const captureBackupTableData = async (page: Page): Promise<BackupRowData[]> => {
     return backups;
 }
 
+/**
+ * Optional: strict toast validator to reuse when we need exact message matching.
+ * Commented out to avoid unused lint errors while keeping the implementation handy.
+*/
+
+/**
 const waitForToastMessage = async (page: Page, expectedMessage = null, timeout = 3000): Promise<boolean> => {
     const toastContainer = page.locator('#bwp-settings-toast');
 
@@ -172,3 +178,4 @@ const waitForToastMessage = async (page: Page, expectedMessage = null, timeout =
 
     return true;
 }
+ */
