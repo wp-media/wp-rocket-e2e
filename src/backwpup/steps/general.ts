@@ -88,8 +88,7 @@ When('{string} is unchecked from files options', async function (this: ICustomWo
     const checkbox = this.page.locator(`label:has(input[name="${value}"])`);
 
     await expect(checkbox).not.toBeChecked();
-    await this.page.locator('button#file-exclusions-submit').click();
-    await waitForToastMessage(this.page , 'File exclusions saved successfully.')
+    await this.page.locator('header:has(h1:has-text("Select Files")) button.js-backwpup-close-sidebar').click();
 });
 
 When('{string} is unchecked from database options', async function (this: ICustomWorld, value: string) {
@@ -98,8 +97,7 @@ When('{string} is unchecked from database options', async function (this: ICusto
     const checkbox = this.page.locator(`label:has(input[value="${value}"])`);
 
     await expect(checkbox).not.toBeChecked();
-    await this.page.locator('button#save-excluded-tables').click();
-    await waitForToastMessage(this.page , 'Excluded tables saved successfully.')
+    await this.page.locator('header:has(h1:has-text("Select Tables")) button.js-backwpup-close-sidebar').click();
 });
 
 When('I click on manual backup of a job', async function (this: ICustomWorld) {
@@ -163,8 +161,13 @@ const waitForToastMessage = async (page: Page, expectedMessage = null, timeout =
     });
 
     if (expectedMessage) {
-        const messageLocator = toastContainer.locator('p.text-sm.font-medium');
-        await expect(messageLocator).toContainText(expectedMessage);
+        const messageLocator = toastContainer.locator(
+            'p.text-sm.font-medium',
+            { hasText: expectedMessage }
+        );
+
+        await expect(messageLocator).toBeVisible();
+        await expect(messageLocator).toHaveText(expectedMessage);
     }
 
     return true;
