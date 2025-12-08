@@ -128,7 +128,7 @@ async function downloadFile(url: string, destination: string): Promise<void> {
         // Prepare request options with User-Agent for WP Rocket API
         const options = {
             headers: {
-                'User-Agent': 'WP-Rocket-E2E-Tests'
+                'User-Agent': 'WP-Rocket-E2E-Tests' // eslint-disable-line @typescript-eslint/naming-convention
             }
         };
         
@@ -214,8 +214,8 @@ async function downloadFromReleases(version: string, destination: string, repo?:
         // Download the source archive
         const downloadOptions = {
             headers: {
-                'User-Agent': 'WP-Rocket-E2E-Tests',
-                'Authorization': `Bearer ${token}`
+                'User-Agent': 'WP-Rocket-E2E-Tests', // eslint-disable-line @typescript-eslint/naming-convention
+                'Authorization': `Bearer ${token}` // eslint-disable-line @typescript-eslint/naming-convention
             }
         };
         
