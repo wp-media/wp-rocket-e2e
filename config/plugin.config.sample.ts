@@ -13,7 +13,7 @@ export interface PluginVersionConfig {
      * This will be used for upgrade/downgrade tests.
      * 
      * Can be:
-     * - A version number (e.g., '3.16.0') - will download from WP Rocket releases
+     * - A version number (e.g., '3.16.0') - downloads source from GitHub releases/tags/v{version}
      * - A GitHub branch name prefixed with 'branch:' (e.g., 'branch:release/3.16.0')
      * - A GitHub tag prefixed with 'tag:' (e.g., 'tag:3.16.0')
      * - A URL pointing to a zip file
@@ -25,7 +25,7 @@ export interface PluginVersionConfig {
      * This is the main version being tested.
      * 
      * Can be:
-     * - A version number (e.g., '3.16.1') - will download from WP Rocket releases
+     * - A version number (e.g., '3.16.1') - downloads source from GitHub releases/tags/v{version}
      * - A GitHub branch name prefixed with 'branch:' (e.g., 'branch:develop')
      * - A GitHub tag prefixed with 'tag:' (e.g., 'tag:3.16.1')
      * - A URL pointing to a zip file
@@ -33,8 +33,9 @@ export interface PluginVersionConfig {
     newRelease: string;
 
     /**
-     * GitHub repository information for building from branches.
-     * Only required if using branch: or tag: prefixes.
+     * GitHub repository information.
+     * Required for downloading from GitHub (version numbers, branches, or tags).
+     * The token is needed to access private repository releases.
      */
     repository?: {
         owner: string;
@@ -51,10 +52,15 @@ export interface PluginVersionConfig {
  * Plugin version configuration.
  * 
  * @example
- * // Using version numbers (will download from releases)
+ * // Using version numbers (downloads from GitHub releases)
  * export const pluginConfig: PluginVersionConfig = {
  *     previousStable: '3.16.0',
  *     newRelease: '3.16.1',
+ *     repository: {
+ *         owner: 'wp-media',
+ *         name: 'wp-rocket',
+ *         token: process.env.GITHUB_TOKEN
+ *     }
  * };
  * 
  * @example

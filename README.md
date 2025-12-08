@@ -72,15 +72,14 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
  ```
  
  **Supported version formats:**
- - Version number: `3.16.0` (downloads from WP Rocket releases)
- - GitHub branch: `branch:develop` or `branch:release/3.16.0`
- - GitHub tag: `tag:3.16.0`
+ - Version number: `3.16.0` (downloads from GitHub release tags - requires GITHUB_TOKEN)
+ - GitHub branch: `branch:develop` or `branch:release/3.16.0` (clones and builds from source)
+ - GitHub tag: `tag:3.16.0` (clones and builds from tag)
  - Direct URL: `https://example.com/wp-rocket.zip`
  
  **Available override options:**
  - `--previous-stable` - Override the previous stable release version
  - `--new-release` - Override the new release version being tested
- - `--specific-version` - Override the specific version for rollback tests
  
  **Examples for common scenarios:**
  ```bash

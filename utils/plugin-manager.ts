@@ -125,7 +125,14 @@ async function downloadFile(url: string, destination: string): Promise<void> {
     return new Promise((resolve, reject) => {
         const file = fs.createWriteStream(destination);
         
-        https.get(url, (response) => {
+        // Prepare request options with User-Agent for WP Rocket API
+        const options = {
+            headers: {
+                'User-Agent': 'WP-Rocket-E2E-Tests'
+            }
+        };
+        
+        https.get(url, options, (response) => {
             // Handle redirects
             if (response.statusCode === 301 || response.statusCode === 302) {
                 file.close();
@@ -164,25 +171,98 @@ async function downloadFile(url: string, destination: string): Promise<void> {
 }
 
 /**
- * Downloads a plugin version from WP Rocket releases.
- * Note: This assumes public access to releases. Adjust if authentication is needed.
+ * Downloads a plugin version from GitHub releases.
+ * Requires GITHUB_TOKEN environment variable for authentication.
  * 
  * @param {string} version - Version number (e.g., '3.16.0')
  * @param {string} destination - Destination file path
+ * @param {PluginVersionConfig['repository']} repo - Repository configuration
  * @return {Promise<void>}
  */
-async function downloadFromReleases(version: string, destination: string): Promise<void> {
+async function downloadFromReleases(version: string, destination: string, repo?: PluginVersionConfig['repository']): Promise<void> {
     // Validate version format: allow alphanumeric, dots, underscores, and hyphens
     if (!/^[\w.-]+$/.test(version)) {
         throw new Error(`Invalid version format: ${version}`);
     }
     
-    // This URL structure may need to be adjusted based on actual WP Rocket release hosting
-    // For now, this is a placeholder structure
-    const url = `https://wp-rocket.me/releases/wp-rocket_${version}.zip`;
+    if (!repo) {
+        throw new Error('Repository configuration is required for downloading from GitHub releases. Please configure repository in plugin.config.ts');
+    }
     
-    console.log(`Downloading WP Rocket ${version} from releases...`);
-    await downloadFile(url, destination);
+    const { owner, name, token } = repo;
+    
+    if (!token) {
+        throw new Error('GITHUB_TOKEN is required for downloading from GitHub releases. Set it in your repository config or as an environment variable.');
+    }
+    
+    // GitHub automatically generates source archives for all tags
+    // Use the archive URL which is always available (tags always have 'v' prefix)
+    const archiveUrl = `https://github.com/${owner}/${name}/archive/refs/tags/v${version}.zip`;
+    
+    console.log(`Downloading WP Rocket ${version} from GitHub releases...`);
+    
+    // Download the source archive
+    const downloadOptions = {
+        headers: {
+            'User-Agent': 'WP-Rocket-E2E-Tests',
+            'Authorization': `Bearer ${token}`
+        }
+    };
+    
+    await new Promise<void>((resolve, reject) => {
+        const file = fs.createWriteStream(destination);
+        
+        https.get(archiveUrl, downloadOptions, (response) => {
+            // Handle redirects
+            if (response.statusCode === 301 || response.statusCode === 302) {
+                file.close();
+                fs.unlinkSync(destination);
+                const redirectUrl = response.headers.location;
+                if (!redirectUrl) {
+                    return reject(new Error('Redirect response missing Location header'));
+                }
+                
+                // Follow redirect without auth headers (GitHub redirects to public CDN)
+                https.get(redirectUrl, (redirectResponse) => {
+                    if (redirectResponse.statusCode !== 200) {
+                        return reject(new Error(`Failed to download: ${redirectResponse.statusCode}`));
+                    }
+                    
+                    const newFile = fs.createWriteStream(destination);
+                    redirectResponse.pipe(newFile);
+                    
+                    newFile.on('finish', () => {
+                        newFile.close();
+                        resolve();
+                    });
+                }).on('error', reject);
+                
+                return;
+            }
+
+            if (response.statusCode !== 200) {
+                file.close();
+                fs.unlinkSync(destination);
+                return reject(new Error(`Failed to download: ${response.statusCode} ${response.statusMessage}`));
+            }
+
+            response.pipe(file);
+
+            file.on('finish', () => {
+                file.close();
+                resolve();
+            });
+        }).on('error', (err) => {
+            file.close();
+            try {
+                fs.unlinkSync(destination);
+            } catch {
+                // File may not exist, ignore
+            }
+            reject(err);
+        });
+    });
+    
     console.log(`✓ Downloaded WP Rocket ${version}`);
 }
 
@@ -345,8 +425,8 @@ async function processVersion(
         const tag = versionConfig.replace('tag:', '');
         await buildFromGitHub(tag, targetPath, repo);
     } else {
-        // Assume it's a version number
-        await downloadFromReleases(versionConfig, targetPath);
+        // Assume it's a version number - download from GitHub releases
+        await downloadFromReleases(versionConfig, targetPath, repo);
     }
 }
 
