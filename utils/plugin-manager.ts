@@ -307,16 +307,16 @@ async function processVersion(
 ): Promise<void> {
     const targetPath = path.join(PLUGIN_DIR, targetFilename);
     
-    // Checkt labelInfo = label ? ` (${label})` : '';
+    // Check if file already exists and we're not forcing rebuild
+    if (!shouldForceRebuild && pluginFileExists(targetFilename)) {
+        const labelInfo = label ? ` (${label})` : '';
         console.log(`✓ ${targetFilename}${labelInfo} already exists (use --force to rebuild)`);
         return;
     }
     
     // Log which version we're processing
     if (label) {
-        console.log(`\nProcessing ${label}: ${versionConfig}`)dForceRebuild && pluginFileExists(targetFilename)) {
-        console.log(`✓ ${targetFilename} already exists (use --force to rebuild)`);
-        return;
+        console.log(`\nProcessing ${label}: ${versionConfig}`);
     }
     
     // Handle different version config formats
@@ -333,7 +333,15 @@ async function processVersion(
         await buildFromGitHub(tag, targetPath, repo);
     } else {
         // Assume it's a version number
-    param {VersionOverrides} overrides - Optional version overrides from CLI/env
+        await downloadFromReleases(versionConfig, targetPath);
+    }
+}
+
+/**
+ * Sets up all required plugin versions based on configuration.
+ * 
+ * @param {boolean} force - Force rebuild even if files exist
+ * @param {VersionOverrides} overrides - Optional version overrides from CLI/env
  * @return {Promise<void>}
  */
 export async function setupPluginVersions(force: boolean = false, overrides?: VersionOverrides): Promise<void> {
@@ -379,14 +387,6 @@ export async function setupPluginVersions(force: boolean = false, overrides?: Ve
                 PLUGIN_FILES.specificVersion,
                 pluginConfig.repository,
                 'specific_version'
-            pluginConfig.repository
-        );
-        
-        if (pluginConfig.specificVersion) {
-            await processVersion(
-                pluginConfig.specificVersion,
-                PLUGIN_FILES.specificVersion,
-                pluginConfig.repository
             );
         }
         
@@ -402,26 +402,14 @@ export async function setupPluginVersions(force: boolean = false, overrides?: Ve
  * Validates that all required plugin files exist.
  * 
  * @return {Promise<boolean>} True if all required files exist
- */param {VersionOverrides} overrides - Optional version overrides to display
- * @return {Promise<void>}
  */
-export async function listPluginFiles(overrides?: VersionOverrides): Promise<void> {
-    console.log('\n📦 Plugin Files:\n');
-    
-    // Get active config with overrides applied
-    const pluginConfig = getActivePluginConfig(overrides);
-    
-    // Show override information if any
-    const runtimeOverrides = overrides || parseVersionOverrides();
-    if (hasVersionOverrides(runtimeOverrides)) {
-        console.log('📝 Active CLI Overrides:');
-        console.log(formatVersionOverrides(runtimeOverrides));
-        console.log();
-    }
+export async function validatePluginFiles(): Promise<boolean> {
+    const requiredFiles = [
+        PLUGIN_FILES.previousStable,
         PLUGIN_FILES.newRelease,
     ];
     
-    if (pluginConfig.specificVersion) {
+    if (basePluginConfig.specificVersion) {
         requiredFiles.push(PLUGIN_FILES.specificVersion);
     }
     
@@ -438,10 +426,22 @@ export async function listPluginFiles(overrides?: VersionOverrides): Promise<voi
 /**
  * Lists all plugin files in the plugin directory with their versions.
  * 
+ * @param {VersionOverrides} overrides - Optional version overrides to display
  * @return {Promise<void>}
  */
-export async function listPluginFiles(): Promise<void> {
+export async function listPluginFiles(overrides?: VersionOverrides): Promise<void> {
     console.log('\n📦 Plugin Files:\n');
+    
+    // Get active config with overrides applied
+    const pluginConfig = getActivePluginConfig(overrides);
+    
+    // Show override information if any
+    const runtimeOverrides = overrides || parseVersionOverrides();
+    if (hasVersionOverrides(runtimeOverrides)) {
+        console.log('📝 Active CLI Overrides:');
+        console.log(formatVersionOverrides(runtimeOverrides));
+        console.log();
+    }
     
     const files = [
         { name: PLUGIN_FILES.previousStable, config: pluginConfig.previousStable },

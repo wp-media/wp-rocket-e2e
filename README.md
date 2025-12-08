@@ -34,6 +34,71 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
  
  Copy `config/plugin.config.sample.ts` to `config/plugin.config.ts` and configure which WP Rocket versions to use for testing. See the sample file for detailed examples and configuration options.
  
+ #### CLI Version Overrides
+ 
+ You can override plugin versions directly from the command line without modifying the config file! This is useful for quick testing with different versions:
+ 
+ **Override single version:**
+ ```bash
+ # Test with a specific previous_stable version
+ npm run test:e2e -- --previous-stable=3.16.0
+ 
+ # Test with a development branch
+ npm run test:e2e -- --new-release=branch:develop
+ 
+ # Test with a specific tag
+ npm run test:e2e -- --new-release=tag:3.16.1
+ ```
+ 
+ **Override multiple versions:**
+ ```bash
+ # Override both previous_stable and new_release
+ npm run test:e2e -- --previous-stable=3.16.0 --new-release=3.16.1
+ 
+ # Mix version numbers with branches
+ npm run test:smoke -- --previous-stable=3.16.0 --new-release=branch:develop
+ ```
+ 
+ **Using environment variables:**
+ ```bash
+ # Set versions via environment variables
+ PREVIOUS_STABLE=3.16.0 NEW_RELEASE=3.16.1 npm run test:e2e
+ 
+ # Or export them for multiple test runs
+ export PREVIOUS_STABLE=3.16.0
+ export NEW_RELEASE=branch:develop
+ npm run test:e2e
+ npm run test:smoke
+ ```
+ 
+ **Supported version formats:**
+ - Version number: `3.16.0` (downloads from WP Rocket releases)
+ - GitHub branch: `branch:develop` or `branch:release/3.16.0`
+ - GitHub tag: `tag:3.16.0`
+ - Direct URL: `https://example.com/wp-rocket.zip`
+ 
+ **Available override options:**
+ - `--previous-stable` - Override the previous stable release version
+ - `--new-release` - Override the new release version being tested
+ - `--specific-version` - Override the specific version for rollback tests
+ 
+ **Examples for common scenarios:**
+ ```bash
+ # Test upgrade from 3.16.0 to latest develop branch
+ npm run test:e2e -- --previous-stable=3.16.0 --new-release=branch:develop
+ 
+ # Quick smoke test with specific versions
+ npm run test:smoke -- --new-release=3.16.2
+ 
+ # Visual regression with beta version
+ npm run test:vr -- --new-release=tag:3.16.2-beta5 --wproption=lazyloadCssBgImg
+ 
+ # Test with locally downloaded zip file
+ npm run test:e2e -- --new-release=https://your-server.com/custom-build.zip
+ ```
+ 
+ The CLI overrides will automatically trigger a download/build of the specified versions if they're not already in your `plugin/` directory.
+ 
  ## Running Tests
  - Don't forget to install the [helper plugin](https://github.com/wp-media/wp-rocket-e2e-test-helper)
  - To run tests on playwright, simply run `npx playwright test` or `npm run test:e2e` which ever you prefer.
