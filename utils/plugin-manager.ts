@@ -11,16 +11,18 @@ import path from 'path';
 import https from 'https';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { parseVersionOverrides, applyVersionOverrides, hasVersionOverrides, formatVersionOverrides } from './version-override';
+import type { VersionOverrides } from './version-override';
 
 const execAsync = promisify(exec);
 
 // Gracefully handle missing config/plugin.config.ts
-let pluginConfig: PluginVersionConfig;
+let basePluginConfig: PluginVersionConfig;
 
 try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const config = require('../config/plugin.config');
-    pluginConfig = config.pluginConfig;
+    basePluginConfig = config.pluginConfig;
 } catch (error) {
     console.error('❌ Plugin configuration not found!');
     console.error('Please copy config/plugin.config.sample.ts to config/plugin.config.ts and configure your plugin versions.');
@@ -29,6 +31,22 @@ try {
 
 // Import type separately
 import type { PluginVersionConfig } from '../config/plugin.config';
+
+/**
+ * Gets the active plugin configuration with any CLI overrides applied.
+ * 
+ * @param {VersionOverrides} overrides - Optional version overrides to apply
+ * @return {PluginVersionConfig} Active plugin configuration
+ */
+function getActivePluginConfig(overrides?: VersionOverrides): PluginVersionConfig {
+    const runtimeOverrides = overrides || parseVersionOverrides();
+    
+    if (hasVersionOverrides(runtimeOverrides)) {
+        return applyVersionOverrides(basePluginConfig, runtimeOverrides);
+    }
+    
+    return basePluginConfig;
+}
 
 /**
  * Plugin file mapping for different versions.
@@ -278,17 +296,25 @@ async function buildFromGitHub(
  * @param {string} versionConfig - Version configuration (version number, branch:name, tag:name, or URL)
  * @param {string} targetFilename - Target filename in plugin directory
  * @param {PluginVersionConfig['repository']} repo - Repository configuration
+ * @param {string} label - Label for logging purposes (e.g., 'previous_stable', 'new_release')
  * @return {Promise<void>}
  */
 async function processVersion(
     versionConfig: string,
     targetFilename: string,
-    repo?: PluginVersionConfig['repository']
+    repo?: PluginVersionConfig['repository'],
+    label?: string
 ): Promise<void> {
     const targetPath = path.join(PLUGIN_DIR, targetFilename);
     
-    // Check if file already exists and we're not forcing rebuild
-    if (!shouldForceRebuild && pluginFileExists(targetFilename)) {
+    // Checkt labelInfo = label ? ` (${label})` : '';
+        console.log(`✓ ${targetFilename}${labelInfo} already exists (use --force to rebuild)`);
+        return;
+    }
+    
+    // Log which version we're processing
+    if (label) {
+        console.log(`\nProcessing ${label}: ${versionConfig}`)dForceRebuild && pluginFileExists(targetFilename)) {
         console.log(`✓ ${targetFilename} already exists (use --force to rebuild)`);
         return;
     }
@@ -307,18 +333,23 @@ async function processVersion(
         await buildFromGitHub(tag, targetPath, repo);
     } else {
         // Assume it's a version number
-        await downloadFromReleases(versionConfig, targetPath);
-    }
-}
-
-/**
- * Sets up all required plugin versions based on configuration.
- * 
- * @param {boolean} force - Force rebuild even if files exist
+    param {VersionOverrides} overrides - Optional version overrides from CLI/env
  * @return {Promise<void>}
  */
-export async function setupPluginVersions(force: boolean = false): Promise<void> {
+export async function setupPluginVersions(force: boolean = false, overrides?: VersionOverrides): Promise<void> {
     console.log('\n🚀 WP Rocket Plugin Manager\n');
+    
+    // Get active config with overrides applied
+    const pluginConfig = getActivePluginConfig(overrides);
+    
+    // Show override information if any
+    const runtimeOverrides = overrides || parseVersionOverrides();
+    if (hasVersionOverrides(runtimeOverrides)) {
+        console.log('📝 CLI Version Overrides Detected:');
+        console.log(formatVersionOverrides(runtimeOverrides));
+        console.log();
+    }
+    
     console.log('Setting up plugin versions...\n');
     
     // Set the internal flag based on parameter
@@ -331,12 +362,23 @@ export async function setupPluginVersions(force: boolean = false): Promise<void>
         await processVersion(
             pluginConfig.previousStable,
             PLUGIN_FILES.previousStable,
-            pluginConfig.repository
+            pluginConfig.repository,
+            'previous_stable'
         );
         
         await processVersion(
             pluginConfig.newRelease,
             PLUGIN_FILES.newRelease,
+            pluginConfig.repository,
+            'new_release'
+        );
+        
+        if (pluginConfig.specificVersion) {
+            await processVersion(
+                pluginConfig.specificVersion,
+                PLUGIN_FILES.specificVersion,
+                pluginConfig.repository,
+                'specific_version'
             pluginConfig.repository
         );
         
@@ -360,10 +402,22 @@ export async function setupPluginVersions(force: boolean = false): Promise<void>
  * Validates that all required plugin files exist.
  * 
  * @return {Promise<boolean>} True if all required files exist
+ */param {VersionOverrides} overrides - Optional version overrides to display
+ * @return {Promise<void>}
  */
-export async function validatePluginFiles(): Promise<boolean> {
-    const requiredFiles = [
-        PLUGIN_FILES.previousStable,
+export async function listPluginFiles(overrides?: VersionOverrides): Promise<void> {
+    console.log('\n📦 Plugin Files:\n');
+    
+    // Get active config with overrides applied
+    const pluginConfig = getActivePluginConfig(overrides);
+    
+    // Show override information if any
+    const runtimeOverrides = overrides || parseVersionOverrides();
+    if (hasVersionOverrides(runtimeOverrides)) {
+        console.log('📝 Active CLI Overrides:');
+        console.log(formatVersionOverrides(runtimeOverrides));
+        console.log();
+    }
         PLUGIN_FILES.newRelease,
     ];
     
