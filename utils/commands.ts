@@ -186,11 +186,76 @@ export async function exists(filePath: string): Promise<boolean> {
     try {
         const result = await exec(command, {
             cwd: configurations.rootDir,
-            async: false
+            async: false,
+            silent: true
         });
         return result.stdout.trim() === '0';
     } catch (error) {
         return false;
+    }
+}
+
+/**
+ * Checks if a directory exists on the server.
+ *
+ * @function
+ * @name dirExists
+ * @async
+ * @param {string} dirPath - The path of the directory to check.
+ * @returns {Promise<boolean>} - A Promise that resolves with true if the directory exists, false otherwise.
+ */
+export async function dirExists(dirPath: string, sshConfig?: SSHConfig): Promise<boolean> {
+    let command: string;
+
+    if (configurations.type === ServerType.docker) {
+        command = `docker exec -T ${configurations.docker.container} test -d ${dirPath}; echo $?`;
+    } else if (configurations.type === ServerType.external) {
+        command = `ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} 'test -d ${dirPath}; echo $?'`;
+    } else {
+        command = `test -d ${dirPath}; echo $?`;
+    }
+
+    try {
+        const result = await exec(command, {
+            cwd: configurations.rootDir,
+            async: false,
+            silent: true
+        });
+        return result.stdout.trim() === '0';
+    } catch (error) {
+        return false;
+    }
+}
+
+/**
+ * Checks if a directory is empty on the server. If the directory does not exist, it is considered empty.
+ *
+ * @function
+ * @name dirIsEmpty
+ * @async
+ * @param {string} dirPath - The path of the directory to check.
+ * @returns {Promise<boolean>} - A Promise that resolves with true if the directory is empty or does not exist, false otherwise.
+ */
+export async function dirIsEmpty(dirPath: string, sshConfig?: SSHConfig): Promise<boolean> {
+    let command: string;
+
+    if (configurations.type === ServerType.docker) {
+        command = `docker exec -T ${configurations.docker.container} sh -c 'if [ -d "${dirPath}" ] && [ "$(find "${dirPath}" -mindepth 1 -maxdepth 1 ! -name "index.html" ! -name ".gitkeep" | head -n1)" ]; then echo 1; else echo 0; fi'`;
+    } else if (configurations.type === ServerType.external) {
+        command = `ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} 'if [ -d "${dirPath}" ] && [ "$(find "${dirPath}" -mindepth 1 -maxdepth 1 ! -name "index.html" ! -name ".gitkeep" | head -n1)" ]; then echo 1; else echo 0; fi'`;
+    } else {
+        command = `if [ -d "${dirPath}" ] && [ "$(find "${dirPath}" -mindepth 1 -maxdepth 1 ! -name "index.html" ! -name ".gitkeep" | head -n1)" ]; then echo 1; else echo 0; fi`;
+    }
+
+    try {
+        const result = await exec(command, {
+            cwd: configurations.rootDir,
+            async: false,
+            silent: true
+        });
+        return result.stdout.trim() === '0';
+    } catch (error) {
+        return true;
     }
 }
 

@@ -17,6 +17,8 @@ import fs from "fs/promises";
 
 import {WP_BASE_URL, WP_PASSWORD, WP_PASSWORD2, WP_USERNAME, WP_USERNAME2} from '../config/wp.config';
 import { uninstallPlugin, updatePermalinkStructure, deactivatePlugin, switchTheme } from "./commands";
+import { configurations, getWPDir } from "./configurations";
+import { dirExists, dirIsEmpty } from "./commands";
 
 /**
  * Utility class for interacting with a Playwright Page instance in WordPress testing.
@@ -133,6 +135,17 @@ export class PageUtils {
      */
     public gotoWpr = async (): Promise<void> => {
         await this.page.goto(WP_BASE_URL + '/wp-admin/options-general.php?page=wprocket#dashboard');
+    }
+
+    /**
+     * Navigates to WP Rocket settings page and optionally to a section.
+     *
+     * @param {string} sectionHash - Optional hash to navigate to a specific section tab.
+     * @return  {Promise<void>}
+     */
+    public gotoWprSection = async (sectionHash: string = 'dashboard'): Promise<void> => {
+        const hash = sectionHash.startsWith('#') ? sectionHash : `#${sectionHash}`;
+        await this.page.goto(`${WP_BASE_URL}/wp-admin/options-general.php?page=wprocket${hash}`);
     }
 
     /**
@@ -355,7 +368,32 @@ export class PageUtils {
         await expect(this.page.getByText('You are now logged out.')).toBeVisible({ timeout: 10000 });
         await this.page.goto(WP_BASE_URL + '/wp-login.php');
         await expect(this.page.locator('#loginform')).toBeVisible();
-    }    
+    }
+
+    /**
+     * Resolve a potentially relative path to the WordPress root path.
+     */
+    public resolveWpPath = async (folder: string): Promise<string> => {
+        const base = getWPDir(configurations).replace(/\/$/, '');
+        const normalized = folder.replace(/^\/+/, '');
+        return folder.startsWith('/') ? folder : `${base}/${normalized}`;
+    }
+
+    /**
+     * Check if a directory exists (cross-environment).
+     */
+    public dirExists = async (folder: string): Promise<boolean> => {
+        const target = await this.resolveWpPath(folder);
+        return dirExists(target);
+    }
+
+    /**
+     * Check if a directory is empty (or missing).
+     */
+    public dirIsEmpty = async (folder: string): Promise<boolean> => {
+        const target = await this.resolveWpPath(folder);
+        return dirIsEmpty(target);
+    }
 
     /**
      * Performs Wordpress login action.

@@ -16,7 +16,7 @@ import { ICustomWorld } from "../../common/custom-world";
 import { Given, When, Then } from '@cucumber/cucumber';
 import {WP_BASE_URL} from '../../../config/wp.config';
 import scenarioUrls from "./../../../config/scenarioUrls.json";
-import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl} from "../../../utils/helpers";
+import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl, sleep} from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
 import { Page } from '@playwright/test';
 import {
@@ -72,6 +72,9 @@ Given('plugin is activated', async function (this: ICustomWorld) {
  * Given plugin is installed
  */
 Given('I save settings {string} {string}', async function (this: ICustomWorld, section: Section, element: string) {
+    // Ensure we are on the WP Rocket page (default to section hash).
+    await this.utils.gotoWprSection(section);
+
     // If section does not exist and element is cacheLoggedUser, toggle the element in addons section.
     if (!(await this.sections.doesSectionExist(section))) {
         if (element === 'cacheLoggedUser') {
@@ -95,6 +98,91 @@ Given('I save all settings', async function (this: ICustomWorld) {
         await this.utils.saveSettings();
 });
 
+/**
+ * Executes the step to disable a specific WP Rocket setting.
+ */
+Given('I disable settings {string} {string}', async function (this: ICustomWorld, section: Section, element: string) {
+    await this.utils.gotoWprSection(section);
+
+    if (!(await this.sections.doesSectionExist(section))) {
+        return;
+    }
+
+    await this.sections.set(section).visit();
+    await this.sections.state(false).toggle(element);
+    await this.utils.saveSettings();
+});
+
+/**
+ * Asserts that data is cleared from the provided folders.
+ */
+Then('data in folders is cleared out', async function (this: ICustomWorld, table) {
+    const folders = table.rows().map((row) => row[0]);
+    const failures: string[] = [];
+
+    for (const folder of folders) {
+        const deadline = Date.now() + 6000; // short grace period for async clears
+
+        while (Date.now() < deadline) {
+            const exists = await this.utils.dirExists(folder);
+            if (!exists) {
+                break;
+            }
+            const isEmpty = await this.utils.dirIsEmpty(folder);
+            if (isEmpty) {
+                break;
+            }
+            await sleep(2000);
+        }
+
+        const existsFinal = await this.utils.dirExists(folder);
+        const isEmptyFinal = existsFinal ? await this.utils.dirIsEmpty(folder) : true;
+        if (!isEmptyFinal) {
+            failures.push(`${folder} is not cleared`);
+        }
+    }
+
+    if (failures.length > 0) {
+        throw new Error(failures.join('\n'));
+    }
+});
+
+/**
+ * Asserts that data is present in the provided folders.
+ */
+Then('data in folders is present', async function (this: ICustomWorld, table) {
+    const folders = table.rows().map((row) => row[0]);
+    const failures: string[] = [];
+
+    for (const folder of folders) {
+        const deadline = Date.now() + 360000; // up to 360s to allow RUCSS/gen
+
+        while (Date.now() < deadline) {
+            const exists = await this.utils.dirExists(folder);
+            const isEmpty = exists ? await this.utils.dirIsEmpty(folder) : true;
+            if (exists && !isEmpty) {
+                break;
+            }
+            await sleep(2000);
+        }
+
+        const existsFinal = await this.utils.dirExists(folder);
+        const isEmptyFinal = existsFinal ? await this.utils.dirIsEmpty(folder) : true;
+
+        if (!existsFinal) {
+            failures.push(`${folder} does not exist`);
+            continue;
+        }
+
+        if (isEmptyFinal) {
+            failures.push(`${folder} is empty`);
+        }
+    }
+
+    if (failures.length > 0) {
+        throw new Error(failures.join('\n'));
+    }
+});
 
 /**
  * Executes the step to activate the WP plugin.
