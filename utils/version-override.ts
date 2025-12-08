@@ -22,7 +22,6 @@
 export interface VersionOverrides {
     previousStable?: string;
     newRelease?: string;
-    specificVersion?: string;
 }
 
 /**
@@ -31,7 +30,6 @@ export interface VersionOverrides {
 export interface PluginVersionConfig {
     previousStable: string;
     newRelease: string;
-    specificVersion?: string;
     repository?: {
         owner: string;
         name: string;
@@ -52,9 +50,6 @@ function extractFromNpmConfig(overrides: VersionOverrides): void {
     if (process.env.npm_config_new_release) {
         overrides.newRelease = process.env.npm_config_new_release;
     }
-    if (process.env.npm_config_specific_version) {
-        overrides.specificVersion = process.env.npm_config_specific_version;
-    }
 }
 
 /**
@@ -69,9 +64,6 @@ function extractFromEnv(overrides: VersionOverrides): void {
     }
     if (process.env.NEW_RELEASE) {
         overrides.newRelease = process.env.NEW_RELEASE;
-    }
-    if (process.env.SPECIFIC_VERSION) {
-        overrides.specificVersion = process.env.SPECIFIC_VERSION;
     }
 }
 
@@ -111,9 +103,6 @@ function parseArgument(arg: string, args: string[], index: number, overrides: Ve
         return consumed;
     } else if (normalizedKey === 'newrelease') {
         overrides.newRelease = argValue;
-        return consumed;
-    } else if (normalizedKey === 'specificversion') {
-        overrides.specificVersion = argValue;
         return consumed;
     }
     
@@ -173,7 +162,6 @@ export function applyVersionOverrides(
         ...baseConfig,
         previousStable: overrides.previousStable || baseConfig.previousStable,
         newRelease: overrides.newRelease || baseConfig.newRelease,
-        specificVersion: overrides.specificVersion || baseConfig.specificVersion,
     };
 }
 
@@ -186,8 +174,7 @@ export function applyVersionOverrides(
 export function hasVersionOverrides(overrides: VersionOverrides): boolean {
     return !!(
         overrides.previousStable ||
-        overrides.newRelease ||
-        overrides.specificVersion
+        overrides.newRelease
     );
 }
 
@@ -205,9 +192,6 @@ export function formatVersionOverrides(overrides: VersionOverrides): string {
     }
     if (overrides.newRelease) {
         lines.push(`  new_release: ${overrides.newRelease}`);
-    }
-    if (overrides.specificVersion) {
-        lines.push(`  specific_version: ${overrides.specificVersion}`);
     }
     
     return lines.length > 0 ? lines.join('\n') : '  (none)';

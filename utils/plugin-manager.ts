@@ -68,7 +68,6 @@ function getActivePluginConfig(overrides?: VersionOverrides): PluginVersionConfi
 const PLUGIN_FILES: Record<string, string> = {
     previousStable: 'previous_stable.zip',
     newRelease: 'new_release.zip',
-    specificVersion: 'wp-rocket_3.10.9.zip',
 };
 
 /**
@@ -395,15 +394,7 @@ export async function setupPluginVersions(force: boolean = false, overrides?: Ve
             'new_release'
         );
         
-        if (pluginConfig.specificVersion) {
-            await processVersion(
-                pluginConfig.specificVersion,
-                PLUGIN_FILES.specificVersion,
-                pluginConfig.repository,
-                'specific_version'
-            );
-        }
-        
+
         console.log('\n✅ Plugin setup completed successfully!\n');
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -422,10 +413,6 @@ export async function validatePluginFiles(): Promise<boolean> {
         PLUGIN_FILES.previousStable,
         PLUGIN_FILES.newRelease,
     ];
-    
-    if (basePluginConfig?.specificVersion) {
-        requiredFiles.push(PLUGIN_FILES.specificVersion);
-    }
     
     const missingFiles = requiredFiles.filter(file => !pluginFileExists(file));
     
@@ -460,7 +447,6 @@ export async function listPluginFiles(overrides?: VersionOverrides): Promise<voi
     const files = [
         { name: PLUGIN_FILES.previousStable, config: pluginConfig.previousStable },
         { name: PLUGIN_FILES.newRelease, config: pluginConfig.newRelease },
-        { name: PLUGIN_FILES.specificVersion, config: pluginConfig.specificVersion },
     ];
     
     for (const file of files) {
@@ -487,7 +473,6 @@ export async function cleanPluginFiles(): Promise<void> {
     const files = [
         PLUGIN_FILES.previousStable,
         PLUGIN_FILES.newRelease,
-        PLUGIN_FILES.specificVersion,
     ];
     
     for (const file of files) {

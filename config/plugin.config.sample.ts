@@ -33,18 +33,6 @@ export interface PluginVersionConfig {
     newRelease: string;
 
     /**
-     * Specific version for rollback/upgrade tests (currently 3.10.9).
-     * This version is used for specific test scenarios.
-     * 
-     * Can be:
-     * - A version number (e.g., '3.10.9') - will download from WP Rocket releases
-     * - A GitHub branch name prefixed with 'branch:' (e.g., 'branch:release/3.10.9')
-     * - A GitHub tag prefixed with 'tag:' (e.g., 'tag:3.10.9')
-     * - A URL pointing to a zip file
-     */
-    specificVersion?: string;
-
-    /**
      * GitHub repository information for building from branches.
      * Only required if using branch: or tag: prefixes.
      */
@@ -67,7 +55,6 @@ export interface PluginVersionConfig {
  * export const pluginConfig: PluginVersionConfig = {
  *     previousStable: '3.16.0',
  *     newRelease: '3.16.1',
- *     specificVersion: '3.10.9',
  * };
  * 
  * @example
@@ -75,7 +62,6 @@ export interface PluginVersionConfig {
  * export const pluginConfig: PluginVersionConfig = {
  *     previousStable: 'branch:release/3.16.0',
  *     newRelease: 'branch:develop',
- *     specificVersion: '3.10.9',
  *     repository: {
  *         owner: 'wp-media',
  *         name: 'wp-rocket',
@@ -88,7 +74,6 @@ export interface PluginVersionConfig {
  * export const pluginConfig: PluginVersionConfig = {
  *     previousStable: 'https://example.com/wp-rocket-3.16.0.zip',
  *     newRelease: 'https://example.com/wp-rocket-3.16.1.zip',
- *     specificVersion: '3.10.9',
  * };
  */
 export const pluginConfig: PluginVersionConfig = {
@@ -98,8 +83,6 @@ export const pluginConfig: PluginVersionConfig = {
     // NOTE: Pre-release (beta) versions like '3.20.2-beta5' may not be available at the standard release URL.
     // If you need to test a beta version, use a direct URL or a GitHub tag/branch instead (see examples above).
     newRelease: '3.20.2',      // Latest stable version to test
-    
-    specificVersion: '3.10.9',  // Specific version for rollback tests
     
     // Optional: Configure GitHub repository for branch-based builds
     repository: {
