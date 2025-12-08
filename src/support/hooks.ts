@@ -26,6 +26,7 @@ import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlug
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 import { setupPluginVersions, validatePluginFiles } from "../../utils/plugin-manager";
+import { parseVersionOverrides } from "../../utils/version-override";
 // import {configurations, getWPDir} from "../../utils/configurations";
 
 
@@ -66,12 +67,15 @@ BeforeAll(async function (this: ICustomWorld) {
 
         await deleteFolder('./backstop_data/bitmaps_test');
         
+        // Parse any CLI version overrides
+        const versionOverrides = parseVersionOverrides();
+        
         // Setup plugin versions automatically
         console.log('Checking plugin versions...');
         const pluginsValid = await validatePluginFiles();
         if (!pluginsValid) {
             console.log('Some plugin files are missing, downloading/building them...');
-            await setupPluginVersions();
+            await setupPluginVersions(false, versionOverrides);
         } else {
             console.log('All required plugin files are present');
         }
