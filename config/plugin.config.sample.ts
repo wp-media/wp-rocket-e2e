@@ -13,10 +13,10 @@ export interface PluginVersionConfig {
      * This will be used for upgrade/downgrade tests.
      * 
      * Can be:
-     * - A version number (e.g., '3.16.0') - downloads source from GitHub releases/tags/v{version}
+     * - A version number (e.g., '3.16.0') - downloads source from GitHub releases/tags/v{version}, then builds it
      * - A GitHub branch name prefixed with 'branch:' (e.g., 'branch:release/3.16.0')
      * - A GitHub tag prefixed with 'tag:' (e.g., 'tag:3.16.0')
-     * - A URL pointing to a zip file
+     * - A URL pointing to a zip file (pre-built)
      */
     previousStable: string;
 
@@ -25,10 +25,10 @@ export interface PluginVersionConfig {
      * This is the main version being tested.
      * 
      * Can be:
-     * - A version number (e.g., '3.16.1') - downloads source from GitHub releases/tags/v{version}
+     * - A version number (e.g., '3.16.1') - downloads source from GitHub releases/tags/v{version}, then builds it
      * - A GitHub branch name prefixed with 'branch:' (e.g., 'branch:develop')
      * - A GitHub tag prefixed with 'tag:' (e.g., 'tag:3.16.1')
-     * - A URL pointing to a zip file
+     * - A URL pointing to a zip file (pre-built)
      */
     newRelease: string;
 

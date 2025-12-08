@@ -171,7 +171,7 @@ async function downloadFile(url: string, destination: string): Promise<void> {
 }
 
 /**
- * Downloads a plugin version from GitHub releases.
+ * Downloads a plugin version from GitHub releases and builds it.
  * Requires GITHUB_TOKEN environment variable for authentication.
  * 
  * @param {string} version - Version number (e.g., '3.16.0')
@@ -201,69 +201,140 @@ async function downloadFromReleases(version: string, destination: string, repo?:
     
     console.log(`Downloading WP Rocket ${version} from GitHub releases...`);
     
-    // Download the source archive
-    const downloadOptions = {
-        headers: {
-            'User-Agent': 'WP-Rocket-E2E-Tests',
-            'Authorization': `Bearer ${token}`
-        }
-    };
+    // Create temp directory for extraction
+    const extractDir = path.join(TEMP_DIR, `${name}-${version}`);
+    if (fs.existsSync(extractDir)) {
+        await execAsync(`rm -rf "${extractDir}"`);
+    }
+    fs.mkdirSync(extractDir, { recursive: true });
     
-    await new Promise<void>((resolve, reject) => {
-        const file = fs.createWriteStream(destination);
+    const tempZip = path.join(TEMP_DIR, `${name}-${version}-source.zip`);
+    
+    try {
+        // Download the source archive
+        const downloadOptions = {
+            headers: {
+                'User-Agent': 'WP-Rocket-E2E-Tests',
+                'Authorization': `Bearer ${token}`
+            }
+        };
         
-        https.get(archiveUrl, downloadOptions, (response) => {
-            // Handle redirects
-            if (response.statusCode === 301 || response.statusCode === 302) {
-                file.close();
-                fs.unlinkSync(destination);
-                const redirectUrl = response.headers.location;
-                if (!redirectUrl) {
-                    return reject(new Error('Redirect response missing Location header'));
-                }
-                
-                // Follow redirect without auth headers (GitHub redirects to public CDN)
-                https.get(redirectUrl, (redirectResponse) => {
-                    if (redirectResponse.statusCode !== 200) {
-                        return reject(new Error(`Failed to download: ${redirectResponse.statusCode}`));
+        await new Promise<void>((resolve, reject) => {
+            const file = fs.createWriteStream(tempZip);
+            
+            https.get(archiveUrl, downloadOptions, (response) => {
+                // Handle redirects
+                if (response.statusCode === 301 || response.statusCode === 302) {
+                    file.close();
+                    fs.unlinkSync(tempZip);
+                    const redirectUrl = response.headers.location;
+                    if (!redirectUrl) {
+                        return reject(new Error('Redirect response missing Location header'));
                     }
                     
-                    const newFile = fs.createWriteStream(destination);
-                    redirectResponse.pipe(newFile);
+                    // Follow redirect without auth headers (GitHub redirects to public CDN)
+                    https.get(redirectUrl, (redirectResponse) => {
+                        if (redirectResponse.statusCode !== 200) {
+                            return reject(new Error(`Failed to download: ${redirectResponse.statusCode}`));
+                        }
+                        
+                        const newFile = fs.createWriteStream(tempZip);
+                        redirectResponse.pipe(newFile);
+                        
+                        newFile.on('finish', () => {
+                            newFile.close();
+                            resolve();
+                        });
+                    }).on('error', reject);
                     
-                    newFile.on('finish', () => {
-                        newFile.close();
-                        resolve();
-                    });
-                }).on('error', reject);
-                
-                return;
-            }
+                    return;
+                }
 
-            if (response.statusCode !== 200) {
+                if (response.statusCode !== 200) {
+                    file.close();
+                    fs.unlinkSync(tempZip);
+                    return reject(new Error(`Failed to download: ${response.statusCode} ${response.statusMessage}`));
+                }
+
+                response.pipe(file);
+
+                file.on('finish', () => {
+                    file.close();
+                    resolve();
+                });
+            }).on('error', (err) => {
                 file.close();
-                fs.unlinkSync(destination);
-                return reject(new Error(`Failed to download: ${response.statusCode} ${response.statusMessage}`));
-            }
-
-            response.pipe(file);
-
-            file.on('finish', () => {
-                file.close();
-                resolve();
+                try {
+                    fs.unlinkSync(tempZip);
+                } catch {
+                    // File may not exist, ignore
+                }
+                reject(err);
             });
-        }).on('error', (err) => {
-            file.close();
-            try {
-                fs.unlinkSync(destination);
-            } catch {
-                // File may not exist, ignore
-            }
-            reject(err);
         });
-    });
-    
-    console.log(`✓ Downloaded WP Rocket ${version}`);
+        
+        console.log('  Extracting source archive...');
+        await execAsync(`unzip -q "${tempZip}" -d "${extractDir}"`);
+        
+        // GitHub archives extract to a folder named "repo-name-tag"
+        // Find the extracted directory
+        const extractedDirs = fs.readdirSync(extractDir);
+        if (extractedDirs.length === 0) {
+            throw new Error('No files extracted from archive');
+        }
+        const sourceDir = path.join(extractDir, extractedDirs[0]);
+        
+        // Check if composer.json exists and install dependencies
+        const composerFile = path.join(sourceDir, 'composer.json');
+        if (fs.existsSync(composerFile)) {
+            console.log('  Installing Composer dependencies...');
+            // Install without dev dependencies and skip scripts that require dev tools
+            await execAsync(`cd "${sourceDir}" && composer install --no-dev --optimize-autoloader --no-scripts 2>&1`);
+            // Manually generate optimized autoloader
+            await execAsync(`cd "${sourceDir}" && composer dump-autoload --no-dev --optimize 2>&1`);
+        }
+        
+        // Check if package.json exists and install npm dependencies
+        const packageFile = path.join(sourceDir, 'package.json');
+        if (fs.existsSync(packageFile)) {
+            console.log('  Installing npm dependencies...');
+            await execAsync(`cd "${sourceDir}" && npm install`);
+            
+            // Check if there's a build script
+            const packageJson = JSON.parse(fs.readFileSync(packageFile, 'utf-8'));
+            if (packageJson.scripts?.build || packageJson.scripts?.['build:css'] || packageJson.scripts?.['build:js']) {
+                console.log('  Building assets...');
+                // Try build script first, fallback to specific build scripts
+                if (packageJson.scripts.build) {
+                    await execAsync(`cd "${sourceDir}" && npm run build`);
+                } else {
+                    if (packageJson.scripts['build:css']) {
+                        await execAsync(`cd "${sourceDir}" && npm run build:css`);
+                    }
+                    if (packageJson.scripts['build:js']) {
+                        await execAsync(`cd "${sourceDir}" && npm run build:js`);
+                    }
+                }
+            }
+        }
+        
+        // Create zip file from the built source
+        console.log('  Creating plugin zip...');
+        const sourceBasename = path.basename(sourceDir);
+        const sourceParent = path.dirname(sourceDir);
+        await execAsync(`cd "${sourceParent}" && zip -q -r "${destination}" "${sourceBasename}" -x "*.git*" "node_modules/*" "tests/*" "*.md"`);
+        
+        console.log(`✓ Downloaded and built WP Rocket ${version}`);
+        
+    } finally {
+        // Clean up temp files
+        if (fs.existsSync(tempZip)) {
+            fs.unlinkSync(tempZip);
+        }
+        if (fs.existsSync(extractDir)) {
+            await execAsync(`rm -rf "${extractDir}"`);
+        }
+    }
 }
 
 /**

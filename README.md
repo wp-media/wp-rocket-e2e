@@ -72,10 +72,10 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
  ```
  
  **Supported version formats:**
- - Version number: `3.16.0` (downloads from GitHub release tags - requires GITHUB_TOKEN)
- - GitHub branch: `branch:develop` or `branch:release/3.16.0` (clones and builds from source)
- - GitHub tag: `tag:3.16.0` (clones and builds from tag)
- - Direct URL: `https://example.com/wp-rocket.zip`
+ - Version number: `3.16.0` (downloads source from GitHub release tags, then builds with npm/composer - requires GITHUB_TOKEN)
+ - GitHub branch: `branch:develop` or `branch:release/3.16.0` (clones and builds from source - requires GITHUB_TOKEN)
+ - GitHub tag: `tag:3.16.0` (clones and builds from tag - requires GITHUB_TOKEN)
+ - Direct URL: `https://example.com/wp-rocket.zip` (downloads pre-built zip)
  
  **Available override options:**
  - `--previous-stable` - Override the previous stable release version
