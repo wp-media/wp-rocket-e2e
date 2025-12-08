@@ -17,28 +17,42 @@ import type { VersionOverrides } from './version-override';
 const execAsync = promisify(exec);
 
 // Gracefully handle missing config/plugin.config.ts
-let basePluginConfig: PluginVersionConfig;
+let basePluginConfig: PluginVersionConfig | null = null;
+let hasPluginConfig = false;
 
 try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const config = require('../config/plugin.config');
     basePluginConfig = config.pluginConfig;
+    hasPluginConfig = true;
 } catch (error) {
-    console.error('❌ Plugin configuration not found!');
-    console.error('Please copy config/plugin.config.sample.ts to config/plugin.config.ts and configure your plugin versions.');
-    process.exit(1);
+    // Config file not found - this is OK if CLI overrides are provided or using existing plugins
+    hasPluginConfig = false;
 }
 
 // Import type separately
 import type { PluginVersionConfig } from '../config/plugin.config';
 
 /**
+ * Checks if plugin config file exists.
+ * 
+ * @return {boolean} True if config file exists
+ */
+export function hasPluginConfigFile(): boolean {
+    return hasPluginConfig;
+}
+
+/**
  * Gets the active plugin configuration with any CLI overrides applied.
  * 
  * @param {VersionOverrides} overrides - Optional version overrides to apply
- * @return {PluginVersionConfig} Active plugin configuration
+ * @return {PluginVersionConfig | null} Active plugin configuration or null if no config
  */
-function getActivePluginConfig(overrides?: VersionOverrides): PluginVersionConfig {
+function getActivePluginConfig(overrides?: VersionOverrides): PluginVersionConfig | null {
+    if (!basePluginConfig) {
+        return null;
+    }
+    
     const runtimeOverrides = overrides || parseVersionOverrides();
     
     if (hasVersionOverrides(runtimeOverrides)) {
@@ -409,7 +423,7 @@ export async function validatePluginFiles(): Promise<boolean> {
         PLUGIN_FILES.newRelease,
     ];
     
-    if (basePluginConfig.specificVersion) {
+    if (basePluginConfig?.specificVersion) {
         requiredFiles.push(PLUGIN_FILES.specificVersion);
     }
     

@@ -25,8 +25,8 @@ import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@
 import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
-import { setupPluginVersions, validatePluginFiles } from "../../utils/plugin-manager";
-import { parseVersionOverrides } from "../../utils/version-override";
+import { setupPluginVersions, validatePluginFiles, cleanPluginFiles, hasPluginConfigFile } from "../../utils/plugin-manager";
+import { parseVersionOverrides, hasVersionOverrides } from "../../utils/version-override";
 // import {configurations, getWPDir} from "../../utils/configurations";
 
 
@@ -69,15 +69,36 @@ BeforeAll(async function (this: ICustomWorld) {
         
         // Parse any CLI version overrides
         const versionOverrides = parseVersionOverrides();
+        const hasCliOverrides = hasVersionOverrides(versionOverrides);
+        const hasConfig = hasPluginConfigFile();
         
-        // Setup plugin versions automatically
+        // Setup plugin versions based on priority:
+        // 1. CLI overrides - always clean and re-download
+        // 2. Config file - clean and re-download
+        // 3. No CLI or config - use existing plugins in folder
         console.log('Checking plugin versions...');
-        const pluginsValid = await validatePluginFiles();
-        if (!pluginsValid) {
-            console.log('Some plugin files are missing, downloading/building them...');
+        
+        if (hasCliOverrides) {
+            console.log('CLI version overrides detected. Using CLI-specified versions.');
+            console.log('Cleaning existing plugin files and re-downloading...');
+            await cleanPluginFiles();
             await setupPluginVersions(false, versionOverrides);
+        } else if (hasConfig) {
+            console.log('No CLI version overrides detected. Using versions from config file.');
+            console.log('Cleaning existing plugin files and re-downloading...');
+            await cleanPluginFiles();
+            await setupPluginVersions(false);
         } else {
-            console.log('All required plugin files are present');
+            console.log('No CLI overrides or config file detected. Using existing plugin files in folder.');
+            const pluginsValid = await validatePluginFiles();
+            if (!pluginsValid) {
+                console.error('⚠️  Some required plugin files are missing!');
+                console.error('Please either:');
+                console.error('  1. Create config/plugin.config.ts and run tests again, OR');
+                console.error('  2. Use CLI overrides: npm run test:e2e -- --new-release=X.X.X --previous-stable=X.X.X');
+                throw new Error('Missing required plugin files and no configuration provided');
+            }
+            console.log('✓ All required plugin files are present');
         }
         
         // Check if template loader plugin is active, activate if not
