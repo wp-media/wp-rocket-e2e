@@ -85,7 +85,84 @@ async function wp(args: string, show_errors: boolean = true): Promise<boolean> {
         async: false
     });
 
-   }
+}
+type WPCliOutput = {
+    stdout: string,
+    stderr: string,
+    failed: boolean
+};
+
+/**
+ * Executes a WP-CLI command and returns the output along with execution status.
+ * 
+ * Unlike the standard `wp` function which returns a boolean, this function provides
+ * access to both stdout and stderr output from the executed command, making it useful
+ * for commands where you need to parse or analyze the output.
+ * 
+ * @async
+ * @function wpWithOutput
+ * @param {string} args - The WP-CLI command arguments to execute (e.g., 'plugin list --format=json')
+ * 
+ * @returns {Promise<WPCliOutput>} An object containing the command execution results:
+ * - `stdout`: The standard output from the command as a string
+ * - `stderr`: The error output from the command as a string (empty string if no errors)
+ * - `failed`: Boolean indicating if the command failed (exit code 1)
+ * 
+ * @example
+ * // Get list of installed plugins with details
+ * const result = await wpWithOutput('plugin list --format=json');
+ * if (!result.failed) {
+ *   const plugins = JSON.parse(result.stdout);
+ *   console.log('Installed plugins:', plugins);
+ * } else {
+ *   console.error('Failed to get plugins:', result.stderr);
+ * }
+ * 
+ * @example
+ * // Get WordPress version
+ * const versionInfo = await wpWithOutput('core version --extra');
+ * console.log('WordPress info:', versionInfo.stdout);
+ * 
+ * @remarks
+ * - Automatically adds `--allow-root` flag when running in Docker environment
+ * - For external SSH connections, establishes a new SSH connection for each command
+ * - For local execution, uses shelljs exec with synchronous execution
+ * - The `failed` property is determined by checking if the exit code equals 1
+ */
+export async function wpWithOutput(args: string): Promise<WPCliOutput> {
+    const root =
+        configurations.type === ServerType.docker ? ' --allow-root' : '';
+    const cwd = getWPDir(configurations);
+
+    if (configurations.type === ServerType.external) {
+        const client = new NodeSSH();
+        await client.connect({
+            host: configurations.ssh.address,
+            username: configurations.ssh.username,
+            privateKeyPath: configurations.ssh.key
+        });
+        const command = `wp ${args}${root} --path=${cwd}`;
+        const result = await client.execCommand(
+            command
+        );
+        return {
+            stdout: result.stdout,
+            stderr: result.stderr,
+            failed: result.code === 1
+        } as WPCliOutput;
+    }
+    const command = wrapPrefix(`wp ${args}${root} --path=${cwd}`);
+
+    const result = exec(command, {
+        cwd: configurations.rootDir,
+        async: false
+    });
+    return {
+        stdout: result.stdout,
+        stderr: result.stderr,
+        failed: result.code === 1
+    } as WPCliOutput;
+}
 
 /**
  * Resets the WordPress instance by performing a database reset and reinstallation.

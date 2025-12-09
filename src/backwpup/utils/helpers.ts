@@ -1,6 +1,7 @@
 import { configurations } from "../../../utils/configurations";
 import { ICustomWorld } from "../../common/custom-world";
 import { Page } from '@playwright/test';
+import { wpWithOutput } from '../../../utils/commands';
 
 /**
  * Waits for a BackWPup backup job to complete by monitoring job status indicators on the page.
@@ -128,3 +129,14 @@ export const getFolderNameFromHost = (): string => {
     const directoryName = domain.replace(/\./g, '-');
     return directoryName;
 }
+
+export const listBackWPupJobsWPCLI = async (
+    json?: boolean
+): Promise<Array<Record<string, unknown>>> => {
+    const useJson = json ? ' --format=json' : '';
+    const result = await wpWithOutput(`backwpup jobs${useJson}`);
+    if (result.failed) {
+        throw new Error(`WP-CLI Error: ${result.stdout}\n${result.stderr}`);
+    }
+    return JSON.parse(result.stdout) as Array<Record<string, unknown>>;
+};
