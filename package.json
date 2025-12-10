@@ -10,7 +10,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint  . --ext .ts --fix",
-    "test:e2e": "$npm_package_config_testCommand  --tags \"not @vr and not @delayjs and not @bwpupsmoke\" ; npm run push-report --tag=$npm_config_tag",
+    "test:e2e": "$npm_package_config_testCommand  --tags \"not @vr and not @delayjs and not @bwpup\" ; npm run push-report --tag=$npm_config_tag",
     "test:smoke": "$npm_package_config_testCommand --tags @smoke ; npm run push-report --tag=$npm_config_tag",
     "test:local": "$npm_package_config_testCommand --tags @local",
     "test:export": "$npm_package_config_testCommand --tags @export",
