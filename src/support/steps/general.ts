@@ -108,7 +108,8 @@ Given('activate {string} plugin', async function (this: ICustomWorld, plugin) {
  * Executes the step to activate a theme.
  */
 Given('theme {string} is activated', async function (this:ICustomWorld, theme) {
-    await this.utils.switchThemeViaUi(theme);
+    const { switchTheme } = await import('../../../utils/commands');
+    await switchTheme(theme);
 
     // Check tags via pickle.
     if (! await isTagPresent(this.pickle, '@delayjs')) {
@@ -129,7 +130,7 @@ Given('visual regression reference is generated', async function (this:ICustomWo
     
     // Array of tags to exclude from one time reference generation.
     const exclusion = [
-        '@delayjs'
+       '@delayjs'
     ]
 
     // Bail out if there is already reference for the current tag.
@@ -442,7 +443,8 @@ Then('no error in the console different than nowprocket page {string}', async fu
 
     if (consoleMsg2.length !== 0) {
          try {
-                expect(consoleMsg2).toEqual(consoleMsg1);
+                // Sort both arrays to compare content regardless of execution order
+                expect(consoleMsg2.sort()).toEqual(consoleMsg1.sort());
             } catch (e) {
                 throw new Error(
                     `\x1b[41m\x1b[37mConsole difference detected for: ${WP_BASE_URL}/${path}\x1b[0m\n` +
@@ -493,6 +495,13 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
     
         await scrollPage;
       });
+
+    // Trigger user interaction to execute delayed scripts
+    await page.mouse.move(100, 1);
+    await page.mouse.click(100, 1);
+    
+    // Wait for delayed scripts to execute and log their messages
+    await page.waitForTimeout(2000);
 
     // Remove the event listeners to prevent duplicate messages.
     page.off('console', consoleHandler);
