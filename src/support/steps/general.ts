@@ -497,17 +497,23 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
       });
 
     // Trigger user interaction to execute delayed scripts
-    await page.mouse.move(100, 1);
-    await page.mouse.click(100, 1);
+    // Click on body element to avoid clicking interactive elements
+    await page.mouse.move(10, 10);
+    await page.mouse.click(10, 10);
     
-    // Wait for delayed scripts to execute and log their messages
-    await page.waitForTimeout(2000);
+    // Wait longer for delayed scripts to execute on remote servers
+    await page.waitForTimeout(3000);
 
     // Remove the event listeners to prevent duplicate messages.
     page.off('console', consoleHandler);
     page.off('pageerror', pageErrorHandler);
 
-    return consoleMsg;
+    // Normalize messages by removing query parameters from URLs, then sort
+    const normalizedMessages = consoleMsg.map(msg => 
+        msg.replace(/\?nowprocket/g, '')
+    ).sort();
+    
+    return normalizedMessages;
 }
 
 /**
