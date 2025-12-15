@@ -417,7 +417,15 @@ export async function updatePermalinkStructure(structure: string): Promise<void>
  * @returns {Promise<void>} - A Promise that resolves when the theme is activated.
  */
 export async function switchTheme(theme: string): Promise<void> {
-    await wp(`theme activate ${theme}`);
+    try {
+        await wp(`theme activate ${theme}`);
+    } catch (error) {
+        // Ignore FTP filesystem errors from Avada theme deactivation
+        // Theme switching still succeeds despite the error
+        if (!error.message || !error.message.includes('ftp_nlist')) {
+            throw error;
+        }
+    }
 }
 
 /**

@@ -22,7 +22,7 @@ import { PageUtils } from "../../utils/page-utils";
 import { deleteFolder, isWprRelatedError } from "../../utils/helpers";
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
-import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled} from "../../utils/commands";
+import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, deactivatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 // import {configurations, getWPDir} from "../../utils/configurations";
@@ -248,6 +248,16 @@ After(async function (this: ICustomWorld, { pickle, result }) {
  */
 After({tags: '@delaylcp'}, async function (this: ICustomWorld) {
     await uninstallPlugin('rocket-lcp-delay');
+});
+
+/**
+ * After each test scenario with the @imagify tag, deactivate Imagify plugin.
+ */
+After({tags: '@imagify'}, async function (this: ICustomWorld) {
+    const isImagifyActive = await isPluginActive('imagify');
+    if (isImagifyActive) {
+        await deactivatePlugin('imagify');
+    }
 });
 
 /**

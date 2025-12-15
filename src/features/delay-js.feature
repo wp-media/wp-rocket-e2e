@@ -7,7 +7,7 @@ Feature: No Regression with delayjs script udpate
         And plugin is activated
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And I save settings 'fileOptimization' 'delayJs'
-@test
+
     Scenario Outline: Shouldn't cause console error when enabling Delay JS with theme
         Given theme "<theme>" is activated
         And one click exclusions are enabled
@@ -26,4 +26,5 @@ Feature: No Regression with delayjs script udpate
             | generatepress          |
             | genesis-sample         |
             | Avada                  |
-
+            | oceanwp                |
+            | enfold                 |              
