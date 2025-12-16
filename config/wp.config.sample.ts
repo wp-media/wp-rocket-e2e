@@ -57,6 +57,13 @@ const BACKWPUP_INFOS = {
         secretKey: '',
         bucketName: '', // Can also be null or undefined,
         region: 'us-east-1' satisfies S3Region | null | undefined // Can also be null or undefined (Default: us-east-1),
+    },
+    glacier: {
+        accessKey: '',
+        secretKey: '',
+        vaultName: '',
+        region: 'us-east-1' satisfies S3Region | null | undefined, // Can also be null or undefined (Default: us-east-1),
+        useS3Credentials: true // When true, S3 credentials will be used for Glacier authentication
     }
 } as const;
 

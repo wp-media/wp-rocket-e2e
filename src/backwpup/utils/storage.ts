@@ -75,7 +75,8 @@ export class StorageUtils {
         const storageHandlers: Record<string, () => Promise<void>> = {
             ftp: () => this.setupFTP(),
             sugarsync: () => this.setupSugarSync(),
-            s3: () => this.setupS3()
+            s3: () => this.setupS3(),
+            glacier: () => this.setupGlacier()
         } as const;
         const storageButton = `#backwpup-onboarding-panes .js-backwpup-toggle-storage[data-storage="${storageType}"]`;
         const storageSidebar = `#backwpup-sidebar #sidebar-storage-${storageType}`;
@@ -190,6 +191,43 @@ export class StorageUtils {
         BACKWPUP_INFOS.s3.bucketName && await this.page.locator('#s3bucket').selectOption(BACKWPUP_INFOS.s3.bucketName);
         // Click test connection.
         await this.page.click('.js-backwpup-test-S3-storage');
+
+        await this.page.waitForResponse(response =>
+            response.url().includes('/backwpup/v1/cloudsaveandtest') &&
+            response.status() === 200
+        );
+    }
+    /**
+     * Sets up AWS Glacier storage configuration for BackWPup.
+     * 
+     * Configures the Glacier storage by filling in access credentials (either from Glacier-specific
+     * or S3 credentials), selecting the region, optionally setting the vault name, and testing
+     * the connection.
+     * 
+     * @returns A promise that resolves when the Glacier setup and connection test are complete.
+     * @throws {Error} If neither Glacier access key/secret key nor S3 credentials are provided.
+     */
+    public setupGlacier = async (): Promise<void> => {
+        // Use S3 credentials if specified, otherwise use Glacier-specific credentials
+        const accessKey = BACKWPUP_INFOS.glacier.useS3Credentials
+            ? BACKWPUP_INFOS.s3.accessKey
+            : BACKWPUP_INFOS.glacier.accessKey;
+        const secretKey = BACKWPUP_INFOS.glacier.useS3Credentials
+            ? BACKWPUP_INFOS.s3.secretKey
+            : BACKWPUP_INFOS.glacier.secretKey;
+            
+        if (!accessKey || !secretKey) {
+            throw new Error('Glacier access key and secret key must be provided in BACKWPUP_INFOS or S3 credentials must be used.');
+        }
+        await this.page.locator('#glacieraccesskey').fill(accessKey);
+        await this.page.locator('#glaciersecretkey').fill(secretKey);
+        const region = BACKWPUP_INFOS.glacier.region ?? DEFAULT_S3_REGION;
+        await this.page.locator('#glacierregion').selectOption(region);
+        await this.page.waitForSelector('#glaciervault', { state: 'visible' });
+
+        BACKWPUP_INFOS.glacier.vaultName && await this.page.locator('#glaciervault').fill(BACKWPUP_INFOS.glacier.vaultName);
+        // Click test connection.
+        await this.page.click('.js-backwpup-test-GLACIER-storage');
 
         await this.page.waitForResponse(response =>
             response.url().includes('/backwpup/v1/cloudsaveandtest') &&
