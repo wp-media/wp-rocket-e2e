@@ -3,6 +3,7 @@ import {Locators, Selector} from "../../../utils/types";
 import {Sections} from "../../common/sections";
 import {BACKWPUP_INFOS} from "../../../config/wp.config";
 import { getFolderNameFromHost } from "./helpers";
+import { DEFAULT_S3_REGION } from "../../types/s3-region-types";
 
 export class StorageUtils {
     /**
@@ -73,7 +74,8 @@ export class StorageUtils {
         const storageType = storageProvider.toUpperCase();
         const storageHandlers: Record<string, () => Promise<void>> = {
             ftp: () => this.setupFTP(),
-            sugarsync: () => this.setupSugarSync()
+            sugarsync: () => this.setupSugarSync(),
+            s3: () => this.setupS3()
         } as const;
         const storageButton = `#backwpup-onboarding-panes .js-backwpup-toggle-storage[data-storage="${storageType}"]`;
         const storageSidebar = `#backwpup-sidebar #sidebar-storage-${storageType}`;
@@ -161,6 +163,33 @@ export class StorageUtils {
             }
         );
         await this.page.click('.js-backwpup-test-SUGARSYNC-storage');
+
+        await this.page.waitForResponse(response =>
+            response.url().includes('/backwpup/v1/cloudsaveandtest') &&
+            response.status() === 200
+        );
+    }
+    /**
+     * Configures Amazon S3 storage settings for BackWPup plugin.
+     * 
+     * This method fills in the S3 access key, secret key, selects the region,
+     * optionally selects a bucket name, and tests the connection.
+     * 
+     * @returns A promise that resolves when the S3 setup and connection test are complete.
+     */
+    public setupS3 = async (): Promise<void> => {
+        if (!BACKWPUP_INFOS.s3.accessKey || !BACKWPUP_INFOS.s3.secretKey) {
+            throw new Error('S3 access key and secret key must be provided in BACKWPUP_INFOS.');
+        }
+        await this.page.locator('#s3accesskey').fill(BACKWPUP_INFOS.s3.accessKey);
+        await this.page.locator('#s3secretkey').fill(BACKWPUP_INFOS.s3.secretKey);
+        const region = BACKWPUP_INFOS.s3.region ?? DEFAULT_S3_REGION;
+        await this.page.locator('#s3region').selectOption(region);
+        await this.page.waitForSelector('#s3bucket', { state: 'visible' });
+
+        BACKWPUP_INFOS.s3.bucketName && await this.page.locator('#s3bucket').selectOption(BACKWPUP_INFOS.s3.bucketName);
+        // Click test connection.
+        await this.page.click('.js-backwpup-test-S3-storage');
 
         await this.page.waitForResponse(response =>
             response.url().includes('/backwpup/v1/cloudsaveandtest') &&
