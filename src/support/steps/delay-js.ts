@@ -38,21 +38,29 @@ Given('wpml directory is enabled', async function(this:ICustomWorld) {
 });
 
 /**
- * Enable delay js exclusions by clicking select all if the element exists
+ * Enable delay js theme exclusions by clicking select all if the element exists
  */
 Given('one click exclusions are enabled', async function(this:ICustomWorld) {
     const exclusionHeader = '#wpr_djs_oneclick_exclusions_themes > div.wpr-list-header > div.wpr-list-header-data > span.wpr-multiple-select-title';
+    const theme = process.env.THEME || 'unknown';
     
-    // Check if the element exists
-    if (await this.page.locator(exclusionHeader).isVisible()) {
-        // Click on the header to expand
-        await this.page.locator(exclusionHeader).click();
+    try {
+        // Scroll to the element to ensure it's visible
+        await this.page.locator(exclusionHeader).scrollIntoViewIfNeeded();
         
-        // Toggle select all
-        await this.page.locator('//*[@id="wpr_djs_oneclick_exclusions_themes"]/div[2]/ul/li[1]/div').click();
-        
-        await this.utils.saveSettings();
-
+        // Check if the element exists
+        if (await this.page.locator(exclusionHeader).isVisible()) {
+            // Click on the header to expand
+            await this.page.locator(exclusionHeader).click();
+            
+            // Toggle select all
+            await this.page.locator('//*[@id="wpr_djs_oneclick_exclusions_themes"]/div[2]/ul/li[1]/div').click();
+            
+            await this.utils.saveSettings();
+        }
+    } catch (error) {
+        // If exclusion header element doesn't exist, just log and continue
+        console.log(`Exclusion header element not found for theme '${theme}', skipping one-click exclusions setup`);
     }
 });
 

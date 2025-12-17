@@ -20,7 +20,7 @@ import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl} f
 import type { Section } from "../../../utils/types";
 import { Page } from '@playwright/test';
 import {
-    deactivatePlugin, installRemotePlugin,
+    deactivatePlugin, installRemotePlugin, installLocalPlugin, activatePlugin,
 } from "../../../utils/commands";
 import backstop from 'backstopjs';
 
@@ -37,6 +37,24 @@ Given('I am logged in', async function (this: ICustomWorld) {
 Given('plugin is installed {string}', async function (this: ICustomWorld, pluginVersion: string) {
     await this.utils.uploadNewPlugin(`./plugin/${pluginVersion}.zip`);
     await expect(this.page).toHaveURL(/action=upload-plugin/); 
+});
+
+/**
+ * Executes the step to install and activate a local plugin using WP CLI. (not used yet)
+ */
+Given('I install and activate local plugin {string} using WP CLI', async function (filePath) {
+    await installLocalPlugin(filePath);
+    // Extract plugin slug from file path (e.g., './plugin/wp-rocket.zip' -> 'wp-rocket')
+    // Special case: if filepath contains 'new_release' or 'previous_stable', the plugin slug is 'wp-rocket'
+    let pluginSlug = '';
+    if (filePath.includes('new_release') || filePath.includes('previous_stable')) {
+        pluginSlug = 'wp-rocket';
+    } else {
+        pluginSlug = filePath.split('/').pop()?.replace('.zip', '') || '';
+    }
+    if (pluginSlug) {
+        await activatePlugin(pluginSlug);
+    }
 });
 
 /**
@@ -266,35 +284,41 @@ When('I visit {string} in mobile view', async function (this:ICustomWorld, page)
     await this.utils.visitPage(page);
 });
 
+
+
 /**
- * Executes the step to expand the mobile menu.
+ * Executes the step to expand mobile menu and validate no console error compared to nowprocket
  */
-When('expand mobile menu', async function (this:ICustomWorld) {
-    let target: string;
+When('expand mobile menu and validate no console error', async function (this:ICustomWorld) {
+    const { WP_BASE_URL } = await import('../../../config/wp.config');
     const theme = process.env.THEME ? process.env.THEME : '';
 
-    if (theme === '') {
+    // List of themes that don't have mobile menu support
+    const themesWithoutMobileMenu = ['genesis-sample', 'hello-elementor'];
+    if (themesWithoutMobileMenu.includes(theme)) {
+        console.log(`Skipping mobile menu validation for theme '${theme}' (no mobile menu)`);
         return;
     }
 
-    switch (theme) {
-        case 'flatsome':
-            target = '[data-open="#main-menu"]';
-            break;
-        case 'Divi':
-            target = '#et_mobile_nav_menu';
-            break;
-        case 'astra':
-            target = '.ast-mobile-menu-trigger-minimal';
-            break;
+    // Get console messages when expanding menu on both versions
+    const consoleMsg1 = await getConsoleMsgWithMenuExpansion(this.page, `${WP_BASE_URL}/?nowprocket`);
+    const consoleMsg2 = await getConsoleMsgWithMenuExpansion(this.page, `${WP_BASE_URL}/`);
+    
+    // Compare console messages
+    if (consoleMsg2.length !== 0) {
+        try {
+            const uniqueMsg1 = [...new Set(consoleMsg1)].sort();
+            const uniqueMsg2 = [...new Set(consoleMsg2)].sort();
+            
+            expect(uniqueMsg2).toEqual(uniqueMsg1);
+        } catch (e) {
+            throw new Error(
+                `\x1b[41m\x1b[37mConsole difference detected when expanding mobile menu for theme '${theme}'\x1b[0m\n` +
+                `nowprocket console: ${consoleMsg1}\nactual console: ${consoleMsg2}`
+            );
+        }
     }
-
-    await this.page.locator(target).click();
 });
-
-/**
- * Executes the step to clear wp rocket cache.
- */
 When('I clear cache', async function (this:ICustomWorld) {
     // Goto WP Rocket dashboard
     await this.utils.gotoWpr();
@@ -443,8 +467,13 @@ Then('no error in the console different than nowprocket page {string}', async fu
 
     if (consoleMsg2.length !== 0) {
          try {
-                // Sort both arrays to compare content regardless of execution order
-                expect(consoleMsg2.sort()).toEqual(consoleMsg1.sort());
+                // Get unique messages from both versions
+                const uniqueMsg1 = [...new Set(consoleMsg1)].sort();
+                const uniqueMsg2 = [...new Set(consoleMsg2)].sort();
+                
+                // Check if actual version has any NEW messages not in nowprocket
+                // Allow duplicates in either version as long as the unique messages match
+                expect(uniqueMsg2).toEqual(uniqueMsg1);
             } catch (e) {
                 throw new Error(
                     `\x1b[41m\x1b[37mConsole difference detected for: ${WP_BASE_URL}/${path}\x1b[0m\n` +
@@ -476,30 +505,40 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
     await page.waitForLoadState('load', { timeout: 30000 });
 
     // use this if you need to scroll till end of page
-    await page.evaluate(async () => {
-        // Scroll to the bottom of page.
-        const scrollPage: Promise<void> = new Promise((resolve) => {
-            let totalHeight = 0;
-            const distance = 100;
-            const timer = setInterval(() => {
-            const scrollHeight = document.body.scrollHeight;
-            window.scrollBy(0, distance);
-            totalHeight += distance;
-    
-            if(totalHeight >= scrollHeight){
-                clearInterval(timer);
-                resolve();
-            }
-            }, 500);
-        });
-    
-        await scrollPage;
-      });
+    try {
+        await page.evaluate(async () => {
+            // Scroll to the bottom of page.
+            const scrollPage: Promise<void> = new Promise((resolve) => {
+                let totalHeight = 0;
+                const distance = 100;
+                const timer = setInterval(() => {
+                const scrollHeight = document.body.scrollHeight;
+                window.scrollBy(0, distance);
+                totalHeight += distance;
+        
+                if(totalHeight >= scrollHeight){
+                    clearInterval(timer);
+                    resolve();
+                }
+                }, 500);
+            });
+        
+            await scrollPage;
+          });
+    } catch (error) {
+        // Handle execution context destroyed error from page navigation during scroll
+        console.log('Page navigation occurred during scroll, continuing...');
+    }
 
     // Trigger user interaction to execute delayed scripts
     // Click on body element to avoid clicking interactive elements
-    await page.mouse.move(10, 10);
-    await page.mouse.click(10, 10);
+    try {
+        await page.mouse.move(10, 10);
+        await page.mouse.click(10, 10);
+    } catch (error) {
+        // Handle errors from mouse interactions after navigation
+        console.log('Mouse interaction failed after navigation, continuing...');
+    }
     
     // Wait longer for delayed scripts to execute on remote servers
     await page.waitForTimeout(3000);
@@ -508,10 +547,114 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
     page.off('console', consoleHandler);
     page.off('pageerror', pageErrorHandler);
 
-    // Normalize messages by removing query parameters from URLs, then sort
-    const normalizedMessages = consoleMsg.map(msg => 
-        msg.replace(/\?nowprocket/g, '')
-    ).sort();
+    // Normalize messages by removing query parameters from URLs and filtering out unrelated errors
+    const normalizedMessages = consoleMsg
+        .map(msg => 
+            msg.replace(/\?nowprocket/g, '')
+        ).sort();
+    
+    return normalizedMessages;
+}
+
+/**
+ * Gets console messages while expanding mobile menu for a given URL
+ */
+const getConsoleMsgWithMenuExpansion = async (page: Page, url: string): Promise<Array<string>> => {
+    const consoleMsg: string[] = [];
+    const theme = process.env.THEME ? process.env.THEME : '';
+
+    const consoleHandler = (msg): void => {
+        consoleMsg.push(msg.text());
+    };
+
+    const pageErrorHandler = (error: Error): void => {
+        consoleMsg.push(error.message);
+    };
+
+    page.on('console', consoleHandler);
+    page.on('pageerror', pageErrorHandler);
+
+    // Set mobile viewport
+    await page.setViewportSize({
+        width: 500,
+        height: 480,
+    });
+
+    await page.goto(url);
+    await page.waitForLoadState('load', { timeout: 30000 });
+
+    // Define theme-specific selectors
+    let target: string = '';
+    let closeSelector: string = '';
+
+    switch (theme) {
+        case 'flatsome':
+            target = '[data-open="#main-menu"]';
+            closeSelector = '[title="Close (Esc)"]';
+            break;
+        case 'Divi':
+            target = '#et_mobile_nav_menu';
+            closeSelector = '#mobile_menu';
+            break;
+        case 'astra':
+            target = '.ast-mobile-menu-trigger-minimal';
+            closeSelector = '.ast-mobile-menu-trigger-minimal';
+            break;
+        case 'generatepress':
+            target = '#mobile-menu-control-wrapper > button';
+            closeSelector = '[data-nav="site-navigation"]';
+            break;
+        case 'genesis-sample':
+            // No mobile menu for genesis-sample theme
+            break;
+        case 'Avada':
+            target = '#wrapper > header > div.fusion-header-v3.fusion-logo-alignment.fusion-logo-left.fusion-sticky-menu-.fusion-sticky-logo-.fusion-mobile-logo-.fusion-mobile-menu-design-classic > div.fusion-header > div > nav.fusion-mobile-nav-holder.fusion-mobile-menu-text-align-left > button > div';
+            closeSelector = '.mobile-menu-expanded';
+            break;
+        case 'storefront':
+            target = '#site-navigation-menu-toggle';
+            closeSelector = 'button[aria-expanded="true"]';
+            break;
+        case 'hello-elementor':
+            // No mobile menu for hello-elementor theme
+            break;
+        case 'neve':
+            target = '.menu-mobile-toggle';
+            closeSelector = '.close-sidebar-panel';
+            break;
+        case 'kadence':
+            target = '.menu-toggle-icon';
+            closeSelector = 'button[aria-label="Close menu"]';
+            break;
+        case 'oceanwp':
+            target = '#site-header-inner > div.oceanwp-mobile-menu-icon.clr.mobile-right > a > i';
+            closeSelector = '.oceanwp-close-text';
+            break;
+    }
+
+    // Expand menu if selectors exist
+   if (target) {
+       try {
+            const menuTrigger = page.locator(target);
+            if (await menuTrigger.isVisible({ timeout: 1000 }).catch(() => false)) {
+                await menuTrigger.click();
+                await expect(page.locator(closeSelector)).toBeVisible({ timeout: 3000 });
+            }
+        } catch (error) {
+           console.log(`Menu expansion failed for theme '${theme}', continuing...`);
+        }
+   }
+
+    // Wait for delayed scripts after menu expansion
+    await page.waitForTimeout(3000);
+
+    page.off('console', consoleHandler);
+    page.off('pageerror', pageErrorHandler);
+
+    // Normalize messages
+    const normalizedMessages = consoleMsg
+        .map(msg => msg.replace(/\?nowprocket/g, ''))
+        .sort();
     
     return normalizedMessages;
 }

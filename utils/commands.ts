@@ -37,11 +37,15 @@ function wrapPrefix(command: string, sshConfig?: SSHConfig): string {
         const username = sshConfig?.username || configurations.ssh.username;
         const address = sshConfig?.host || configurations.ssh.address;
         const privateKey = configurations.ssh.key;
-        return `ssh ${username}@${address} -i ${privateKey} ${command}`
-            .replaceAll('"', '"\\"')
-            .replaceAll('}', '\\}')
-            .replaceAll('{', '\\{')
-            .replaceAll(',', '\\,');
+        // Wrap the entire command in double quotes and escape necessary characters
+        // Escape all bash special characters that could break quote pairing
+        const escapedCommand = command
+            .replaceAll('\\', '\\\\')
+            .replaceAll('"', '\\"')
+            .replaceAll("'", "\\'")
+            .replaceAll('$', '\\$')
+            .replaceAll('`', '\\`');
+        return `ssh ${username}@${address} -i ${privateKey} "${escapedCommand}"`;
     }
     return command;
 }
@@ -351,6 +355,30 @@ export async function isPluginActive(name: string): Promise<boolean> {
 }
 
 /**
+ * Check if theme is installed
+ * @function
+ * @name isThemeInstalled
+ * @async
+ * @param {string} name - The name of the theme to be checked if installed.
+ * @returns {Promise<boolean>} - A Promise that resolves to true if theme is installed, false otherwise.
+ */
+export async function isThemeInstalled(name: string): Promise<boolean> {
+    return await wp(`theme is-installed ${name}`, false);
+}
+
+/**
+ * Install a theme from WordPress.org repository
+ * @function
+ * @name installTheme
+ * @async
+ * @param {string} name - The slug of the theme to be installed.
+ * @returns {Promise<void>} - A Promise that resolves when the theme is installed.
+ */
+export async function installTheme(name: string): Promise<void> {
+    await wp(`theme install ${name}`);
+}
+
+/**
  * Delete a plugin if exist.
  * Note: this is not ideal for wpr or imagify plugins as it doesn't delete DB data which relies on uninstall hook.
  * @function
@@ -374,6 +402,19 @@ export async function deletePlugin(name: string): Promise<boolean> {
  */
 export async function installRemotePlugin(url: string): Promise<void>  {
     await wp(`plugin install ${url}`)
+}
+
+/**
+ * Install a WordPress plugin from a local zip file using the WP-CLI command.
+ *
+ * @function
+ * @name installLocalPlugin
+ * @async
+ * @param {string} filePath - The local file path to the plugin zip file.
+ * @returns {Promise<void>} - A Promise that resolves when the installation is completed.
+ */
+export async function installLocalPlugin(filePath: string): Promise<void>  {
+    await wp(`plugin install ${filePath}`)
 }
 
 /**
@@ -417,15 +458,44 @@ export async function updatePermalinkStructure(structure: string): Promise<void>
  * @returns {Promise<void>} - A Promise that resolves when the theme is activated.
  */
 export async function switchTheme(theme: string): Promise<void> {
-    try {
-        await wp(`theme activate ${theme}`);
-    } catch (error) {
+    // List of premium themes that cannot be auto-installed
+    const premiumThemes = ['flatsome', 'Divi', 'Avada', 'enfold'];
+    
+    // Check if theme is installed, install if not
+    const isInstalled = await isThemeInstalled(theme);
+    if (!isInstalled) {
+        if (premiumThemes.includes(theme)) {
+            throw new Error(`Theme '${theme}' is a premium theme and must be installed manually before running tests.`);
+        }
+        await installTheme(theme);
+    }
+    
+    // Use wpWithOutput to get stderr and check for FTP errors
+    // Properly quote theme name to handle special characters
+    const result = await wpWithOutput(`theme activate '${theme}'`);
+    
+    if (result.failed) {
         // Ignore FTP filesystem errors from Avada theme deactivation
         // Theme switching still succeeds despite the error
-        if (!error.message || !error.message.includes('ftp_nlist')) {
-            throw error;
+        if (result.stderr && result.stderr.includes('ftp_nlist')) {
+            console.log(`Theme '${theme}' activated successfully (FTP error ignored)`);
+        } else {
+            // For other errors, throw them
+            throw new Error(`Failed to activate theme '${theme}': ${result.stderr}`);
         }
     }
+    
+    // Validate that theme is actually activated
+    const activeThemeOutput = await wpWithOutput(`theme list --status=active --field=name`);
+    if (activeThemeOutput.failed) {
+        throw new Error(`Failed to verify theme activation for '${theme}'`);
+    }
+    
+    const activeTheme = activeThemeOutput.stdout.trim();
+    if (activeTheme !== theme) {
+        throw new Error(`Theme '${theme}' activation failed. Current active theme is: '${activeTheme}'`);
+    }
+    
 }
 
 /**
