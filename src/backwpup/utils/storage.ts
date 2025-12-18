@@ -224,8 +224,16 @@ export class StorageUtils {
         const region = BACKWPUP_INFOS.glacier.region ?? DEFAULT_S3_REGION;
         await this.page.locator('#glacierregion').selectOption(region);
         await this.page.waitForSelector('#glaciervault', { state: 'visible' });
-
-        BACKWPUP_INFOS.glacier.vaultName && await this.page.locator('#glaciervault').fill(BACKWPUP_INFOS.glacier.vaultName);
+        if (BACKWPUP_INFOS.glacier.vaultName) {
+            // Ask if a specific option exists before selecting it
+            const options = (await this.page.locator('#glaciervault option').allTextContents()).map(option => option.trim());
+            // If the vault name exists in the options, select it; otherwise, fill in the new vault name
+            if (options.includes(BACKWPUP_INFOS.glacier.vaultName)) {
+                await this.page.locator('#glaciervault').selectOption(BACKWPUP_INFOS.glacier.vaultName);
+            } else {
+                await this.page.locator('#newvault').fill(BACKWPUP_INFOS.glacier.vaultName);
+            }
+        }
         // Click test connection.
         await this.page.click('.js-backwpup-test-GLACIER-storage');
 
