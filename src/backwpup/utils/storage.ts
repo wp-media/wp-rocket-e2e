@@ -187,7 +187,16 @@ export class StorageUtils {
         await this.page.locator('#s3region').selectOption(region);
         await this.page.waitForSelector('#s3bucket', { state: 'visible' });
 
-        BACKWPUP_INFOS.s3.bucketName && await this.page.locator('#s3bucket').selectOption(BACKWPUP_INFOS.s3.bucketName);
+        if (BACKWPUP_INFOS.s3.bucketName) {
+            // Ask if a specific option exists before selecting it
+            const options = (await this.page.locator('#s3bucket option').allTextContents()).map(option => option.trim());
+            // If the bucket name exists in the options, select it; otherwise, fill in the new bucket name
+            if (options.includes(BACKWPUP_INFOS.s3.bucketName)) {
+                await this.page.locator('#s3bucket').selectOption(BACKWPUP_INFOS.s3.bucketName);
+            } else {
+                await this.page.locator('#s3newbucket').fill(BACKWPUP_INFOS.s3.bucketName);
+            }
+        }
         // Click test connection.
         await this.page.click('.js-backwpup-test-S3-storage');
 
