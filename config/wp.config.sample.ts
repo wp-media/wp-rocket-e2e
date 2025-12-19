@@ -29,7 +29,7 @@ const IMAGIFY_INFOS = {
  * The default Cloudflare settings information
  *
  * @constant
- * @type {{ email:string, apiKey: string }}
+ * @type {{ email: string, apiKey: string }}
  */
 const CLOUDFLARE_INFOS = {
 	email:'',
