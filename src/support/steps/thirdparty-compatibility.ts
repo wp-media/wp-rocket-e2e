@@ -5,9 +5,10 @@ import { CLOUDFLARE_INFOS, WP_BASE_URL } from "../../../config/wp.config";
 import {expect} from "@playwright/test";
 
 /**
- * Deactivates and removes Cloudflare plugin from the UI
- * @param world - ICustomWorld instance
- * @return {Promise<void>} - A Promise that resolves when the plugin is removed
+ * Deactivates and removes the Cloudflare plugin via the WordPress admin UI.
+ *
+ * @param {ICustomWorld} world - The custom Cucumber World instance providing page and utilities.
+ * @return {Promise<void>} - A Promise that resolves when the plugin has been deactivated and removed.
  */
 export async function removeCloudflareViaUi(world: ICustomWorld): Promise<void> {
     // Navigate to plugins page
