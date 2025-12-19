@@ -1,5 +1,5 @@
 @setup @compatibility
-Feature: CF 3rd party compatibility with wpr
+Feature: Cloudflare 3rd party compatibility with WP Rocket
 
     Background:
         Given I am logged in
