@@ -40,12 +40,7 @@ export async function removeCloudflareViaUi(world: ICustomWorld): Promise<void> 
 
 Given ('Cloudflare is set up', async function (this: ICustomWorld) {
     await this.utils.gotoCloudflare();
-    
-    // If already navigated to Cloudflare settings page, return
-    if (this.page.url() === `${WP_BASE_URL}/wp-admin/options-general.php?page=cloudflare#/home`) {
-        return;
-    }
-    
+
     await expect(this.page.locator('[href="#/login"]')).toBeVisible({ timeout: 30000 });
     await this.page.locator('[href="#/login"]').click();
 

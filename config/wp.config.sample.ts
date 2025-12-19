@@ -32,7 +32,7 @@ const IMAGIFY_INFOS = {
  * @type {{ email: string, apiKey: string }}
  */
 const CLOUDFLARE_INFOS = {
-	email:'',
+	email: '',
 	apiKey: ''
 } as const;
 

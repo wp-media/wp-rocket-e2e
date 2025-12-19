@@ -124,8 +124,6 @@ export class PageUtils {
      */
     public gotoPlugin = async (): Promise<void> => {
         await this.page.goto(WP_BASE_URL + '/wp-admin/plugins.php');
-        await this.page.waitForLoadState('networkidle');
-
     }
 
     /**
@@ -153,8 +151,6 @@ export class PageUtils {
      */
     public gotoCloudflare = async (): Promise<void> => {
         await this.page.goto(WP_BASE_URL + '/wp-admin/options-general.php?page=cloudflare');
-        await this.page.waitForLoadState('networkidle');
-
     }
 
     /**
@@ -492,12 +488,10 @@ export class PageUtils {
      */
     public clearWPRCache = async(): Promise<void> => {
         await this.gotoWpr();
-        await this.page.waitForLoadState('load', { timeout: 30000 });
 
         const clearCacheURL = await this.page.locator('.wpr-button.wpr-button--icon.wpr-icon-trash').first().getAttribute('href');
 
         await this.page.goto(clearCacheURL);
-        await this.page.waitForLoadState('load', { timeout: 30000 });
         
         // Verify that cache cleared message is displayed
         const cacheClearedElement = this.page.getByText('Cache cleared.');
