@@ -51,5 +51,4 @@ Given ('Cloudflare is set up', async function (this: ICustomWorld) {
 
     // Verify that page navigated to Cloudflare settings page
     await expect(this.page).toHaveURL(`${WP_BASE_URL}/wp-admin/options-general.php?page=cloudflare#/home`);
-    
 });
