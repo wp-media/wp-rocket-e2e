@@ -153,6 +153,8 @@ export class PageUtils {
      */
     public gotoCloudflare = async (): Promise<void> => {
         await this.page.goto(WP_BASE_URL + '/wp-admin/options-general.php?page=cloudflare');
+        await this.page.waitForLoadState('networkidle');
+
     }
 
     /**

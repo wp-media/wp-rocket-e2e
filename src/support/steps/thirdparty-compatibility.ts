@@ -7,6 +7,7 @@ import {expect} from "@playwright/test";
 /**
  * Deactivates and removes Cloudflare plugin from the UI
  * @param world - ICustomWorld instance
+ * @return {Promise<void>} - A Promise that resolves when the plugin is removed
  */
 export async function removeCloudflareViaUi(world: ICustomWorld): Promise<void> {
     // Navigate to plugins page
@@ -31,11 +32,11 @@ export async function removeCloudflareViaUi(world: ICustomWorld): Promise<void> 
 
     await world.page.locator('#delete-cloudflare').click();
 
-    // Verify successful deletion
-    if (await world.page.locator('#cloudflare-deleted').isVisible()) {
-        return;
-    }
-}
+   // Verify successful deletion by waiting for confirmation element
+    await expect(world.page.locator('#cloudflare-deleted')).toBeVisible({ timeout: 30000 });
+};
+
+
 
 Given ('Cloudflare is set up', async function (this: ICustomWorld) {
     await this.utils.gotoCloudflare();

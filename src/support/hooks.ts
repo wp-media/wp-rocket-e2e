@@ -224,9 +224,15 @@ After(async function (this: ICustomWorld, { pickle, result }) {
         await this.utils.createScreenShot(this, pickle);
     }
 
-    // Deactivate and remove cloudflare plugin from UI if it was installed, used UI as with CLI credentials arenot cleared
+   // Deactivate and remove Cloudflare plugin from UI if it was installed, used UI as with CLI credentials are not cleared
     if (await isPluginInstalled('cloudflare')) {
-       await removeCloudflareViaUi(this);
+        try {
+            await removeCloudflareViaUi(this);
+        } catch (error) {
+            // Log and continue cleanup to ensure debug log handling and browser closing still run
+            // eslint-disable-next-line no-console
+            console.error('Failed to remove Cloudflare via UI during After hook cleanup:', error);
+        }
     }
 
     const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
