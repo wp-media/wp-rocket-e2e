@@ -34,7 +34,7 @@ export async function removeCloudflareViaUi(world: ICustomWorld): Promise<void> 
 
    // Verify successful deletion by waiting for confirmation element
     await expect(world.page.locator('#cloudflare-deleted')).toBeVisible({ timeout: 30000 });
-};
+}
 
 
 
