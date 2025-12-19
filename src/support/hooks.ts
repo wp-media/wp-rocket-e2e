@@ -226,7 +226,7 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 
     // Deactivate and remove cloudflare plugin from UI if it was installed, used UI as with CLI credentials arenot cleared
     if (await isPluginInstalled('cloudflare')) {
-   //     await removeCloudflareViaUi(this);
+       await removeCloudflareViaUi(this);
     }
 
     const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
