@@ -224,17 +224,6 @@ After(async function (this: ICustomWorld, { pickle, result }) {
         await this.utils.createScreenShot(this, pickle);
     }
 
-   // Deactivate and remove Cloudflare plugin from UI if it was installed, used UI as with CLI credentials are not cleared
-    if (await isPluginInstalled('cloudflare')) {
-        try {
-            await removeCloudflareViaUi(this);
-        } catch (error) {
-            // Log and continue cleanup to ensure debug log handling and browser closing still run
-            // eslint-disable-next-line no-console
-            console.error('Failed to remove Cloudflare via UI during After hook cleanup:', error);
-        }
-    }
-
     const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
     const debugLogExists = await exists(debugLogPath);
     const debugLogContents = await readFile(debugLogPath);
@@ -260,6 +249,22 @@ After(async function (this: ICustomWorld, { pickle, result }) {
  */
 After({tags: '@delaylcp'}, async function (this: ICustomWorld) {
     await uninstallPlugin('rocket-lcp-delay');
+});
+
+/**
+ * After each test scenario with the @compatibility tag, performs teardown tasks.
+ */
+After({tags: '@compatibility'}, async function (this: ICustomWorld) {
+    // Deactivate and remove Cloudflare plugin from UI if it was installed, used UI as with CLI credentials are not cleared
+    if (await isPluginInstalled('cloudflare')) {
+        try {
+            await removeCloudflareViaUi(this);
+        } catch (error) {
+            // Log and continue cleanup to ensure debug log handling and browser closing still run
+            // eslint-disable-next-line no-console
+            console.error('Failed to remove Cloudflare via UI during After hook cleanup:', error);
+        }
+    }
 });
 
 /**
