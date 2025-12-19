@@ -124,6 +124,8 @@ export class PageUtils {
      */
     public gotoPlugin = async (): Promise<void> => {
         await this.page.goto(WP_BASE_URL + '/wp-admin/plugins.php');
+        await this.page.waitForLoadState('networkidle');
+
     }
 
     /**
@@ -142,6 +144,15 @@ export class PageUtils {
      */
     public gotoImagify = async (): Promise<void> => {
         await this.page.goto(WP_BASE_URL + '/wp-admin/options-general.php?page=imagify');
+    }
+
+    /**
+     * Navigates to Cloudflare settings page.
+     *
+     * @return {Promise<void>}
+     */
+    public gotoCloudflare = async (): Promise<void> => {
+        await this.page.goto(WP_BASE_URL + '/wp-admin/options-general.php?page=cloudflare');
     }
 
     /**
@@ -485,6 +496,10 @@ export class PageUtils {
 
         await this.page.goto(clearCacheURL);
         await this.page.waitForLoadState('load', { timeout: 30000 });
+        
+        // Verify that cache cleared message is displayed
+        const cacheClearedElement = this.page.getByText('Cache cleared.');
+        await expect(cacheClearedElement).toBeVisible();
     }
 
     /**

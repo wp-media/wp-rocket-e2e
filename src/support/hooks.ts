@@ -25,6 +25,7 @@ import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@
 import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
+import { removeCloudflareViaUi } from "./steps/thirdparty-compatibility";
 // import {configurations, getWPDir} from "../../utils/configurations";
 
 
@@ -221,6 +222,11 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 
     if (result?.status == Status.FAILED) {
         await this.utils.createScreenShot(this, pickle);
+    }
+
+    // Deactivate and remove cloudflare plugin from UI if it was installed, used UI as with CLI credentials arenot cleared
+    if (await isPluginInstalled('cloudflare')) {
+   //     await removeCloudflareViaUi(this);
     }
 
     const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
