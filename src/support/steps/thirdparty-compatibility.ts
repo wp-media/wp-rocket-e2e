@@ -46,7 +46,7 @@ Given ('Cloudflare is set up', async function (this: ICustomWorld) {
         return;
     }
     
-    await this.page.locator('[href="#/login"]').isVisible();
+    await expect(this.page.locator('[href="#/login"]')).toBeVisible({ timeout: 30000 });
     await this.page.locator('[href="#/login"]').click();
 
     await this.page.locator('[name="email"]').fill(CLOUDFLARE_INFOS.email);
