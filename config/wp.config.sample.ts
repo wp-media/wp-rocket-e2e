@@ -26,7 +26,7 @@ const IMAGIFY_INFOS = {
 } as const;
 
 /**
- * The default Imagify settings information
+ * The default Cloudflare settings information
  *
  * @constant
  * @type {{ email:string, apiKey: string }}
