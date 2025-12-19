@@ -26,6 +26,17 @@ const IMAGIFY_INFOS = {
 } as const;
 
 /**
+ * The default Imagify settings information
+ *
+ * @constant
+ * @type {{ email:string, apiKey: string }}
+ */
+const CLOUDFLARE_INFOS = {
+	email:'',
+	apiKey: ''
+} as const;
+
+/**
  * Backwpup settings information
  */
 const BACKWPUP_INFOS = {
@@ -122,5 +133,6 @@ export {
 	WP_SSH_KEY,
 	WP_SSH_ROOT_DIR,
 	IMAGIFY_INFOS,
-	BACKWPUP_INFOS
+	BACKWPUP_INFOS,
+	CLOUDFLARE_INFOS
 };
