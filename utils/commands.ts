@@ -475,10 +475,15 @@ export async function switchTheme(theme: string): Promise<void> {
     const result = await wpWithOutput(`theme activate '${theme}'`);
     
     if (result.failed) {
-        // Ignore FTP filesystem errors from Avada theme deactivation
-        // Theme switching still succeeds despite the error
+        // Ignore FTP filesystem errors that can occur when switching away from the Avada theme.
+        // This error happens during the deactivation of the previous theme as part of the theme switch,
+        // but the theme switching still succeeds despite the error
         if (result.stderr && result.stderr.includes('ftp_nlist')) {
-            console.log(`Theme '${theme}' activated successfully (FTP error ignored)`);
+            console.warn(
+                `Theme '${theme}' was activated, but WordPress reported an FTP-related filesystem notice (ftp_nlist) while switching themes. ` +
+                `This is a known benign issue for some themes and has been intentionally ignored for E2E tests.\n` +
+                `Original WP-CLI stderr: ${result.stderr}`
+            );
         } else {
             // For other errors, throw them
             throw new Error(`Failed to activate theme '${theme}': ${result.stderr}`);

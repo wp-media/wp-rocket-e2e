@@ -38,7 +38,16 @@ Given('wpml directory is enabled', async function(this:ICustomWorld) {
 });
 
 /**
- * Enable delay js theme exclusions by clicking select all if the element exists
+ * Enables "one click exclusions" for the Delay JS feature in WP Rocket by selecting all detected scripts for exclusion.
+ *
+ * In WP Rocket, "one click exclusions" is a UI feature under the Delay JavaScript Execution option that allows users to quickly exclude all detected JavaScript files from being delayed, improving compatibility with themes and plugins.
+ *
+ * This step expands the exclusions list and selects all available scripts for exclusion, then saves the settings.
+ *
+ * @param {ICustomWorld} this - Cucumber World context object providing Playwright page and utilities.
+ * @return {Promise<void>}
+ * @requires {@link ../../common/custom-world}
+ * 
  */
 Given('one click exclusions are enabled', async function(this:ICustomWorld) {
     const exclusionHeader = '#wpr_djs_oneclick_exclusions_themes > div.wpr-list-header > div.wpr-list-header-data > span.wpr-multiple-select-title';
@@ -54,13 +63,14 @@ Given('one click exclusions are enabled', async function(this:ICustomWorld) {
             await this.page.locator(exclusionHeader).click();
             
             // Toggle select all
-            await this.page.locator('//*[@id="wpr_djs_oneclick_exclusions_themes"]/div[2]/ul/li[1]/div').click();
+            await this.page.locator('#wpr_djs_oneclick_exclusions_themes > div.wpr-list-body > ul > li:nth-child(1) > div > label > span').click();
             
             await this.utils.saveSettings();
         }
     } catch (error) {
-        // If exclusion header element doesn't exist, just log and continue
-        console.log(`Exclusion header element not found for theme '${theme}', skipping one-click exclusions setup`);
+        // Log any error encountered while setting up one-click exclusions and continue
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Error while configuring one-click exclusions for theme '${theme}': ${errorMessage}`);
     }
 });
 

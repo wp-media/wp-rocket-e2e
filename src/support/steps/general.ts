@@ -126,6 +126,25 @@ Given('activate {string} plugin', async function (this: ICustomWorld, plugin) {
  * Executes the step to activate a theme.
  */
 Given('theme {string} is activated', async function (this:ICustomWorld, theme) {
+    await this.utils.switchThemeViaUi(theme);
+
+    // Check tags via pickle.
+    if (! await isTagPresent(this.pickle, '@delayjs')) {
+        return;
+    }
+
+    // Set the THEME environment variable to the current theme.
+    process.env.THEME = theme;
+});
+
+/**
+ * Executes the step to activate a theme via WP-CLI
+ *  NOTE: We use WP-CLI-based theme activation (switchTheme) instead of UI-based switching (switchThemeViaUi)
+ *  because it is faster and more reliable for automated tests. This approach may not trigger all the same
+ *  WordPress hooks or actions as switching via the admin UI, but for this scenario, only the active theme
+ *  state is required. If UI-specific side effects are needed, consider using the UI-based method instead.
+ */
+Given('theme {string} is activated via WP-CLI', async function (this:ICustomWorld, theme) {
     const { switchTheme } = await import('../../../utils/commands');
     await switchTheme(theme);
 
@@ -148,7 +167,7 @@ Given('visual regression reference is generated', async function (this:ICustomWo
     
     // Array of tags to exclude from one time reference generation.
     const exclusion = [
-       '@delayjs'
+        '@delayjs'
     ]
 
     // Bail out if there is already reference for the current tag.
@@ -305,18 +324,15 @@ When('expand mobile menu and validate no console error', async function (this:IC
     const consoleMsg2 = await getConsoleMsgWithMenuExpansion(this.page, `${WP_BASE_URL}/`);
     
     // Compare console messages
-    if (consoleMsg2.length !== 0) {
-        try {
-            const uniqueMsg1 = [...new Set(consoleMsg1)].sort();
-            const uniqueMsg2 = [...new Set(consoleMsg2)].sort();
-            
-            expect(uniqueMsg2).toEqual(uniqueMsg1);
-        } catch (e) {
-            throw new Error(
-                `\x1b[41m\x1b[37mConsole difference detected when expanding mobile menu for theme '${theme}'\x1b[0m\n` +
-                `nowprocket console: ${consoleMsg1}\nactual console: ${consoleMsg2}`
-            );
-        }
+    try {
+        const uniqueMsg1 = [...new Set(consoleMsg1)].sort();
+        const uniqueMsg2 = [...new Set(consoleMsg2)].sort();
+        expect(uniqueMsg2).toEqual(uniqueMsg1);
+    } catch (e) {
+        throw new Error(
+            `\x1b[41m\x1b[37mConsole difference detected when expanding mobile menu for theme '${theme}'\x1b[0m\n` +
+            `nowprocket console: ${consoleMsg1}\nactual console: ${consoleMsg2}`
+        );
     }
 });
 When('I clear cache', async function (this:ICustomWorld) {
@@ -532,13 +548,7 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
 
     // Trigger user interaction to execute delayed scripts
     // Click on body element to avoid clicking interactive elements
-    try {
-        await page.mouse.move(10, 10);
-        await page.mouse.click(10, 10);
-    } catch (error) {
-        // Handle errors from mouse interactions after navigation
-        console.log('Mouse interaction failed after navigation, continuing...');
-    }
+    await page.locator('body').click();
     
     // Wait longer for delayed scripts to execute on remote servers
     await page.waitForTimeout(3000);
