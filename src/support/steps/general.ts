@@ -564,7 +564,7 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
         ).sort();
     
     return normalizedMessages;
-}
+};
 
 /**
  * Gets console messages while expanding mobile menu for a given URL
@@ -667,7 +667,7 @@ const getConsoleMsgWithMenuExpansion = async (page: Page, url: string): Promise<
         .sort();
     
     return normalizedMessages;
-}
+};
 
 /**
  * Executes the step to assert that page navigation.
