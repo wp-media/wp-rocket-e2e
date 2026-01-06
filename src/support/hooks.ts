@@ -252,6 +252,16 @@ After({tags: '@delaylcp'}, async function (this: ICustomWorld) {
 });
 
 /**
+ * After each test scenario with the @imagify tag, performs teardown tasks.
+ */
+After({tags: '@imagify'}, async function (this: ICustomWorld) {
+    // Only uninstall if Imagify is installed
+    if (await isPluginInstalled('imagify')) {
+        await uninstallPlugin('imagify');
+    }
+});
+
+/**
  * After each test scenario with the @compatibility tag, performs teardown tasks.
  */
 After({tags: '@compatibility'}, async function (this: ICustomWorld) {
