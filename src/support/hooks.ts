@@ -265,7 +265,7 @@ After({tags: '@imagify'}, async function (this: ICustomWorld) {
  * After each test scenario with the @compatibility tag, performs teardown tasks.
  */
 After({tags: '@compatibility'}, async function (this: ICustomWorld) {
-    // Deactivate and remove Cloudflare plugin from UI if it was installed, used UI as with CLI credentials are not cleared
+    // Deactivate and remove Cloudflare plugin from UI if it was installed, using UI because CLI doesn't clear credentials
     if (await isPluginInstalled('cloudflare')) {
         try {
             await removeCloudflareViaUi(this);
