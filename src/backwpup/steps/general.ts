@@ -51,6 +51,9 @@ When('I set up {string} storage', async function (this: ICustomWorld, storagePro
         msazure: () => this.storage.setupMSAzure(),
         ftp: () => this.storage.setupFTP(),
         sugarsync: () => this.storage.setupSugarSync(),
+        s3: () => this.storage.setupS3(),
+        glacier: () => this.storage.setupGlacier(),
+        rsc: () => this.storage.setupRackspace(),
         s3: () => this.storage.setupS3()
     } as const;
 
