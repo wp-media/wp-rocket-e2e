@@ -79,7 +79,6 @@ export class StorageUtils {
             s3: () => this.setupS3(),
             glacier: () => this.setupGlacier(),
             rsc: () => this.setupRackspace(),
-            s3: () => this.setupS3()
         } as const;
         const storageButton = `#backwpup-onboarding-panes .js-backwpup-toggle-storage[data-storage="${storageType}"]`;
         const storageSidebar = `#backwpup-sidebar #sidebar-storage-${storageType}`;
