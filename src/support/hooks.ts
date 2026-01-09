@@ -25,7 +25,6 @@ import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@
 import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
-import { removeCloudflareViaUi } from "./steps/thirdparty-compatibility";
 // import {configurations, getWPDir} from "../../utils/configurations";
 
 
@@ -268,7 +267,7 @@ After({tags: '@compatibility'}, async function (this: ICustomWorld) {
     // Deactivate and remove Cloudflare plugin from UI if it was installed, using UI because CLI doesn't clear credentials
     if (await isPluginInstalled('cloudflare')) {
         try {
-            await removeCloudflareViaUi(this);
+            await this.utils.removeCloudflareViaUi();
         } catch (error) {
             // Log and continue cleanup to ensure debug log handling and browser closing still run
             // eslint-disable-next-line no-console

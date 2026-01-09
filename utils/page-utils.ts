@@ -734,6 +734,38 @@ export class PageUtils {
     }
 
     /**
+     * Removes Cloudflare via the WordPress admin UI.
+     *
+     * @return {Promise<void>} Promise that resolves when the plugin has been deactivated and removed.
+     */
+    public removeCloudflareViaUi = async (): Promise<void> => {
+        // Navigate to plugins page
+        await this.gotoPlugin();
+
+        // Deactivate Cloudflare plugin
+        await this.togglePluginActivation('cloudflare', false);
+
+        // Check for deactivation modal and handle it
+        if (await this.page.locator('label[for=deactivate]').isVisible()) {
+            await this.page.locator('label[for=deactivate]').click();
+            await this.page.locator('text=Confirm').click();
+        }
+
+        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Delete Cloudflare plugin
+        this.page.once('dialog', async (dialog) => {
+            expect(dialog.type()).toContain('confirm');
+            await dialog.accept();
+        });
+
+        await this.page.locator('#delete-cloudflare').click();
+
+        // Verify successful deletion by waiting for confirmation element
+        await expect(this.page.locator('#cloudflare-deleted')).toBeVisible({ timeout: 30000 });
+    }
+
+    /**
      * Create cucumber screenshot.
      *
      * @param   {ICustomWorld}     world   ICustomWorld Interface
