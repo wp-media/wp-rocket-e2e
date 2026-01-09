@@ -13,11 +13,17 @@ import { CLOUDFLARE_INFOS, WP_BASE_URL } from "../../../config/wp.config";
 Given ('Cloudflare is set up', async function (this: ICustomWorld) {
     await this.utils.gotoCloudflare();
 
+    const { email, apiKey } = CLOUDFLARE_INFOS;
+
+    if (typeof email !== 'string' || email.trim() === '' || typeof apiKey !== 'string' || apiKey.trim() === '') {
+        throw new Error('Cloudflare credentials not configured. Please set CLOUDFLARE_INFOS.email and CLOUDFLARE_INFOS.apiKey in wp.config.ts.');
+    }
+
     await expect(this.page.locator('[href="#/login"]')).toBeVisible({ timeout: 30000 });
     await this.page.locator('[href="#/login"]').click();
 
-    await this.page.locator('[name="email"]').fill(CLOUDFLARE_INFOS.email);
-    await this.page.locator('[name="apiKey"]').fill(CLOUDFLARE_INFOS.apiKey);
+    await this.page.locator('[name="email"]').fill(email);
+    await this.page.locator('[name="apiKey"]').fill(apiKey);
     await this.page.locator('button[type="submit"]').click();
 
     // Verify that page navigated to Cloudflare settings page
