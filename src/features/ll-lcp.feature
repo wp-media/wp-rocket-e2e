@@ -19,7 +19,7 @@ Feature: Lazyload with LCP
     And I log out
     And I visit the urls and check for lazyload
     Then lcp and atf images are not written to LL format
-@imagify
+
   Scenario: Should exclude next-gen lcp/atf from LL
     Given I install plugin 'imagify'
     And plugin 'imagify' is activated
