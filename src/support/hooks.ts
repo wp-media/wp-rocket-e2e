@@ -261,7 +261,9 @@ After({tags: '@imagify'}, async function (this: ICustomWorld) {
 });
 
 /**
- * After each test scenario with the @compatibility tag, performs teardown tasks.
+ * After each test scenario with the @compatibility tag, cleans up the Cloudflare plugin.
+ * Deactivates and removes the Cloudflare plugin via the UI when installed to ensure
+ * credentials and configuration are cleared after compatibility tests.
  */
 After({tags: '@compatibility'}, async function (this: ICustomWorld) {
     // Deactivate and remove Cloudflare plugin from UI if it was installed, using UI because CLI doesn't clear credentials
