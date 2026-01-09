@@ -1,8 +1,8 @@
-import { ICustomWorld } from "../../common/custom-world";
+import { Given } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
 
-import {Given } from '@cucumber/cucumber';
+import { ICustomWorld } from "../../common/custom-world";
 import { CLOUDFLARE_INFOS, WP_BASE_URL } from "../../../config/wp.config";
-import {expect} from "@playwright/test";
 
 /**
  * Sets up Cloudflare by logging in with the configured credentials.
