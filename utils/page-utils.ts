@@ -754,12 +754,13 @@ export class PageUtils {
         await this.page.waitForLoadState('load', { timeout: 30000 });
 
         // Delete Cloudflare plugin
-        this.page.once('dialog', async (dialog) => {
-            expect(dialog.type()).toContain('confirm');
-            await dialog.accept();
-        });
+        const [dialog] = await Promise.all([
+            this.page.waitForEvent('dialog'),
+            this.page.locator('#delete-cloudflare').click(),
+        ]);
 
-        await this.page.locator('#delete-cloudflare').click();
+        expect(dialog.type()).toContain('confirm');
+        await dialog.accept();
 
         // Verify successful deletion by waiting for confirmation element
         await expect(this.page.locator('#cloudflare-deleted')).toBeVisible({ timeout: 30000 });
