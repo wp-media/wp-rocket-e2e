@@ -265,7 +265,7 @@ After({tags: '@imagify'}, async function (this: ICustomWorld) {
  * Deactivates and removes the Cloudflare plugin via the UI when installed to ensure
  * credentials and configuration are cleared after compatibility tests.
  */
-After({tags: '@compatibility'}, async function (this: ICustomWorld) {
+After({tags: '@cloudflare-compatibility'}, async function (this: ICustomWorld) {
     // Deactivate and remove Cloudflare plugin from UI if it was installed, using UI because CLI doesn't clear credentials
     if (await isPluginInstalled('cloudflare')) {
         try {
@@ -284,7 +284,7 @@ After({tags: '@compatibility'}, async function (this: ICustomWorld) {
                 ? error.stack || error.message
                 : String(error);
             worldWithCleanup.cleanupErrors.push(
-                `@compatibility After hook cleanup failed: removeCloudflareViaUi - ${errorDescription}`
+                `@cloudflare-compatibility After hook cleanup failed: removeCloudflareViaUi - ${errorDescription}`
             );
         }
     }

@@ -1,4 +1,4 @@
-@setup @compatibility
+@setup @cloudflare-compatibility
 Feature: Cloudflare 3rd party compatibility with WP Rocket
 
     Background:
