@@ -274,6 +274,18 @@ After({tags: '@compatibility'}, async function (this: ICustomWorld) {
             // Log and continue cleanup to ensure debug log handling and browser closing still run
             // eslint-disable-next-line no-console
             console.error('Failed to remove Cloudflare via UI during After hook cleanup:', error);
+
+            // Also attach cleanup failure details to the World context so test reporting can surface them
+            const worldWithCleanup = this as unknown as { cleanupErrors?: string[] };
+            if (!worldWithCleanup.cleanupErrors) {
+                worldWithCleanup.cleanupErrors = [];
+            }
+            const errorDescription = error instanceof Error
+                ? error.stack || error.message
+                : String(error);
+            worldWithCleanup.cleanupErrors.push(
+                `@compatibility After hook cleanup failed: removeCloudflareViaUi - ${errorDescription}`
+            );
         }
     }
 });
