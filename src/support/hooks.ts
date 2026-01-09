@@ -261,7 +261,9 @@ After({tags: '@imagify'}, async function (this: ICustomWorld) {
 });
 
 /**
- * After each test scenario with the @compatibility tag, performs teardown tasks.
+ * After each test scenario with the @compatibility tag, cleans up the Cloudflare plugin.
+ * Deactivates and removes the Cloudflare plugin via the UI when installed to ensure
+ * credentials and configuration are cleared after compatibility tests.
  */
 After({tags: '@compatibility'}, async function (this: ICustomWorld) {
     // Deactivate and remove Cloudflare plugin from UI if it was installed, using UI because CLI doesn't clear credentials
@@ -272,6 +274,18 @@ After({tags: '@compatibility'}, async function (this: ICustomWorld) {
             // Log and continue cleanup to ensure debug log handling and browser closing still run
             // eslint-disable-next-line no-console
             console.error('Failed to remove Cloudflare via UI during After hook cleanup:', error);
+
+            // Also attach cleanup failure details to the World context so test reporting can surface them
+            const worldWithCleanup = this as unknown as { cleanupErrors?: string[] };
+            if (!worldWithCleanup.cleanupErrors) {
+                worldWithCleanup.cleanupErrors = [];
+            }
+            const errorDescription = error instanceof Error
+                ? error.stack || error.message
+                : String(error);
+            worldWithCleanup.cleanupErrors.push(
+                `@compatibility After hook cleanup failed: removeCloudflareViaUi - ${errorDescription}`
+            );
         }
     }
 });
