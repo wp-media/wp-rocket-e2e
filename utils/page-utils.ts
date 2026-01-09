@@ -492,7 +492,7 @@ export class PageUtils {
         const clearCacheURL = await this.page.locator('.wpr-button.wpr-button--icon.wpr-icon-trash').first().getAttribute('href');
 
         await this.page.goto(clearCacheURL);
-        
+
         // Verify that cache cleared message is displayed
         const cacheClearedElement = this.page.getByText('Cache cleared.');
         await expect(cacheClearedElement).toBeVisible();
