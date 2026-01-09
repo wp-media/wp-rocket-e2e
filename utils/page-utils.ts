@@ -742,6 +742,17 @@ export class PageUtils {
         // Navigate to plugins page
         await this.gotoPlugin();
 
+        // Check if Cloudflare plugin is installed or activated
+        const pluginName = 'Cloudflare';
+        const pluginRow = this.page.locator('tr').filter({ hasText: pluginName });
+        const isActivated = await pluginRow.getByText('Deactivate').isVisible();
+        const isInstalled = await pluginRow.getByText('Activate').isVisible();
+
+        // If plugin is neither activated nor installed, it doesn't exist
+        if (!isActivated && !isInstalled) {
+            return;
+        }
+
         // Deactivate Cloudflare plugin
         await this.togglePluginActivation('cloudflare', false);
 
