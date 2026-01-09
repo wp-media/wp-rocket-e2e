@@ -1,4 +1,4 @@
-@lcp @delaylcp @setup 
+@lcp @delaylcp @setup
 Feature: Lazyload with LCP
 
   Background:
