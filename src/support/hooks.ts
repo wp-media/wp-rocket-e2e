@@ -251,6 +251,34 @@ After({tags: '@delaylcp'}, async function (this: ICustomWorld) {
 });
 
 /**
+ * After each test scenario with the @imagify tag, performs teardown tasks.
+ */
+After({tags: '@imagify'}, async function (this: ICustomWorld) {
+    // Only uninstall if Imagify is installed
+    if (await isPluginInstalled('imagify')) {
+        await uninstallPlugin('imagify');
+    }
+});
+
+/**
+ * After each test scenario with the @compatibility tag, cleans up the Cloudflare plugin.
+ * Deactivates and removes the Cloudflare plugin via the UI when installed to ensure
+ * credentials and configuration are cleared after compatibility tests.
+ */
+After({tags: '@cloudflare-compatibility'}, async function (this: ICustomWorld) {
+    // Deactivate and remove Cloudflare plugin from UI if it was installed, using UI because CLI doesn't clear credentials
+    if (await isPluginInstalled('cloudflare')) {
+        try {
+            await this.utils.removeCloudflareViaUi();
+        } catch (error) {
+            // Log and continue cleanup to ensure debug log handling and browser closing still run
+            // eslint-disable-next-line no-console
+            console.error('Failed to remove Cloudflare via UI during After hook cleanup:', error);
+        }
+    }
+});
+
+/**
  * To uncomment during implementation of cli
  */
 //  After(async function () {
