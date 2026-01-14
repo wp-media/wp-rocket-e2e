@@ -63,7 +63,7 @@ Given('one click exclusions are enabled', async function(this:ICustomWorld) {
             await this.page.locator(exclusionHeader).click();
             
             // Toggle select all
-            await this.page.locator('#wpr_djs_oneclick_exclusions_themes > div.wpr-list-body > ul > li:nth-child(1) > div > label > span').click();
+            await this.page.locator('#wpr_djs_oneclick_exclusions_themes .wpr-select-all label').click();
             
             await this.utils.saveSettings();
         }
