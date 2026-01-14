@@ -3,6 +3,8 @@ import {Locators, Selector} from "../../../utils/types";
 import {Sections} from "../../common/sections";
 import {BACKWPUP_INFOS} from "../../../config/wp.config";
 import { getFolderNameFromHost } from "./helpers";
+import { DEFAULT_S3_REGION } from "../../types/s3-region-types";
+import { DEFAULT_RACKSPACE_REGION } from "../../types/rsc-region-types";
 
 export class StorageUtils {
     /**
@@ -73,7 +75,10 @@ export class StorageUtils {
         const storageType = storageProvider.toUpperCase();
         const storageHandlers: Record<string, () => Promise<void>> = {
             ftp: () => this.setupFTP(),
-            sugarsync: () => this.setupSugarSync()
+            sugarsync: () => this.setupSugarSync(),
+            s3: () => this.setupS3(),
+            glacier: () => this.setupGlacier(),
+            rsc: () => this.setupRackspace(),
         } as const;
         const storageButton = `#backwpup-onboarding-panes .js-backwpup-toggle-storage[data-storage="${storageType}"]`;
         const storageSidebar = `#backwpup-sidebar #sidebar-storage-${storageType}`;
@@ -161,6 +166,125 @@ export class StorageUtils {
             }
         );
         await this.page.click('.js-backwpup-test-SUGARSYNC-storage');
+
+        await this.page.waitForResponse(response =>
+            response.url().includes('/backwpup/v1/cloudsaveandtest') &&
+            response.status() === 200
+        );
+    }
+    /**
+     * Configures Amazon S3 storage settings for BackWPup plugin.
+     * 
+     * This method fills in the S3 access key, secret key, selects the region,
+     * optionally selects a bucket name, and tests the connection.
+     * 
+     * @returns A promise that resolves when the S3 setup and connection test are complete.
+     */
+    public setupS3 = async (): Promise<void> => {
+        if (!BACKWPUP_INFOS.s3.accessKey || !BACKWPUP_INFOS.s3.secretKey) {
+            throw new Error('S3 access key and secret key must be provided in BACKWPUP_INFOS.');
+        }
+        await this.page.locator('#s3accesskey').fill(BACKWPUP_INFOS.s3.accessKey);
+        await this.page.locator('#s3secretkey').fill(BACKWPUP_INFOS.s3.secretKey);
+        const region = BACKWPUP_INFOS.s3.region || DEFAULT_S3_REGION;
+        await this.page.locator('#s3region').selectOption(region);
+        await this.page.waitForSelector('#s3bucket', { state: 'visible' });
+
+        if (BACKWPUP_INFOS.s3.bucketName) {
+            // Ask if a specific option exists before selecting it
+            const options = (await this.page.locator('#s3bucket option').allTextContents()).map(option => option.trim());
+            // If the bucket name exists in the options, select it; otherwise, fill in the new bucket name
+            if (options.includes(BACKWPUP_INFOS.s3.bucketName)) {
+                await this.page.locator('#s3bucket').selectOption(BACKWPUP_INFOS.s3.bucketName);
+            } else {
+                await this.page.locator('#s3newbucket').fill(BACKWPUP_INFOS.s3.bucketName);
+            }
+        }
+        // Click test connection.
+        await this.page.click('.js-backwpup-test-S3-storage');
+
+        await this.page.waitForResponse(response =>
+            response.url().includes('/backwpup/v1/cloudsaveandtest') &&
+            response.status() === 200
+        );
+    }
+    /**
+     * Sets up AWS Glacier storage configuration for BackWPup.
+     * 
+     * Configures the Glacier storage by filling in access credentials (either from Glacier-specific
+     * or S3 credentials), selecting the region, optionally setting the vault name, and testing
+     * the connection.
+     * 
+     * @returns A promise that resolves when the Glacier setup and connection test are complete.
+     * @throws {Error} If neither Glacier access key/secret key nor S3 credentials are provided.
+     */
+    public setupGlacier = async (): Promise<void> => {
+        // Use S3 credentials if specified, otherwise use Glacier-specific credentials
+        const accessKey = BACKWPUP_INFOS.glacier.useS3Credentials
+            ? BACKWPUP_INFOS.s3.accessKey
+            : BACKWPUP_INFOS.glacier.accessKey;
+        const secretKey = BACKWPUP_INFOS.glacier.useS3Credentials
+            ? BACKWPUP_INFOS.s3.secretKey
+            : BACKWPUP_INFOS.glacier.secretKey;
+            
+        if (!accessKey || !secretKey) {
+            throw new Error('Glacier access key and secret key must be provided in BACKWPUP_INFOS or S3 credentials must be used.');
+        }
+        await this.page.locator('#glacieraccesskey').fill(accessKey);
+        await this.page.locator('#glaciersecretkey').fill(secretKey);
+        const region = BACKWPUP_INFOS.glacier.region || DEFAULT_S3_REGION;
+        await this.page.locator('#glacierregion').selectOption(region);
+        await this.page.waitForSelector('#glaciervault', { state: 'visible' });
+        if (BACKWPUP_INFOS.glacier.vaultName) {
+            // Ask if a specific option exists before selecting it
+            const options = (await this.page.locator('#glaciervault option').allTextContents()).map(option => option.trim());
+            // If the vault name exists in the options, select it; otherwise, fill in the new vault name
+            if (options.includes(BACKWPUP_INFOS.glacier.vaultName)) {
+                await this.page.locator('#glaciervault').selectOption(BACKWPUP_INFOS.glacier.vaultName);
+            } else {
+                await this.page.locator('#newvault').fill(BACKWPUP_INFOS.glacier.vaultName);
+            }
+        }
+        // Click test connection.
+        await this.page.click('.js-backwpup-test-GLACIER-storage');
+
+        await this.page.waitForResponse(response =>
+            response.url().includes('/backwpup/v1/cloudsaveandtest') &&
+            response.status() === 200
+        );
+    }
+    /**
+     * Sets up Rackspace Cloud Files storage configuration for BackWPup.
+     * 
+     * Configures the Rackspace storage by filling in the username, API key, and region.
+     * If a container name is provided, it either selects an existing container or
+     * creates a new one. Finally, it tests the connection to verify the configuration.
+     * 
+     * @returns A promise that resolves when the Rackspace storage setup and connection test are complete.
+     * @throws Error if Rackspace username or API key are not provided in BACKWPUP_INFOS.
+     */
+    public setupRackspace = async (): Promise<void> => {
+        if (!BACKWPUP_INFOS.rsc.username || !BACKWPUP_INFOS.rsc.apiKey) {
+            throw new Error('Rackspace username and API key must be provided in BACKWPUP_INFOS.');
+        }
+        await this.page.locator('#rscusername').fill(BACKWPUP_INFOS.rsc.username);
+        await this.page.locator('#rscapikey').fill(BACKWPUP_INFOS.rsc.apiKey);
+        const region = BACKWPUP_INFOS.rsc.region || DEFAULT_RACKSPACE_REGION;
+        await this.page.locator('#rscregion').selectOption(region);
+        await this.page.waitForSelector('#rsccontainer', { state: 'visible' });
+
+        if (BACKWPUP_INFOS.rsc.container) {
+            // Ask if a specific option exists before selecting it
+            const options = (await this.page.locator('#rsccontainer option').allTextContents()).map(option => option.trim());
+            // If the container name exists in the options, select it; otherwise, fill in the new container name
+            if (options.includes(BACKWPUP_INFOS.rsc.container)) {
+                await this.page.locator('#rsccontainer').selectOption(BACKWPUP_INFOS.rsc.container);
+            } else {
+                await this.page.locator('#newrsccontainer').fill(BACKWPUP_INFOS.rsc.container);
+            }
+        }
+        // Click test connection.
+        await this.page.click('.js-backwpup-test-RSC-storage');
 
         await this.page.waitForResponse(response =>
             response.url().includes('/backwpup/v1/cloudsaveandtest') &&
