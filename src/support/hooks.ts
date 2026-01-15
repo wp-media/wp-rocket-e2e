@@ -216,7 +216,6 @@ Before({tags: '@vr'}, async function (this: ICustomWorld) {
 /**
  * Before each test scenario with the @performancehints tag, verifies required pages exist.
  */
-
 Before({tags: '@performancehints'}, async function (this: ICustomWorld) {
     const requiredPages = ['atf-lrc-1', 'atf-lrc-2'];
     
