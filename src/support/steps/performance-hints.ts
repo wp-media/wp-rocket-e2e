@@ -146,7 +146,6 @@ Then ('untrash and republish {string} page', async function (this: ICustomWorld,
     }
     
     await updatePostStatus(parseInt(postData[0].ID, 10), 'publish');
-    await this.page.waitForTimeout(2000); // Give WP time to process
     
     // Verify it actually worked
     const verifyStdout = await getPostDataFromTitle(permalink, 'publish', 'ID,post_status');
