@@ -12,6 +12,11 @@ import { ICustomWorld } from '../../common/custom-world';
 
 /**
  * Executes the step to verify that WP Rocket settings links are not broken.
+ *
+ * @function
+ * @async
+ * @param {ICustomWorld} this - The Cucumber world context for the current scenario.
+ * @return {Promise<void>} - A Promise that resolves when the check is completed.
  */
 Then('WP Rocket settings links are not broken', async function (this: ICustomWorld) {
     const hrefs = new Set<string>();
@@ -47,6 +52,7 @@ Then('WP Rocket settings links are not broken', async function (this: ICustomWor
 
     for (const tabUrl of tabUrls) {
         await this.page.goto(tabUrl);
+        await this.page.waitForLoadState('load');
         await collectLinks();
     }
 
@@ -63,22 +69,31 @@ Then('WP Rocket settings links are not broken', async function (this: ICustomWor
             continue;
         }
 
-        const url = new URL(href, this.page.url());
-        if (!['http:', 'https:'].includes(url.protocol)) {
+        try {
+            const url = new URL(href, this.page.url());
+            if (!['http:', 'https:'].includes(url.protocol)) {
+                continue;
+            }
+
+            if (url.pathname.endsWith('/wp-admin/admin-post.php')) {
+                // Avoid triggering admin-post actions.
+                continue;
+            }
+
+            url.hash = '';
+            normalizedUrls.add(url.toString());
+        } catch {
             continue;
         }
-
-        if (url.pathname.endsWith('/wp-admin/admin-post.php')) {
-            // Avoid triggering admin-post actions.
-            continue;
-        }
-
-        url.hash = '';
-        normalizedUrls.add(url.toString());
     }
 
     for (const url of normalizedUrls) {
-        const response = await this.page.request.get(url, { maxRedirects: 5 });
-        expect(response.status(), `Expected ${url} not to return 404`).not.toBe(404);
+        try {
+            const response = await this.page.request.get(url, { maxRedirects: 5, timeout: 30000 });
+            expect(response.status(), `Expected ${url} not to return 404`).not.toBe(404);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            throw new Error(`Network error while requesting ${url}: ${message}`);
+        }
     }
 });
