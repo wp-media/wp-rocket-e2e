@@ -19,10 +19,11 @@ import { ChromiumBrowser, chromium } from '@playwright/test';
 import { Sections } from '../common/sections';
 import { selectors as pluginSelectors } from "./../common/selectors";
 import { PageUtils } from "../../utils/page-utils";
-import { deleteFolder, isWprRelatedError } from "../../utils/helpers";
+import { deleteFolder, extractFromStdout, isWprRelatedError } from "../../utils/helpers";
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
-import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, deactivatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled} from "../../utils/commands";
+
+import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, deactivatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 // import {configurations, getWPDir} from "../../utils/configurations";
@@ -211,6 +212,25 @@ Before({tags: '@vr'}, async function (this: ICustomWorld) {
 
     this.wprSection = elementToParentMap[option] as Section;
     this.wprOption = option;
+});
+
+/**
+ * Before each test scenario with the @performancehints tag, verifies required pages exist.
+ */
+Before({tags: '@performancehints'}, async function (this: ICustomWorld) {
+    const requiredPages = ['atf-lrc-1', 'atf-lrc-2'];
+    
+    for (const pageName of requiredPages) {
+        const pageDataStdout = await getPostDataFromTitle(pageName, 'publish', 'ID,post_status');
+        const pageData = await extractFromStdout(pageDataStdout);
+        
+        if (!pageData || pageData.length === 0) {
+            throw new Error(
+                `Required test page '${pageName}' does not exist. ` +
+                `Template loader plugin may have failed.`
+            );
+        }
+    }
 });
 
 /**
