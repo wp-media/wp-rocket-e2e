@@ -312,13 +312,6 @@ When('expand mobile menu and validate no console error', async function (this:IC
     const { WP_BASE_URL } = await import('../../../config/wp.config');
     const theme = process.env.THEME ? process.env.THEME : '';
 
-    // List of themes that don't have mobile menu support
-    const themesWithoutMobileMenu = ['genesis-sample', 'hello-elementor'];
-    if (themesWithoutMobileMenu.includes(theme)) {
-        console.log(`Skipping mobile menu validation for theme '${theme}' (no mobile menu)`);
-        return;
-    }
-
     // Get console messages when expanding menu on both versions
     const consoleMsg1 = await getConsoleMsgWithMenuExpansion(this.page, `${WP_BASE_URL}/?nowprocket`);
     const consoleMsg2 = await getConsoleMsgWithMenuExpansion(this.page, `${WP_BASE_URL}/`);
@@ -571,7 +564,6 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
  */
 const getConsoleMsgWithMenuExpansion = async (page: Page, url: string): Promise<Array<string>> => {
     const consoleMsg: string[] = [];
-    const theme = process.env.THEME ? process.env.THEME : '';
 
     const consoleHandler = (msg): void => {
         consoleMsg.push(msg.text());
