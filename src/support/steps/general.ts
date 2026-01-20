@@ -581,27 +581,32 @@ const getConsoleMsgWithMenuExpansion = async (page: Page, url: string): Promise<
         consoleMsg.push(error.message);
     };
 
-    page.on('console', consoleHandler);
-    page.on('pageerror', pageErrorHandler);
+    try{
+        page.on('console', consoleHandler);
+        page.on('pageerror', pageErrorHandler);
 
-    // Set mobile viewport
-    await page.setViewportSize({
-        width: 500,
-        height: 480,
-    });
+        // Set mobile viewport
+        await page.setViewportSize({
+            width: 500,
+            height: 480,
+        });
 
-    await page.goto(url);
-    await page.waitForLoadState('load', { timeout: 30000 });
+        await page.goto(url);
+        await page.waitForLoadState('load', { timeout: 30000 });
     
-    // Open the mobile menu using the helper function
-    await openMobileMenu(page);
-    await page.waitForTimeout(1000);
+        // Open the mobile menu using the helper function
+        await openMobileMenu(page);
+        await page.waitForTimeout(1000);
 
+    }
+   
+    // To gaurantee not having memory leak and run for failure/success
+    finally{
+        page.off('console', consoleHandler);
+        page.off('pageerror', pageErrorHandler);
 
-/
-    page.off('console', consoleHandler);
-    page.off('pageerror', pageErrorHandler);
-
+    }
+  
     // Normalize messages
     const normalizedMessages = consoleMsg
         .map(msg => msg.replace(/\?nowprocket/g, ''))
