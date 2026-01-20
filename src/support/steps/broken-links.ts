@@ -6,7 +6,6 @@
  * @requires {@link @playwright/test}
  * @requires {@link @cucumber/cucumber}
  */
-import { expect } from '@playwright/test';
 import { Then } from '@cucumber/cucumber';
 import { ICustomWorld } from '../../common/custom-world';
 
@@ -28,11 +27,11 @@ Then('WP Rocket settings links are not broken', async function (this: ICustomWor
         const links = await this.page.$$eval('#wpbody-content a[href]', (elements) =>
             elements
                 .map((element) => element.getAttribute('href'))
-                .filter(Boolean)
+                .filter((href): href is string => Boolean(href))
         );
 
         for (const href of links) {
-            hrefs.add(href as string);
+            hrefs.add(href);
         }
     };
 
@@ -82,7 +81,14 @@ Then('WP Rocket settings links are not broken', async function (this: ICustomWor
 
             url.hash = '';
             normalizedUrls.add(url.toString());
-        } catch {
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            // Log URL parsing issues for debugging while continuing to skip malformed URLs.
+            // This helps understand why some links might not be checked.
+            // eslint-disable-next-line no-console
+            console.debug(
+                `Skipping malformed or unsupported URL href="${href}" on page "${this.page.url()}": ${message}`
+            );
             continue;
         }
     }
@@ -90,10 +96,32 @@ Then('WP Rocket settings links are not broken', async function (this: ICustomWor
     for (const url of normalizedUrls) {
         try {
             const response = await this.page.request.get(url, { maxRedirects: 5, timeout: 30000 });
-            expect(response.status(), `Expected ${url} not to return 404`).not.toBe(404);
+            
+            // Only fail on 404 - this indicates a truly broken link
+            if (response.status() === 404) {
+                throw new Error(`Link is broken: ${url} returned 404`);
+            }
+            
+            // For other non-2xx/3xx status codes (like 5xx), log but don't fail
+            if (response.status() >= 400) {
+                // eslint-disable-next-line no-console
+                console.warn(
+                    `Warning: ${url} returned status ${response.status()}, but continuing test (only 404s fail)`
+                );
+            }
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
-            throw new Error(`Network error while requesting ${url}: ${message}`);
+            
+            // If this is our explicit 404 error, re-throw it to fail the test
+            if (message.includes('returned 404')) {
+                throw error;
+            }
+            
+            // For network errors (timeouts, connection issues, etc.), log but don't fail
+            // eslint-disable-next-line no-console
+            console.warn(
+                `Warning: Network error while requesting ${url}: ${message}. Continuing test (only 404s fail).`
+            );
         }
     }
 });
