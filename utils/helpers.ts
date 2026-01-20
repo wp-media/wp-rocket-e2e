@@ -580,3 +580,33 @@ export const isWprRelatedError = async(contents: string): Promise<boolean> => {
 
     return false;
 }
+
+/**
+ * Opens the mobile menu by finding and clicking toggle buttons
+ * This is useful for testing mobile menu functionality 
+ * 
+ * @param {Page} page - The Playwright page instance to execute the script on.
+ * @returns {Promise<void>} - A Promise that resolves when the menu opening attempt is complete.
+ * 
+ * @example
+ * ```typescript
+ * await openMobileMenu(page);
+ * ```
+ */
+export const openMobileMenu = async (page: Page): Promise<void> => {
+    await page.evaluate(() => {
+        if (!window.matchMedia("(max-width: 980px)").matches) return;
+        /* ---------- Specific theme selectors then generic selectors for the menu ---------- */
+        const genericToggle = document.querySelector<HTMLElement>(
+            '.menu-mobile-toggle, .mobile_menu_bar, [data-open="#main-menu"], .menu-toggle-icon, button.fusion-mobile-selector[aria-controls="mobile-menu-header-menu"], #site-header-inner > div.oceanwp-mobile-menu-icon.clr.mobile-right > a > i, .menu-toggle, .nav-toggle, .hamburger'
+        );
+
+        if (genericToggle && genericToggle.offsetParent !== null) {
+            genericToggle.click();
+            return;
+        }
+
+        console.warn("Mobile menu could not be opened");
+    });
+
+}

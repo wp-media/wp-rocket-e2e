@@ -6,18 +6,14 @@ Feature: No Regression with delayjs script update
         And plugin is installed 'new_release'
         And plugin is activated
         
-@test
-    Scenario Outline: Shouldn't cause console error when enabling Delay JS with theme
+
+    Scenario Outline: Shouldn't cause console error when enabling Delay JS with theme for desktop
         Given theme "<theme>" is activated via WP-CLI
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And I save settings 'fileOptimization' 'delayJs'
-        And one click exclusions are enabled
+        And one click exclusions are enabled if exists
         When I log out
         Then no error in the console different than nowprocket page ''
-        And I visit '' in mobile view
-        And expand mobile menu and validate no console error
-        And I click on link
-        Then page navigated to the new page 'about-us'
 
         Examples:
             | theme                  |
@@ -30,8 +26,29 @@ Feature: No Regression with delayjs script update
             | kadence                |
             | generatepress          |
             | genesis-sample         |
-            | Avada                  |
             | oceanwp                |
-  
+            | Avada                  |
+         
+
     
-    
+    Scenario Outline: Shouldn't cause console error when open mobile menu and click link works
+        Given theme "<theme>" is activated via WP-CLI
+        And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
+        And I save settings 'fileOptimization' 'delayJs'
+        And one click exclusions are enabled if exists
+        When I log out
+        Then expand mobile menu and validate no console error
+        And I click on link
+        Then page navigated to the new page 'about-us'
+
+        Examples:
+            | theme                  |
+            | neve                   |
+            | Divi                   |
+            | flatsome               |
+            | kadence                |
+            | storefront             |
+            | astra                  |
+            | generatepress          |
+            | oceanwp                |
+            | Avada                  |

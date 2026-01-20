@@ -49,13 +49,19 @@ Given('wpml directory is enabled', async function(this:ICustomWorld) {
  * @requires {@link ../../common/custom-world}
  * 
  */
-Given('one click exclusions are enabled', async function(this:ICustomWorld) {
+Given('one click exclusions are enabled if exists', async function(this:ICustomWorld) {
     const exclusionHeader = '#wpr_djs_oneclick_exclusions_themes > div.wpr-list-header > div.wpr-list-header-data > span.wpr-multiple-select-title';
     const theme = process.env.THEME || 'unknown';
     
     try {
         // Scroll to the element to ensure it's visible
-        await this.page.locator(exclusionHeader).scrollIntoViewIfNeeded();
+        try {
+            await this.page.locator(exclusionHeader).scrollIntoViewIfNeeded({ timeout: 5000 });
+        } catch {
+            // Element doesn't exist or can't be scrolled into view
+            console.log(`Theme '${theme}' does not have one-click exclusion available`);
+            return;
+        }
         
         // Check if the element exists
         if (await this.page.locator(exclusionHeader).isVisible()) {
@@ -67,6 +73,7 @@ Given('one click exclusions are enabled', async function(this:ICustomWorld) {
             
             await this.utils.saveSettings();
         }
+   
     } catch (error) {
         // Log any error encountered while setting up one-click exclusions and continue
         const errorMessage = error instanceof Error ? error.message : String(error);

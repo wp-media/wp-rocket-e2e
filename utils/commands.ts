@@ -490,10 +490,12 @@ export async function switchTheme(theme: string): Promise<void> {
         }
     }
     
-    // Validate that theme is actually activated
-    const activeThemeOutput = await wpWithOutput(`theme list --status=active --field=name`);
+    // Validate that theme is actually activated using option get instead of theme list
+    // This avoids reloading theme hooks which can trigger FTP errors
+    const activeThemeOutput = await wpWithOutput(`option get template`);
     if (activeThemeOutput.failed) {
-        throw new Error(`Failed to verify theme activation for '${theme}'`);
+        console.error(`Failed to verify theme activation. Verification command stderr: ${activeThemeOutput.stderr}`);
+        throw new Error(`Failed to verify theme activation for '${theme}': ${activeThemeOutput.stderr}`);
     }
     
     const activeTheme = activeThemeOutput.stdout.trim();

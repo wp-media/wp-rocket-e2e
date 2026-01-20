@@ -16,7 +16,7 @@ import { ICustomWorld } from "../../common/custom-world";
 import { Given, When, Then } from '@cucumber/cucumber';
 import {WP_BASE_URL} from '../../../config/wp.config';
 import scenarioUrls from "./../../../config/scenarioUrls.json";
-import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl} from "../../../utils/helpers";
+import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl, openMobileMenu} from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
 import { Page } from '@playwright/test';
 import {
@@ -592,72 +592,13 @@ const getConsoleMsgWithMenuExpansion = async (page: Page, url: string): Promise<
 
     await page.goto(url);
     await page.waitForLoadState('load', { timeout: 30000 });
+    
+    // Open the mobile menu using the helper function
+    await openMobileMenu(page);
+    await page.waitForTimeout(1000);
 
-    // Define theme-specific selectors
-    let target: string = '';
-    let closeSelector: string = '';
 
-    switch (theme) {
-        case 'flatsome':
-            target = '[data-open="#main-menu"]';
-            closeSelector = '[title="Close (Esc)"]';
-            break;
-        case 'Divi':
-            target = '#et_mobile_nav_menu';
-            closeSelector = '#mobile_menu';
-            break;
-        case 'astra':
-            target = '.ast-mobile-menu-trigger-minimal';
-            closeSelector = '.ast-mobile-menu-trigger-minimal';
-            break;
-        case 'generatepress':
-            target = '#mobile-menu-control-wrapper > button';
-            closeSelector = '[data-nav="site-navigation"]';
-            break;
-        case 'genesis-sample':
-            // No mobile menu for genesis-sample theme
-            break;
-        case 'Avada':
-            target = '#wrapper > header > div.fusion-header-v3.fusion-logo-alignment.fusion-logo-left.fusion-sticky-menu-.fusion-sticky-logo-.fusion-mobile-logo-.fusion-mobile-menu-design-classic > div.fusion-header > div > nav.fusion-mobile-nav-holder.fusion-mobile-menu-text-align-left > button > div';
-            closeSelector = '.mobile-menu-expanded';
-            break;
-        case 'storefront':
-            target = '#site-navigation-menu-toggle';
-            closeSelector = 'button[aria-expanded="true"]';
-            break;
-        case 'hello-elementor':
-            // No mobile menu for hello-elementor theme
-            break;
-        case 'neve':
-            target = '.menu-mobile-toggle';
-            closeSelector = '.close-sidebar-panel';
-            break;
-        case 'kadence':
-            target = '.menu-toggle-icon';
-            closeSelector = 'button[aria-label="Close menu"]';
-            break;
-        case 'oceanwp':
-            target = '#site-header-inner > div.oceanwp-mobile-menu-icon.clr.mobile-right > a > i';
-            closeSelector = '.oceanwp-close-text';
-            break;
-    }
-
-    // Expand menu if selectors exist
-   if (target) {
-       try {
-            const menuTrigger = page.locator(target);
-            if (await menuTrigger.isVisible({ timeout: 1000 }).catch(() => false)) {
-                await menuTrigger.click();
-                await expect(page.locator(closeSelector)).toBeVisible({ timeout: 3000 });
-            }
-        } catch (error) {
-           console.log(`Menu expansion failed for theme '${theme}', continuing...`);
-        }
-   }
-
-    // Wait for delayed scripts after menu expansion
-    await page.waitForTimeout(3000);
-
+/
     page.off('console', consoleHandler);
     page.off('pageerror', pageErrorHandler);
 
