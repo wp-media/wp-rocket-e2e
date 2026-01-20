@@ -12,8 +12,8 @@ import { linkValidationSelectors } from '../../common/selectors';
 
 /**
  * Step definition that verifies WP Rocket settings links are not broken by collecting all links from settings tabs
- * and checking their HTTP status codes. Fails on client errors (4xx) and logs warnings for server errors (5xx)
- * to avoid flakiness from transient backend issues.
+ * and checking their HTTP status codes. Fails on 4xx client errors except external 401/403 (auth-gated content).
+ * Logs warnings for 5xx server errors to avoid flakiness from transient backend issues.
  *
  * @function
  * @async
@@ -23,126 +23,105 @@ import { linkValidationSelectors } from '../../common/selectors';
 Then('WP Rocket settings links are not broken', async function (this: ICustomWorld) {
     const hrefs = new Set<string>();
 
-    // Visit WP Rocket settings.
+    // Visit WP Rocket settings and store base URL for consistent resolution
     await this.utils.visitPage('wp-admin/options-general.php?page=wprocket');
+    const basePageUrl = this.page.url();
+    const currentHost = new URL(basePageUrl).host;
 
+    // Helper to collect all links from current page
     const collectLinks = async (): Promise<void> => {
         const links = await this.page.$$eval(linkValidationSelectors.allLinksInContent, (elements) =>
             elements
-                .map((element) => element.getAttribute('href'))
+                .map((el) => el.getAttribute('href'))
                 .filter((href): href is string => Boolean(href))
         );
-
-        for (const href of links) {
-            hrefs.add(href);
-        }
+        links.forEach((href) => hrefs.add(href));
     };
 
-    // Collect links from the base settings page first.
+    // Collect links from base page
     await collectLinks();
 
-    // Collect tab links from within the WP Rocket settings content.
-    // Links are collected from each tab separately because different tabs may display different content
-    // and therefore different links. This ensures comprehensive link coverage across all settings sections.
+    // Get all tab URLs and visit each to collect their links
     const tabHrefs = await this.page.$$eval(linkValidationSelectors.tabLinksInContent, (links) =>
         links
             .map((link) => link.getAttribute('href'))
             .filter((href): href is string => Boolean(href))
     );
 
-    const tabUrls = Array.from(new Set(tabHrefs)).map((href) => {
-        return new URL(href, this.page.url()).toString();
-    });
+    const tabUrls = Array.from(new Set(tabHrefs)).map((href) => new URL(href, basePageUrl).toString());
 
-    // Visit each tab and collect its links to ensure all links across all settings sections are validated
     for (const tabUrl of tabUrls) {
         await this.page.goto(tabUrl);
         await this.page.waitForLoadState('load');
         await collectLinks();
     }
 
+    // Normalize and filter URLs
     const normalizedUrls = new Set<string>();
     const skipProtocols = ['mailto:', 'tel:', 'javascript:'];
 
     for (const href of hrefs) {
-        const lowerHref = href.toLowerCase();
-        if (lowerHref.startsWith('#')) {
-            continue;
-        }
+        const lower = href.toLowerCase();
 
-        if (skipProtocols.some((protocol) => lowerHref.startsWith(protocol))) {
+        // Skip anchors, special protocols, and admin-post actions
+        if (lower.startsWith('#') || skipProtocols.some((p) => lower.startsWith(p))) {
             continue;
         }
 
         try {
-            const url = new URL(href, this.page.url());
-            if (!['http:', 'https:'].includes(url.protocol)) {
-                continue;
-            }
+            const url = new URL(href, basePageUrl);
 
-            if (url.pathname.endsWith('/wp-admin/admin-post.php')) {
-                // Avoid triggering admin-post actions.
+            if (!['http:', 'https:'].includes(url.protocol) || url.pathname.endsWith('/wp-admin/admin-post.php')) {
                 continue;
             }
 
             url.hash = '';
             normalizedUrls.add(url.toString());
         } catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
-            // Log URL parsing issues for debugging while continuing to skip malformed URLs.
-            // This helps understand why some links might not be checked.
-            // eslint-disable-next-line no-console
-            console.debug(
-                `Skipping malformed or unsupported URL href="${href}" on page "${this.page.url()}": ${message}`
-            );
+            // Skip malformed URLs silently - they can't be validated anyway
             continue;
         }
     }
 
-    const currentHost = new URL(this.page.url()).host;
+    // Warn if no valid URLs found to validate
+    if (normalizedUrls.size === 0) {
+        // eslint-disable-next-line no-console
+        console.warn('No HTTP/HTTPS links found to validate in WP Rocket settings');
+        return;
+    }
+
+    // Validate all collected URLs
+    const brokenLinks: string[] = [];
 
     for (const url of normalizedUrls) {
         try {
             const response = await this.page.request.get(url, { maxRedirects: 5, timeout: 30000 });
-            
             const status = response.status();
-            const urlHost = new URL(url).host;
-            
-            // Treat client errors (4xx) as failures unless they are external 401/403 (expected gated content).
-            if (status >= 400 && status < 500) {
-                const isExternalHost = urlHost !== currentHost;
+            const isExternal = new URL(url).host !== currentHost;
 
-                // For external docs/checkout/account links, 401/403 are expected gates; log and continue.
-                if (isExternalHost && (status === 401 || status === 403)) {
-                    // eslint-disable-next-line no-console
-                    console.warn(
-                        `Skipping external ${status} for ${url} (expected auth/gated content).`
-                    );
-                } else {
-                    throw new Error(`Client error: ${url} returned status ${status}`);
+            // Handle client errors (4xx)
+            if (status >= 400 && status < 500) {
+                // External 401/403 are expected (auth-gated), skip them
+                if (!(isExternal && (status === 401 || status === 403))) {
+                    brokenLinks.push(`${status}: ${url}`);
                 }
             }
-            
-            // For server errors (5xx), log but don't fail to avoid flakiness from transient backend issues.
+
+            // Log server errors (5xx) but don't fail
             if (status >= 500) {
                 // eslint-disable-next-line no-console
-                console.warn(
-                    `Warning: ${url} returned server error status ${status}, but continuing test to avoid flakiness.`
-                );
+                console.warn(`Warning: ${url} returned ${status} (server error, not failing test)`);
             }
-        } catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
-            
-            // If this is a client error (4xx), re-throw it to fail the test.
-            if (message.startsWith('Client error:')) {
-                throw error;
-            }
-            
-            // For network errors (timeouts, connection issues, etc.), log but don't fail.
+        } catch (error: unknown) {
+            // Network errors (timeout, DNS, connection) - log but don't fail
+            const msg = error instanceof Error ? error.message : String(error);
             // eslint-disable-next-line no-console
-            console.warn(
-                `Warning: Network or non-client error while requesting ${url}: ${message}. Continuing test.`
-            );
+            console.warn(`Warning: Network error for ${url}: ${msg}`);
         }
+    }
+
+    // Report all broken links at once
+    if (brokenLinks.length > 0) {
+        throw new Error(`Broken links detected:\n${brokenLinks.map((l) => `- ${l}`).join('\n')}`);
     }
 });
