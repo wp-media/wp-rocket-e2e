@@ -39,23 +39,6 @@ Given('plugin is installed {string}', async function (this: ICustomWorld, plugin
     await expect(this.page).toHaveURL(/action=upload-plugin/); 
 });
 
-/**
- * Executes the step to install and activate a local plugin using WP CLI. (not used yet)
- */
-Given('I install and activate local plugin {string} using WP CLI', async function (filePath) {
-    await installLocalPlugin(filePath);
-    // Extract plugin slug from file path (e.g., './plugin/wp-rocket.zip' -> 'wp-rocket')
-    // Special case: if filepath contains 'new_release' or 'previous_stable', the plugin slug is 'wp-rocket'
-    let pluginSlug = '';
-    if (filePath.includes('new_release') || filePath.includes('previous_stable')) {
-        pluginSlug = 'wp-rocket';
-    } else {
-        pluginSlug = filePath.split('/').pop()?.replace('.zip', '') || '';
-    }
-    if (pluginSlug) {
-        await activatePlugin(pluginSlug);
-    }
-});
 
 /**
  * Executests the step to update WP Rocket plugin.

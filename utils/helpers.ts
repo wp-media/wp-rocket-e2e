@@ -407,6 +407,14 @@ export const compareReference = async(label: string = ''): Promise<void> => {
  */
 export const deleteFolder = async(folderPath: string): Promise<void> => {
     try {
+        // Check if folder exists
+        await fs.access(folderPath);
+    } catch {
+        // Folder doesn't exist, return without doing anything
+        return;
+    }
+    
+    try {
         await fs.rm(folderPath, { recursive: true });
         console.log(`Folder "${folderPath}" deleted successfully.`);
     } catch (error) {

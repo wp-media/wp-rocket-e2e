@@ -38,11 +38,9 @@ function wrapPrefix(command: string, sshConfig?: SSHConfig): string {
         const address = sshConfig?.host || configurations.ssh.address;
         const privateKey = configurations.ssh.key;
         // Wrap the entire command in double quotes and escape necessary characters
-        // Escape all bash special characters that could break quote pairing
         const escapedCommand = command
             .replaceAll('\\', '\\\\')
             .replaceAll('"', '\\"')
-            .replaceAll("'", "\\'")
             .replaceAll('$', '\\$')
             .replaceAll('`', '\\`');
         return `ssh ${username}@${address} -i ${privateKey} "${escapedCommand}"`;
@@ -471,8 +469,7 @@ export async function switchTheme(theme: string): Promise<void> {
     }
     
     // Use wpWithOutput to get stderr and check for FTP errors
-    // Properly quote theme name to handle special characters
-    const result = await wpWithOutput(`theme activate '${theme}'`);
+    const result = await wpWithOutput(`theme activate ${theme}`);
     
     if (result.failed) {
         // Ignore FTP filesystem errors that can occur when switching away from the Avada theme.
@@ -490,15 +487,14 @@ export async function switchTheme(theme: string): Promise<void> {
         }
     }
     
-    // Validate that theme is actually activated using option get instead of theme list
-    // This avoids reloading theme hooks which can trigger FTP errors
-    const activeThemeOutput = await wpWithOutput(`option get template`);
-    if (activeThemeOutput.failed) {
-        console.error(`Failed to verify theme activation. Verification command stderr: ${activeThemeOutput.stderr}`);
-        throw new Error(`Failed to verify theme activation for '${theme}': ${activeThemeOutput.stderr}`);
+    // Validate that theme is actually activated using stylesheet option (handles both parent and child themes)
+    const stylesheetOutput = await wpWithOutput(`option get stylesheet`);
+    if (stylesheetOutput.failed) {
+        console.error(`Failed to verify theme activation. Verification command stderr: ${stylesheetOutput.stderr}`);
+        throw new Error(`Failed to verify theme activation for '${theme}': ${stylesheetOutput.stderr}`);
     }
     
-    const activeTheme = activeThemeOutput.stdout.trim();
+    const activeTheme = stylesheetOutput.stdout.trim();
     if (activeTheme !== theme) {
         throw new Error(`Theme '${theme}' activation failed. Current active theme is: '${activeTheme}'`);
     }
