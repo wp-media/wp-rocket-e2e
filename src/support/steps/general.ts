@@ -20,7 +20,7 @@ import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl, o
 import type { Section } from "../../../utils/types";
 import { Page } from '@playwright/test';
 import {
-    deactivatePlugin, installRemotePlugin, installLocalPlugin, activatePlugin,
+    deactivatePlugin, installRemotePlugin
 } from "../../../utils/commands";
 import backstop from 'backstopjs';
 
