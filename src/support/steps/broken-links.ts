@@ -99,16 +99,28 @@ Then('WP Rocket settings links are not broken', async function (this: ICustomWor
         }
     }
 
+    const currentHost = new URL(this.page.url()).host;
+
     for (const url of normalizedUrls) {
         try {
             const response = await this.page.request.get(url, { maxRedirects: 5, timeout: 30000 });
             
             const status = response.status();
+            const urlHost = new URL(url).host;
             
-            // Treat all client errors (4xx) as hard failures, as they usually indicate broken or unauthorized links.
-            // This includes 401/403, which can reveal authentication/authorization problems, not just 404 "not found".
+            // Treat client errors (4xx) as failures unless they are external 401/403 (expected gated content).
             if (status >= 400 && status < 500) {
-                throw new Error(`Client error: ${url} returned status ${status}`);
+                const isExternalHost = urlHost !== currentHost;
+
+                // For external docs/checkout/account links, 401/403 are expected gates; log and continue.
+                if (isExternalHost && (status === 401 || status === 403)) {
+                    // eslint-disable-next-line no-console
+                    console.warn(
+                        `Skipping external ${status} for ${url} (expected auth/gated content).`
+                    );
+                } else {
+                    throw new Error(`Client error: ${url} returned status ${status}`);
+                }
             }
             
             // For server errors (5xx), log but don't fail to avoid flakiness from transient backend issues.
