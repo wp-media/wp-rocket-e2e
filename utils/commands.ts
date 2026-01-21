@@ -493,13 +493,10 @@ export async function switchTheme(theme: string): Promise<void> {
     // Check if theme is already active
     let isActive = await isThemeActivated(theme);
     if (isActive) {
-        console.log(`[DEBUG] Theme ${theme} is already active, skipping activation`);
         return; // Theme is already active, no need to activate
     }
 
-    // Sanitize theme name to prevent shell injection and quote issues
-    // const sanitizedTheme = theme.replace(/[^\w-]/g, '');
-    // await wp(`theme activate "${sanitizedTheme}"`);
+    // Activate the theme
     await wp(`theme activate ${theme}`)
 
     // Verify theme is actually activated

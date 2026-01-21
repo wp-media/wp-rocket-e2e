@@ -18,7 +18,7 @@ import {WP_BASE_URL} from '../../../config/wp.config';
 import scenarioUrls from "./../../../config/scenarioUrls.json";
 import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl, openMobileMenu} from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
-import { Page } from '@playwright/test';
+import { Page, ConsoleMessage } from '@playwright/test';
 import {
     deactivatePlugin, installRemotePlugin
 } from "../../../utils/commands";
@@ -479,7 +479,7 @@ Then('no error in the console different than nowprocket page {string}', async fu
 const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> => {
     const consoleMsg: string[] = [];
 
-    const consoleHandler = (msg): void => {
+    const consoleHandler = (msg: ConsoleMessage): void => {
         consoleMsg.push(msg.text());
     };
 
@@ -548,7 +548,7 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
 const getConsoleMsgWithMenuExpansion = async (page: Page, url: string): Promise<Array<string>> => {
     const consoleMsg: string[] = [];
 
-    const consoleHandler = (msg): void => {
+    const consoleHandler = (msg: ConsoleMessage): void => {
         consoleMsg.push(msg.text());
     };
 
