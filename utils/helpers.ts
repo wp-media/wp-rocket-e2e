@@ -580,3 +580,106 @@ export const isWprRelatedError = async(contents: string): Promise<boolean> => {
 
     return false;
 }
+
+/**
+ * Collects all href attributes from elements matching a selector.
+ *
+ * @async
+ * @param {Page} page - The Playwright page object
+ * @param {string} selector - CSS selector to find elements with href
+ * @return {Promise<Set<string>>} - Set of collected hrefs
+ */
+export const collectHrefsFromSelector = async (page: Page, selector: string): Promise<Set<string>> => {
+    const hrefs = new Set<string>();
+    const links = await page.$$eval(selector, (elements) =>
+        elements
+            .map((el) => el.getAttribute('href'))
+            .filter((href): href is string => Boolean(href))
+    );
+    links.forEach((href) => hrefs.add(href));
+    return hrefs;
+};
+
+/**
+ * Normalizes and filters URLs, removing anchors, special protocols, and invalid URLs.
+ *
+ * @param {Set<string>} hrefs - Set of href strings to normalize
+ * @param {string} baseUrl - Base URL for resolving relative URLs
+ * @param {string[]} [skipProtocols=['mailto:', 'tel:', 'javascript:']] - Protocols to skip
+ * @return {Set<string>} - Set of normalized, valid URLs
+ */
+export const normalizeUrls = (
+    hrefs: Set<string>,
+    baseUrl: string,
+    skipProtocols: string[] = ['mailto:', 'tel:', 'javascript:']
+): Set<string> => {
+    const normalizedUrls = new Set<string>();
+
+    for (const href of hrefs) {
+        const lower = href.toLowerCase();
+
+        // Skip anchors, special protocols, and admin-post actions
+        if (lower.startsWith('#') || skipProtocols.some((p) => lower.startsWith(p))) {
+            continue;
+        }
+
+        try {
+            const url = new URL(href, baseUrl);
+
+            if (!['http:', 'https:'].includes(url.protocol) || url.pathname.endsWith('/wp-admin/admin-post.php')) {
+                continue;
+            }
+
+            url.hash = '';
+            normalizedUrls.add(url.toString());
+        } catch (error) {
+            // Skip malformed URLs silently - they can't be validated anyway
+            continue;
+        }
+    }
+
+    return normalizedUrls;
+};
+
+/**
+ * Validates HTTP/HTTPS URLs and collects broken links, handling client/server errors appropriately.
+ * Fails on internal 4xx errors, allows external 401/403 (gated content), warns on 5xx and network errors.
+ *
+ * @async
+ * @param {Page} page - The Playwright page object
+ * @param {Set<string>} urls - Set of URLs to validate
+ * @param {string} currentHost - Current host to distinguish internal from external URLs
+ * @return {Promise<string[]>} - Array of broken link strings in format "STATUS: url"
+ */
+export const validateLinks = async (page: Page, urls: Set<string>, currentHost: string): Promise<string[]> => {
+    const brokenLinks: string[] = [];
+
+    for (const url of urls) {
+        try {
+            const response = await page.request.get(url, { maxRedirects: 5, timeout: 30000 });
+            const status = response.status();
+            const isExternal = new URL(url).host !== currentHost;
+
+            // Handle client errors (4xx)
+            if (status >= 400 && status < 500) {
+                // External 401/403 are expected (auth-gated), skip them
+                if (!(isExternal && (status === 401 || status === 403))) {
+                    brokenLinks.push(`${status}: ${url}`);
+                }
+            }
+
+            // Log server errors (5xx) but don't fail
+            if (status >= 500) {
+                // eslint-disable-next-line no-console
+                console.warn(`Warning: ${url} returned ${status} (server error, not failing test)`);
+            }
+        } catch (error: unknown) {
+            // Network errors (timeout, DNS, connection) - log but don't fail
+            const msg = error instanceof Error ? error.message : String(error);
+            // eslint-disable-next-line no-console
+            console.warn(`Warning: Network error for ${url}: ${msg}`);
+        }
+    }
+
+    return brokenLinks;
+};
