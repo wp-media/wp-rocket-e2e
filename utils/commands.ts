@@ -321,6 +321,12 @@ export async function rm(destination: string, sshConfig?: SSHConfig): Promise<vo
  * @returns {Promise<void>} - A Promise that resolves when the activation is completed.
  */
 export async function activatePlugin(name: string): Promise<void>  {
+    // Check if plugin is installed before trying to activate
+    const isInstalled = await isPluginInstalled(name);
+    if (!isInstalled) {
+        throw new Error(`Plugin '${name}' is not installed. Cannot activate.`);
+    }
+    
     await wp(`plugin activate ${name}`)
     const status: boolean = await wp(`plugin is-active ${name}`);
     if(!status) {
