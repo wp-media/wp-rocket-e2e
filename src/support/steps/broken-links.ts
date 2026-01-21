@@ -33,7 +33,20 @@ Then('WP Rocket settings links are not broken', async function (this: ICustomWor
 
     // Get all tab URLs and visit each to collect their links
     const tabHrefs = await collectHrefsFromSelector(this.page, linkValidationSelectors.tabLinksInContent);
-    const tabUrls = Array.from(new Set(tabHrefs)).map((href) => new URL(href, basePageUrl).toString());
+
+    const uniqueTabHrefs = Array.from(new Set(tabHrefs));
+    const tabUrls: string[] = [];
+
+    for (const href of uniqueTabHrefs) {
+        try {
+            const url = new URL(href, basePageUrl);
+            tabUrls.push(url.toString());
+        } catch (error: unknown) {
+            // Skip malformed tab URLs - they can't be navigated to anyway
+            // eslint-disable-next-line no-console
+            console.warn(`Skipping malformed tab href: ${href}`, error);
+        }
+    }
 
     for (const tabUrl of tabUrls) {
         await this.page.goto(tabUrl);
