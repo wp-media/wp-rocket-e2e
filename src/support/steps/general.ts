@@ -127,7 +127,7 @@ Given('theme {string} is activated', async function (this:ICustomWorld, theme) {
  *  WordPress hooks or actions as switching via the admin UI, but for this scenario, only the active theme
  *  state is required. If UI-specific side effects are needed, consider using the UI-based method instead.
  */
-Given('theme {string} is activated via WP-CLI', async function (this:ICustomWorld, theme) {
+Given('theme {string} is activated via WP-CLI', async function (this:ICustomWorld, theme: string) {
     const { switchTheme } = await import('../../../utils/commands');
     await switchTheme(theme);
 

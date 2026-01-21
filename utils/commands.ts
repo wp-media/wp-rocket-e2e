@@ -232,7 +232,10 @@ export async function rename(oldName: string, newName: string): Promise<void> {
     }
 
     if(configurations.type === ServerType.external) {
-        await exec(`ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "sudo mv ${oldName} ${newName}"`);
+        // Escape single quotes in the paths for proper shell quoting
+        const escapedOldName = oldName.replace(/'/g, "'\\''");
+        const escapedNewName = newName.replace(/'/g, "'\\''");
+        await exec(`ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "sudo mv '${escapedOldName}' '${escapedNewName}'"`);
         return;
     }
 
@@ -368,6 +371,19 @@ export async function isPluginActive(name: string): Promise<boolean> {
  */
 export async function isThemeInstalled(name: string): Promise<boolean> {
     return await wp(`theme is-installed ${name}`, false);
+
+}
+
+/**
+ * Check if theme is activated
+ * @function
+ * @name isThemeActivated
+ * @async
+ * @param {string} name - The name of the theme to be checked if active
+ * @returns {Promise<boolean>} - A Promise that resolves to true if theme is active, false otherwise.
+ */
+export async function isThemeActivated(name: string): Promise<boolean> {
+    return await wp(`theme is-active ${name}`, false);
 }
 
 /**
@@ -469,40 +485,27 @@ export async function switchTheme(theme: string): Promise<void> {
     const isInstalled = await isThemeInstalled(theme);
     if (!isInstalled) {
         if (premiumThemes.includes(theme)) {
-            throw new Error(`Theme '${theme}' is a premium theme and must be installed manually before running tests.`);
+            throw new Error(`Theme ${theme} is a premium theme and must be installed manually before running tests.`);
         }
         await installTheme(theme);
     }
-    
-    // Use wpWithOutput to get stderr and check for FTP errors
-    const result = await wpWithOutput(`theme activate ${theme}`);
-    
-    if (result.failed) {
-        // Ignore FTP filesystem errors that can occur when switching away from the Avada theme.
-        // This error happens during the deactivation of the previous theme as part of the theme switch,
-        // but the theme switching still succeeds despite the error
-        if (result.stderr && result.stderr.includes('ftp_nlist')) {
-            console.warn(
-                `Theme '${theme}' was activated, but WordPress reported an FTP-related filesystem notice (ftp_nlist) while switching themes. ` +
-                `This is a known benign issue for some themes and has been intentionally ignored for E2E tests.\n` +
-                `Original WP-CLI stderr: ${result.stderr}`
-            );
-        } else {
-            // For other errors, throw them
-            throw new Error(`Failed to activate theme '${theme}': ${result.stderr}`);
-        }
+
+    // Check if theme is already active
+    let isActive = await isThemeActivated(theme);
+    if (isActive) {
+        console.log(`[DEBUG] Theme ${theme} is already active, skipping activation`);
+        return; // Theme is already active, no need to activate
     }
-    
-    // Validate that theme is actually activated using stylesheet option (handles both parent and child themes)
-    const stylesheetOutput = await wpWithOutput(`option get stylesheet`);
-    if (stylesheetOutput.failed) {
-        console.error(`Failed to verify theme activation. Verification command stderr: ${stylesheetOutput.stderr}`);
-        throw new Error(`Failed to verify theme activation for '${theme}': ${stylesheetOutput.stderr}`);
-    }
-    
-    const activeTheme = stylesheetOutput.stdout.trim();
-    if (activeTheme !== theme) {
-        throw new Error(`Theme '${theme}' activation failed. Current active theme is: '${activeTheme}'`);
+
+    // Sanitize theme name to prevent shell injection and quote issues
+    // const sanitizedTheme = theme.replace(/[^\w-]/g, '');
+    // await wp(`theme activate "${sanitizedTheme}"`);
+    await wp(`theme activate ${theme}`)
+
+    // Verify theme is actually activated
+    isActive = await isThemeActivated(theme);
+    if (!isActive) {
+        throw new Error(`Theme ${theme} was not activated successfully`);
     }
     
 }
