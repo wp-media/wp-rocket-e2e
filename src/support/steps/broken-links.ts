@@ -8,6 +8,7 @@
  * @requires {@link ../../../utils/helpers}
  */
 import { Then } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
 import { ICustomWorld } from '../../common/custom-world';
 import { linkValidationSelectors } from '../../common/selectors';
 import { collectHrefsFromSelector, normalizeUrls, validateLinks } from '../../../utils/helpers';
@@ -69,7 +70,5 @@ Then('WP Rocket settings links are not broken', async function (this: ICustomWor
     const brokenLinks = await validateLinks(this.page, normalizedUrls, currentHost);
 
     // Report all broken links at once
-    if (brokenLinks.length > 0) {
-        throw new Error(`Broken links detected:\n${brokenLinks.map((l) => `- ${l}`).join('\n')}`);
-    }
+    expect(brokenLinks, 'Broken links detected').toHaveLength(0);
 });
