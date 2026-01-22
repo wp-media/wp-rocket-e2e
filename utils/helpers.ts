@@ -660,24 +660,21 @@ export const validateLinks = async (page: Page, urls: Set<string>, currentHost: 
             const status = response.status();
             const isExternal = new URL(url).host !== currentHost;
 
-            // Handle client errors (4xx)
             if (status >= 400 && status < 500) {
-                // External 401/403 are expected (auth-gated), skip them
                 if (!(isExternal && (status === 401 || status === 403))) {
                     brokenLinks.push(`${status}: ${url}`);
                 }
             }
 
-            // Log server errors (5xx) but don't fail
             if (status >= 500) {
                 // eslint-disable-next-line no-console
                 console.warn(`Warning: ${url} returned ${status} (server error, not failing test)`);
             }
         } catch (error: unknown) {
-            // Network errors (timeout, DNS, connection) - log but don't fail
             const msg = error instanceof Error ? error.message : String(error);
+            brokenLinks.push(`NETWORK: ${url} (${msg})`);
             // eslint-disable-next-line no-console
-            console.warn(`Warning: Network error for ${url}: ${msg}`);
+            console.warn(`Network error for ${url}: ${msg}`);
         }
     }
 
