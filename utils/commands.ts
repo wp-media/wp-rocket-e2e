@@ -232,10 +232,7 @@ export async function rename(oldName: string, newName: string): Promise<void> {
     }
 
     if(configurations.type === ServerType.external) {
-        // Escape single quotes in the paths for proper shell quoting
-        const escapedOldName = oldName.replace(/'/g, "'\\''");
-        const escapedNewName = newName.replace(/'/g, "'\\''");
-        await exec(`ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "sudo mv '${escapedOldName}' '${escapedNewName}'"`);
+        await exec(`ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "sudo mv ${oldName} ${newName}"`);
         return;
     }
 
@@ -324,12 +321,6 @@ export async function rm(destination: string, sshConfig?: SSHConfig): Promise<vo
  * @returns {Promise<void>} - A Promise that resolves when the activation is completed.
  */
 export async function activatePlugin(name: string): Promise<void>  {
-    // Check if plugin is installed before trying to activate
-    const isInstalled = await isPluginInstalled(name);
-    if (!isInstalled) {
-        throw new Error(`Plugin '${name}' is not installed. Cannot activate.`);
-    }
-    
     await wp(`plugin activate ${name}`)
     const status: boolean = await wp(`plugin is-active ${name}`);
     if(!status) {
@@ -385,17 +376,34 @@ export async function isThemeInstalled(name: string): Promise<boolean> {
 export async function isThemeActivated(name: string): Promise<boolean> {
     return await wp(`theme is-active ${name}`, false);
 }
-
-/**
- * Install a theme from WordPress.org repository
+/** 
+ * Install a theme from the WordPress.org repository.
+ *
+ * If the theme is already installed, this function is a no-op.
+ * If installation fails (for example, because the theme does not exist on WordPress.org
+ * or is a premium theme that must be installed manually), an Error is thrown.
+ *
  * @function
  * @name installTheme
  * @async
  * @param {string} name - The slug of the theme to be installed.
  * @returns {Promise<void>} - A Promise that resolves when the theme is installed.
+ * @throws {Error} If the theme cannot be installed from the WordPress.org repository.
  */
 export async function installTheme(name: string): Promise<void> {
-    await wp(`theme install ${name}`);
+    // If the theme is already installed, no further action is required.
+    const alreadyInstalled: boolean = await isThemeInstalled(name);
+    if (alreadyInstalled) {
+        return;
+    }
+    // Attempt to install the theme from WordPress.org and check the result.
+    const installedSuccessfully: boolean = await wp(`theme install ${name}`, false);
+    if (!installedSuccessfully) {
+        throw new Error(
+            `Failed to install theme "${name}". The theme may not exist in the WordPress.org repository ` +
+            `or may require manual installation (for example, premium themes).`
+        );
+    }
 }
 
 /**

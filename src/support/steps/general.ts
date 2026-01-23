@@ -570,7 +570,11 @@ const getConsoleMsgWithMenuExpansion = async (page: Page, url: string): Promise<
         await page.waitForLoadState('load', { timeout: 30000 });
     
         // Open the mobile menu using the helper function
-        await openMobileMenu(page);
+        try {
+            await openMobileMenu(page);
+        } catch (error) {
+            console.error('Failed to open mobile menu:', error.message);
+        }
         await page.waitForTimeout(1000);
 
     }

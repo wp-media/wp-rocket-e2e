@@ -595,10 +595,15 @@ export const isWprRelatedError = async(contents: string): Promise<boolean> => {
  * 
  * @param {Page} page - The Playwright page instance to execute the script on.
  * @returns {Promise<void>} - A Promise that resolves when the menu opening attempt is complete.
+ * @throws {Error} - Throws an error if the mobile menu toggle cannot be found or opened.
  * 
  * @example
  * ```typescript
- * await openMobileMenu(page);
+ * try {
+ *     await openMobileMenu(page);
+ * } catch (error) {
+ *     console.error('Failed to open mobile menu:', error.message);
+ * }
  * ```
  */
 export const openMobileMenu = async (page: Page): Promise<void> => {
@@ -614,10 +619,11 @@ export const openMobileMenu = async (page: Page): Promise<void> => {
             return;
         }
 
-        console.warn("Mobile menu could not be opened");
+        throw new Error("Mobile menu could not be opened: toggle button not found or not visible");
     });
-
 }
+
+/**
  * Collects all href attributes from elements matching a selector.
  *
  * @async

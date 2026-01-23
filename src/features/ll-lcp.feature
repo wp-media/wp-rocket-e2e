@@ -24,7 +24,6 @@ Feature: Lazyload with LCP
   Scenario: Should exclude next-gen lcp/atf from LL
     Given I install plugin 'imagify'
     And plugin 'imagify' is activated
-    When I am logged in
     And Imagify is set up
     When I log out
     And I visit page 'lcp_with_imagify' and check for lcp
@@ -36,8 +35,7 @@ Feature: Lazyload with LCP
     
   @imagify
   Scenario: Should exclude Imagify next-gen lcp/atf from LL
-    Given plugin 'imagify' is activated
-    And display next-gen is enabled on imagify
+    Given display next-gen is enabled on imagify
     When I log out
     And I visit page 'lcp_with_imagify' and check for lcp
     When I am logged in
