@@ -16,6 +16,7 @@ Feature: Should be able to work with SugarSync storage
     Then I save and submit the onboarding form
     And I go '/wp-admin/admin.php?page=backwpup'
     Then I should see 'mixed' job cards
+    And '1' backup is generated and added to history
 
   Scenario: Setup SugarSync from Dashboard (After Onboarding)
     When I Configure web server storage

@@ -20,7 +20,7 @@ Before({tags: '@bwpupsetup'}, async function(this: ICustomWorld, {pickle}) {
     this.sections = new Sections(this.page, pluginSelectors);
     this.utils = new PageUtils(this.page, this.sections);
     this.storage = new StorageUtils(this.page, this.sections);
-
+    this.initialBackups = [];
     this.pickle = pickle;
 });
 
