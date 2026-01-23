@@ -480,58 +480,63 @@ const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> =>
     const consoleMsg: string[] = [];
 
     const consoleHandler = (msg: ConsoleMessage): void => {
-        consoleMsg.push(msg.text());
+        // Only capture errors and warnings, not info/log/debug
+        if (msg.type() === 'error' || msg.type() === 'warning') {
+            consoleMsg.push(msg.text());
+        }
     };
 
     const pageErrorHandler = (error: Error): void => {
         consoleMsg.push(error.message);
     };
 
-    // Listen for console messages.
-    page.on('console', consoleHandler);
-
-    // Listen for page errors.
-    page.on('pageerror', pageErrorHandler);
-
-    await page.goto(url);
-    await page.waitForLoadState('load', { timeout: 30000 });
-
-    // use this if you need to scroll till end of page
     try {
-        await page.evaluate(async () => {
-            // Scroll to the bottom of page.
-            const scrollPage: Promise<void> = new Promise((resolve) => {
-                let totalHeight = 0;
-                const distance = 100;
-                const timer = setInterval(() => {
-                const scrollHeight = document.body.scrollHeight;
-                window.scrollBy(0, distance);
-                totalHeight += distance;
+        // Listen for console messages.
+        page.on('console', consoleHandler);
+
+        // Listen for page errors.
+        page.on('pageerror', pageErrorHandler);
+
+        await page.goto(url);
+        await page.waitForLoadState('load', { timeout: 30000 });
+
+        // use this if you need to scroll till end of page
+        try {
+            await page.evaluate(async () => {
+                // Scroll to the bottom of page.
+                const scrollPage: Promise<void> = new Promise((resolve) => {
+                    let totalHeight = 0;
+                    const distance = 100;
+                    const timer = setInterval(() => {
+                    const scrollHeight = document.body.scrollHeight;
+                    window.scrollBy(0, distance);
+                    totalHeight += distance;
+            
+                    if(totalHeight >= scrollHeight){
+                        clearInterval(timer);
+                        resolve();
+                    }
+                    }, 500);
+                });
+            
+                await scrollPage;
+              });
+        } catch (error) {
+            // Handle execution context destroyed error from page navigation during scroll
+            console.log('Page navigation occurred during scroll, continuing...');
+        }
+
+        // Trigger user interaction to execute delayed scripts
+        // Click on body element to avoid clicking interactive elements
+        await page.locator('body').click();
         
-                if(totalHeight >= scrollHeight){
-                    clearInterval(timer);
-                    resolve();
-                }
-                }, 500);
-            });
-        
-            await scrollPage;
-          });
-    } catch (error) {
-        // Handle execution context destroyed error from page navigation during scroll
-        console.log('Page navigation occurred during scroll, continuing...');
+        // Wait longer for delayed scripts to execute on remote servers
+        await page.waitForTimeout(3000);
+    } finally {
+        // Remove the event listeners to prevent duplicate messages.
+        page.off('console', consoleHandler);
+        page.off('pageerror', pageErrorHandler);
     }
-
-    // Trigger user interaction to execute delayed scripts
-    // Click on body element to avoid clicking interactive elements
-    await page.locator('body').click();
-    
-    // Wait longer for delayed scripts to execute on remote servers
-    await page.waitForTimeout(3000);
-
-    // Remove the event listeners to prevent duplicate messages.
-    page.off('console', consoleHandler);
-    page.off('pageerror', pageErrorHandler);
 
     // Normalize messages by removing query parameters from URLs and filtering out unrelated errors
     const normalizedMessages = consoleMsg
@@ -573,7 +578,8 @@ const getConsoleMsgWithMenuExpansion = async (page: Page, url: string): Promise<
         try {
             await openMobileMenu(page);
         } catch (error) {
-            console.error('Failed to open mobile menu:', error.message);
+            console.error('Failed to open mobile menu:', error);
+            throw error;
         }
         await page.waitForTimeout(1000);
 
