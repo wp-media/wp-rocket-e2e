@@ -575,7 +575,7 @@ const getConsoleMsgWithMenuExpansion = async (page: Page, url: string): Promise<
 
     }
    
-    // To gaurantee not having memory leak and run for failure/success
+    // To guarantee not having memory leak and run for failure/success
     finally{
         page.off('console', consoleHandler);
         page.off('pageerror', pageErrorHandler);
