@@ -589,6 +589,71 @@ export const isWprRelatedError = async(contents: string): Promise<boolean> => {
     return false;
 }
 
+
+/**
+ * Checks if the mobile menu is currently open
+ * This is useful for validating mobile menu state before attempting to open it
+ * 
+ * @param {Page} page - The Playwright page instance to check
+ * @returns {Promise<boolean>} - A Promise that resolves to true if menu is open, false otherwise
+ * 
+ * @example
+ * ```typescript
+ * const isOpen = await isMobileMenuOpen(page);
+ * if (isOpen) {
+ *     console.log('Menu is already open');
+ * }
+ * ```
+ */
+export const isMobileMenuOpen = async (page: Page): Promise<boolean> => {
+    await page.waitForTimeout(5000);
+    return await page.evaluate(() => {
+    const candidates = Array.from(document.querySelectorAll<HTMLElement>(
+      'nav, .mobile-menu, .mobile-navigation, #mobile-menu, .et_mobile_menu, [id*=mobile-menu]'
+    ));
+
+    for (const menu of candidates) {
+      const style = window.getComputedStyle(menu);
+      const rect = menu.getBoundingClientRect();
+
+      // Skip invisible elements
+      if (
+        style.display === 'none' ||
+        style.visibility === 'hidden' ||
+        Number(style.opacity) === 0
+      ) continue;
+
+      // Check if there is a transform
+      const transform = style.transform;
+      if (transform && transform !== 'none') {
+        // Parse the matrix and check if it's fully translated offscreen
+        const values = transform.match(/matrix.*\((.+)\)/)?.[1].split(',').map(Number);
+        if (values) {
+          const translateX = values.length === 6 ? values[4] : 0;
+          const translateY = values.length === 6 ? values[5] : 0;
+
+          // If fully off-screen, menu is closed
+          if (translateX <= -window.innerWidth || translateY <= -window.innerHeight) continue;
+        }
+      }
+
+      // Check if element is large enough to be considered open
+      const coversScreen = rect.width >= window.innerWidth * 0.3 && rect.height >= window.innerHeight * 0.3;
+      if (coversScreen) return true;
+     }
+
+    // Fallback: toggle button aria-expanded
+    const toggles = document.querySelectorAll<HTMLElement>(
+      '.menu-toggle, .nav-toggle, .hamburger, .mobile_menu_bar, .et_mobile_menu'
+    );
+    for (const toggle of toggles) {
+      if (toggle.getAttribute('aria-expanded') === 'true') return true;
+    }
+
+    return false;
+  });
+};
+
 /**
  * Opens the mobile menu by finding and clicking toggle buttons
  * This is useful for testing mobile menu functionality 

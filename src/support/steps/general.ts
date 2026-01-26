@@ -16,7 +16,7 @@ import { ICustomWorld } from "../../common/custom-world";
 import { Given, When, Then } from '@cucumber/cucumber';
 import {WP_BASE_URL} from '../../../config/wp.config';
 import scenarioUrls from "./../../../config/scenarioUrls.json";
-import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl, openMobileMenu} from "../../../utils/helpers";
+import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl, openMobileMenu, isMobileMenuOpen, isMobileMenuOpenSimple} from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
 import { Page, ConsoleMessage } from '@playwright/test';
 import {
@@ -296,8 +296,8 @@ When('expand mobile menu and validate no console error', async function (this:IC
     const theme = process.env.THEME ? process.env.THEME : '';
 
     // Get console messages when expanding menu on both versions
-    const consoleMsg1 = await getConsoleMsgWithMenuExpansion(this.page, `${WP_BASE_URL}/?nowprocket`);
     const consoleMsg2 = await getConsoleMsgWithMenuExpansion(this.page, `${WP_BASE_URL}/`);
+    const consoleMsg1 = await getConsoleMsgWithMenuExpansion(this.page, `${WP_BASE_URL}/?nowprocket`);
     
     // Compare console messages
     try {
@@ -572,8 +572,16 @@ const getConsoleMsgWithMenuExpansion = async (page: Page, url: string): Promise<
         });
 
         await page.goto(url);
+
         await page.waitForLoadState('load', { timeout: 30000 });
-    
+
+        await page.mouse.move(0, 0); await page.mouse.down(); await page.mouse.up(); // full user gesture
+ 
+        // Check if mobile menu is already open
+        const menuAlreadyOpen = await isMobileMenuOpen(page);
+        if (menuAlreadyOpen) {
+            throw new Error('Mobile menu is already open before attempting to open it');
+        }
         // Open the mobile menu using the helper function
         try {
             await openMobileMenu(page);
