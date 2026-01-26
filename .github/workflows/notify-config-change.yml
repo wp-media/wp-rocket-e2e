@@ -3,8 +3,7 @@ name: Notify Slack on config change
 on:
   push:
     branches:
-      - trunk
-      - feature/slack-notification-on-config-file-change
+      - develop
 
 jobs:
   notify-on-change:
