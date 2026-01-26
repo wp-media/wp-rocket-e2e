@@ -53,31 +53,24 @@ Given('one click exclusions are enabled if exists', async function(this:ICustomW
     const exclusionHeader = '#wpr_djs_oneclick_exclusions_themes > div.wpr-list-header > div.wpr-list-header-data > span.wpr-multiple-select-title';
     const theme = process.env.THEME || 'unknown';
     
+    // Scroll to the element to ensure it's visible
     try {
-        // Scroll to the element to ensure it's visible
-        try {
-            await this.page.locator(exclusionHeader).scrollIntoViewIfNeeded({ timeout: 5000 });
-        } catch {
-            // Element doesn't exist or can't be scrolled into view
-            console.log(`Theme '${theme}' does not have one-click exclusion available`);
-            return;
-        }
+        await this.page.locator(exclusionHeader).scrollIntoViewIfNeeded({ timeout: 5000 });
+    } catch {
+        // Element doesn't exist or can't be scrolled into view; treat as "one-click exclusions not available"
+        console.log(`Theme '${theme}' does not have one-click exclusion available`);
+        return;
+    }
+    
+    // Check if the element exists
+    if (await this.page.locator(exclusionHeader).isVisible()) {
+        // Click on the header to expand
+        await this.page.locator(exclusionHeader).click();
         
-        // Check if the element exists
-        if (await this.page.locator(exclusionHeader).isVisible()) {
-            // Click on the header to expand
-            await this.page.locator(exclusionHeader).click();
-            
-            // Toggle select all
-            await this.page.locator('#wpr_djs_oneclick_exclusions_themes .wpr-select-all label').click();
-            
-            await this.utils.saveSettings();
-        }
-   
-    } catch (error) {
-        // Log any error encountered while setting up one-click exclusions and continue
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`Error while configuring one-click exclusions for theme '${theme}': ${errorMessage}`);
+        // Toggle select all
+        await this.page.locator('#wpr_djs_oneclick_exclusions_themes .wpr-select-all label').click();
+        
+        await this.utils.saveSettings();
     }
 });
 

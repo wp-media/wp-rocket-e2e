@@ -291,7 +291,7 @@ When('I visit {string} in mobile view', async function (this:ICustomWorld, page)
 /**
  * Executes the step to expand mobile menu and validate no console error compared to nowprocket
  */
-When('expand mobile menu and validate no console error', async function (this:ICustomWorld) {
+When('expand mobile menu and validate no console error/warning', async function (this:ICustomWorld) {
     const { WP_BASE_URL } = await import('../../../config/wp.config');
     const theme = process.env.THEME ? process.env.THEME : '';
 
@@ -453,7 +453,7 @@ Then('I must not see any visual regression in scenario urls', async function (th
 /**
  * Executes the step to check for that there is no console error different from the nowprocket page version.
  */
-Then('no error in the console different than nowprocket page {string}', async function (this: ICustomWorld, path: string) {
+Then('no error/warning in the console different than nowprocket page {string}', async function (this: ICustomWorld, path: string) {
     const consoleMsg1 = await getConsoleMsg(this.page, `${WP_BASE_URL}/${path}?nowprocket`);
     const consoleMsg2 = await getConsoleMsg(this.page, `${WP_BASE_URL}/${path}`);
 
