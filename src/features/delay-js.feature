@@ -13,7 +13,7 @@ Feature: No Regression with delayjs script update
         And I save settings 'fileOptimization' 'delayJs'
         And one click exclusions are enabled if exists
         When I log out
-        Then no error/warning in the console different than nowprocket page ''
+        Then no error nor warning in the console different than nowprocket page ''
 
         Examples:
             | theme                  |
@@ -36,7 +36,7 @@ Feature: No Regression with delayjs script update
         And I save settings 'fileOptimization' 'delayJs'
         And one click exclusions are enabled if exists
         When I log out
-        Then expand mobile menu and validate no console error/warning
+        Then expand mobile menu and validate no console error nor warning
         And I click on link
         Then page navigated to the new page 'about-us'
 

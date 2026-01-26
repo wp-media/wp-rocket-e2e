@@ -12,7 +12,7 @@ Feature: C13969 - Should lazyload CSS background images inside internal, and ext
         Then I must not see any visual regression 'llcss'
         Then I must not see any error in debug.log
         When I log out
-        Then no error/warning in the console different than nowprocket page 'lazyload_css_background_images'
+        Then no error nor warning in the console different than nowprocket page 'lazyload_css_background_images'
 
     Scenario: Inspect the element that loads the background image
         When I log out

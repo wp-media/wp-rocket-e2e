@@ -28,7 +28,7 @@ Feature: Beacon script captures the right images.
     And I am logged in
     And I clear cache
     And I log out
-    Then no error/warning in the console different than nowprocket page "<url>"
+    Then no error nor warning in the console different than nowprocket page "<url>"
    
     Examples:
       | url                                |
