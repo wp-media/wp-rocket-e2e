@@ -606,7 +606,7 @@ export const isWprRelatedError = async(contents: string): Promise<boolean> => {
  * ```
  */
 export const isMobileMenuOpen = async (page: Page): Promise<boolean> => {
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(3000);
     return await page.evaluate(() => {
     const candidates = Array.from(document.querySelectorAll<HTMLElement>(
       'nav, .mobile-menu, .mobile-navigation, #mobile-menu, .et_mobile_menu, [id*=mobile-menu]'
