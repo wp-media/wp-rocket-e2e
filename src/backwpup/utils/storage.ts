@@ -129,12 +129,11 @@ export class StorageUtils {
         await this.page.locator('#ftppass').fill(BACKWPUP_INFOS.ftp.password);
         await this.page.locator('#ftphostport').fill(BACKWPUP_INFOS.ftp.port ?? '21');
         // Checkboxes
-        // Only set SSL checkbox if the text "Use explicit SSL-FTP connection" is visible in the UI
-        const sslTextVisible = await this.page.getByText('Use explicit SSL-FTP connection').isVisible().catch(() => false);
-        if (sslTextVisible) {
-            await this.page.locator('#ftpssl').setChecked(BACKWPUP_INFOS.ftp.ssl, { force: true });
-        }
+        // Only set SSL checkbox if the SSL option checkbox element exists and is visible
+        const sslCheckboxVisible = await this.page.locator('#ftpssl').isVisible().catch(() => false);
+        if (sslCheckboxVisible) {
         await this.page.locator('#ftppasv').setChecked(BACKWPUP_INFOS.ftp.passiveMode, { force: true });
+        }
         const timestamp = Date.now();
         const directoryName = getFolderNameFromHost();
         // Changing the directory name to prevent old backups to appear and affect the test
