@@ -128,10 +128,11 @@ export class StorageUtils {
         await this.page.locator('#ftpuser').fill(BACKWPUP_INFOS.ftp.username);
         await this.page.locator('#ftppass').fill(BACKWPUP_INFOS.ftp.password);
         await this.page.locator('#ftphostport').fill(BACKWPUP_INFOS.ftp.port ?? '21');
-        // Checkboxes
-        // Only set SSL checkbox if the SSL option checkbox element exists and is visible
-        const sslCheckboxVisible = await this.page.locator('#ftpssl').isVisible().catch(() => false);
-        if (sslCheckboxVisible) {
+        const ftpType = BACKWPUP_INFOS.ftp.ssl ? 'ftps' : 'ftp';
+        await this.page.locator('#ftpcontype').selectOption(ftpType);
+        // Only set passive mode checkbox if the passive mode option checkbox element exists and is visible
+        const passiveCheckboxVisible = await this.page.locator('#ftppasv').isVisible().catch(() => false);
+        if (passiveCheckboxVisible) {
         await this.page.locator('#ftppasv').setChecked(BACKWPUP_INFOS.ftp.passiveMode, { force: true });
         }
         const timestamp = Date.now();
