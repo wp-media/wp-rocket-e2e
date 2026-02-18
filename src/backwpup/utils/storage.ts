@@ -133,7 +133,7 @@ export class StorageUtils {
         // Only set passive mode checkbox if the passive mode option checkbox element exists and is visible
         const passiveCheckboxVisible = await this.page.locator('#ftppasv').isVisible().catch(() => false);
         if (passiveCheckboxVisible) {
-        await this.page.locator('#ftppasv').setChecked(BACKWPUP_INFOS.ftp.passiveMode, { force: true });
+            await this.page.locator('#ftppasv').setChecked(BACKWPUP_INFOS.ftp.passiveMode, { force: true });
         }
         const timestamp = Date.now();
         const directoryName = getFolderNameFromHost();
