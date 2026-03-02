@@ -651,10 +651,19 @@ export const normalizeUrls = (
  * @param {string} currentHost - Current host to distinguish internal from external URLs
  * @return {Promise<string[]>} - Array of broken link strings in format "STATUS: url"
  */
-export const validateLinks = async (page: Page, urls: Set<string>, currentHost: string): Promise<string[]> => {
+export const validateLinks = async (
+    page: Page,
+    urls: Set<string>,
+    currentHost: string,
+    skipPatterns: RegExp[] = []
+): Promise<string[]> => {
     const brokenLinks: string[] = [];
 
     for (const url of urls) {
+        // Skip URLs matching any skip pattern
+        if (skipPatterns.some(pattern => pattern.test(url))) {
+            continue;
+        }
         try {
             const response = await page.request.get(url, { maxRedirects: 5, timeout: 30000 });
             const status = response.status();
