@@ -147,7 +147,7 @@ BeforeAll(async function() {
                 gitRef: backWPUpToBuild,
                 outputDir: PLUGIN_OUTPUT_DIR,
                 variants: ['pro-en'],
-                version: '5.6.6'
+                version: '5.6.5'
             }
         });
     }
