@@ -108,8 +108,8 @@ BeforeAll(async function() {
     if (!previousStableToBuild && !newReleaseToBuild && !backWPUpToBuild) {
         return;
     }
-
-    const apvm = await Apvm.create();
+    // Apvm.createWithTokenResolution attempts to resolve github tokens in this environment to be able to access private repositories.
+    const apvm = await Apvm.createWithTokenResolution();
 
     if (previousStableToBuild) {
         await buildAndStorePluginArtifact({
@@ -119,8 +119,8 @@ BeforeAll(async function() {
             options: {
                 project: 'wp-rocket',
                 gitRef: previousStableToBuild,
-                outputDir: PLUGIN_OUTPUT_DIR,
-            },
+                outputDir: PLUGIN_OUTPUT_DIR
+            }
         });
     }
 
@@ -132,8 +132,8 @@ BeforeAll(async function() {
             options: {
                 project: 'wp-rocket',
                 gitRef: newReleaseToBuild,
-                outputDir: PLUGIN_OUTPUT_DIR,
-            },
+                outputDir: PLUGIN_OUTPUT_DIR
+            }
         });
     }
 
@@ -147,8 +147,8 @@ BeforeAll(async function() {
                 gitRef: backWPUpToBuild,
                 outputDir: PLUGIN_OUTPUT_DIR,
                 variants: ['pro-en'],
-                version: '5.6.6',
-            },
+                version: '5.6.6'
+            }
         });
     }
 });
@@ -182,7 +182,7 @@ async function buildAndStorePluginArtifact({ apvm, pluginName, options, targetPa
     try {
         const result = await apvm.build(options, reporter);
 
-        if (hasPrintedStepProgress) process.stdout.write('\n');
+        if (hasPrintedStepProgress) process.stdout.write('100%\n');
         const firstArtifactPath = result.result.artifacts[0]?.path;
 
         if (result.result.artifactCount < 1 || !firstArtifactPath) {
