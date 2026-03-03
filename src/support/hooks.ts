@@ -25,8 +25,9 @@ import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@
 import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
+import { Apvm, BuildOptions, JsBuildEvent } from 'apvm-napi';
 // import {configurations, getWPDir} from "../../utils/configurations";
-
+import {access, rm as nodeRm, rename as nodeRename} from 'node:fs/promises';
 
 /**
  * The name of the template loader plugin.
@@ -34,7 +35,6 @@ import type { Section } from "../../utils/types";
  * @constant {string}
  */
 const TEMPLATE_LOADER_PLUGIN = 'template-loader-plugin-master';
-
 
 /**
  * The Playwright Chromium browser instance used for testing.
@@ -88,6 +88,118 @@ BeforeAll(async function (this: ICustomWorld) {
         throw new Error('Setup failed: ' + error.message);
     }
 });
+
+/**
+ * Hook that runs before all tests to build the plugins specified by environment variables and store them in a known location for E2E tests.
+ * It uses APVM to build the plugins from specified git references and moves the resulting artifacts to stable zip paths.
+ * If no environment variables are set for plugin builds, it simply returns without performing any actions.
+ */
+BeforeAll(async function() {
+    const WORKSPACE_ROOT_DIR = process.env.PWD ?? process.cwd();
+    const PLUGIN_OUTPUT_DIR = `${WORKSPACE_ROOT_DIR}/plugin`;
+    const PREVIOUS_STABLE_PLUGIN_ZIP = `${PLUGIN_OUTPUT_DIR}/previous_stable.zip`;
+    const NEW_RELEASE_PLUGIN_ZIP = `${PLUGIN_OUTPUT_DIR}/new_release.zip`;
+    const BACKWPUP_PLUGIN_ZIP = `${PLUGIN_OUTPUT_DIR}/backwpup-pro.zip`;
+
+    const previousStableToBuild = process.env.E2E_WPR_PREV || null;
+    const newReleaseToBuild = process.env.E2E_WPR_NEW || null;
+    const backWPUpToBuild = process.env.E2E_WPR_BACKWPUP || null;
+
+    if (!previousStableToBuild && !newReleaseToBuild && !backWPUpToBuild) {
+        return;
+    }
+
+    const apvm = await Apvm.create();
+
+    if (previousStableToBuild) {
+        await buildAndStorePluginArtifact({
+            apvm,
+            pluginName: 'WP Rocket previous stable',
+            targetPath: PREVIOUS_STABLE_PLUGIN_ZIP,
+            options: {
+                project: 'wp-rocket',
+                gitRef: previousStableToBuild,
+                outputDir: PLUGIN_OUTPUT_DIR,
+            },
+        });
+    }
+
+    if (newReleaseToBuild) {
+        await buildAndStorePluginArtifact({
+            apvm,
+            pluginName: 'WP Rocket new release',
+            targetPath: NEW_RELEASE_PLUGIN_ZIP,
+            options: {
+                project: 'wp-rocket',
+                gitRef: newReleaseToBuild,
+                outputDir: PLUGIN_OUTPUT_DIR,
+            },
+        });
+    }
+
+    if (backWPUpToBuild) {
+        await buildAndStorePluginArtifact({
+            apvm,
+            pluginName: 'BackWPUp',
+            targetPath: BACKWPUP_PLUGIN_ZIP,
+            options: {
+                project: 'backwpup',
+                gitRef: backWPUpToBuild,
+                outputDir: PLUGIN_OUTPUT_DIR,
+                variants: ['pro-en'],
+                version: '5.6.6',
+            },
+        });
+    }
+});
+
+interface BuildAndStorePluginArtifactArgs {
+    apvm: Apvm;
+    pluginName: string;
+    options: BuildOptions;
+    targetPath: string;
+}
+
+/**
+ * Builds a plugin artifact using APVM and moves it to a stable zip path used by E2E tests.
+ *
+ * @param {BuildAndStorePluginArtifactArgs} args - Build and output options.
+ * @return {Promise<void>}
+ */
+async function buildAndStorePluginArtifact({ apvm, pluginName, options, targetPath }: BuildAndStorePluginArtifactArgs): Promise<void> {
+    const gitRef = options.gitRef ?? 'unknown-ref';
+    console.log(`\nBuilding ${pluginName} plugin from: ${gitRef}\n`);
+    let hasPrintedStepProgress = false;
+
+    const reporter = (error: Error, event: JsBuildEvent): void => {
+        if (error) console.error(error);
+        if (event.type === 'step_completed') {
+            hasPrintedStepProgress = true;
+            process.stdout.write('.');
+        }
+    };
+
+    try {
+        const result = await apvm.build(options, reporter);
+
+        if (hasPrintedStepProgress) process.stdout.write('\n');
+        const firstArtifactPath = result.result.artifacts[0]?.path;
+
+        if (result.result.artifactCount < 1 || !firstArtifactPath) {
+            throw new Error(`No artifact path found in build result for "${pluginName}"`);
+        }
+
+        await access(firstArtifactPath);
+        // Remove existing artifact at target path if it exists, then move new artifact to target path
+        await nodeRm(targetPath, { force: true });
+        await nodeRename(firstArtifactPath, targetPath);
+        console.log(`\nSaved ${pluginName} build artifact to: ${targetPath}`);
+    } catch (error) {
+        if (hasPrintedStepProgress) process.stdout.write('\n');
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`Failed to build ${pluginName} plugin from '${gitRef}': ${message}`);
+    }
+}
 
 /**
  * Before each test scenario without the @setup tag, performs setup tasks.
