@@ -6,7 +6,7 @@ Feature: CDN banner
     And plugin is installed 'new_release'
     And plugin is activated
     And I am on the page '/wp-admin/options-general.php?page=wprocket#page_cdn'
-@test
+
   Scenario: Should validate that CDN purchase banner is displayed
     Given I must see the banner using selector '#wpr-rocketcdn-cta'
     And I click on '.wpr-rocketcdn-open'
