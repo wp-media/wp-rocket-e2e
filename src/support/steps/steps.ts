@@ -10,15 +10,14 @@
  * @requires {@link ../../../utils/configurations}
  */
 import {expect} from "@playwright/test";
-import wp, {
+import {
     activatePlugin,
     setTransient
 } from "../../../utils/commands";
 import { ICustomWorld } from "../../common/custom-world";
 import {configurations} from "../../../utils/configurations";
 import {match} from "ts-pattern";
-
-const { Given, When, Then } = require("@cucumber/cucumber");
+import { Given, When, Then } from "@cucumber/cucumber";
 
 /**
  * Executes the step to set up a WP account based on the provided status.
@@ -32,6 +31,7 @@ Given('I have an {word} account', { timeout: 60 * 1000 }, async function (this: 
         return
     }
 
+    /* eslint-disable @typescript-eslint/naming-convention */
     await setTransient('wp_rocket_customer_data', JSON.stringify({
         'ID' : 1,
         'firstname' : 'Rocket',
@@ -51,6 +51,7 @@ Given('I have an {word} account', { timeout: 60 * 1000 }, async function (this: 
         'upgrade_infinite_url' : 'https://example.org/upgrade_infinite_url'
     }).replaceAll('"', '\\"')
         .replaceAll('}', '\\}'))
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     await this.page.reload();
 });
@@ -162,7 +163,7 @@ When('I go {string}', async function (this: ICustomWorld, url: string) {
 /**
  * Executes the step to connect as a specific user.
  */
-When('I connect as {string}', async function (this: ICustomWorld, user: string) {
+When('I connect as {string}', async function (this: ICustomWorld) {
    await this.utils.wpAdminLogout();
     await this.utils.auth('admin2');
 });
