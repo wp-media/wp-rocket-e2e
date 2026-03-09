@@ -163,9 +163,9 @@ When('I go {string}', async function (this: ICustomWorld, url: string) {
 /**
  * Executes the step to connect as a specific user.
  */
-When('I connect as {string}', async function (this: ICustomWorld) {
+When('I connect as {string}', async function (this: ICustomWorld, user: string) {
    await this.utils.wpAdminLogout();
-    await this.utils.auth('admin2');
+    await this.utils.auth(user);
 });
 
 /**
