@@ -70,6 +70,14 @@ Then('I must see the banner {string}', async function (this: ICustomWorld, text:
 });
 
 /**
+ * Executes the step to assert the visibility of a banner with specific selector.
+ */
+Then('I must see the banner using selector {string}', async function (this: ICustomWorld, selector: string) {
+  await expect(this.page.locator(selector)).toBeVisible({ timeout: 15000 });
+});
+
+
+/**
  * Executes the step to assert the visibility of a banner in iframe with specific text.
  */
 Then('I must see the banner {string} in iframe {string}', async function (this: ICustomWorld, text: string, iframeSelector: string) {
