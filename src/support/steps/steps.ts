@@ -10,15 +10,14 @@
  * @requires {@link ../../../utils/configurations}
  */
 import {expect} from "@playwright/test";
-import wp, {
+import {
     activatePlugin,
     setTransient
 } from "../../../utils/commands";
 import { ICustomWorld } from "../../common/custom-world";
 import {configurations} from "../../../utils/configurations";
 import {match} from "ts-pattern";
-
-const { Given, When, Then } = require("@cucumber/cucumber");
+import { Given, When, Then } from "@cucumber/cucumber";
 
 /**
  * Executes the step to set up a WP account based on the provided status.
@@ -32,6 +31,7 @@ Given('I have an {word} account', { timeout: 60 * 1000 }, async function (this: 
         return
     }
 
+    /* eslint-disable @typescript-eslint/naming-convention */
     await setTransient('wp_rocket_customer_data', JSON.stringify({
         'ID' : 1,
         'firstname' : 'Rocket',
@@ -51,6 +51,7 @@ Given('I have an {word} account', { timeout: 60 * 1000 }, async function (this: 
         'upgrade_infinite_url' : 'https://example.org/upgrade_infinite_url'
     }).replaceAll('"', '\\"')
         .replaceAll('}', '\\}'))
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     await this.page.reload();
 });
@@ -68,6 +69,14 @@ Given('plugin {word} is activated', async function (plugin: string) {
 Then('I must see the banner {string}', async function (this: ICustomWorld, text: string) {
     await expect(this.page.getByText(text)).toBeVisible({ timeout: 15000 });
 });
+
+/**
+ * Executes the step to assert the visibility of a banner with specific selector.
+ */
+Then('I must see the banner using selector {string}', async function (this: ICustomWorld, selector: string) {
+    await expect(this.page.locator(selector)).toBeVisible({ timeout: 15000 });
+});
+
 
 /**
  * Executes the step to assert the visibility of a banner in iframe with specific text.
@@ -156,7 +165,7 @@ When('I go {string}', async function (this: ICustomWorld, url: string) {
  */
 When('I connect as {string}', async function (this: ICustomWorld, user: string) {
    await this.utils.wpAdminLogout();
-    await this.utils.auth('admin2');
+    await this.utils.auth(user);
 });
 
 /**
