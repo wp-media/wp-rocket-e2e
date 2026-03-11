@@ -21,7 +21,6 @@
         "src/common/deactivation.modal.ts",
         "src/common/safe.mode.disabled.options.check.ts",
         "src/common/safe.mode.disabled.options.ts",
-        "src/support/steps/steps.ts",
         "utils/commands.ts",
         "utils/configurations.ts"
       ]
