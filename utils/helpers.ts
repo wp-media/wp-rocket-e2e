@@ -659,14 +659,12 @@ export const validateLinks = async (
     skipPatterns: RegExp[] = []
 ): Promise<string[]> => {
     const brokenLinks: string[] = [];
-    const validatedUrls: string[] = [];
 
     for (const url of urls) {
         // Skip URLs matching any skip pattern
         if (skipPatterns.some(pattern => pattern.test(url))) {
             continue;
         }
-        validatedUrls.push(url);
         try {
             const response = await page.request.get(url, { maxRedirects: 5, timeout: 30000 });
             const status = response.status();
