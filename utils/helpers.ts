@@ -649,6 +649,7 @@ export const normalizeUrls = (
  * @param {Page} page - The Playwright page object
  * @param {Set<string>} urls - Set of URLs to validate
  * @param {string} currentHost - Current host to distinguish internal from external URLs
+ * @param {RegExp[]} [skipPatterns=[]] - Optional array of regex patterns to skip URLs matching any pattern
  * @return {Promise<string[]>} - Array of broken link strings in format "STATUS: url"
  */
 export const validateLinks = async (
@@ -658,12 +659,14 @@ export const validateLinks = async (
     skipPatterns: RegExp[] = []
 ): Promise<string[]> => {
     const brokenLinks: string[] = [];
+    const validatedUrls: string[] = [];
 
     for (const url of urls) {
         // Skip URLs matching any skip pattern
         if (skipPatterns.some(pattern => pattern.test(url))) {
             continue;
         }
+        validatedUrls.push(url);
         try {
             const response = await page.request.get(url, { maxRedirects: 5, timeout: 30000 });
             const status = response.status();

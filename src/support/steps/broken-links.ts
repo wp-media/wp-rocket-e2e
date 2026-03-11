@@ -57,13 +57,7 @@ Then('WP Rocket settings links are not broken', async function (this: ICustomWor
     }
 
     // Normalize and filter URLs
-    let normalizedUrls = normalizeUrls(allHrefs, basePageUrl);
-
-    // Exclude URLs that may trigger transactional side effects
-    const skipPatterns = [/\/renew\//i, /\/upgrade\//i];
-    normalizedUrls = new Set(
-        Array.from(normalizedUrls).filter(url => !skipPatterns.some(pattern => pattern.test(url)))
-    );
+    const normalizedUrls = normalizeUrls(allHrefs, basePageUrl);
 
     // Warn if no valid URLs found to validate
     if (normalizedUrls.size === 0) {
@@ -72,8 +66,9 @@ Then('WP Rocket settings links are not broken', async function (this: ICustomWor
         return;
     }
 
-    // Validate all collected URLs
-    const brokenLinks = await validateLinks(this.page, normalizedUrls, currentHost);
+    // Validate all collected URLs, excluding URLs that may trigger transactional side effects
+    const skipPatterns = [/\/renew\//i, /\/upgrade\//i, /\/express-checkout/i];
+    const brokenLinks = await validateLinks(this.page, normalizedUrls, currentHost, skipPatterns);
 
     // Report all broken links at once
     expect(brokenLinks, 'Broken links detected').toHaveLength(0);
