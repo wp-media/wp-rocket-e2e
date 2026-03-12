@@ -662,7 +662,11 @@ export const validateLinks = async (
 
     for (const url of urls) {
         // Skip URLs matching any skip pattern
-        if (skipPatterns.some(pattern => pattern.test(url))) {
+        if (skipPatterns.some((pattern: RegExp): boolean => {
+            // Ensure global/sticky regexes don't carry state between tests
+            pattern.lastIndex = 0;
+            return pattern.test(url);
+        })) {
             continue;
         }
         try {
