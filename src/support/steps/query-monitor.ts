@@ -21,12 +21,29 @@ import {
  */
 Given('WP is latest WP', async function (this: ICustomWorld) {
     const result = await wpWithOutput('core update');
-    // Acceptable outcomes: already at latest, or successfully updated
-    const success = !result.failed 
-        || result.stdout.includes('WordPress is up to date')
-        || result.stdout.includes('Success');
-    if (!success) {
-        throw new Error(`Failed to update WordPress core: ${result.stderr}`);
+
+    if (result.failed) {
+        throw new Error(
+            `Failed to update WordPress core.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`
+        );
+    }
+
+    const stdout = result.stdout ?? '';
+    const isAlreadyUpToDate = stdout.includes('WordPress is up to date');
+    const isUpdateSuccess = stdout.includes('Success');
+
+    if (!isAlreadyUpToDate && !isUpdateSuccess) {
+        throw new Error(
+            `Unexpected output from "wp core update".\nSTDOUT:\n${stdout}\nSTDERR:\n${result.stderr}`
+        );
+    }
+
+    const updateDbResult = await wpWithOutput('core update-db');
+
+    if (updateDbResult.failed) {
+        throw new Error(
+            `Failed to run "wp core update-db".\nSTDOUT:\n${updateDbResult.stdout}\nSTDERR:\n${updateDbResult.stderr}`
+        );
     }
 });
 
