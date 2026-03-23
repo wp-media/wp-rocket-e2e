@@ -11,7 +11,6 @@ import { Given, Then } from '@cucumber/cucumber';
 import { ICustomWorld } from '../../common/custom-world';
 import {
     activatePlugin,
-    installRemotePlugin,
     isPluginInstalled,
     wpWithOutput,
 } from '../../../utils/commands';
