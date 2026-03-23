@@ -9,5 +9,4 @@ Feature: C16919 - Should have no error in query monitor when activating WPR
     And Query monitor is active
     When plugin is installed 'new_release'
     And plugin is activated
-    Then no PHP error in query monitor about WPR
-    And no doing it wrong for WPR
+    Then Query monitor shows no WP Rocket errors or warnings

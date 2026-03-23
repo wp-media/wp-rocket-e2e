@@ -48,7 +48,13 @@ Given('WP is latest WP', async function (this: ICustomWorld): Promise<void>  {
 Given('Query monitor is active', async function (this: ICustomWorld): Promise<void>  {
     const isInstalled = await isPluginInstalled('query-monitor');
     if (!isInstalled) {
-        await installRemotePlugin('https://downloads.wordpress.org/plugin/query-monitor.latest-stable.zip');
+        const result = await wpWithOutput('plugin install query-monitor');
+        if (result.failed) {
+            throw new Error(
+                `Failed to install Query Monitor via "wp plugin install query-monitor".` +
+                `\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`
+            );
+        }
     }
     await activatePlugin('query-monitor');
 });
@@ -73,44 +79,38 @@ const openQueryMonitorToolbar = async function (this: ICustomWorld): Promise<voi
 };
 
 /**
- * Verifies Query Monitor has no WP Rocket related entries in the PHP errors panel
+ * Verifies Query Monitor shows no WP Rocket errors or warnings
  */
-Then('no PHP error in query monitor about WPR', async function (this: ICustomWorld): Promise<void>  {
+Then('Query monitor shows no WP Rocket errors or warnings', async function (this: ICustomWorld): Promise<void>  {
     await openQueryMonitorToolbar.call(this);
 
-    // QM renders a hidden panel; expand it to make it accessible to Playwright
-    const qmPanel = this.page.locator('#qm-php_errors');
-    const panelExists = await qmPanel.count() > 0;
-    if (!panelExists) {
-        return; // No PHP errors panel = no errors
+    const issues: string[] = [];
+
+    // Check PHP errors panel
+    const phpErrorPanel = this.page.locator('#qm-php_errors');
+    const phpErrorExists = await phpErrorPanel.count() > 0;
+    if (phpErrorExists) {
+        const errorText = await phpErrorPanel.textContent();
+        const wprRelated = (errorText?.includes('/plugins/wp-rocket/') 
+            || errorText?.includes('WP_Rocket'))
+        if (wprRelated) {
+            issues.push(`PHP errors from WP Rocket:\n${errorText}`);
+        }
     }
 
-    const errorText = await qmPanel.textContent();
-    const wprRelated = errorText?.includes('/plugins/wp-rocket/') 
-        || errorText?.includes('WP_Rocket');
-
-    if (wprRelated) {
-        throw new Error(`PHP errors from WP Rocket found in Query Monitor:\n${errorText}`);
-    }
-});
-
-/**
- * Verifies Query Monitor has no WP Rocket related entries in the doing_it_wrong panel
- */
-Then('no doing it wrong for WPR', async function (this: ICustomWorld): Promise<void>  {
-    await openQueryMonitorToolbar.call(this);
-
-    const qmPanel = this.page.locator('#qm-doing_it_wrong');
-    const panelExists = await qmPanel.count() > 0;
-    if (!panelExists) {
-        return; // No doing_it_wrong panel = no notices
+    // Check doing_it_wrong panel
+    const doingWrongPanel = this.page.locator('#qm-doing_it_wrong');
+    const doingWrongExists = await doingWrongPanel.count() > 0;
+    if (doingWrongExists) {
+        const noticeText = await doingWrongPanel.textContent();
+        const wprRelated = noticeText?.includes('/plugins/wp-rocket/') 
+            || noticeText?.includes('WP_Rocket');
+        if (wprRelated) {
+            issues.push(`doing_it_wrong notices from WP Rocket:\n${noticeText}`);
+        }
     }
 
-    const noticeText = await qmPanel.textContent();
-    const wprRelated = noticeText?.includes('/plugins/wp-rocket/') 
-        || noticeText?.includes('WP_Rocket');
-
-    if (wprRelated) {
-        throw new Error(`doing_it_wrong notices from WP Rocket found in Query Monitor:\n${noticeText}`);
+    if (issues.length > 0) {
+        throw new Error(`Query Monitor detected WP Rocket issues:\n\n${issues.join('\n\n')}`);
     }
 });
