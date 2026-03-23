@@ -19,30 +19,25 @@ import {
 /**
  * Ensures WordPress core is on the latest version
  */
-Given('WP is latest WP', async function (this: ICustomWorld) {
-    const result = await wpWithOutput('core update');
+Given('WP is latest WP', async function (this: ICustomWorld): Promise<void>  {
+    const result = await wpWithOutput('core check-update --format=csv --fields=version');
 
     if (result.failed) {
         throw new Error(
-            `Failed to update WordPress core.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`
+            `Failed to verify WordPress core version via "wp core check-update".` +
+            `\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`
         );
     }
 
-    const stdout = result.stdout ?? '';
-    const isAlreadyUpToDate = stdout.includes('WordPress is up to date');
-    const isUpdateSuccess = stdout.includes('Success');
+    const lines = (result.stdout ?? '').trim().split('\n').filter(line => line.trim() !== '');
+    // When up to date, only the CSV header line is returned — no data rows.
+    const hasUpdates = lines.length > 1;
 
-    if (!isAlreadyUpToDate && !isUpdateSuccess) {
+    if (hasUpdates) {
         throw new Error(
-            `Unexpected output from "wp core update".\nSTDOUT:\n${stdout}\nSTDERR:\n${result.stderr}`
-        );
-    }
-
-    const updateDbResult = await wpWithOutput('core update-db');
-
-    if (updateDbResult.failed) {
-        throw new Error(
-            `Failed to run "wp core update-db".\nSTDOUT:\n${updateDbResult.stdout}\nSTDERR:\n${updateDbResult.stderr}`
+            `WordPress core is not on the latest version.` +
+            `\n"wp core check-update" reported available updates.` +
+            `\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`
         );
     }
 });
@@ -50,7 +45,7 @@ Given('WP is latest WP', async function (this: ICustomWorld) {
 /**
  * Ensures Query Monitor plugin is installed and active
  */
-Given('Query monitor is active', async function (this: ICustomWorld) {
+Given('Query monitor is active', async function (this: ICustomWorld): Promise<void>  {
     const isInstalled = await isPluginInstalled('query-monitor');
     if (!isInstalled) {
         await installRemotePlugin('https://downloads.wordpress.org/plugin/query-monitor.latest-stable.zip');
@@ -80,7 +75,7 @@ const openQueryMonitorToolbar = async function (this: ICustomWorld): Promise<voi
 /**
  * Verifies Query Monitor has no WP Rocket related entries in the PHP errors panel
  */
-Then('no PHP error in query monitor about WPR', async function (this: ICustomWorld) {
+Then('no PHP error in query monitor about WPR', async function (this: ICustomWorld): Promise<void>  {
     await openQueryMonitorToolbar.call(this);
 
     // QM renders a hidden panel; expand it to make it accessible to Playwright
@@ -102,7 +97,7 @@ Then('no PHP error in query monitor about WPR', async function (this: ICustomWor
 /**
  * Verifies Query Monitor has no WP Rocket related entries in the doing_it_wrong panel
  */
-Then('no doing it wrong for WPR', async function (this: ICustomWorld) {
+Then('no doing it wrong for WPR', async function (this: ICustomWorld): Promise<void>  {
     await openQueryMonitorToolbar.call(this);
 
     const qmPanel = this.page.locator('#qm-doing_it_wrong');
