@@ -297,6 +297,12 @@ After({tags: '@cloudflare-compatibility'}, async function (this: ICustomWorld) {
     }
 });
 
+After({tags: '@qm'}, async function (this: ICustomWorld) {
+    if (await isPluginInstalled('query-monitor')) {
+        await uninstallPlugin('query-monitor');
+    }
+});
+
 /**
  * To uncomment during implementation of cli
  */
