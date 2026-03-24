@@ -16,11 +16,11 @@ import { ICustomWorld } from "../../common/custom-world";
 import { Given, When, Then } from '@cucumber/cucumber';
 import {WP_BASE_URL} from '../../../config/wp.config';
 import scenarioUrls from "./../../../config/scenarioUrls.json";
-import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl, openMobileMenu, isMobileMenuOpen} from "../../../utils/helpers";
+import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl} from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
-import { Page, ConsoleMessage } from '@playwright/test';
+import { getConsoleMsg, getConsoleMsgWithMenuExpansion } from '../../../utils/page-utils';
 import {
-    deactivatePlugin, installRemotePlugin
+    deactivatePlugin, installRemotePlugin, switchTheme
 } from "../../../utils/commands";
 import backstop from 'backstopjs';
 
@@ -128,7 +128,6 @@ Given('theme {string} is activated', async function (this:ICustomWorld, theme) {
  *  state is required. If UI-specific side effects are needed, consider using the UI-based method instead.
  */
 Given('theme {string} is activated via WP-CLI', async function (this:ICustomWorld, theme: string) {
-    const { switchTheme } = await import('../../../utils/commands');
     await switchTheme(theme);
 
     // Check tags via pickle.
@@ -292,7 +291,6 @@ When('I visit {string} in mobile view', async function (this:ICustomWorld, page)
  * Executes the step to expand mobile menu and validate no console error compared to nowprocket
  */
 When('expand mobile menu and validate no console error nor warning', async function (this:ICustomWorld) {
-    const { WP_BASE_URL } = await import('../../../config/wp.config');
     const theme = process.env.THEME ? process.env.THEME : '';
 
     // Get console messages when expanding menu on both versions
@@ -475,138 +473,6 @@ Then('no error nor warning in the console different than nowprocket page {string
     }
 });
 
-
-const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> => {
-    const consoleMsg: string[] = [];
-
-    const consoleHandler = (msg: ConsoleMessage): void => {
-        // Only capture errors and warnings, not info/log/debug
-        if (msg.type() === 'error' || msg.type() === 'warning') {
-            consoleMsg.push(msg.text());
-        }
-    };
-
-    const pageErrorHandler = (error: Error): void => {
-        consoleMsg.push(error.message);
-    };
-
-    try {
-        // Listen for console messages.
-        page.on('console', consoleHandler);
-
-        // Listen for page errors.
-        page.on('pageerror', pageErrorHandler);
-
-        await page.goto(url);
-        await page.waitForLoadState('load', { timeout: 30000 });
-
-        // use this if you need to scroll till end of page
-        try {
-            await page.evaluate(async () => {
-                // Scroll to the bottom of page.
-                const scrollPage: Promise<void> = new Promise((resolve) => {
-                    let totalHeight = 0;
-                    const distance = 100;
-                    const timer = setInterval(() => {
-                    const scrollHeight = document.body.scrollHeight;
-                    window.scrollBy(0, distance);
-                    totalHeight += distance;
-            
-                    if(totalHeight >= scrollHeight){
-                        clearInterval(timer);
-                        resolve();
-                    }
-                    }, 500);
-                });
-            
-                await scrollPage;
-              });
-        } catch (error) {
-            // Handle execution context destroyed error from page navigation during scroll
-            console.log('Page navigation occurred during scroll, continuing...');
-        }
-
-        // Trigger user interaction to execute delayed scripts
-        // Click on body element to avoid clicking interactive elements
-        await page.locator('body').click();
-        
-        // Wait longer for delayed scripts to execute on remote servers
-        await page.waitForTimeout(3000);
-    } finally {
-        // Remove the event listeners to prevent duplicate messages.
-        page.off('console', consoleHandler);
-        page.off('pageerror', pageErrorHandler);
-    }
-
-    // Normalize messages by removing query parameters from URLs and filtering out unrelated errors
-    const normalizedMessages = consoleMsg
-        .map(msg => 
-            msg.replace(/\?nowprocket/g, '')
-        ).sort();
-    
-    return normalizedMessages;
-};
-
-/**
- * Gets console messages while expanding mobile menu for a given URL
- */
-const getConsoleMsgWithMenuExpansion = async (page: Page, url: string): Promise<Array<string>> => {
-    const consoleMsg: string[] = [];
-
-    const consoleHandler = (msg: ConsoleMessage): void => {
-        consoleMsg.push(msg.text());
-    };
-
-    const pageErrorHandler = (error: Error): void => {
-        consoleMsg.push(error.message);
-    };
-
-    try{
-        page.on('console', consoleHandler);
-        page.on('pageerror', pageErrorHandler);
-
-        // Set mobile viewport
-        await page.setViewportSize({
-            width: 500,
-            height: 480,
-        });
-
-        await page.goto(url);
-
-        await page.waitForLoadState('load', { timeout: 30000 });
-
-        await page.mouse.move(0, 0); await page.mouse.down(); await page.mouse.up(); // full user gesture
- 
-        // Check if mobile menu is already open
-        const menuAlreadyOpen = await isMobileMenuOpen(page);
-        if (menuAlreadyOpen) {
-            throw new Error('Mobile menu is already open before attempting to open it');
-        }
-        // Open the mobile menu using the helper function
-        try {
-            await openMobileMenu(page);
-        } catch (error) {
-            console.error('Failed to open mobile menu:', error);
-            throw error;
-        }
-        await page.waitForTimeout(1000);
-
-    }
-   
-    // To guarantee not having memory leak and run for failure/success
-    finally{
-        page.off('console', consoleHandler);
-        page.off('pageerror', pageErrorHandler);
-
-    }
-  
-    // Normalize messages
-    const normalizedMessages = consoleMsg
-        .map(msg => msg.replace(/\?nowprocket/g, ''))
-        .sort();
-    
-    return normalizedMessages;
-};
 
 /**
  * Executes the step to assert that page navigation.

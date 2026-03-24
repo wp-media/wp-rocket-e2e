@@ -9,6 +9,16 @@
  * @requires {@link node-ssh}
  */
 import {exec} from "shelljs";
+
+// Utility to sanitize shell arguments (removes unmatched quotes and trims whitespace)
+function sanitizeShellArg(arg: string): string {
+    if (!arg || typeof arg !== 'string') return '';
+    // Remove unmatched single/double quotes and trim
+    let sanitized = arg.replace(/['"`]/g, '').trim();
+    // Prevent accidental empty string for critical shell args
+    if (sanitized === '') sanitized = '.';
+    return sanitized;
+}
 import {configurations, getWPDir, ServerType} from "./configurations";
 import { SSHConfig } from "./types";
 
@@ -222,21 +232,20 @@ export async function cp(origin: string, destination: string): Promise<void> {
  * @returns {Promise<void>} - A Promise that resolves when the rename operation is completed.
  */
 export async function rename(oldName: string, newName: string): Promise<void> {
+    const safeOld = sanitizeShellArg(oldName);
+    const safeNew = sanitizeShellArg(newName);
     if(configurations.type === ServerType.docker) {
-        await exec(`docker exec -T ${configurations.docker.container} mv ${oldName} ${newName}`, {
+        await exec(`docker exec -T ${configurations.docker.container} mv ${safeOld} ${safeNew}`, {
             cwd: configurations.rootDir,
             async: false
         });
-
         return;
     }
-
     if(configurations.type === ServerType.external) {
-        await exec(`ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "sudo mv ${oldName} ${newName}"`);
+        await exec(`ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "sudo mv ${safeOld} ${safeNew}"`);
         return;
     }
-
-    exec(`sudo mv ${oldName} ${newName}`, {
+    exec(`sudo mv ${safeOld} ${safeNew}`, {
         cwd: configurations.rootDir,
         async: false
     });
@@ -252,16 +261,15 @@ export async function rename(oldName: string, newName: string): Promise<void> {
  * @returns {Promise<boolean>} - A Promise that resolves with true if the file exists, false otherwise.
  */
 export async function exists(filePath: string): Promise<boolean> {
+    const safePath = sanitizeShellArg(filePath);
     let command: string;
-
     if(configurations.type === ServerType.docker) {
-        command = `docker exec -T ${configurations.docker.container} test -f ${filePath}; echo $?`;
+        command = `docker exec -T ${configurations.docker.container} test -f ${safePath}; echo $?`;
     } else if(configurations.type === ServerType.external) {
-        command = `ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} 'test -f ${filePath}; echo $?'`;
+        command = `ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} 'test -f ${safePath}; echo $?'`;
     } else {
-        command = `test -f ${filePath}; echo $?`;
+        command = `test -f ${safePath}; echo $?`;
     }
-
     try {
         const result = await exec(command, {
             cwd: configurations.rootDir,
@@ -303,7 +311,8 @@ export async function unzip(file: string, destination: string): Promise<void> {
  */
 export async function rm(destination: string, sshConfig?: SSHConfig): Promise<void> {
     const cwd = configurations.rootDir;
-    const command = wrapPrefix(`sudo rm -rf ${destination}`, sshConfig);
+    const safeDest = sanitizeShellArg(destination);
+    const command = wrapPrefix(`sudo rm -rf ${safeDest}`, sshConfig);
     await exec(command, {
         cwd: cwd,
         async: false

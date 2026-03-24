@@ -56,14 +56,6 @@ Given('one click exclusions are enabled if exists', async function(this:ICustomW
     // Scroll to the element to ensure it's visible
     try {
         await this.page.locator(exclusionHeader).scrollIntoViewIfNeeded({ timeout: 5000 });
-    } catch {
-        // Element doesn't exist or can't be scrolled into view; treat as "one-click exclusions not available"
-        console.log(`Theme '${theme}' does not have one-click exclusion available`);
-        return;
-    }
-    
-    // Check if the element exists
-    if (await this.page.locator(exclusionHeader).isVisible()) {
         // Click on the header to expand
         await this.page.locator(exclusionHeader).click();
         
@@ -71,6 +63,10 @@ Given('one click exclusions are enabled if exists', async function(this:ICustomW
         await this.page.locator('#wpr_djs_oneclick_exclusions_themes .wpr-select-all label').click();
         
         await this.utils.saveSettings();
+    } catch {
+        // Element doesn't exist or can't be scrolled into view; treat as "one-click exclusions not available"
+        console.log(`Theme '${theme}' does not have one-click exclusion available`);
+        return;
     }
 });
 
