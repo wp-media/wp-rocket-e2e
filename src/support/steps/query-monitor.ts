@@ -16,32 +16,6 @@ import {
 } from '../../../utils/commands';
 
 /**
- * Ensures WordPress core is on the latest version
- */
-Given('WP is latest WP', async function (this: ICustomWorld): Promise<void>  {
-    const result = await wpWithOutput('core check-update --format=csv --fields=version');
-
-    if (result.failed) {
-        throw new Error(
-            `Failed to verify WordPress core version via "wp core check-update".` +
-            `\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`
-        );
-    }
-
-    const lines = (result.stdout ?? '').trim().split('\n').filter(line => line.trim() !== '');
-    // When up to date, only the CSV header line is returned — no data rows.
-    const hasUpdates = lines.length > 1;
-
-    if (hasUpdates) {
-        throw new Error(
-            `WordPress core is not on the latest version.` +
-            `\n"wp core check-update" reported available updates.` +
-            `\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`
-        );
-    }
-});
-
-/**
  * Ensures Query Monitor plugin is installed and active
  */
 Given('Query monitor is active', async function (this: ICustomWorld): Promise<void>  {
