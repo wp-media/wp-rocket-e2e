@@ -10,14 +10,22 @@
  */
 import {exec} from "shelljs";
 
-// Utility to sanitize shell arguments (removes unmatched quotes and trims whitespace)
+// Utility to safely quote a value as a single shell argument.
+// - Validates that the argument is a non-empty string (after trimming).
+// - Wraps it in single quotes and escapes any embedded single quotes.
 function sanitizeShellArg(arg: string): string {
-    if (!arg || typeof arg !== 'string') return '';
-    // Remove unmatched single/double quotes and trim
-    let sanitized = arg.replace(/['"`]/g, '').trim();
-    // Prevent accidental empty string for critical shell args
-    if (sanitized === '') sanitized = '.';
-    return sanitized;
+    if (typeof arg !== 'string') {
+        throw new TypeError('sanitizeShellArg expects a string argument');
+    }
+    const trimmed = arg.trim();
+    if (trimmed.length === 0) {
+        // Empty/whitespace-only shell arguments are not allowed to avoid
+        // accidentally targeting "." or other unintended paths.
+        throw new Error('Empty shell argument is not allowed');
+    }
+    // POSIX-safe single-quote escaping: end quote, escape ', reopen quote.
+    const escaped = trimmed.replace(/'/g, `'\\''`);
+    return `'${escaped}'`;
 }
 import {configurations, getWPDir, ServerType} from "./configurations";
 import { SSHConfig } from "./types";
