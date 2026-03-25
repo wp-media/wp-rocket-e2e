@@ -179,7 +179,7 @@ Given('I install plugin {string}', async function (pluginUrl) {
 /**
  * Ensures WordPress core is on the latest version
  */
-Given('WP is latest WP', async function (this: ICustomWorld): Promise<void>  {
+Given('WordPress core is up to date', async function (this: ICustomWorld): Promise<void>  {
     const result = await wpWithOutput('core check-update --format=csv --fields=version');
 
     if (result.failed) {
