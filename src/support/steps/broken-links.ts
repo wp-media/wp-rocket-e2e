@@ -66,8 +66,9 @@ Then('WP Rocket settings links are not broken', async function (this: ICustomWor
         return;
     }
 
-    // Validate all collected URLs
-    const brokenLinks = await validateLinks(this.page, normalizedUrls, currentHost);
+    // Validate all collected URLs, excluding URLs that may trigger transactional side effects
+    const skipPatterns = [/\/renew(?:\/|$|\?)/i, /\/upgrade(?:\/|$|\?)/i, /\/express-checkout(?:\/|$|\?)/i];
+    const brokenLinks = await validateLinks(this.page, normalizedUrls, currentHost, skipPatterns);
 
     // Report all broken links at once
     expect(brokenLinks, 'Broken links detected').toHaveLength(0);

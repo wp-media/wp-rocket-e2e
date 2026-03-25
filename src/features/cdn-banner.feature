@@ -8,7 +8,7 @@ Feature: CDN banner
     And I am on the page '/wp-admin/options-general.php?page=wprocket#page_cdn'
 
   Scenario: Should validate that CDN purchase banner is displayed
-    Given I must see the banner 'High performance Content Delivery Network (CDN) with'
+    Given I must see the banner using selector '#wpr-rocketcdn-cta'
     And I click on '.wpr-rocketcdn-open'
     Then I must see the banner 'Login in to your WP Rocket Account to continue' in iframe '#rocketcdn-iframe'
 
