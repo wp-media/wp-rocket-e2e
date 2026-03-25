@@ -9,6 +9,24 @@
  * @requires {@link node-ssh}
  */
 import {exec} from "shelljs";
+
+// Utility to safely quote a value as a single shell argument.
+// - Validates that the argument is a non-empty string (after trimming).
+// - Wraps it in single quotes and escapes any embedded single quotes.
+function sanitizeShellArg(arg: string): string {
+    if (typeof arg !== 'string') {
+        throw new TypeError('sanitizeShellArg expects a string argument');
+    }
+    const trimmed = arg.trim();
+    if (trimmed.length === 0) {
+        // Empty/whitespace-only shell arguments are not allowed to avoid
+        // accidentally targeting "." or other unintended paths.
+        throw new Error('Empty shell argument is not allowed');
+    }
+    // POSIX-safe single-quote escaping: end quote, escape ', reopen quote.
+    const escaped = trimmed.replace(/'/g, `'\\''`);
+    return `'${escaped}'`;
+}
 import {configurations, getWPDir, ServerType} from "./configurations";
 import { SSHConfig } from "./types";
 
@@ -37,11 +55,13 @@ function wrapPrefix(command: string, sshConfig?: SSHConfig): string {
         const username = sshConfig?.username || configurations.ssh.username;
         const address = sshConfig?.host || configurations.ssh.address;
         const privateKey = configurations.ssh.key;
-        return `ssh ${username}@${address} -i ${privateKey} ${command}`
-            .replaceAll('"', '"\\"')
-            .replaceAll('}', '\\}')
-            .replaceAll('{', '\\{')
-            .replaceAll(',', '\\,');
+        // Wrap the entire command in double quotes and escape necessary characters
+        const escapedCommand = command
+            .replaceAll('\\', '\\\\')
+            .replaceAll('"', '\\"')
+            .replaceAll('$', '\\$')
+            .replaceAll('`', '\\`');
+        return `ssh ${username}@${address} -i ${privateKey} "${escapedCommand}"`;
     }
     return command;
 }
@@ -220,21 +240,20 @@ export async function cp(origin: string, destination: string): Promise<void> {
  * @returns {Promise<void>} - A Promise that resolves when the rename operation is completed.
  */
 export async function rename(oldName: string, newName: string): Promise<void> {
+    const safeOld = sanitizeShellArg(oldName);
+    const safeNew = sanitizeShellArg(newName);
     if(configurations.type === ServerType.docker) {
-        await exec(`docker exec -T ${configurations.docker.container} mv ${oldName} ${newName}`, {
+        await exec(`docker exec -T ${configurations.docker.container} mv ${safeOld} ${safeNew}`, {
             cwd: configurations.rootDir,
             async: false
         });
-
         return;
     }
-
     if(configurations.type === ServerType.external) {
-        await exec(`ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "sudo mv ${oldName} ${newName}"`);
+        await exec(`ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "sudo mv ${safeOld} ${safeNew}"`);
         return;
     }
-
-    exec(`sudo mv ${oldName} ${newName}`, {
+    exec(`sudo mv ${safeOld} ${safeNew}`, {
         cwd: configurations.rootDir,
         async: false
     });
@@ -250,16 +269,15 @@ export async function rename(oldName: string, newName: string): Promise<void> {
  * @returns {Promise<boolean>} - A Promise that resolves with true if the file exists, false otherwise.
  */
 export async function exists(filePath: string): Promise<boolean> {
+    const safePath = sanitizeShellArg(filePath);
     let command: string;
-
     if(configurations.type === ServerType.docker) {
-        command = `docker exec -T ${configurations.docker.container} test -f ${filePath}; echo $?`;
+        command = `docker exec -T ${configurations.docker.container} test -f ${safePath}; echo $?`;
     } else if(configurations.type === ServerType.external) {
-        command = `ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} 'test -f ${filePath}; echo $?'`;
+        command = `ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} 'test -f ${safePath}; echo $?'`;
     } else {
-        command = `test -f ${filePath}; echo $?`;
+        command = `test -f ${safePath}; echo $?`;
     }
-
     try {
         const result = await exec(command, {
             cwd: configurations.rootDir,
@@ -301,7 +319,8 @@ export async function unzip(file: string, destination: string): Promise<void> {
  */
 export async function rm(destination: string, sshConfig?: SSHConfig): Promise<void> {
     const cwd = configurations.rootDir;
-    const command = wrapPrefix(`sudo rm -rf ${destination}`, sshConfig);
+    const safeDest = sanitizeShellArg(destination);
+    const command = wrapPrefix(`sudo rm -rf ${safeDest}`, sshConfig);
     await exec(command, {
         cwd: cwd,
         async: false
@@ -351,6 +370,60 @@ export async function isPluginActive(name: string): Promise<boolean> {
 }
 
 /**
+ * Check if theme is installed
+ * @function
+ * @name isThemeInstalled
+ * @async
+ * @param {string} name - The name of the theme to be checked if installed.
+ * @returns {Promise<boolean>} - A Promise that resolves to true if theme is installed, false otherwise.
+ */
+export async function isThemeInstalled(name: string): Promise<boolean> {
+    return await wp(`theme is-installed ${name}`, false);
+
+}
+
+/**
+ * Check if theme is activated
+ * @function
+ * @name isThemeActivated
+ * @async
+ * @param {string} name - The name of the theme to be checked if active
+ * @returns {Promise<boolean>} - A Promise that resolves to true if theme is active, false otherwise.
+ */
+export async function isThemeActivated(name: string): Promise<boolean> {
+    return await wp(`theme is-active ${name}`, false);
+}
+/** 
+ * Install a theme from the WordPress.org repository.
+ *
+ * If the theme is already installed, this function is a no-op.
+ * If installation fails (for example, because the theme does not exist on WordPress.org
+ * or is a premium theme that must be installed manually), an Error is thrown.
+ *
+ * @function
+ * @name installTheme
+ * @async
+ * @param {string} name - The slug of the theme to be installed.
+ * @returns {Promise<void>} - A Promise that resolves when the theme is installed.
+ * @throws {Error} If the theme cannot be installed from the WordPress.org repository.
+ */
+export async function installTheme(name: string): Promise<void> {
+    // If the theme is already installed, no further action is required.
+    const alreadyInstalled: boolean = await isThemeInstalled(name);
+    if (alreadyInstalled) {
+        return;
+    }
+    // Attempt to install the theme from WordPress.org and check the result.
+    const installedSuccessfully: boolean = await wp(`theme install ${name}`, false);
+    if (!installedSuccessfully) {
+        throw new Error(
+            `Failed to install theme "${name}". The theme may not exist in the WordPress.org repository ` +
+            `or may require manual installation (for example, premium themes).`
+        );
+    }
+}
+
+/**
  * Delete a plugin if exist.
  * Note: this is not ideal for wpr or imagify plugins as it doesn't delete DB data which relies on uninstall hook.
  * @function
@@ -374,6 +447,19 @@ export async function deletePlugin(name: string): Promise<boolean> {
  */
 export async function installRemotePlugin(url: string): Promise<void>  {
     await wp(`plugin install ${url}`)
+}
+
+/**
+ * Install a WordPress plugin from a local zip file using the WP-CLI command.
+ *
+ * @function
+ * @name installLocalPlugin
+ * @async
+ * @param {string} filePath - The local file path to the plugin zip file.
+ * @returns {Promise<void>} - A Promise that resolves when the installation is completed.
+ */
+export async function installLocalPlugin(filePath: string): Promise<void>  {
+    await wp(`plugin install ${filePath}`)
 }
 
 /**
@@ -417,7 +503,33 @@ export async function updatePermalinkStructure(structure: string): Promise<void>
  * @returns {Promise<void>} - A Promise that resolves when the theme is activated.
  */
 export async function switchTheme(theme: string): Promise<void> {
-    await wp(`theme activate ${theme}`);
+    // List of premium themes that cannot be auto-installed
+    const premiumThemes = ['flatsome', 'Divi', 'Avada', 'enfold'];
+    
+    // Check if theme is installed, install if not
+    const isInstalled = await isThemeInstalled(theme);
+    if (!isInstalled) {
+        if (premiumThemes.includes(theme)) {
+            throw new Error(`Theme ${theme} is a premium theme and must be installed manually before running tests.`);
+        }
+        await installTheme(theme);
+    }
+
+    // Check if theme is already active
+    let isActive = await isThemeActivated(theme);
+    if (isActive) {
+        return; // Theme is already active, no need to activate
+    }
+
+    // Activate the theme
+    await wp(`theme activate ${theme}`)
+
+    // Verify theme is actually activated
+    isActive = await isThemeActivated(theme);
+    if (!isActive) {
+        throw new Error(`Theme ${theme} was not activated successfully`);
+    }
+    
 }
 
 /**
