@@ -275,12 +275,23 @@ Given('WordPress core is up to date', async function (this: ICustomWorld): Promi
         `eval "echo version_compare('${safeCurrent}', '${safeLatest}', '>=') ? '1' : '0';"`
     );
 
-    if (comparisonResult.failed || (comparisonResult.stdout ?? '').trim() !== '1') {
+    if (comparisonResult.failed) {
+        throw new Error(
+            `Failed to compare WordPress core version against latest stable.` +
+            `\nCurrent: ${currentVersion}` +
+            `\nLatest stable: ${latestStable}` +
+            `\nComparison STDOUT:\n${comparisonResult.stdout}\nComparison STDERR:\n${comparisonResult.stderr}` +
+            `\nCheck-update STDOUT:\n${updatesResult.stdout}\nCheck-update STDERR:\n${updatesResult.stderr}`
+        );
+    }
+
+    if ((comparisonResult.stdout ?? '').trim() !== '1') {
         throw new Error(
             `WordPress core is below the latest stable version.` +
             `\nCurrent: ${currentVersion}` +
             `\nLatest stable: ${latestStable}` +
-            `\nSTDOUT:\n${updatesResult.stdout}\nSTDERR:\n${updatesResult.stderr}`
+            `\nComparison STDOUT:\n${comparisonResult.stdout}\nComparison STDERR:\n${comparisonResult.stderr}` +
+            `\nCheck-update STDOUT:\n${updatesResult.stdout}\nCheck-update STDERR:\n${updatesResult.stderr}`
         );
     }
 });
