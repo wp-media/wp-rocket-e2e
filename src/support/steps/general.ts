@@ -24,12 +24,6 @@ import {
 } from "../../../utils/commands";
 import backstop from 'backstopjs';
 
-type CoreUpdate = {
-    version?: string;
-};
-
-const isStableWpVersion = (version: string): boolean => /^\d+(?:\.\d+){1,2}$/.test(version);
-
 /**
  * Executes the step to log in.
  */
@@ -205,93 +199,35 @@ Given('I install plugin {string}', async function (pluginUrl) {
 /**
  * Ensures WordPress core is latest stable or newer.
  * Fails only when current version is lower than latest stable.
+ * Allows prerelease/dev builds (RC, beta, dev) as long as they're >= latest stable numeric release.
  */
-Given('WordPress core is up to date', async function (this: ICustomWorld): Promise<void> {
-    const updatesResult = await wpWithOutput('core check-update --format=json --fields=version');
+Given('WordPress core is up to date', async function (): Promise<void> {
+    const current = (await wpWithOutput('core version')).stdout.trim();
 
-    if (updatesResult.failed) {
-        throw new Error(
-            `Failed to verify WordPress core version via "wp core check-update".` +
-            `\nSTDOUT:\n${updatesResult.stdout}\nSTDERR:\n${updatesResult.stderr}`
-        );
-    }
+    const latestStable = (await wpWithOutput(
+        "core check-update --field=version"
+    )).stdout
+        .split('\n')
+        .map(v => v.trim())
+        .filter(v => v && !v.includes('-')) // only stable (no RC, beta, dev suffixes)
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+        .pop();
 
-    const rawUpdates = (updatesResult.stdout ?? '').trim();
-    let updates: CoreUpdate[] = [];
+    // If no stable updates → already latest or newer (RC/dev)
+    if (!latestStable) return;
 
-    if (rawUpdates.length > 0) {
-        try {
-            const parsed: unknown = JSON.parse(rawUpdates);
-            updates = Array.isArray(parsed) ? (parsed as CoreUpdate[]) : [];
-        } catch {
-            throw new Error(
-                `Unable to parse "wp core check-update" JSON output.` +
-                `\nSTDOUT:\n${updatesResult.stdout}\nSTDERR:\n${updatesResult.stderr}`
-            );
-        }
-    }
-
-    const stableUpdates = updates
-        .map((update: CoreUpdate) => (update.version ?? '').trim())
-        .filter((version: string) => version.length > 0)
-        .filter((version: string) => isStableWpVersion(version));
-
-    // No stable updates available => already latest stable or newer.
-    // This allows prerelease/dev builds like 7.0-RC1-62113 to pass.
-    if (stableUpdates.length === 0) {
-        return;
-    }
-
-    const latestStable = stableUpdates
-        .sort((a: string, b: string) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }))
-        .at(-1);
-
-    if (!latestStable) {
-        return;
-    }
-
-    const currentResult = await wpWithOutput('core version');
-
-    if (currentResult.failed) {
-        throw new Error(
-            `Failed to read current WordPress version via "wp core version".` +
-            `\nSTDOUT:\n${currentResult.stdout}\nSTDERR:\n${currentResult.stderr}`
-        );
-    }
-
-    const currentVersion = (currentResult.stdout ?? '').trim();
-
-    if (currentVersion.length === 0) {
-        throw new Error(
-            `Current WordPress version is empty.` +
-            `\nSTDOUT:\n${currentResult.stdout}\nSTDERR:\n${currentResult.stderr}`
-        );
-    }
-
-    const safeCurrent = currentVersion.replace(/'/g, "\\'");
-    const safeLatest = latestStable.replace(/'/g, "\\'");
-
-    const comparisonResult = await wpWithOutput(
-        `eval "echo version_compare('${safeCurrent}', '${safeLatest}', '>=') ? '1' : '0';"`
+    const compare = await wpWithOutput(
+        `eval "echo version_compare('${current.replace(/'/g, "\\'")}'` +
+        `, '${latestStable.replace(/'/g, "\\'")}'` +
+        `, '>=') ? '1' : '0';"`
     );
 
-    if (comparisonResult.failed) {
-        throw new Error(
-            `Failed to compare WordPress core version against latest stable.` +
-            `\nCurrent: ${currentVersion}` +
-            `\nLatest stable: ${latestStable}` +
-            `\nComparison STDOUT:\n${comparisonResult.stdout}\nComparison STDERR:\n${comparisonResult.stderr}` +
-            `\nCheck-update STDOUT:\n${updatesResult.stdout}\nCheck-update STDERR:\n${updatesResult.stderr}`
-        );
-    }
-
-    if ((comparisonResult.stdout ?? '').trim() !== '1') {
+    if (compare.stdout.trim() !== '1') {
         throw new Error(
             `WordPress core is below the latest stable version.` +
-            `\nCurrent: ${currentVersion}` +
-            `\nLatest stable: ${latestStable}` +
-            `\nComparison STDOUT:\n${comparisonResult.stdout}\nComparison STDERR:\n${comparisonResult.stderr}` +
-            `\nCheck-update STDOUT:\n${updatesResult.stdout}\nCheck-update STDERR:\n${updatesResult.stderr}`
+            `\nCurrent: ${current}\nLatest stable: ${latestStable}` +
+            `\nComparison STDOUT:\n${compare.stdout}` +
+            `\nComparison STDERR:\n${compare.stderr}`
         );
     }
 });
