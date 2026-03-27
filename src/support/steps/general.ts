@@ -202,27 +202,53 @@ Given('I install plugin {string}', async function (pluginUrl) {
  * Allows prerelease/dev builds (RC, beta, dev) as long as they're >= latest stable numeric release.
  */
 Given('WordPress core is up to date', async function (): Promise<void> {
-    const current = (await wpWithOutput('core version')).stdout.trim();
+    const currentResult = await wpWithOutput('core version');
+    if (currentResult.failed) {
+        throw new Error(
+            `Failed to read current WordPress version via "wp core version".` +
+            `\nSTDOUT:\n${currentResult.stdout}\nSTDERR:\n${currentResult.stderr}`
+        );
+    }
 
-    const latestStable = (await wpWithOutput(
-        "core check-update --field=version"
-    )).stdout
+    const current = (currentResult.stdout ?? '').trim();
+    if (!current) {
+        throw new Error(
+            `Current WordPress version is empty.` +
+            `\nSTDOUT:\n${currentResult.stdout}\nSTDERR:\n${currentResult.stderr}`
+        );
+    }
+
+    const updatesResult = await wpWithOutput("core check-update --field=version");
+    if (updatesResult.failed) {
+        throw new Error(
+            `Failed to check available WordPress updates via "wp core check-update --field=version".` +
+            `\nSTDOUT:\n${updatesResult.stdout}\nSTDERR:\n${updatesResult.stderr}`
+        );
+    }
+
+    const latestStable = (updatesResult.stdout ?? '')
         .split('\n')
         .map(v => v.trim())
-        .filter(v => v && !v.includes('-')) // only stable (no RC, beta, dev suffixes)
+        .filter(v => v && !v.includes('-'))
         .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
         .pop();
 
-    // If no stable updates → already latest or newer (RC/dev)
     if (!latestStable) return;
 
     const compare = await wpWithOutput(
-        `eval "echo version_compare('${current.replace(/'/g, "\\'")}'` +
-        `, '${latestStable.replace(/'/g, "\\'")}'` +
-        `, '>=') ? '1' : '0';"`
+        `eval "echo version_compare('${current.replace(/'/g, "\\'")}', '${latestStable.replace(/'/g, "\\'")}', '>=') ? '1' : '0';"`
     );
 
-    if (compare.stdout.trim() !== '1') {
+    if (compare.failed) {
+        throw new Error(
+            `Failed to compare WordPress core version against latest stable.` +
+            `\nCurrent: ${current}\nLatest stable: ${latestStable}` +
+            `\nComparison STDOUT:\n${compare.stdout}` +
+            `\nComparison STDERR:\n${compare.stderr}`
+        );
+    }
+
+    if ((compare.stdout ?? '').trim() !== '1') {
         throw new Error(
             `WordPress core is below the latest stable version.` +
             `\nCurrent: ${current}\nLatest stable: ${latestStable}` +
