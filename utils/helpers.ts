@@ -680,9 +680,9 @@ export const openMobileMenu = async (page: Page): Promise<void> => {
         '.menu-mobile-toggle, .mobile_menu_bar, [data-open="#main-menu"], .menu-toggle-icon, button.fusion-mobile-selector[aria-controls="mobile-menu-header-menu"], #site-header-inner > div.oceanwp-mobile-menu-icon.clr.mobile-right > a > i, .menu-toggle, .nav-toggle, .hamburger'
     ).first();
 
-    await genericToggle.waitFor({ state: 'visible', timeout: 3000 }).catch(() => undefined);
+    await genericToggle.waitFor({ state: 'visible', timeout: 3000 });
 
-    if (await genericToggle.isVisible().catch(() => false)) {
+    if (await genericToggle.isVisible()) {
         await genericToggle.click();
         return;
     }
