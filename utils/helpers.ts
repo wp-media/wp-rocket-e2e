@@ -672,20 +672,22 @@ export const isMobileMenuOpen = async (page: Page): Promise<boolean> => {
  * ```
  */
 export const openMobileMenu = async (page: Page): Promise<void> => {
-    await page.evaluate(() => {
-        if (!window.matchMedia("(max-width: 980px)").matches) return;
-        /* ---------- Specific theme selectors then generic selectors for the menu ---------- */
-        const genericToggle = document.querySelector<HTMLElement>(
-            '.menu-mobile-toggle, .mobile_menu_bar, [data-open="#main-menu"], .menu-toggle-icon, button.fusion-mobile-selector[aria-controls="mobile-menu-header-menu"], #site-header-inner > div.oceanwp-mobile-menu-icon.clr.mobile-right > a > i, .menu-toggle, .nav-toggle, .hamburger'
-        );
+    if (!await page.evaluate(() => window.matchMedia('(max-width: 980px)').matches)) {
+        return;
+    }
 
-        if (genericToggle && genericToggle.offsetParent !== null) {
-            genericToggle.click();
-            return;
-        }
+    const genericToggle = page.locator(
+        '.menu-mobile-toggle, .mobile_menu_bar, [data-open="#main-menu"], .menu-toggle-icon, button.fusion-mobile-selector[aria-controls="mobile-menu-header-menu"], #site-header-inner > div.oceanwp-mobile-menu-icon.clr.mobile-right > a > i, .menu-toggle, .nav-toggle, .hamburger'
+    ).first();
 
-        throw new Error("Mobile menu could not be opened: toggle button not found or not visible");
-    });
+    await genericToggle.waitFor({ state: 'visible', timeout: 3000 });
+
+    if (await genericToggle.isVisible()) {
+        await genericToggle.click();
+        return;
+    }
+
+    throw new Error('Mobile menu could not be opened: toggle button not found or not visible');
 }
 
 /**
