@@ -197,27 +197,63 @@ Given('I install plugin {string}', async function (pluginUrl) {
 });
 
 /**
- * Ensures WordPress core is on the latest version
+ * Ensures WordPress core is latest stable or newer.
+ * Fails only when current version is lower than latest stable.
+ * Allows prerelease/dev builds (RC, beta, dev) as long as they're >= latest stable numeric release.
  */
-Given('WordPress core is up to date', async function (this: ICustomWorld): Promise<void>  {
-    const result = await wpWithOutput('core check-update --format=csv --fields=version');
-
-    if (result.failed) {
+Given('WordPress core is up to date', async function (): Promise<void> {
+    const currentResult = await wpWithOutput('core version');
+    if (currentResult.failed) {
         throw new Error(
-            `Failed to verify WordPress core version via "wp core check-update".` +
-            `\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`
+            `Failed to read current WordPress version via "wp core version".` +
+            `\nSTDOUT:\n${currentResult.stdout}\nSTDERR:\n${currentResult.stderr}`
         );
     }
 
-    const lines = (result.stdout ?? '').trim().split('\n').filter(line => line.trim() !== '');
-    // When up to date, only the CSV header line is returned — no data rows.
-    const hasUpdates = lines.length > 1;
-
-    if (hasUpdates) {
+    const current = (currentResult.stdout ?? '').trim();
+    if (!current) {
         throw new Error(
-            `WordPress core is not on the latest version.` +
-            `\n"wp core check-update" reported available updates.` +
-            `\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`
+            `Current WordPress version is empty.` +
+            `\nSTDOUT:\n${currentResult.stdout}\nSTDERR:\n${currentResult.stderr}`
+        );
+    }
+
+    const updatesResult = await wpWithOutput("core check-update --field=version");
+    if (updatesResult.failed) {
+        throw new Error(
+            `Failed to check available WordPress updates via "wp core check-update --field=version".` +
+            `\nSTDOUT:\n${updatesResult.stdout}\nSTDERR:\n${updatesResult.stderr}`
+        );
+    }
+
+    const latestStable = (updatesResult.stdout ?? '')
+        .split('\n')
+        .map(v => v.trim())
+        .filter(v => v && !v.includes('-'))
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+        .pop();
+
+    if (!latestStable) return;
+
+    const compare = await wpWithOutput(
+        `eval "echo version_compare('${current.replace(/'/g, "\\'")}', '${latestStable.replace(/'/g, "\\'")}', '>=') ? '1' : '0';"`
+    );
+
+    if (compare.failed) {
+        throw new Error(
+            `Failed to compare WordPress core version against latest stable.` +
+            `\nCurrent: ${current}\nLatest stable: ${latestStable}` +
+            `\nComparison STDOUT:\n${compare.stdout}` +
+            `\nComparison STDERR:\n${compare.stderr}`
+        );
+    }
+
+    if ((compare.stdout ?? '').trim() !== '1') {
+        throw new Error(
+            `WordPress core is below the latest stable version.` +
+            `\nCurrent: ${current}\nLatest stable: ${latestStable}` +
+            `\nComparison STDOUT:\n${compare.stdout}` +
+            `\nComparison STDERR:\n${compare.stderr}`
         );
     }
 });
