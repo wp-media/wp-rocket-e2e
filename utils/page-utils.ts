@@ -605,9 +605,9 @@ export class PageUtils {
      * @return {Promise<void>}
      */
     public saveSettings = async (): Promise<void> => {
-        await this.page.waitForSelector('#wpr-options-submit');
-        // save settings
-        await this.page.locator('#wpr-options-submit').click();
+        const submitBtn = this.page.locator('#wpr-options-submit');
+        await submitBtn.scrollIntoViewIfNeeded();
+        await submitBtn.click();
     }
 
     /**
