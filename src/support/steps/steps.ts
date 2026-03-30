@@ -135,7 +135,7 @@ When(/^refresh the page$/, async function (this: ICustomWorld) {
  * Executes the step to save the options on the page.
  */
 When(/^save the option$/, async function (this: ICustomWorld) {
-   await this.utils.saveSettings();
+    await this.utils.saveSettings();
 });
 
 /**
