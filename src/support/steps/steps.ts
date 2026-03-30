@@ -151,7 +151,6 @@ When('turn on {string}', async function (this: ICustomWorld, option: string) {
     this.sections.state(true);
     await this.sections.toggle(optionName);
     await this.utils.saveSettings();
-
 });
 
 /**
