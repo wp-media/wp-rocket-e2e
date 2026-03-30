@@ -135,7 +135,7 @@ When(/^refresh the page$/, async function (this: ICustomWorld) {
  * Executes the step to save the options on the page.
  */
 When(/^save the option$/, async function (this: ICustomWorld) {
-    await this.page.click('#wpr-options-submit', {force: true})
+    await this.utils.saveSettings();
 });
 
 /**
@@ -150,7 +150,7 @@ When('turn on {string}', async function (this: ICustomWorld, option: string) {
     this.sections.set('fileOptimization');
     this.sections.state(true);
     await this.sections.toggle(optionName);
-    await this.page.click('#wpr-options-submit', {force: true})
+    await this.utils.saveSettings();
 });
 
 /**
