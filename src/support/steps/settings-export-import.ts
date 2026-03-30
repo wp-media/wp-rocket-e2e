@@ -29,21 +29,6 @@ Given('I disabled all settings', async function (this: ICustomWorld) {
 });
 
 /**
- * Executes the step to update to the latest version of the WP Rocket plugin.
- */
-Given('I updated to latest version', async function (this: ICustomWorld) {
-    await this.utils.uploadNewPlugin('./plugin/new_release.zip');
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-    await expect(this.page).toHaveURL(/action=upload-plugin/); 
-    
-    // Replace current with uploaded
-    await this.page.locator('a:has-text("Replace current with uploaded")').click();
-
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-    await expect(this.page).toHaveURL(/overwrite=update-plugin/); 
-});
-
-/**
  * Executes the step to import data.
  */
 When('I import data', async function (this: ICustomWorld) {
