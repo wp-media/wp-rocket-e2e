@@ -507,7 +507,7 @@ When('I visit the {string} and check lcp-atf are not lazyloaded', async function
 /**
  * Executes the step to visit page in a specific browser dimension.
  */
-When('I visit page {string} and check for lcp', async function (this:ICustomWorld, page) {
+When('I visit page {string} and check for lcp', async function (this:ICustomWorld, page: string) {
 
     const tablePrefix: string = await getWPTablePrefix();
 
@@ -529,9 +529,10 @@ When('I visit page {string} and check for lcp', async function (this:ICustomWorl
     const result = await dbQuery(sql);
     const resultFromStdout = await extractFromStdout(result);
 
-    // If no DB result, set assertion var to false, fail msg and skip the loop.
+    // If no DB result, fail with a clear message instead of dereferencing undefined.
     if (!resultFromStdout || resultFromStdout.length === 0) {
         isDbResultAvailable = false;
+        throw new Error(`No LCP/ATF DB result found for page \"${page}\"`);
     }
 
     singlePageLcp = {
