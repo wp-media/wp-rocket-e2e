@@ -507,8 +507,7 @@ When('I visit the {string} and check lcp-atf are not lazyloaded', async function
 /**
  * Executes the step to visit page in a specific browser dimension.
  */
-When('I visit page {string} and check for lcp', async function (this:ICustomWorld, page: string) {
-
+When('I visit page {string} and check for lcp', async function (this: ICustomWorld, page: string): Promise<void> {
     const tablePrefix: string = await getWPTablePrefix();
 
     await this.page.setViewportSize(VIEWPORT_DESKTOP);
