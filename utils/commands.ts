@@ -9,6 +9,7 @@
  * @requires {@link node-ssh}
  */
 import {exec} from "shelljs";
+import path from "node:path";
 
 // Utility to safely quote a value as a single shell argument.
 // - Validates that the argument is a non-empty string (after trimming).
@@ -26,6 +27,12 @@ function sanitizeShellArg(arg: string): string {
     // POSIX-safe single-quote escaping: end quote, escape ', reopen quote.
     const escaped = trimmed.replace(/'/g, `'\\''`);
     return `'${escaped}'`;
+}
+
+// Detect shell glob metacharacters to decide whether rm should treat the input
+// as a file pattern instead of a single literal path.
+function hasGlobChars(input: string): boolean {
+    return /[*?\[\]]/.test(input);
 }
 import {configurations, getWPDir, ServerType} from "./configurations";
 import { SSHConfig } from "./types";
@@ -319,8 +326,19 @@ export async function unzip(file: string, destination: string): Promise<void> {
  */
 export async function rm(destination: string, sshConfig?: SSHConfig): Promise<void> {
     const cwd = configurations.rootDir;
-    const safeDest = sanitizeShellArg(destination);
-    const command = wrapPrefix(`sudo rm -rf ${safeDest}`, sshConfig);
+
+    const trimmedDestination = destination.trim();
+    const command = hasGlobChars(trimmedDestination)
+        ? (() => {
+            const parentDir = sanitizeShellArg(path.posix.dirname(trimmedDestination));
+            const basePattern = sanitizeShellArg(path.posix.basename(trimmedDestination));
+            return wrapPrefix(
+                `sudo find ${parentDir} -maxdepth 1 -mindepth 1 -name ${basePattern} -exec rm -rf {} +`,
+                sshConfig
+            );
+        })()
+        : wrapPrefix(`sudo rm -rf ${sanitizeShellArg(trimmedDestination)}`, sshConfig);
+
     await exec(command, {
         cwd: cwd,
         async: false
