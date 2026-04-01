@@ -93,6 +93,6 @@ async function deleteAllData(page: Page): Promise<void> {
     await page.selectOption('select[name="bulk_actions"]', 'delete');
     await page.click('button#bulk-actions-apply');
     await page.waitForSelector('button#js-backwpup-bulk-delete-backups', { timeout: 5000 });
-    await page.click('button#js-backwpup-bulk-delete-backups');
+    await page.click('button.js-backwpup-bulk-delete-backups');
     await page.waitForLoadState('networkidle');
 }
