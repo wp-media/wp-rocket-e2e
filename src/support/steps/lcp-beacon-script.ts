@@ -532,7 +532,7 @@ When('I visit page {string} and check for lcp', async function (this:ICustomWorl
     // If no DB result, fail with a clear message instead of dereferencing undefined.
     if (!resultFromStdout || resultFromStdout.length === 0) {
         isDbResultAvailable = false;
-        throw new Error(`No LCP/ATF DB result found for page \"${page}\"`);
+        throw new Error(`No LCP/ATF DB result found for page "${page}"`);
     }
 
     singlePageLcp = {
