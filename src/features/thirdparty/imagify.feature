@@ -13,8 +13,8 @@ Feature: Lazyload with LCP using imagify
     And I install plugin 'imagify'
     And plugin 'imagify' is activated
     And Imagify is set up
-
-  Scenario: Should exclude next-gen lcp/atf from LL
+@test
+  Scenario: Should exclude next-gen lcp-atf from LL
     Given I log out
     And I visit page 'lcp_with_imagify' and check for lcp
     When I am logged in
@@ -23,7 +23,7 @@ Feature: Lazyload with LCP using imagify
     And I visit the 'lcp_with_imagify' and check lcp-atf are not lazyloaded
     Then lcp and atf images are not written to LL format
     
-  Scenario: Should exclude Imagify next-gen lcp/atf from LL while display next-gen on
+  Scenario: Should exclude Imagify next-gen lcp-atf from LL while display next-gen on
     Given display next-gen is enabled on imagify
     When I log out
     And I visit page 'lcp_with_imagify' and check for lcp

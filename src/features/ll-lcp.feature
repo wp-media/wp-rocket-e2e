@@ -11,7 +11,7 @@ Feature: Lazyload with LCP
     And I save settings 'media' 'lazyloadIframes'
     And I save settings 'media' 'lazyloadYoutube'
 
-  Scenario: Should Exclude LCP/ATF from Lazyload
+  Scenario: Should Exclude LCP-ATF from Lazyload
     When I log out
     And I visit the urls for 'desktop'
     When I am logged in
