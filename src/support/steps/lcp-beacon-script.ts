@@ -449,13 +449,19 @@ Then('lcp and atf images are not written to LL format', async function (this: IC
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
             const expected = jsonData[key];
 
-            const lcpResult = await checkLcpOrViewport(lcpLLImages, key, 'LCP', expected.lcp);
+            if (!Array.isArray(expected.lcp) || !Array.isArray(expected.viewport)) {
+                throw new Error(
+                    `Invalid expected LCP data shape for "${key}". Expected arrays for lcp/viewport, received lcp=${typeof expected.lcp}, viewport=${typeof expected.viewport}.`
+                );
+            }
+
+            const lcpResult = await checkLcpOrViewport(lcpLLImages, 'LCP', key, expected.lcp);
             if (lcpResult && !lcpResult.isValid) {
                 truthy = false;
                 failMsg += lcpResult.errorMessages.join('');
             }
 
-            const viewportResult = await checkLcpOrViewport(lcpLLImages, key, 'Viewport', expected.viewport);
+            const viewportResult = await checkLcpOrViewport(lcpLLImages, 'Viewport', key, expected.viewport);
             if (viewportResult && !viewportResult.isValid) {
                 truthy = false;
                 failMsg += viewportResult.errorMessages.join('');
