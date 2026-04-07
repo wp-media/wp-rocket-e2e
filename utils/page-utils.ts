@@ -509,6 +509,12 @@ export class PageUtils {
 
         this.sections.optionState = true;
 
+        if(await this.sections.doesSectionExist('addons')) {
+            // Enable all settings for Addons.
+            await this.sections.set("addons").visit();
+            await this.sections.massToggle();
+        }
+
         if (await this.sections.doesSectionExist('cache')) {
              // Enable all settings for cache section.
             await this.sections.set("cache").visit();
@@ -566,12 +572,6 @@ export class PageUtils {
             await this.saveSettings();
             await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
-        }
-
-        if(await this.sections.doesSectionExist('addons')) {
-            // Enable all settings for Addons.
-            await this.sections.set("addons").visit();
-            await this.sections.massToggle();
         }
 
         if(await this.sections.doesSectionExist('heartbeat')) {
