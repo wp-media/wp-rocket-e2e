@@ -334,7 +334,8 @@ export async function rm(destination: string, sshConfig?: SSHConfig): Promise<vo
  * @name rmFiles
  * @async
  * @param {string} directory - The directory to clean.
- * @param {string} pattern - The filename pattern, e.g. '*.log' or 'debug-*.log'.
+ * @param {string} pattern - The filename pattern, e.g. '*.log' or 'debug-*.log'. Defaults to '*.log'.
+ * @param {SSHConfig} [sshConfig] - Optional SSH configuration to override the default credentials (username and host).
  * @returns {Promise<void>} - A Promise that resolves when matching files are removed.
  */
 export async function rmFiles(directory: string, pattern: string = '*.log', sshConfig?: SSHConfig): Promise<void> {

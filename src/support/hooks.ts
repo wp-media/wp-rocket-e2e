@@ -62,7 +62,7 @@ BeforeAll(async function (this: ICustomWorld) {
         await testSshConnection();
 
         const folderPath = `${WP_SSH_ROOT_DIR}wp-content`;
-        await rmFiles(folderPath, '/*.log');
+        await rmFiles(folderPath, '*.log');
 
         await deleteFolder('./backstop_data/bitmaps_test');
         

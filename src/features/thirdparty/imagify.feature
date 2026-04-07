@@ -13,7 +13,7 @@ Feature: Lazyload with LCP using imagify
     And I install plugin 'imagify'
     And plugin 'imagify' is activated
     And Imagify is set up
-@test
+
   Scenario: Should exclude next-gen lcp-atf from LL
     Given I log out
     And I visit page 'lcp_with_imagify' and check for lcp
