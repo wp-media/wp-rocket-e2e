@@ -43,9 +43,9 @@ Feature: C2148 - Should not change the content of existing fields
         Given plugin is installed 'previous_stable'
         And plugin is activated
         And I enable all settings
-        And I export data '1'
+        And I export data '51'
         When I updated plugin to 'new_release'
         And I go to 'wp-admin/options-general.php?page=wprocket#file_optimization'
         And I save all settings
-        And I export data '2'
-        Then Nothing changed in settings '2' compared to '1'
+        And I export data '52'
+        Then Nothing changed in settings '52' compared to '51'

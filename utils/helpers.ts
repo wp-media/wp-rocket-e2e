@@ -407,6 +407,14 @@ export const compareReference = async(label: string = ''): Promise<void> => {
  */
 export const deleteFolder = async(folderPath: string): Promise<void> => {
     try {
+        // Check if folder exists
+        await fs.access(folderPath);
+    } catch {
+        // Folder doesn't exist, return without doing anything
+        return;
+    }
+    
+    try {
         await fs.rm(folderPath, { recursive: true });
         console.log(`Folder "${folderPath}" deleted successfully.`);
     } catch (error) {
@@ -580,3 +588,218 @@ export const isWprRelatedError = async(contents: string): Promise<boolean> => {
 
     return false;
 }
+
+
+/**
+ * Checks if the mobile menu is currently open
+ * This is useful for validating mobile menu state before attempting to open it
+ * 
+ * @param {Page} page - The Playwright page instance to check
+ * @returns {Promise<boolean>} - A Promise that resolves to true if menu is open, false otherwise
+ * 
+ * @example
+ * ```typescript
+ * const isOpen = await isMobileMenuOpen(page);
+ * if (isOpen) {
+ *     console.log('Menu is already open');
+ * }
+ * ```
+ */
+export const isMobileMenuOpen = async (page: Page): Promise<boolean> => {
+    await page.waitForTimeout(3000);
+    return await page.evaluate(() => {
+    const candidates = Array.from(document.querySelectorAll<HTMLElement>(
+      'nav, .mobile-menu, .mobile-navigation, #mobile-menu, .et_mobile_menu, [id*=mobile-menu]'
+    ));
+
+    for (const menu of candidates) {
+      const style = window.getComputedStyle(menu);
+      const rect = menu.getBoundingClientRect();
+
+      // Skip invisible elements
+      if (
+        style.display === 'none' ||
+        style.visibility === 'hidden' ||
+        Number(style.opacity) === 0
+      ) continue;
+
+      // Check if there is a transform
+      const transform = style.transform;
+      if (transform && transform !== 'none') {
+        // Parse the matrix and check if it's fully translated offscreen
+        const values = transform.match(/matrix.*\((.+)\)/)?.[1].split(',').map(Number);
+        if (values) {
+          const translateX = values.length === 6 ? values[4] : 0;
+          const translateY = values.length === 6 ? values[5] : 0;
+
+          // If fully off-screen, menu is closed
+          if (translateX <= -window.innerWidth || translateY <= -window.innerHeight) continue;
+        }
+      }
+
+      // Check if element is large enough to be considered open
+      const coversScreen = rect.width >= window.innerWidth * 0.3 && rect.height >= window.innerHeight * 0.3;
+      if (coversScreen) return true;
+     }
+
+    // Fallback: toggle button aria-expanded
+    const toggles = document.querySelectorAll<HTMLElement>(
+      '.menu-toggle, .nav-toggle, .hamburger, .mobile_menu_bar, .et_mobile_menu'
+    );
+    for (const toggle of toggles) {
+      if (toggle.getAttribute('aria-expanded') === 'true') return true;
+    }
+
+    return false;
+  });
+};
+
+/**
+ * Opens the mobile menu by finding and clicking toggle buttons
+ * This is useful for testing mobile menu functionality 
+ * 
+ * @param {Page} page - The Playwright page instance to execute the script on.
+ * @returns {Promise<void>} - A Promise that resolves when the menu opening attempt is complete.
+ * @throws {Error} - Throws an error if the mobile menu toggle cannot be found or opened.
+ * 
+ * @example
+ * ```typescript
+ * try {
+ *     await openMobileMenu(page);
+ * } catch (error) {
+ *     console.error('Failed to open mobile menu:', error.message);
+ * }
+ * ```
+ */
+export const openMobileMenu = async (page: Page): Promise<void> => {
+    if (!await page.evaluate(() => window.matchMedia('(max-width: 980px)').matches)) {
+        return;
+    }
+
+    const genericToggle = page.locator(
+        '.menu-mobile-toggle, .mobile_menu_bar, [data-open="#main-menu"], .menu-toggle-icon, button.fusion-mobile-selector[aria-controls="mobile-menu-header-menu"], #site-header-inner > div.oceanwp-mobile-menu-icon.clr.mobile-right > a > i, .menu-toggle, .nav-toggle, .hamburger'
+    ).first();
+
+    await genericToggle.waitFor({ state: 'visible', timeout: 3000 });
+
+    if (await genericToggle.isVisible()) {
+        await genericToggle.click();
+        return;
+    }
+
+    throw new Error('Mobile menu could not be opened: toggle button not found or not visible');
+}
+
+/**
+ * Collects all href attributes from elements matching a selector.
+ *
+ * @async
+ * @param {Page} page - The Playwright page object
+ * @param {string} selector - CSS selector to find elements with href
+ * @return {Promise<Set<string>>} - Set of collected hrefs
+ */
+export const collectHrefsFromSelector = async (page: Page, selector: string): Promise<Set<string>> => {
+    const hrefs = new Set<string>();
+    const links = await page.$$eval(selector, (elements) =>
+        elements
+            .map((el) => el.getAttribute('href'))
+            .filter((href): href is string => Boolean(href))
+    );
+    links.forEach((href) => hrefs.add(href));
+    return hrefs;
+};
+
+/**
+ * Normalizes and filters URLs, removing anchors, special protocols, and invalid URLs.
+ *
+ * @param {Set<string>} hrefs - Set of href strings to normalize
+ * @param {string} baseUrl - Base URL for resolving relative URLs
+ * @param {string[]} [skipProtocols=['mailto:', 'tel:', 'javascript:']] - Protocols to skip
+ * @return {Set<string>} - Set of normalized, valid URLs
+ */
+export const normalizeUrls = (
+    hrefs: Set<string>,
+    baseUrl: string,
+    skipProtocols: string[] = ['mailto:', 'tel:', 'javascript:']
+): Set<string> => {
+    const normalizedUrls = new Set<string>();
+
+    for (const href of hrefs) {
+        const lower = href.toLowerCase();
+
+        // Skip anchors, special protocols, and admin-post actions
+        if (lower.startsWith('#') || skipProtocols.some((p) => lower.startsWith(p))) {
+            continue;
+        }
+
+        try {
+            const url = new URL(href, baseUrl);
+
+            if (!['http:', 'https:'].includes(url.protocol) || url.pathname.endsWith('/wp-admin/admin-post.php')) {
+                continue;
+            }
+
+            url.hash = '';
+            normalizedUrls.add(url.toString());
+        } catch (error) {
+            // Skip malformed URLs silently - they can't be validated anyway
+            continue;
+        }
+    }
+
+    return normalizedUrls;
+};
+
+/**
+ * Validates HTTP/HTTPS URLs and collects broken links, handling client/server errors appropriately.
+ * Fails on internal 4xx errors, allows external 401/403 (gated content), warns on 5xx and network errors.
+ *
+ * @async
+ * @param {Page} page - The Playwright page object
+ * @param {Set<string>} urls - Set of URLs to validate
+ * @param {string} currentHost - Current host to distinguish internal from external URLs
+ * @param {RegExp[]} [skipPatterns=[]] - Optional array of regex patterns to skip URLs matching any pattern
+ * @return {Promise<string[]>} - Array of broken link strings in format "STATUS: url"
+ */
+export const validateLinks = async (
+    page: Page,
+    urls: Set<string>,
+    currentHost: string,
+    skipPatterns: RegExp[] = []
+): Promise<string[]> => {
+    const brokenLinks: string[] = [];
+
+    for (const url of urls) {
+        // Skip URLs matching any skip pattern
+        if (skipPatterns.some((pattern: RegExp): boolean => {
+            // Ensure global/sticky regexes don't carry state between tests
+            pattern.lastIndex = 0;
+            return pattern.test(url);
+        })) {
+            continue;
+        }
+        try {
+            const response = await page.request.get(url, { maxRedirects: 5, timeout: 30000 });
+            const status = response.status();
+            const isExternal = new URL(url).host !== currentHost;
+
+            if (status >= 400 && status < 500) {
+                if (!(isExternal && (status === 401 || status === 403))) {
+                    brokenLinks.push(`${status}: ${url}`);
+                }
+            }
+
+            if (status >= 500) {
+                // eslint-disable-next-line no-console
+                console.warn(`Warning: ${url} returned ${status} (server error, not failing test)`);
+            }
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : String(error);
+            brokenLinks.push(`NETWORK: ${url} (${msg})`);
+            // eslint-disable-next-line no-console
+            console.warn(`Network error for ${url}: ${msg}`);
+        }
+    }
+
+    return brokenLinks;
+};

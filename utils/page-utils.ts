@@ -8,15 +8,16 @@
  * @requires {@link ../config/wp.config}
  * @requires {@link ./configurations}
  */
-import type {Page} from '@playwright/test';
+import type {Page, ConsoleMessage} from '@playwright/test';
 import type {Sections} from '../src/common/sections';
 import type {Locators, Selector, Pickle} from './types';
 import {expect} from "@playwright/test";
 import { ICustomWorld } from '../src/common/custom-world';
 import fs from "fs/promises";
+import {openMobileMenu, isMobileMenuOpen} from '../utils/helpers';
 
 import {WP_BASE_URL, WP_PASSWORD, WP_PASSWORD2, WP_USERNAME, WP_USERNAME2} from '../config/wp.config';
-import { uninstallPlugin, updatePermalinkStructure, deactivatePlugin, switchTheme } from "./commands";
+import { uninstallPlugin, updatePermalinkStructure, deactivatePlugin, switchTheme, isPluginInstalled, isPluginActive } from "./commands";
 
 /**
  * Utility class for interacting with a Playwright Page instance in WordPress testing.
@@ -142,6 +143,15 @@ export class PageUtils {
      */
     public gotoImagify = async (): Promise<void> => {
         await this.page.goto(WP_BASE_URL + '/wp-admin/options-general.php?page=imagify');
+    }
+
+    /**
+     * Navigates to Cloudflare settings page.
+     *
+     * @return {Promise<void>}
+     */
+    public gotoCloudflare = async (): Promise<void> => {
+        await this.page.goto(WP_BASE_URL + '/wp-admin/options-general.php?page=cloudflare');
     }
 
     /**
@@ -479,12 +489,14 @@ export class PageUtils {
      */
     public clearWPRCache = async(): Promise<void> => {
         await this.gotoWpr();
-        await this.page.waitForLoadState('load', { timeout: 30000 });
 
         const clearCacheURL = await this.page.locator('.wpr-button.wpr-button--icon.wpr-icon-trash').first().getAttribute('href');
 
         await this.page.goto(clearCacheURL);
-        await this.page.waitForLoadState('load', { timeout: 30000 });
+
+        // Verify that cache cleared message is displayed
+        const cacheClearedElement = this.page.getByText('Cache cleared.');
+        await expect(cacheClearedElement).toBeVisible();
     }
 
     /**
@@ -496,6 +508,12 @@ export class PageUtils {
         await this.gotoWpr();
 
         this.sections.optionState = true;
+
+        if(await this.sections.doesSectionExist('addons')) {
+            // Enable all settings for Addons.
+            await this.sections.set("addons").visit();
+            await this.sections.massToggle();
+        }
 
         if (await this.sections.doesSectionExist('cache')) {
              // Enable all settings for cache section.
@@ -556,12 +574,6 @@ export class PageUtils {
             await this.page.locator('#setting-error-settings_updated > button').click();
         }
 
-        if(await this.sections.doesSectionExist('addons')) {
-            // Enable all settings for Addons.
-            await this.sections.set("addons").visit();
-            await this.sections.massToggle();
-        }
-
         if(await this.sections.doesSectionExist('heartbeat')) {
             // Enable all settings for Heartbeat.
             await this.sections.set("heartbeat").visit();
@@ -593,9 +605,9 @@ export class PageUtils {
      * @return {Promise<void>}
      */
     public saveSettings = async (): Promise<void> => {
-        await this.page.waitForSelector('#wpr-options-submit');
-        // save settings
-        await this.page.locator('#wpr-options-submit').click();
+        const submitBtn = this.page.locator('#wpr-options-submit');
+        await submitBtn.scrollIntoViewIfNeeded();
+        await submitBtn.click();
     }
 
     /**
@@ -638,44 +650,71 @@ export class PageUtils {
             await this.page.locator('text=Confirm').click();
         }
     }
-    public removeBackWpViaUi = async (): Promise<void> => {
-        await this.gotoPlugin();
 
-        const pluginName = 'BackWPup Pro';
-        const pluginRow = this.page.locator('tr').filter({ hasText: pluginName });
-        const isActivated = await pluginRow.getByText('Deactivate').isVisible();
-        const isInstalled = await pluginRow.getByText('Activate').isVisible();
-
-        if(!isActivated && !isInstalled) {
-
+    /**
+     * Generic helper to remove a plugin via the WordPress admin UI.
+     *
+     * @param {string} pluginSlug - The plugin slug (used for CLI checks and DOM IDs).
+     * @param {string} deleteButtonId - The ID of the delete button element.
+     * @param {string} confirmationElementId - The ID of the confirmation element after deletion.
+     * @param {string} expectedDialogMessage - Optional expected dialog message for assertion.
+     * @return {Promise<void>} Promise that resolves when the plugin has been deactivated and removed.
+     */
+    private removePluginViaUi = async (
+        pluginSlug: string,
+        deleteButtonId: string,
+        confirmationElementId: string,
+        expectedDialogMessage?: string
+    ): Promise<void> => {
+        // Check if plugin is installed
+        if (!(await isPluginInstalled(pluginSlug))) {
             return;
         }
 
-        await this.togglePluginActivation('backwpup-pro', false);
+        // Navigate to plugins page
+        await this.gotoPlugin();
 
-        if (isActivated) {
-            await this.page.locator('label[for=deactivate]').click();
-            await this.page.locator('text=Confirm').click();
+        // Deactivate plugin if it's active
+        if (await isPluginActive(pluginSlug)) {
+            await this.togglePluginActivation(pluginSlug, false);
+
+            // Check for deactivation modal and handle it
+            if (await this.page.locator('label[for=deactivate]').isVisible()) {
+                await this.page.locator('label[for=deactivate]').click();
+                await this.page.locator('text=Confirm').click();
+            }
+
+            await this.page.waitForLoadState('load', { timeout: 30000 });
         }
 
-        await this.page.waitForLoadState('load', { timeout: 30000 });
-
+        // Delete plugin - set up dialog handler before clicking
         this.page.once('dialog', async (dialog) => {
             expect(dialog.type()).toContain('confirm');
-            expect(dialog.message()).toContain('Are you sure you want to delete BackWPup Pro and its data?');
+            if (expectedDialogMessage) {
+                expect(dialog.message()).toContain(expectedDialogMessage);
+            }
             await dialog.accept();
         });
 
-        await this.page.locator( '#delete-backwpup-pro' ).click();
+        await this.page.locator(`#${deleteButtonId}`).click();
 
+        // Verify successful deletion by waiting for confirmation element
+        await expect(this.page.locator(`#${confirmationElementId}`)).toBeVisible({ timeout: 30000 });
+    }
+
+    public removeBackWpViaUi = async (): Promise<void> => {
+        await this.removePluginViaUi(
+            'backwpup-pro',
+            'delete-backwpup-pro',
+            'backwpup-pro-deleted',
+            'Are you sure you want to delete BackWPup Pro and its data?'
+        );
+
+        // Handle additional confirmation dialog if present
         if (await this.page.getByRole('button', { name: 'Yes, delete these files and data' }).isVisible()) {
             await this.page.getByRole('button', { name: 'Yes, delete these files and data' }).click();
             await expect(this.page.locator('#activate-backwpup-pro')).toBeHidden();
         }
-
-        // Assert that Backwpup is deleted successfully
-        await this.page.waitForSelector('#backwpup-pro-deleted');
-        await expect(this.page.locator('#backwpup-pro-deleted')).toBeVisible();
     }
 
     /**
@@ -684,42 +723,31 @@ export class PageUtils {
      * @return  {Promise<void>} Promise that resolves after the uninstallation process is complete.
      */
     public removeWprViaUi = async (): Promise<void> => {
-        // Confirm Dialog Box.
-        this.page.on('dialog', async(dialog) => {
-            expect(dialog.type()).toContain('confirm');
-            expect(dialog.message()).toContain('Are you sure you want to delete WP Rocket and its data?');
-            await dialog.accept();
-        });
+        await this.removePluginViaUi(
+            'wp-rocket',
+            'delete-wp-rocket',
+            'wp-rocket-deleted',
+            'Are you sure you want to delete WP Rocket and its data?'
+        );
 
-        // Goto plugins page.
-        await this.gotoPlugin();
-
-        if (!await this.page.getByRole('cell', { name: 'WP Rocket Settings | FAQ | Docs | Support | Deactivate WP Rocket' }).getByRole('strong').isVisible() && !await this.page.getByRole('cell', { name: 'Activate WP Rocket | Delete WP Rocket' }).getByRole('strong').isVisible()) {
-            return;
-        }
-
-        // Ensure WPR is deactivated.
-        await this.togglePluginActivation('wp-rocket', false);
-
-        // Check for deactivation modal.
-        if (await this.page.locator('label[for=deactivate]').isVisible()) {
-            await this.page.locator('label[for=deactivate]').click();
-            await this.page.locator('text=Confirm').click();
-        }
-
-        await this.page.waitForLoadState('load', { timeout: 30000 });
-
-        // Delete WPR.
-        await this.page.locator( '#delete-wp-rocket' ).click();
-
+        // Handle additional confirmation dialog if present
         if (await this.page.getByRole('button', { name: 'Yes, delete these files and data' }).isVisible()) {
             await this.page.getByRole('button', { name: 'Yes, delete these files and data' }).click();
             await expect(this.page.locator('#activate-wp-rocket')).toBeHidden();
-        }  
+        }
+    }
 
-        // Assert that WPR is deleted successfully
-        await this.page.waitForSelector('#wp-rocket-deleted');
-        await expect(this.page.locator('#wp-rocket-deleted')).toBeVisible();
+    /**
+     * Removes Cloudflare via the WordPress admin UI.
+     *
+     * @return {Promise<void>} Promise that resolves when the plugin has been deactivated and removed.
+     */
+    public removeCloudflareViaUi = async (): Promise<void> => {
+        await this.removePluginViaUi(
+            'cloudflare',
+            'delete-cloudflare',
+            'cloudflare-deleted'
+        );
     }
 
     /**
@@ -801,3 +829,91 @@ export class PageUtils {
         });
     }
 }
+
+export const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> => {
+    const consoleMsg: string[] = [];
+
+    const consoleHandler = (msg: ConsoleMessage): void => {
+        // Only capture errors and warnings, not info/log/debug
+        if (msg.type() === 'error' || msg.type() === 'warning') {
+            consoleMsg.push(msg.text());
+        }
+    };
+
+    const pageErrorHandler = (error: Error): void => {
+        consoleMsg.push(error.message);
+    };
+
+    try {
+        page.on('console', consoleHandler);
+        page.on('pageerror', pageErrorHandler);
+        await page.goto(url);
+        await page.waitForLoadState('load', { timeout: 30000 });
+        try {
+            await page.evaluate(async () => {
+                const scrollPage: Promise<void> = new Promise((resolve) => {
+                    let totalHeight = 0;
+                    const distance = 100;
+                    const timer = setInterval(() => {
+                        const scrollHeight = document.body.scrollHeight;
+                        window.scrollBy(0, distance);
+                        totalHeight += distance;
+                        if(totalHeight >= scrollHeight){
+                            clearInterval(timer);
+                            resolve();
+                        }
+                    }, 500);
+                });
+                await scrollPage;
+            });
+        } catch (error) {
+            console.log('Page navigation occurred during scroll, continuing...');
+        }
+        await page.locator('body').click();
+        await page.waitForTimeout(3000);
+    } finally {
+        page.off('console', consoleHandler);
+        page.off('pageerror', pageErrorHandler);
+    }
+    const normalizedMessages = consoleMsg
+        .map(msg => msg.replace(/\?nowprocket/g, ''))
+        .sort();
+    return normalizedMessages;
+};
+
+// Standalone utility: Get console messages while expanding mobile menu
+export const getConsoleMsgWithMenuExpansion = async (page: Page, url: string): Promise<Array<string>> => {
+    const consoleMsg: string[] = [];
+    const consoleHandler = (msg: ConsoleMessage): void => {
+        consoleMsg.push(msg.text());
+    };
+    const pageErrorHandler = (error: Error): void => {
+        consoleMsg.push(error.message);
+    };
+    try{
+        page.on('console', consoleHandler);
+        page.on('pageerror', pageErrorHandler);
+        await page.setViewportSize({ width: 500, height: 480 });
+        await page.goto(url);
+        await page.waitForLoadState('load', { timeout: 30000 });
+        await page.mouse.move(0, 0); await page.mouse.down(); await page.mouse.up();
+        const menuAlreadyOpen = await isMobileMenuOpen(page);
+        if (menuAlreadyOpen) {
+            throw new Error('Mobile menu is already open before attempting to open it');
+        }
+        try {
+            await openMobileMenu(page);
+        } catch (error) {
+            console.error('Failed to open mobile menu:', error);
+            throw error;
+        }
+        await page.waitForTimeout(1000);
+    } finally {
+        page.off('console', consoleHandler);
+        page.off('pageerror', pageErrorHandler);
+    }
+    const normalizedMessages = consoleMsg
+        .map(msg => msg.replace(/\?nowprocket/g, ''))
+        .sort();
+    return normalizedMessages;
+};

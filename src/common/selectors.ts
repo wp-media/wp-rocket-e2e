@@ -294,3 +294,11 @@ export const selectors: Selectors = {
         }
     }
 }
+
+/**
+ * Global selectors for link validation and general page elements.
+ */
+export const linkValidationSelectors = {
+    allLinksInContent: '#wpbody-content a[href]',
+    tabLinksInContent: '#wpbody-content a[href*="page=wprocket#"]',
+} as const;

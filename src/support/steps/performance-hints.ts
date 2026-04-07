@@ -140,5 +140,18 @@ When ('{string} page is deleted', async function (this: ICustomWorld, permalink:
 Then ('untrash and republish {string} page', async function (this: ICustomWorld, permalink: string) {
     const postDataStdout = await getPostDataFromTitle(permalink, 'trash', 'ID,post_title');
     const postData = await extractFromStdout(postDataStdout);
+    
+    if (!postData || postData.length === 0) {
+        throw new Error(`Failed to find page '${permalink}' in trash`);
+    }
+    
     await updatePostStatus(parseInt(postData[0].ID, 10), 'publish');
+    
+    // Verify it actually worked
+    const verifyStdout = await getPostDataFromTitle(permalink, 'publish', 'ID,post_status');
+    const verifyData = await extractFromStdout(verifyStdout);
+    
+    if (!verifyData || verifyData.length === 0 || verifyData[0].post_status !== 'publish') {
+        throw new Error(`Failed to restore page '${permalink}' to published status`);
+    }
 });

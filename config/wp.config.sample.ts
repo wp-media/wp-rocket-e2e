@@ -1,3 +1,6 @@
+import { RackspaceRegion } from "../src/types/rsc-region-types";
+import { S3Region } from "../src/types/s3-region-types";
+
 /**
  * The default WordPress admin user configuration for both local and live environments.
  * @constant
@@ -26,6 +29,17 @@ const IMAGIFY_INFOS = {
 } as const;
 
 /**
+ * The default Cloudflare settings information
+ *
+ * @constant
+ * @type {{ email: string, apiKey: string }}
+ */
+const CLOUDFLARE_INFOS = {
+	email: '',
+	apiKey: ''
+} as const;
+
+/**
  * Backwpup settings information
  */
 const BACKWPUP_INFOS = {
@@ -37,7 +51,7 @@ const BACKWPUP_INFOS = {
     sugarsync: {
         email: '',
         password: ''
-	},
+    },
     ftp: {
         host: '',
         username: '',
@@ -45,10 +59,30 @@ const BACKWPUP_INFOS = {
         port: '21',
         ssl: false,
         passiveMode: true,
-		// Set this to string with the path of the FTP root directory if SSH access is available for it
-		sshDirectory: null,
-		// Set this to the SSH username if SSH access is available for it
-		sshUsername: null
+        // Set this to string with the path of the FTP root directory if SSH access is available for it
+        sshDirectory: null,
+        // Set this to the SSH username if SSH access is available for it
+        sshUsername: null
+    },
+    s3: {
+        accessKey: '',
+        secretKey: '',
+        bucketName: '', // Can also be null or undefined,
+        region: 'us-east-1' satisfies S3Region | null | undefined // Can also be null or undefined (Default: us-east-1),
+    },
+    glacier: {
+        accessKey: '',
+        secretKey: '',
+        vaultName: '',
+        region: 'us-east-1' satisfies S3Region | null | undefined, // Can also be null or undefined (Default: us-east-1),
+        useS3Credentials: true // When true, S3 credentials will be used for Glacier authentication
+    },
+    // Rackspace
+    rsc: {
+        username: '',
+        apiKey: '',
+        container: '',
+        region: 'LON' satisfies RackspaceRegion | null | undefined // Default: LON
     }
 } as const;
 
@@ -122,5 +156,6 @@ export {
 	WP_SSH_KEY,
 	WP_SSH_ROOT_DIR,
 	IMAGIFY_INFOS,
-	BACKWPUP_INFOS
+	BACKWPUP_INFOS,
+	CLOUDFLARE_INFOS
 };

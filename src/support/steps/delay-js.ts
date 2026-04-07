@@ -36,3 +36,37 @@ Given('wpml directory is enabled', async function(this:ICustomWorld) {
 
     await this.page.waitForLoadState('load', { timeout: 30000 });
 });
+
+/**
+ * Enables "one click exclusions" for the Delay JS feature in WP Rocket by selecting all detected scripts for exclusion.
+ *
+ * In WP Rocket, "one click exclusions" is a UI feature under the Delay JavaScript Execution option that allows users to quickly exclude all detected JavaScript files from being delayed, improving compatibility with themes and plugins.
+ *
+ * This step expands the exclusions list and selects all available scripts for exclusion, then saves the settings.
+ *
+ * @param {ICustomWorld} this - Cucumber World context object providing Playwright page and utilities.
+ * @return {Promise<void>}
+ * @requires {@link ../../common/custom-world}
+ * 
+ */
+Given('one click exclusions are enabled if exists', async function(this:ICustomWorld) {
+    const exclusionHeader = '#wpr_djs_oneclick_exclusions_themes > div.wpr-list-header > div.wpr-list-header-data > span.wpr-multiple-select-title';
+    const theme = process.env.THEME || 'unknown';
+    
+    // Scroll to the element to ensure it's visible
+    try {
+        await this.page.locator(exclusionHeader).scrollIntoViewIfNeeded({ timeout: 5000 });
+        // Click on the header to expand
+        await this.page.locator(exclusionHeader).click();
+        
+        // Toggle select all
+        await this.page.locator('#wpr_djs_oneclick_exclusions_themes .wpr-select-all label').click();
+        
+        await this.utils.saveSettings();
+    } catch {
+        // Element doesn't exist or can't be scrolled into view; treat as "one-click exclusions not available"
+        console.log(`Theme '${theme}' does not have one-click exclusion available`);
+        return;
+    }
+});
+

@@ -18,10 +18,14 @@ import {checkLcpOrViewport, extractFromStdout} from "../../../utils/helpers";
 import {WP_BASE_URL} from "../../../config/wp.config";
 import fs from 'fs/promises';
 
+// Viewport dimension constants
+const VIEWPORT_DESKTOP = { width: 1600, height: 700 };
+const VIEWPORT_MOBILE = { width: 389, height: 829 };
+
 let data: string,
     truthy: boolean = true,
     failMsg: string,
-    jsonData: Record<string, { lcp: string[]; viewport: string[]; fonts: string[];enabled: boolean, comment: string; }>,
+    jsonData: Record<string, { lcp: string[]; viewport: string[]; fonts: string[]; domains: string[]; enabled: boolean, comment: string; }>,
     isDbResultAvailable: boolean = true,
     lcpLLImages: LLImagesData = {},
     singlePageLcp : SinglePageLCPImages = {url: '', lcp: '', viewport: ''};
@@ -31,6 +35,7 @@ type ActualData = {
   lcp?: string;
   viewport?: string;
   fonts?: string;
+  domains?: string;
   comment?: string;
 };
 const actual: Record<string, ActualData> = {};
@@ -59,6 +64,67 @@ const findUnmatchedExpectations = (expectedList: string[], actualList: string[])
   }
   return unmatched;
 };
+
+/**
+ * Parse array field from database result.
+ * Handles both JSON format and comma-separated strings.
+ */
+const parseArrayField = (fieldValue: string | undefined): string[] => {
+  if (!fieldValue) return [];
+  
+  try {
+    return JSON.parse(fieldValue);
+  } catch (e) {
+    return fieldValue
+      .split(',')
+      .map(item => item.trim())
+      .filter(Boolean);
+  }
+};
+
+/**
+ * Validate array field expectations with common error handling.
+ * Reusable for fonts, domains, and other array-based validations.
+ */
+async function validateArrayFieldExpectations(
+  fieldName: 'fonts' | 'domains',
+  fieldLabel: string
+): Promise<void> {
+  // Log fail messages from DB query before failing test.
+  if (failMsg !== '') {
+    console.log('\x1b[31m%s\x1b[0m', failMsg);
+    // Fail test when no DB result is found.
+    expect(isDbResultAvailable).toBeTruthy();
+    return;
+  }
+
+  truthy = true;
+
+  // Iterate over the data
+  for (const key in jsonData) {
+    if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
+      const expected = jsonData[key];
+      const expectedArray: string[] = expected[fieldName] || [];
+      const actualArray: string[] = parseArrayField(actual[key][fieldName]);
+
+      const missing = findUnmatchedExpectations(expectedArray, actualArray);
+
+      if (missing.length) {
+        truthy = false;
+        for (const m of missing) {
+          failMsg += `Expected ${fieldLabel} - ${m} for ${actual[key].url} is not present in actual - ${actualArray}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+        }
+      }
+    }
+  }
+  
+  // Log fail message from Expectation mismatch before failing test.
+  if (failMsg !== '') {
+    throw new Error(failMsg);
+  }
+  // Fail test when there is expectation mismatch.
+  expect(truthy).toBeTruthy();
+}
 // --- end helpers ---
 
 /**
@@ -133,10 +199,7 @@ async function visitUrlsAndFetchData(
 When('I visit the urls and check for lazyload', async function (this: ICustomWorld) {
     const resultFile: string = './src/support/results/expectedResultsDesktop.json';
 
-    await this.page.setViewportSize({
-        width: 1600,
-        height: 700
-    });
+    await this.page.setViewportSize(VIEWPORT_DESKTOP);
 
     data = await fs.readFile(resultFile, 'utf8');
     jsonData = JSON.parse(data);
@@ -187,22 +250,12 @@ When('I visit the urls and check for lazyload', async function (this: ICustomWor
 
 
 // visit URL
-When(
-    'I visit the url {string} for {string}',
+When('I visit the url {string} for {string}',
     async function (this: ICustomWorld, templateKey: string, formFactor: string) {
-        let viewPortWidth: number = 1600,
-            viewPortHeight: number = 700;
+        // Set device viewport based on formFactor
+        const viewport = formFactor === 'mobile' ? VIEWPORT_MOBILE : VIEWPORT_DESKTOP;
 
-        // Set device viewport and result file based on formFactor
-        if (formFactor === 'mobile') {
-            viewPortWidth = 389;
-            viewPortHeight = 829;
-        }
-
-        await this.page.setViewportSize({
-            width: viewPortWidth,
-            height: viewPortHeight
-        });
+        await this.page.setViewportSize(viewport);
 
         // Visit the page url
         await this.utils.visitPage(templateKey);
@@ -219,26 +272,21 @@ When(
  * Executes step to visit page based on the form factor(desktop/mobile) and get the LCP/ATF data from DB.
  */
 When('I visit the urls for {string}', async function (this: ICustomWorld, formFactor: string) {
-    let viewPortWidth: number = 1600,
-        viewPortHeight: number = 700,
-        resultFile: string = './src/support/results/expectedResultsDesktop.json',
+    let resultFile: string = './src/support/results/expectedResultsDesktop.json',
         isMobile = 0;
 
-    // Set page to be visited in mobile.
+    // Set viewport and result file based on formFactor
+    const viewport = formFactor === 'mobile' ? VIEWPORT_MOBILE : VIEWPORT_DESKTOP;
+    
     if (formFactor === 'mobile') {
-        viewPortWidth = 389;
-        viewPortHeight = 829;
         resultFile = './src/support/results/expectedResultsMobile.json';
-    }
-
-    if (formFactor !== 'desktop') {
         isMobile = 1;
     }
 
     await visitUrlsAndFetchData(this, {
         resultFile,
-        viewPortWidth,
-        viewPortHeight,
+        viewPortWidth: viewport.width,
+        viewPortHeight: viewport.height,
         isMobile,
         getSqlQuery: (tablePrefix, key, isMobile) => 
             `SELECT lcp, viewport FROM ${tablePrefix}wpr_above_the_fold WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`,
@@ -257,15 +305,13 @@ When('I visit the urls for {string}', async function (this: ICustomWorld, formFa
  * Executes step to visit page and get preload fonts data from DB.
  */
 When('I visit the urls for preload fonts', async function (this: ICustomWorld) {
-    const viewPortWidth: number = 1600,
-        viewPortHeight: number = 700,
-        resultFile: string = './src/support/results/expectedResultsPreloadFonts.json',
+    const resultFile: string = './src/support/results/expectedResultsPreloadFonts.json',
         isMobile = 0;
 
     await visitUrlsAndFetchData(this, {
         resultFile,
-        viewPortWidth,
-        viewPortHeight,
+        viewPortWidth: VIEWPORT_DESKTOP.width,
+        viewPortHeight: VIEWPORT_DESKTOP.height,
         isMobile,
         getSqlQuery: (tablePrefix, key, isMobile) => 
             `SELECT fonts FROM ${tablePrefix}wpr_preload_fonts WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`,
@@ -275,6 +321,30 @@ When('I visit the urls for preload fonts', async function (this: ICustomWorld) {
             comment: jsonData[key].comment ?? ''
         }),
         contextName: 'preload fonts'
+    });
+});
+
+
+/**
+ * Executes step to visit page and get prefetch external domain data from DB.
+ */
+When('I visit the urls for prefetch External Domain', async function (this: ICustomWorld) {
+    const resultFile: string = './src/support/results/expectedResultsPrefetchExternalDomain.json',
+        isMobile = 0;
+
+    await visitUrlsAndFetchData(this, {
+        resultFile,
+        viewPortWidth: VIEWPORT_DESKTOP.width,
+        viewPortHeight: VIEWPORT_DESKTOP.height,
+        isMobile,
+        getSqlQuery: (tablePrefix, key, isMobile) => 
+            `SELECT domains FROM ${tablePrefix}wpr_preconnect_external_domains WHERE url LIKE "%${key}%" AND is_mobile = ${isMobile}`,
+        populateActualData: (key, url, resultFromStdout) => ({
+            url: url,
+            domains: resultFromStdout[0].domains,
+            comment: jsonData[key].comment ?? ''
+        }),
+        contextName: 'prefetch external domain'
     });
 });
 
@@ -332,47 +402,14 @@ Then('lcp and atf should be as expected for {string}', async function (this: ICu
  * Executes the step to assert that preload fonts should be as expected.
  */
 Then('preload fonts should be as expected', async function (this: ICustomWorld) {
-    // Log fail messages from DB query before failing test.
-    if (failMsg !== '') {
-        console.log('\x1b[31m%s\x1b[0m',failMsg);
-         // Fail test when no DB result is found.
-        expect(isDbResultAvailable).toBeTruthy();
-        return;
-    }
+    await validateArrayFieldExpectations('fonts', 'preload font');
+});
 
-    truthy = true;
-
-    // Iterate over the data
-    for (const key in jsonData) {
-        if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
-            const expected = jsonData[key];
-            const expectedFonts: string[] = expected.fonts || [];
-            let actualFonts: string[] = [];
-            try {
-                actualFonts = JSON.parse(actual[key].fonts || '[]');
-            } catch (e) {
-                actualFonts = (actual[key].fonts || '')
-                    .split(',')
-                    .map(f => f.trim())
-                    .filter(Boolean);
-            }
-
-            const missing = findUnmatchedExpectations(expectedFonts, actualFonts);
-
-            if (missing.length) {
-                truthy = false;
-                for (const m of missing) {
-                    failMsg += `Expected preload font - ${m} for ${actual[key].url} is not present in actual - ${actualFonts}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
-                }
-            }
-        }
-    }
-// Log fail message from Expectation mismatch before failing test.
-    if (failMsg !== '') {
-        throw new Error(failMsg);
-    }
-// Fail test when there is expectation mismatch.
-    expect(truthy).toBeTruthy();
+/**
+ * Executes the step to assert that prefetch domains should be as expected.
+ */
+Then('domains should be as expected', async function (this: ICustomWorld) {
+    await validateArrayFieldExpectations('domains', 'preconnect domain');
 });
 
 let lcpImages: Array<{ src: string; fetchpriority: string | boolean; lazyloaded: string | boolean }> = [];
@@ -412,13 +449,19 @@ Then('lcp and atf images are not written to LL format', async function (this: IC
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
             const expected = jsonData[key];
 
-            const lcpResult = await checkLcpOrViewport(lcpLLImages, key, 'LCP', expected.lcp);
+            if (!Array.isArray(expected.lcp) || !Array.isArray(expected.viewport)) {
+                throw new Error(
+                    `Invalid expected LCP data shape for "${key}". Expected arrays for lcp/viewport, received lcp=${typeof expected.lcp}, viewport=${typeof expected.viewport}.`
+                );
+            }
+
+            const lcpResult = await checkLcpOrViewport(lcpLLImages, 'LCP', key, expected.lcp);
             if (lcpResult && !lcpResult.isValid) {
                 truthy = false;
                 failMsg += lcpResult.errorMessages.join('');
             }
 
-            const viewportResult = await checkLcpOrViewport(lcpLLImages, key, 'Viewport', expected.viewport);
+            const viewportResult = await checkLcpOrViewport(lcpLLImages, 'Viewport', key, expected.viewport);
             if (viewportResult && !viewportResult.isValid) {
                 truthy = false;
                 failMsg += viewportResult.errorMessages.join('');
@@ -434,10 +477,7 @@ When('I visit the {string} and check lcp-atf are not lazyloaded', async function
     // Reset truthy to true here.
     truthy = true;
 
-    await this.page.setViewportSize({
-        width: 1600,
-        height: 700
-    });
+    await this.page.setViewportSize(VIEWPORT_DESKTOP);
 
     await this.utils.visitPage(url);
 
@@ -473,14 +513,10 @@ When('I visit the {string} and check lcp-atf are not lazyloaded', async function
 /**
  * Executes the step to visit page in a specific browser dimension.
  */
-When('I visit page {string} and check for lcp', async function (this:ICustomWorld, page) {
-
+When('I visit page {string} and check for lcp', async function (this: ICustomWorld, page: string): Promise<void> {
     const tablePrefix: string = await getWPTablePrefix();
 
-    await this.page.setViewportSize({
-        width: 1600,
-        height: 700,
-    });
+    await this.page.setViewportSize(VIEWPORT_DESKTOP);
 
     await this.utils.visitPage(page);
 
@@ -498,9 +534,9 @@ When('I visit page {string} and check for lcp', async function (this:ICustomWorl
     const result = await dbQuery(sql);
     const resultFromStdout = await extractFromStdout(result);
 
-    // If no DB result, set assertion var to false, fail msg and skip the loop.
+    // If no DB result, fail with a clear message instead of dereferencing undefined.
     if (!resultFromStdout || resultFromStdout.length === 0) {
-        isDbResultAvailable = false;
+        throw new Error(`No LCP-ATF DB result found for page "${page}"`);
     }
 
     singlePageLcp = {

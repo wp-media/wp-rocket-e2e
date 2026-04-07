@@ -51,6 +51,9 @@ When('I set up {string} storage', async function (this: ICustomWorld, storagePro
         msazure: () => this.storage.setupMSAzure(),
         ftp: () => this.storage.setupFTP(),
         sugarsync: () => this.storage.setupSugarSync(),
+        s3: () => this.storage.setupS3(),
+        glacier: () => this.storage.setupGlacier(),
+        rsc: () => this.storage.setupRackspace(),
     } as const;
 
     const configureButton = this.page.locator(`button[data-storage="${storageType}"].js-backwpup-toggle-storage`);
@@ -88,8 +91,7 @@ When('{string} is unchecked from files options', async function (this: ICustomWo
     const checkbox = this.page.locator(`label:has(input[name="${value}"])`);
 
     await expect(checkbox).not.toBeChecked();
-    await this.page.locator('button#file-exclusions-submit').click();
-    await waitForToastMessage(this.page , 'File exclusions saved successfully.')
+    await this.page.locator('header:has(h1:has-text("Select Files")) button.js-backwpup-close-sidebar').click();
 });
 
 When('{string} is unchecked from database options', async function (this: ICustomWorld, value: string) {
@@ -98,8 +100,7 @@ When('{string} is unchecked from database options', async function (this: ICusto
     const checkbox = this.page.locator(`label:has(input[value="${value}"])`);
 
     await expect(checkbox).not.toBeChecked();
-    await this.page.locator('button#save-excluded-tables').click();
-    await waitForToastMessage(this.page , 'Excluded tables saved successfully.')
+    await this.page.locator('header:has(h1:has-text("Select Tables")) button.js-backwpup-close-sidebar').click();
 });
 
 When('I click on manual backup of a job', async function (this: ICustomWorld) {
@@ -112,6 +113,19 @@ When('I click on manual backup of a job', async function (this: ICustomWorld) {
     await this.page.waitForLoadState('networkidle');
 });
 
+When('I create one job', async function (this: ICustomWorld) {
+    await this.page.goto(
+        `${configurations.baseUrl}/wp-admin/admin.php?page=backwpup`,
+        {
+            waitUntil: 'load'
+        }
+    );
+    const createJobButton = this.page.locator(
+        'div#backwup-next-scheduled-backups div#js_backwpup_add_new_backup button'
+    );
+    await expect(createJobButton).toBeVisible();
+    await createJobButton.click();
+});
 When('I Schedule backup', async function (this: ICustomWorld) {
     this.initialBackups = await captureBackupTableData(this.page)
     const timeText = await this.page.locator('#wp-admin-bar-current_time_display .ab-item').textContent();
@@ -154,6 +168,12 @@ const captureBackupTableData = async (page: Page): Promise<BackupRowData[]> => {
     return backups;
 }
 
+/**
+ * Optional: strict toast validator to reuse when we need exact message matching.
+ * Commented out to avoid unused lint errors while keeping the implementation handy.
+*/
+
+/**
 const waitForToastMessage = async (page: Page, expectedMessage = null, timeout = 3000): Promise<boolean> => {
     const toastContainer = page.locator('#bwp-settings-toast');
 
@@ -163,9 +183,15 @@ const waitForToastMessage = async (page: Page, expectedMessage = null, timeout =
     });
 
     if (expectedMessage) {
-        const messageLocator = toastContainer.locator('p.text-sm.font-medium');
-        await expect(messageLocator).toContainText(expectedMessage);
+        const messageLocator = toastContainer.locator(
+            'p.text-sm.font-medium',
+            { hasText: expectedMessage }
+        );
+
+        await expect(messageLocator).toBeVisible();
+        await expect(messageLocator).toHaveText(expectedMessage);
     }
 
     return true;
 }
+ */
