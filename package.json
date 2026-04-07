@@ -29,6 +29,7 @@
     "test:cdn": "$npm_package_config_testCommand --tags @cdn",
     "test:performancehints": "$npm_package_config_testCommand --tags @performancehints",
     "test:cloudflare-compatibility": "$npm_package_config_testCommand --tags @cloudflare-compatibility",
+    "test:imagify-compatibility": "$npm_package_config_testCommand --tags @imagify-compatibility",
     "test:brokenlinks": "$npm_package_config_testCommand --tags @brokenlinks",
     "test:qm": "$npm_package_config_testCommand --tags @qm",
     "healthcheck": "ts-node healthcheck.ts",

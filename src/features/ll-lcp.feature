@@ -11,36 +11,12 @@ Feature: Lazyload with LCP
     And I save settings 'media' 'lazyloadIframes'
     And I save settings 'media' 'lazyloadYoutube'
 
-  Scenario: Should Exclude LCP/ATF from Lazyload
+  Scenario: Should Exclude LCP-ATF from Lazyload
     When I log out
     And I visit the urls for 'desktop'
     When I am logged in
     And I clear cache
     And I log out
     And I visit the urls and check for lazyload
-    Then lcp and atf images are not written to LL format
-
-  
-  Scenario: Should exclude next-gen lcp/atf from LL
-    Given I install plugin 'imagify'
-    And plugin 'imagify' is activated
-    And Imagify is set up
-    When I log out
-    And I visit page 'lcp_with_imagify' and check for lcp
-    When I am logged in
-    And I clear cache
-    And I log out
-    And I visit the 'lcp_with_imagify' and check lcp-atf are not lazyloaded
-    Then lcp and atf images are not written to LL format
-    
-  @imagify
-  Scenario: Should exclude Imagify next-gen lcp/atf from LL
-    Given display next-gen is enabled on imagify
-    When I log out
-    And I visit page 'lcp_with_imagify' and check for lcp
-    When I am logged in
-    And I clear cache
-    And I log out
-    And I visit the 'lcp_with_imagify' and check lcp-atf are not lazyloaded
     Then lcp and atf images are not written to LL format
 

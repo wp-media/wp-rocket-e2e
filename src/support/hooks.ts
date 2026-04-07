@@ -23,7 +23,7 @@ import { deleteFolder, extractFromStdout, isWprRelatedError } from "../../utils/
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 
-import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle} from "../../utils/commands";
+import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 // import {configurations, getWPDir} from "../../utils/configurations";
@@ -61,8 +61,8 @@ BeforeAll(async function (this: ICustomWorld) {
     try {
         await testSshConnection();
 
-        const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/*.log`;
-        await rm(debugLogPath);
+        const folderPath = `${WP_SSH_ROOT_DIR}wp-content`;
+        await rmFiles(folderPath, '*.log');
 
         await deleteFolder('./backstop_data/bitmaps_test');
         
@@ -271,9 +271,9 @@ After({tags: '@delaylcp'}, async function (this: ICustomWorld) {
 });
 
 /**
- * After each test scenario with the @imagify tag, performs teardown tasks.
+ * After each test scenario with the @imagify-compatibility tag, performs teardown tasks.
  */
-After({tags: '@imagify'}, async function (this: ICustomWorld) {
+After({tags: '@imagify-compatibility'}, async function (this: ICustomWorld) {
     // Only uninstall if Imagify is installed
     if (await isPluginInstalled('imagify')) {
         await uninstallPlugin('imagify');
