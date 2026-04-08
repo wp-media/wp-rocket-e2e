@@ -37,6 +37,7 @@ E2E tests here are written with Playwright. Without further ado, let's meet belo
  
  You can also run `npx playwright test --headed` to view the tests being executed on the browser.
  
+ 
  ## Reporting
  - In order to have report at the shared folder /var/shared/rocket-e2e-reports on remote e2e server, we can run this "WPRversion_e2e_testType_branch"
  `npm run test:e2e --tag=wpr3.19.4_e2e_all_dev` This means the test ran using WPR version 3.19.4 and e2e develop branch to run all tests
