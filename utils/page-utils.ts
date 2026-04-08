@@ -8,12 +8,13 @@
  * @requires {@link ../config/wp.config}
  * @requires {@link ./configurations}
  */
-import type {Page} from '@playwright/test';
+import type {Page, ConsoleMessage} from '@playwright/test';
 import type {Sections} from '../src/common/sections';
 import type {Locators, Selector, Pickle} from './types';
 import {expect} from "@playwright/test";
 import { ICustomWorld } from '../src/common/custom-world';
 import fs from "fs/promises";
+import {openMobileMenu, isMobileMenuOpen} from '../utils/helpers';
 
 import {WP_BASE_URL, WP_PASSWORD, WP_PASSWORD2, WP_USERNAME, WP_USERNAME2} from '../config/wp.config';
 import { uninstallPlugin, updatePermalinkStructure, deactivatePlugin, switchTheme, isPluginInstalled, isPluginActive } from "./commands";
@@ -508,6 +509,12 @@ export class PageUtils {
 
         this.sections.optionState = true;
 
+        if(await this.sections.doesSectionExist('addons')) {
+            // Enable all settings for Addons.
+            await this.sections.set("addons").visit();
+            await this.sections.massToggle();
+        }
+
         if (await this.sections.doesSectionExist('cache')) {
              // Enable all settings for cache section.
             await this.sections.set("cache").visit();
@@ -567,12 +574,6 @@ export class PageUtils {
             await this.page.locator('#setting-error-settings_updated > button').click();
         }
 
-        if(await this.sections.doesSectionExist('addons')) {
-            // Enable all settings for Addons.
-            await this.sections.set("addons").visit();
-            await this.sections.massToggle();
-        }
-
         if(await this.sections.doesSectionExist('heartbeat')) {
             // Enable all settings for Heartbeat.
             await this.sections.set("heartbeat").visit();
@@ -604,9 +605,9 @@ export class PageUtils {
      * @return {Promise<void>}
      */
     public saveSettings = async (): Promise<void> => {
-        await this.page.waitForSelector('#wpr-options-submit');
-        // save settings
-        await this.page.locator('#wpr-options-submit').click();
+        const submitBtn = this.page.locator('#wpr-options-submit');
+        await submitBtn.scrollIntoViewIfNeeded();
+        await submitBtn.click();
     }
 
     /**
@@ -828,3 +829,91 @@ export class PageUtils {
         });
     }
 }
+
+export const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> => {
+    const consoleMsg: string[] = [];
+
+    const consoleHandler = (msg: ConsoleMessage): void => {
+        // Only capture errors and warnings, not info/log/debug
+        if (msg.type() === 'error' || msg.type() === 'warning') {
+            consoleMsg.push(msg.text());
+        }
+    };
+
+    const pageErrorHandler = (error: Error): void => {
+        consoleMsg.push(error.message);
+    };
+
+    try {
+        page.on('console', consoleHandler);
+        page.on('pageerror', pageErrorHandler);
+        await page.goto(url);
+        await page.waitForLoadState('load', { timeout: 30000 });
+        try {
+            await page.evaluate(async () => {
+                const scrollPage: Promise<void> = new Promise((resolve) => {
+                    let totalHeight = 0;
+                    const distance = 100;
+                    const timer = setInterval(() => {
+                        const scrollHeight = document.body.scrollHeight;
+                        window.scrollBy(0, distance);
+                        totalHeight += distance;
+                        if(totalHeight >= scrollHeight){
+                            clearInterval(timer);
+                            resolve();
+                        }
+                    }, 500);
+                });
+                await scrollPage;
+            });
+        } catch (error) {
+            console.log('Page navigation occurred during scroll, continuing...');
+        }
+        await page.locator('body').click();
+        await page.waitForTimeout(3000);
+    } finally {
+        page.off('console', consoleHandler);
+        page.off('pageerror', pageErrorHandler);
+    }
+    const normalizedMessages = consoleMsg
+        .map(msg => msg.replace(/\?nowprocket/g, ''))
+        .sort();
+    return normalizedMessages;
+};
+
+// Standalone utility: Get console messages while expanding mobile menu
+export const getConsoleMsgWithMenuExpansion = async (page: Page, url: string): Promise<Array<string>> => {
+    const consoleMsg: string[] = [];
+    const consoleHandler = (msg: ConsoleMessage): void => {
+        consoleMsg.push(msg.text());
+    };
+    const pageErrorHandler = (error: Error): void => {
+        consoleMsg.push(error.message);
+    };
+    try{
+        page.on('console', consoleHandler);
+        page.on('pageerror', pageErrorHandler);
+        await page.setViewportSize({ width: 500, height: 480 });
+        await page.goto(url);
+        await page.waitForLoadState('load', { timeout: 30000 });
+        await page.mouse.move(0, 0); await page.mouse.down(); await page.mouse.up();
+        const menuAlreadyOpen = await isMobileMenuOpen(page);
+        if (menuAlreadyOpen) {
+            throw new Error('Mobile menu is already open before attempting to open it');
+        }
+        try {
+            await openMobileMenu(page);
+        } catch (error) {
+            console.error('Failed to open mobile menu:', error);
+            throw error;
+        }
+        await page.waitForTimeout(1000);
+    } finally {
+        page.off('console', consoleHandler);
+        page.off('pageerror', pageErrorHandler);
+    }
+    const normalizedMessages = consoleMsg
+        .map(msg => msg.replace(/\?nowprocket/g, ''))
+        .sort();
+    return normalizedMessages;
+};

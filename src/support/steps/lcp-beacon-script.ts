@@ -449,13 +449,19 @@ Then('lcp and atf images are not written to LL format', async function (this: IC
         if (Object.hasOwnProperty.call(jsonData, key) && jsonData[key].enabled === true) {
             const expected = jsonData[key];
 
-            const lcpResult = await checkLcpOrViewport(lcpLLImages, key, 'LCP', expected.lcp);
+            if (!Array.isArray(expected.lcp) || !Array.isArray(expected.viewport)) {
+                throw new Error(
+                    `Invalid expected LCP data shape for "${key}". Expected arrays for lcp/viewport, received lcp=${typeof expected.lcp}, viewport=${typeof expected.viewport}.`
+                );
+            }
+
+            const lcpResult = await checkLcpOrViewport(lcpLLImages, 'LCP', key, expected.lcp);
             if (lcpResult && !lcpResult.isValid) {
                 truthy = false;
                 failMsg += lcpResult.errorMessages.join('');
             }
 
-            const viewportResult = await checkLcpOrViewport(lcpLLImages, key, 'Viewport', expected.viewport);
+            const viewportResult = await checkLcpOrViewport(lcpLLImages, 'Viewport', key, expected.viewport);
             if (viewportResult && !viewportResult.isValid) {
                 truthy = false;
                 failMsg += viewportResult.errorMessages.join('');
@@ -507,8 +513,7 @@ When('I visit the {string} and check lcp-atf are not lazyloaded', async function
 /**
  * Executes the step to visit page in a specific browser dimension.
  */
-When('I visit page {string} and check for lcp', async function (this:ICustomWorld, page) {
-
+When('I visit page {string} and check for lcp', async function (this: ICustomWorld, page: string): Promise<void> {
     const tablePrefix: string = await getWPTablePrefix();
 
     await this.page.setViewportSize(VIEWPORT_DESKTOP);
@@ -529,9 +534,9 @@ When('I visit page {string} and check for lcp', async function (this:ICustomWorl
     const result = await dbQuery(sql);
     const resultFromStdout = await extractFromStdout(result);
 
-    // If no DB result, set assertion var to false, fail msg and skip the loop.
+    // If no DB result, fail with a clear message instead of dereferencing undefined.
     if (!resultFromStdout || resultFromStdout.length === 0) {
-        isDbResultAvailable = false;
+        throw new Error(`No LCP-ATF DB result found for page "${page}"`);
     }
 
     singlePageLcp = {

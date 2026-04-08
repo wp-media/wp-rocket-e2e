@@ -473,13 +473,14 @@
   "lcp_specialchar2": {
     "comment": "flaky test",
     "lcp": [
-      "/%D7%A2%D7%93%D7%99-%D7%A8%D7%99%D7%93%D7%9C%D7%9E%D7%9F-%D7%A8%D7%90%D7%A9%D7%99-%D7%90%D7%A8%D7%95%D7%9A-300x300.jpg"
+      "/wp-content/rocket-test-data/images/lcp/%D7%A2%D7%93%D7%99-%D7%A8%D7%99%D7%93%D7%9C%D7%9E%D7%9F-%D7%A8%D7%90%D7%A9%D7%99-%D7%90%D7%A8%D7%95%D7%9A-200x300.webp"
+
 
     ],
     "viewport": [
       "/wp-content/rocket-test-data/images/lcp/%D7%A2%D7%93%D7%99-%D7%A8%D7%99%D7%93%D7%9C%D7%9E%D7%9F-%D7%A8%D7%90%D7%A9%D7%99-%D7%90%D7%A8%D7%95%D7%9A-200x400.jpeg",
+      "/%D7%A2%D7%93%D7%99-%D7%A8%D7%99%D7%93%D7%9C%D7%9E%D7%9F-%D7%A8%D7%90%D7%A9%D7%99-%D7%90%D7%A8%D7%95%D7%9A-300x300.jpg"
 
-      "/wp-content/rocket-test-data/images/lcp/%D7%A2%D7%93%D7%99-%D7%A8%D7%99%D7%93%D7%9C%D7%9E%D7%9F-%D7%A8%D7%90%D7%A9%D7%99-%D7%90%D7%A8%D7%95%D7%9A-200x300.webp"
     ],
     "enabled": false
   },
