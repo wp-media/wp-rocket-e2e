@@ -89,7 +89,7 @@ async function deleteAllData(page: Page): Promise<void> {
     for (let i = 0; i < count; i++) {
         await checkboxLabels.nth(i).click();
     }
-    const message = 'Delete button not found, plugin version might be earlier than 5.6.7.';
+    const message = 'Delete button not found, plugin version might be earlier than 5.6.8.';
     await page.selectOption('select[name="bulk_actions"]', 'delete');
     await page.click('button#bulk-actions-apply');
     const confirmDialogSelector = 'button.js-backwpup-bulk-delete-backups';
