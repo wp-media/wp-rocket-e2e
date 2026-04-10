@@ -89,8 +89,16 @@ async function deleteAllData(page: Page): Promise<void> {
     for (let i = 0; i < count; i++) {
         await checkboxLabels.nth(i).click();
     }
-
+    const message = 'Delete button not found, plugin version might be earlier than 5.6.8.';
     await page.selectOption('select[name="bulk_actions"]', 'delete');
     await page.click('button#bulk-actions-apply');
+    const confirmDialogSelector = 'button.js-backwpup-bulk-delete-backups';
+    try {
+        // Previous versions of the plugin did not have a confirmation dialog, so we wait for it and click it if it appears, but if it doesn't appear after 5 seconds, we catch the error and log a message, preventing the test from failing due to a timeout error. This allows the cleanup process to work with both older and newer versions of the plugin.
+        await page.waitForSelector(confirmDialogSelector, { timeout: 5000 });
+        await page.click(confirmDialogSelector);
+    } catch {
+        console.log(message);
+    }
     await page.waitForLoadState('networkidle');
 }
