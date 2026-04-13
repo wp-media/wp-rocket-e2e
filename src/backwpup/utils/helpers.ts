@@ -130,6 +130,50 @@ export const getFolderNameFromHost = (): string => {
     return directoryName;
 }
 
+/**
+ * Extracts the last non-empty line from raw table cell text.
+ *
+ * BackWPup responsive table cells often contain visually-hidden column headers
+ * (e.g., `<span class="sr-only">Type</span>`) followed by the actual data value.
+ * When extracted via `textContent()` or `innerText()`, this produces multi-line
+ * strings where the header appears first and the data appears last.
+ * This function returns only the final meaningful line — the actual data.
+ *
+ * @param rawText - The raw text extracted from a table cell.
+ * @returns The last non-empty trimmed line, or empty string if no meaningful text is found.
+ *
+ * @example
+ * extractLastMeaningfulLine('Type\n\n\n    Manual')           // 'Manual'
+ * extractLastMeaningfulLine('Stored on\n\n    Website Server') // 'Website Server'
+ * extractLastMeaningfulLine('')                                // ''
+ */
+export const extractLastMeaningfulLine = (rawText: string): string => {
+    const lines = rawText
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+
+    return lines.length > 0 ? lines[lines.length - 1] : '';
+};
+
+/**
+ * Normalizes cell text by collapsing all consecutive whitespace characters
+ * (newlines, tabs, multiple spaces) into a single space, then trimming.
+ *
+ * Useful for date cells where the value spans multiple lines but represents
+ * a single logical string (e.g., "Apr 13, 2026\n    at 10:09pm").
+ *
+ * @param rawText - The raw text to normalize.
+ * @returns The normalized text with collapsed whitespace.
+ *
+ * @example
+ * normalizeCellText('Apr 13, 2026\n    at 10:09pm') // 'Apr 13, 2026 at 10:09pm'
+ * normalizeCellText('  hello   world  ')             // 'hello world'
+ */
+export const normalizeCellText = (rawText: string): string => {
+    return rawText.replace(/\s+/g, ' ').trim();
+};
+
 export const listBackWPupJobsWPCLI = async (
     json?: boolean
 ): Promise<Array<Record<string, unknown>>> => {

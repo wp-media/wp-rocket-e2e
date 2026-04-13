@@ -1,4 +1,4 @@
-@bwpup @bwpupsetup @bwpupsmoke
+@bwpup @bwpupsetup @bwpupsmoke @bwpupbackup
 Feature: Should be able to backup
 
   Background:
