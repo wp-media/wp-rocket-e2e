@@ -7,7 +7,7 @@ Feature: No Regression with delayjs script update
         And plugin is activated
         
 
-    Scenario Outline: Shouldn't cause console error when enabling Delay JS with theme for desktop
+    Scenario Outline: Shouldnot cause console error when enabling Delay JS with theme for desktop
         Given theme "<theme>" is activated via WP-CLI
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And I save settings 'fileOptimization' 'delayJs'
@@ -30,7 +30,7 @@ Feature: No Regression with delayjs script update
             | Avada                  |
          
   
-    Scenario Outline: Shouldn't cause console error when open mobile menu and click link works
+    Scenario Outline: Shouldnot cause console error when open mobile menu and click link works
         Given theme "<theme>" is activated via WP-CLI
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And I save settings 'fileOptimization' 'delayJs'
