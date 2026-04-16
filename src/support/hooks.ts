@@ -91,9 +91,9 @@ BeforeAll(async function (this: ICustomWorld) {
 });
 
 /**
- * Before each smoke scenario requiring a clean environment, ensures Imagify is not installed.
+ * Before each scenario tagged with @requires-clean-imagify, ensures Imagify is not installed.
  */
-Before({ tags: '@smoke and @requires-clean-imagify and not @imagify-compatibility' }, async function (this: ICustomWorld): Promise<void> {
+Before({ tags: '@requires-clean-imagify and not @imagify-compatibility' }, async function (this: ICustomWorld): Promise<void> {
     await uninstallPlugin('imagify');
 });
 
