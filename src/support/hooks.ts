@@ -91,7 +91,8 @@ BeforeAll(async function (this: ICustomWorld) {
 });
 
 /**
- * Before each scenario tagged with @requires-clean-imagify, ensures Imagify is not installed.
+ * Before each scenario tagged with @requires-clean-imagify, except those also tagged with
+ * @imagify-compatibility, ensures Imagify is not installed.
  */
 Before({ tags: '@requires-clean-imagify and not @imagify-compatibility' }, async function (this: ICustomWorld): Promise<void> {
     await uninstallPlugin('imagify');
