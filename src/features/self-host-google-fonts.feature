@@ -1,4 +1,4 @@
-@smoke @selfhostgooglefonts @setup
+@smoke @selfhostgooglefonts @setup @requires-clean-imagify
 
 Feature: Google Fonts are self-hosted
 
