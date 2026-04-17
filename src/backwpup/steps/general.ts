@@ -2,7 +2,7 @@ import {Then, When} from "@cucumber/cucumber";
 import {ICustomWorld} from "../common/custom-world";
 import {expect, Page} from "@playwright/test";
 import {BackupRowData} from "../utils/types";
-import { waitForBackupJobCompletion } from "../utils/helpers";
+import { waitForBackupJobCompletion, extractLastMeaningfulLine, normalizeCellText } from "../utils/helpers";
 import { configurations } from '../../../utils/configurations';
 
 /**
@@ -35,7 +35,12 @@ Then('{string} backup is generated and added to history', async function (this: 
             waitUntil: 'networkidle'
         }
     );
-    const currentBackups = await captureBackupTableData(this.page)
+    const currentBackups = await captureBackupTableData(this.page);
+    const failedBackups = currentBackups.filter(backup => backup.failed);
+    
+    if (failedBackups.length > 0) {
+        throw new Error(`Expected no failed backups, but found ${failedBackups.length} failed backup(s). Failed backups details: ${JSON.stringify(failedBackups)}`);
+    }
     expect(currentBackups.length).toBe(this.initialBackups.length + parseInt(backupNumber));
 });
 
@@ -151,20 +156,57 @@ When('I Schedule backup', async function (this: ICustomWorld) {
     await this.page.waitForTimeout(3 * 60 * 1000);
 });
 
+/**
+ * Captures backup row data from the BackWPup backup history table.
+ *
+ * Reads each row of `table#backwpup-backup-history` and returns structured data.
+ *
+ * **Text extraction strategy (important — do not change without testing):**
+ *
+ * - **Date (column 2)** → `innerText()`:
+ *   The date is rendered as visible text, so `innerText()` returns it cleanly.
+ *   See: {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/innerText MDN: innerText}
+ *
+ * - **Type (column 3)** and **Stored on (column 4)** → `textContent()`:
+ *   These columns render their values as **icons with CSS-hidden text** (e.g., `sr-only`
+ *   spans or tooltip containers). `innerText()` returns empty for hidden elements,
+ *   but `textContent()` captures ALL text nodes regardless of CSS visibility.
+ *   The raw output includes a hidden column header on the first line and the data
+ *   value on the last (e.g., `"Type\n...\nManual"`), so `extractLastMeaningfulLine()`
+ *   strips the header and returns only the value.
+ *   See: {@link https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent MDN: textContent}
+ *
+ * @param page - The Playwright Page instance to read the table from.
+ * @returns An array of {@link BackupRowData} objects, one per visible table row.
+ */
 const captureBackupTableData = async (page: Page): Promise<BackupRowData[]> => {
-    const selector = 'table tbody tr';
+    const selector = 'table#backwpup-backup-history tbody tr';
     await page.locator(selector).first().waitFor({ state: 'visible' }).catch(() => null);
     const rows = await page.locator(selector).all();
     const backups: BackupRowData[] = [];
 
     for (const row of rows) {
-        const date = await row.locator('td:nth-child(1)').textContent() || '';
-        const type = await row.locator('td:nth-child(2)').textContent() || '';
-        const storedOn = await row.locator('td:nth-child(3)').textContent() || '';
+        // Date is visually rendered text → innerText() returns it cleanly.
+        const rawDate = await row.locator('td:nth-child(2)').innerText();
 
-        backups.push({ date, type, storedOn });
+        // Type and Stored-on columns display icons, not visible text.
+        // The actual values live in CSS-hidden elements (sr-only spans, tooltip containers).
+        // textContent() captures ALL text nodes regardless of visibility — including the
+        // hidden column header on the first line and the data value on the last line.
+        const rawType = (await row.locator('td:nth-child(3)').textContent()) || '';
+        const rawStoredOnOrError = (await row.locator('td:nth-child(4)').textContent()) || '';
+
+        // Detect failure from raw text before cleanup, since "failed" may be in hidden text.
+        const failed = rawStoredOnOrError.toLowerCase().includes('failed');
+
+        // Date may span multiple lines ("Apr 13, 2026\nat 10:09pm") — collapse to one line.
+        const date = normalizeCellText(rawDate);
+        // Type/storedOn raw text: first line = column header label, last line = actual value.
+        const type = extractLastMeaningfulLine(rawType);
+        const storedOn = !failed ? extractLastMeaningfulLine(rawStoredOnOrError) : '';
+
+        backups.push({ date, type, storedOn, failed });
     }
-
     return backups;
 }
 

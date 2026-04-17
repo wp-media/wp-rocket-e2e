@@ -46,6 +46,9 @@
   },
   "author": "WP Media",
   "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
     "@cucumber/cucumber": "^9.1.2",
     "@playwright/test": "^1.32.3",
