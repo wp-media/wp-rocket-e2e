@@ -4,6 +4,7 @@ Feature: C2148 - Should not change the content of existing fields
     Background:
         Given I am logged in
 
+    @requires-clean-imagify
     Scenario: Data imported correctly
         Given plugin is installed 'previous_stable'
         And plugin is activated
@@ -39,6 +40,7 @@ Feature: C2148 - Should not change the content of existing fields
         And I am logged in
         Then I must not see any error in debug.log
 
+    @requires-clean-imagify
     Scenario: Should not change enabled fields with update
         Given plugin is installed 'previous_stable'
         And plugin is activated
