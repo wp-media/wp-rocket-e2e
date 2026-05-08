@@ -161,6 +161,21 @@ When('I Schedule backup', async function (this: ICustomWorld) {
  *
  * Reads each row of `table#backwpup-backup-history` and returns structured data.
  *
+ * **Supports two table layouts:**
+ *
+ * - **Pre-5.6.9 (old layout):** Failed rows merge columns 3 ("Stored on") and 4 ("Data")
+ *   into a single `<td colspan="2">` containing the failure message. In this layout,
+ *   `td:nth-child(5)` does not exist on failed rows, and failure is detected from col 4.
+ *
+ * - **5.6.9+ (new layout):** All columns remain separate. Column 4 always contains
+ *   the "Stored on" icon/tooltip (even on failure), and column 5 ("Data"/"Status")
+ *   contains the failure message (e.g., "FTP backup failed"). The failure text now
+ *   includes the storage provider name.
+ *
+ * **Version detection:** We count the `<td>` elements in each row. If there are 6 columns
+ * (checkbox, date, type, stored on, data, actions), it's the new layout. If fewer
+ * (due to colspan merging), it's the old layout.
+ *
  * **Text extraction strategy (important — do not change without testing):**
  *
  * - **Date (column 2)** → `innerText()`:
@@ -194,16 +209,36 @@ const captureBackupTableData = async (page: Page): Promise<BackupRowData[]> => {
         // textContent() captures ALL text nodes regardless of visibility — including the
         // hidden column header on the first line and the data value on the last line.
         const rawType = (await row.locator('td:nth-child(3)').textContent()) || '';
-        const rawStoredOnOrError = (await row.locator('td:nth-child(4)').textContent()) || '';
 
-        // Detect failure from raw text before cleanup, since "failed" may be in hidden text.
-        const failed = rawStoredOnOrError.toLowerCase().includes('failed');
+        // Detect layout version by counting <td> elements in this row.
+        // New layout (5.6.9+): 6 columns (checkbox, date, type, stored on, data/status, actions).
+        // Old layout (pre-5.6.9): Failed rows have 5 columns due to colspan="2" merging cols 3+4.
+        const tdCount = await row.locator('td').count();
+        const isNewLayout = tdCount >= 6;
+
+        let failed: boolean;
+        let storedOn: string;
+
+        if (isNewLayout) {
+            // New layout: col 4 = Stored on (always present), col 5 = Data/Status.
+            const rawStoredOn = (await row.locator('td:nth-child(4)').textContent()) || '';
+            const rawStatus = (await row.locator('td:nth-child(5)').textContent()) || '';
+
+            failed = rawStatus.toLowerCase().includes('failed');
+            storedOn = extractLastMeaningfulLine(rawStoredOn);
+        } else {
+            // Old layout: on failed rows, cols 3+4 are merged (colspan="2") into td:nth-child(4).
+            // On success rows, col 4 = Stored on.
+            const rawStoredOnOrError = (await row.locator('td:nth-child(4)').textContent()) || '';
+
+            failed = rawStoredOnOrError.toLowerCase().includes('failed');
+            storedOn = !failed ? extractLastMeaningfulLine(rawStoredOnOrError) : '';
+        }
 
         // Date may span multiple lines ("Apr 13, 2026\nat 10:09pm") — collapse to one line.
         const date = normalizeCellText(rawDate);
-        // Type/storedOn raw text: first line = column header label, last line = actual value.
+        // Type raw text: first line = column header label, last line = actual value.
         const type = extractLastMeaningfulLine(rawType);
-        const storedOn = !failed ? extractLastMeaningfulLine(rawStoredOnOrError) : '';
 
         backups.push({ date, type, storedOn, failed });
     }
