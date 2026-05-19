@@ -203,6 +203,14 @@ async function buildAndStorePluginArtifact({ apvm, pluginName, options, targetPa
 }
 
 /**
+ * Before each scenario tagged with @requires-clean-imagify, except those also tagged with
+ * @imagify-compatibility, ensures Imagify is not installed.
+ */
+Before({ tags: '@requires-clean-imagify and not @imagify-compatibility' }, async function (this: ICustomWorld): Promise<void> {
+    await uninstallPlugin('imagify');
+});
+
+/**
  * Before each test scenario without the @setup tag, performs setup tasks.
  */
 Before({tags: 'not @setup'}, async function (this: ICustomWorld, {pickle}) {

@@ -10,6 +10,7 @@ Feature: C4466 - Should successfully delete the plugin
         Then plugin should delete successfully
         But I must not see any error in debug.log
 
+    @requires-clean-imagify
     Scenario: WP Rocket is installed and activated
         Given plugin is installed 'new_release'
         And plugin is activated

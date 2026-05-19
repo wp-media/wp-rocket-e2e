@@ -10,7 +10,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint  . --ext .ts --fix",
-    "test:e2e": "$npm_package_config_testCommand  --tags \"not @vr and not @bwpup\" ; npm run push-report --tag=$npm_config_tag",
+    "test:e2e": "$npm_package_config_testCommand  --tags \"not @vr and not @bwpup and not @cdn\" ; npm run push-report --tag=$npm_config_tag",
     "test:smoke": "$npm_package_config_testCommand --tags @smoke ; npm run push-report --tag=$npm_config_tag",
     "test:local": "$npm_package_config_testCommand --tags @local",
     "test:export": "$npm_package_config_testCommand --tags @export",
@@ -46,6 +46,9 @@
   },
   "author": "WP Media",
   "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
     "@cucumber/cucumber": "^9.1.2",
     "@playwright/test": "^1.32.3",

@@ -677,7 +677,7 @@ export const openMobileMenu = async (page: Page): Promise<void> => {
     }
 
     const genericToggle = page.locator(
-        '.menu-mobile-toggle, .mobile_menu_bar, [data-open="#main-menu"], .menu-toggle-icon, button.fusion-mobile-selector[aria-controls="mobile-menu-header-menu"], #site-header-inner > div.oceanwp-mobile-menu-icon.clr.mobile-right > a > i, .menu-toggle, .nav-toggle, .hamburger'
+        '.menu-mobile-toggle, .mobile_menu_bar, [data-open="#main-menu"], .menu-toggle-icon, button.fusion-mobile-selector[aria-controls="mobile-menu-header-menu"], #site-header-inner > div.oceanwp-mobile-menu-icon.clr.mobile-right > a > i, .menu-toggle, .nav-toggle, .hamburger, .fusion-icon.fusion-icon-bars'
     ).first();
 
     await genericToggle.waitFor({ state: 'visible', timeout: 3000 });

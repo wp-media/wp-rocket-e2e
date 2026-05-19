@@ -1,4 +1,4 @@
-@setup @smoke @brokenlinks
+@setup @smoke @brokenlinks @requires-clean-imagify
 Feature: Broken links in WP Rocket settings UI
 
   Scenario: WP Rocket settings links are not broken

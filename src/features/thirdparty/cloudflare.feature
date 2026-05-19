@@ -6,7 +6,7 @@ Feature: Cloudflare 3rd party compatibility with WP Rocket
         And plugin is installed 'new_release'
         And plugin is activated
 
-    Scenario: Shouldn't cause console error when clear cache while CF plugin is set
+    Scenario: Shouldnot cause console error when clear cache while CF plugin is set
         Given I install plugin 'cloudflare'
         And plugin cloudflare is activated
         And Cloudflare is set up

@@ -1,4 +1,4 @@
-@smoke @local @setup
+@smoke @local @setup @requires-clean-imagify
 Feature: C11856 - Should roll back to the last previous major version when using the roll back functionality
 
     Background:
