@@ -26,9 +26,8 @@ import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@
 import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
-import { Apvm, BuildOptions, JsBuildEvent } from 'apvm-napi';
+import { PluginBuilder } from '../../utils/plugin-builder';
 // import {configurations, getWPDir} from "../../utils/configurations";
-import {access, rm as nodeRm, rename as nodeRename} from 'node:fs/promises';
 
 /**
  * The name of the template loader plugin.
@@ -55,21 +54,25 @@ let previousScenarioName: string;
 setDefaultTimeout(process.env.PWDEBUG ? -1 : 60 * 10000);
 
 /**
- * Before all tests, launches the Chromium browser.
+ * Before all tests: validates SSH connectivity, builds plugin artifacts (if configured),
+ * ensures prerequisite plugins are active, and launches the Chromium browser.
  */
 BeforeAll(async function (this: ICustomWorld) {
     try {
+        // ── SSH connectivity check ──────────────────────────────────────────
         await testSshConnection();
 
+        // ── Build plugin artifacts from Git refs (env vars / overrides) ─────
+        await PluginBuilder.buildAll();
+
+        // ── Clean up previous test artifacts ────────────────────────────────
         const folderPath = `${WP_SSH_ROOT_DIR}wp-content`;
         await rmFiles(folderPath, '*.log');
-
         await deleteFolder('./backstop_data/bitmaps_test');
-        
-        // Check if template loader plugin is installed
+
+        // ── Ensure template loader plugin is active ─────────────────────────
         const isTemplateLoaderInstalled = await isPluginInstalled(TEMPLATE_LOADER_PLUGIN);
         if (isTemplateLoaderInstalled) {
-            // Check if template loader plugin is active, activate if not
             const isTemplateLoaderActive = await isPluginActive(TEMPLATE_LOADER_PLUGIN);
             if (!isTemplateLoaderActive) {
                 console.log('Template loader plugin is not active, activating...');
@@ -80,127 +83,14 @@ BeforeAll(async function (this: ICustomWorld) {
         } else {
             console.log('Template loader plugin is not installed, skipping activation check');
         }
-        
-        browser = await chromium.launch({ headless: false });
 
-        
+        // ── Launch browser ───────────────────────────────────────────────────
+        browser = await chromium.launch({ headless: false });
     } catch (error) {
         console.error('Setup failed: ', error.message);
         throw new Error('Setup failed: ' + error.message);
     }
 });
-
-/**
- * Hook that runs before all tests to build the plugins specified by environment variables and store them in a known location for E2E tests.
- * It uses APVM to build the plugins from specified git references and moves the resulting artifacts to stable zip paths.
- * If no environment variables are set for plugin builds, it simply returns without performing any actions.
- */
-BeforeAll(async function() {
-    const WORKSPACE_ROOT_DIR = process.env.PWD ?? process.cwd();
-    const PLUGIN_OUTPUT_DIR = `${WORKSPACE_ROOT_DIR}/plugin`;
-    const PREVIOUS_STABLE_PLUGIN_ZIP = `${PLUGIN_OUTPUT_DIR}/previous_stable.zip`;
-    const NEW_RELEASE_PLUGIN_ZIP = `${PLUGIN_OUTPUT_DIR}/new_release.zip`;
-    const BACKWPUP_PLUGIN_ZIP = `${PLUGIN_OUTPUT_DIR}/backwpup-pro.zip`;
-
-    const previousStableToBuild = process.env.E2E_WPR_PREV || null;
-    const newReleaseToBuild = process.env.E2E_WPR_NEW || null;
-    const backWPUpToBuild = process.env.E2E_WPR_BACKWPUP || null;
-
-    if (!previousStableToBuild && !newReleaseToBuild && !backWPUpToBuild) {
-        return;
-    }
-    // Apvm.createWithTokenResolution attempts to resolve github tokens in this environment to be able to access private repositories.
-    const apvm = await Apvm.createWithTokenResolution();
-
-    if (previousStableToBuild) {
-        await buildAndStorePluginArtifact({
-            apvm,
-            pluginName: 'WP Rocket previous stable',
-            targetPath: PREVIOUS_STABLE_PLUGIN_ZIP,
-            options: {
-                project: 'wp-rocket',
-                gitRef: previousStableToBuild,
-                outputDir: PLUGIN_OUTPUT_DIR
-            }
-        });
-    }
-
-    if (newReleaseToBuild) {
-        await buildAndStorePluginArtifact({
-            apvm,
-            pluginName: 'WP Rocket new release',
-            targetPath: NEW_RELEASE_PLUGIN_ZIP,
-            options: {
-                project: 'wp-rocket',
-                gitRef: newReleaseToBuild,
-                outputDir: PLUGIN_OUTPUT_DIR
-            }
-        });
-    }
-
-    if (backWPUpToBuild) {
-        await buildAndStorePluginArtifact({
-            apvm,
-            pluginName: 'BackWPUp',
-            targetPath: BACKWPUP_PLUGIN_ZIP,
-            options: {
-                project: 'backwpup',
-                gitRef: backWPUpToBuild,
-                outputDir: PLUGIN_OUTPUT_DIR,
-                variants: ['pro-en'],
-                version: '5.6.5'
-            }
-        });
-    }
-});
-
-interface BuildAndStorePluginArtifactArgs {
-    apvm: Apvm;
-    pluginName: string;
-    options: BuildOptions;
-    targetPath: string;
-}
-
-/**
- * Builds a plugin artifact using APVM and moves it to a stable zip path used by E2E tests.
- *
- * @param {BuildAndStorePluginArtifactArgs} args - Build and output options.
- * @return {Promise<void>}
- */
-async function buildAndStorePluginArtifact({ apvm, pluginName, options, targetPath }: BuildAndStorePluginArtifactArgs): Promise<void> {
-    const gitRef = options.gitRef ?? 'unknown-ref';
-    console.log(`\nBuilding ${pluginName} plugin from: ${gitRef}\n`);
-    let hasPrintedStepProgress = false;
-
-    const reporter = (error: Error, event: JsBuildEvent): void => {
-        if (error) console.error(error);
-        if (event.type === 'step_completed') {
-            hasPrintedStepProgress = true;
-            process.stdout.write('.');
-        }
-    };
-
-    try {
-        const result = await apvm.build(options, reporter);
-
-        if (hasPrintedStepProgress) process.stdout.write('100%\n');
-        const firstArtifactPath = result.result.artifacts[0]?.path;
-
-        if (result.result.artifactCount < 1 || !firstArtifactPath) {
-            throw new Error(`No artifact path found in build result for "${pluginName}"`);
-        }
-
-        await access(firstArtifactPath);
-        // Remove existing artifact at target path if it exists, then move new artifact to target path
-        await nodeRm(targetPath, { force: true });
-        await nodeRename(firstArtifactPath, targetPath);
-        console.log(`\nSaved ${pluginName} build artifact to: ${targetPath}`);
-    } catch (error) {
-        if (hasPrintedStepProgress) process.stdout.write('\n');
-        const message = error instanceof Error ? error.message : String(error);
-        throw new Error(`Failed to build ${pluginName} plugin from '${gitRef}': ${message}`);
-    }
-}
 
 /**
  * Before each scenario tagged with @requires-clean-imagify, except those also tagged with
