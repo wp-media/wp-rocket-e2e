@@ -257,7 +257,7 @@ After(async function (this: ICustomWorld, { pickle, result }) {
     previousScenarioName = pickle.name
 
     if (result?.status == Status.FAILED) {
-        await this.utils.createScreenShot(this, pickle);
+        await this.utils.createScreenShot(this, pickle);  
     }
 
     const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
@@ -288,9 +288,9 @@ After({tags: '@delaylcp'}, async function (this: ICustomWorld) {
 });
 
 /**
- * After each test scenario with the @renewal tag, performs teardown tasks.
+ * After each test scenario with the @renewal or @promo tag, performs teardown tasks.
  */
-After({tags: '@renewal'}, async function (this: ICustomWorld) {
+After({tags: '@renewal or @promo'}, async function (this: ICustomWorld) {
     await reactivatePlugin(TEST_HELPER_PLUGIN);
 });
 
