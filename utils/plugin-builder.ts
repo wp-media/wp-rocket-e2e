@@ -12,9 +12,9 @@
  * ```
  *
  * Environment variables (highest priority):
- * - `E2E_WPR_PREV`     — Git ref for the previous stable WP Rocket build
- * - `E2E_WPR_NEW`      — Git ref for the new release WP Rocket build
- * - `E2E_WPR_BACKWPUP` — Git ref for the BackWPUp Pro build
+ * - `E2E_WPR_PREV_REF` — Git ref for the previous stable WP Rocket build
+ * - `E2E_WPR_NEW_REF`  — Git ref for the new release WP Rocket build
+ * - `E2E_BWPUP_REF`    — Git ref for the BackWPUp Pro build
  *
  * Git ref formats (auto-detected by APVM):
  * - `"123"`            → PR #123
@@ -84,14 +84,14 @@ export interface PluginBuildDefinition {
  * Each field corresponds to a fallback Git ref for the respective plugin.
  */
 export interface PluginBuildOverrides {
-    /** Fallback Git ref for WP Rocket previous stable. */
-    previousStable?: string | null;
+    /** Fallback Git ref for WP Rocket (previous stable). */
+    wpRocketPrevRef?: string | null;
 
-    /** Fallback Git ref for WP Rocket new release. */
-    newRelease?: string | null;
+    /** Fallback Git ref for WP Rocket (new release). */
+    wpRocketNewRef?: string | null;
 
     /** Fallback Git ref for BackWPUp Pro. */
-    backwpup?: string | null;
+    backwpupRef?: string | null;
 
     /** BackWPUp version string (required when building BackWPUp). */
     backwpupVersion?: string;
@@ -221,7 +221,7 @@ const DEFAULT_BACKWPUP_VARIANTS = ['pro-en'];
  * await PluginBuilder.buildAll();
  *
  * // With programmatic overrides (env vars still take priority):
- * await PluginBuilder.buildAll({ newRelease: 'branch:feature/new-thing' });
+ * await PluginBuilder.buildAll({ wpRocketNewRef: 'branch:feature/new-thing' });
  * ```
  */
 export class PluginBuilder {
@@ -243,8 +243,8 @@ export class PluginBuilder {
      * and builds them sequentially with compact progress output.
      *
      * **Resolution priority for Git refs:**
-     * 1. Environment variable (e.g. `E2E_WPR_NEW=branch:develop`)
-     * 2. Programmatic override (e.g. `{ newRelease: 'branch:develop' }`)
+     * 1. Environment variable (e.g. `E2E_WPR_NEW_REF=branch:develop`)
+     * 2. Programmatic override (e.g. `{ wpRocketNewRef: 'branch:develop' }`)
      * 3. If neither is set, the plugin is skipped.
      *
      * @param {PluginBuildOverrides} [overrides] - Optional programmatic fallback refs.
@@ -254,13 +254,13 @@ export class PluginBuilder {
      * @example
      * ```typescript
      * // CI usage (env vars set externally):
-     * // E2E_WPR_NEW=tag:3.17.1 E2E_WPR_PREV=tag:3.16.4 npm run test:e2e
+     * // E2E_WPR_NEW_REF=tag:3.17.1 E2E_WPR_PREV_REF=tag:3.16.4 npm run test:e2e
      * await PluginBuilder.buildAll();
      *
      * // Local development with explicit refs:
      * await PluginBuilder.buildAll({
-     *     newRelease: 'branch:feature/my-feature',
-     *     previousStable: 'tag:3.16.4'
+     *     wpRocketNewRef: 'branch:feature/my-feature',
+     *     wpRocketPrevRef: 'tag:3.16.4'
      * });
      * ```
      */
@@ -272,22 +272,22 @@ export class PluginBuilder {
             {
                 pluginName: 'WP Rocket (previous stable)',
                 project: 'wp-rocket',
-                envVar: 'E2E_WPR_PREV',
-                fallbackRef: overrides.previousStable ?? null,
+                envVar: 'E2E_WPR_PREV_REF',
+                fallbackRef: overrides.wpRocketPrevRef ?? null,
                 targetPath: path.join(pluginOutputDir, 'previous_stable.zip'),
             },
             {
                 pluginName: 'WP Rocket (new release)',
                 project: 'wp-rocket',
-                envVar: 'E2E_WPR_NEW',
-                fallbackRef: overrides.newRelease ?? null,
+                envVar: 'E2E_WPR_NEW_REF',
+                fallbackRef: overrides.wpRocketNewRef ?? null,
                 targetPath: path.join(pluginOutputDir, 'new_release.zip'),
             },
             {
                 pluginName: 'BackWPUp Pro',
                 project: 'backwpup',
-                envVar: 'E2E_WPR_BACKWPUP',
-                fallbackRef: overrides.backwpup ?? null,
+                envVar: 'E2E_BWPUP_REF',
+                fallbackRef: overrides.backwpupRef ?? null,
                 targetPath: path.join(pluginOutputDir, 'backwpup-pro.zip'),
                 variants: DEFAULT_BACKWPUP_VARIANTS,
                 version: overrides.backwpupVersion ?? DEFAULT_BACKWPUP_VERSION,
@@ -362,7 +362,6 @@ export class PluginBuilder {
      * Progress output uses in-place line updates when stdout is a TTY:
      * - Each phase occupies a single live line that updates with step labels
      * - Completed phases become permanent lines with a ✓ indicator
-     * - A dot trail accumulates to show overall phase progress
      *
      * When stdout is NOT a TTY (CI, piped), falls back to simple line-per-phase logging.
      *
@@ -485,7 +484,7 @@ export class PluginBuilder {
                     break;
 
                 case 'step_completed':
-                    // Step completed — just clear the label so dots update on next render
+                    // Step completed — clear the label; phase line stays until next phase
                     currentStepLabel = '';
                     if (isTTY) {
                         renderActiveLine();
