@@ -1,4 +1,4 @@
-@bwpup @bwpupsetup @bwpupsmoke
+@bwpup @bwpupsetup @bwpupsmoke @bwpuponboarding
 Feature: BackWpUp Onboarding
 
   Background:
@@ -17,6 +17,30 @@ Feature: BackWpUp Onboarding
     And I go '/wp-admin/admin.php?page=backwpup'
     And I should see 'mixed' job cards
     Then the backup should be added to the table
+
+  Scenario: Onboarding For Only Files data
+    When I go '/wp-admin/admin.php?page=backwpup'
+    Then all database tables should be selected
+    And all files directory should be selected
+    When I deactivate 'database' backup data
+    And I click '.js-backwpup-onboarding-step-2' button to continue
+    And I click '.js-backwpup-onboarding-step-3' button to continue
+    And I Configure web server storage
+    And I go '/wp-admin/admin.php?page=backwpup'
+    Then the backup should be added to the table
+    And I should see 'files' job cards
+
+  Scenario: Onboarding For Only Database data
+    When I go '/wp-admin/admin.php?page=backwpup'
+    Then all database tables should be selected
+    And all files directory should be selected
+    When I deactivate 'files' backup data
+    And I click '.js-backwpup-onboarding-step-2' button to continue
+    And I click '.js-backwpup-onboarding-step-3' button to continue
+    And I Configure web server storage
+    And I go '/wp-admin/admin.php?page=backwpup'
+    Then the backup should be added to the table
+    And I should see 'database' job cards
 
   Scenario: Onboarding with separate frequency
     And I go '/wp-admin/admin.php?page=backwpup'
@@ -39,7 +63,6 @@ Feature: BackWpUp Onboarding
     When I Configure web server storage
     And I go '/wp-admin/admin.php?page=backwpup'
     And I should see 'both' job cards
-
 
   Scenario: Should respect data selection
     And I go '/wp-admin/admin.php?page=backwpup'
