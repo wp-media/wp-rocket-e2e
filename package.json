@@ -41,7 +41,9 @@
     "test:bwpupstorage": "$npm_package_config_testCommand --tags @bwpupstorage",
     "test:bwpuponboarding": "$npm_package_config_testCommand --tags @bwpuponboarding",
     "test:bwpupsmoke": "$npm_package_config_testCommand --tags @bwpupsmoke",
-    "test:bwpup": "$npm_package_config_testCommand --tags @bwpup"
+    "test:bwpup": "$npm_package_config_testCommand --tags @bwpup",
+    "test:scenario": "$npm_package_config_testCommand --name \"$npm_config_scenario\"",
+    "test:tags": "$npm_package_config_testCommand --tags \"$npm_config_tags\""
   },
   "repository": {
     "type": "git",

@@ -148,6 +148,58 @@ When('I uncheck the {string} from database backup option', async function (this:
     await expect(this.page.locator('#sidebar-select-tables')).not.toBeInViewport();
 });
 
+/**
+ * Deactivate a backup data type toggle, ensuring the other one remains active.
+ * At least one of "files" or "database" must remain active at all times.
+ * @step
+ * @param {string} dataType - The backup type to deactivate ('files' or 'database').
+ */
+When('I deactivate {string} backup data', async function (this: ICustomWorld, dataType: string) {
+    // Named checkbox id variables for clarity and easy reuse
+    const filesCheckboxId = 'backup_files';
+    const databaseCheckboxId = 'backup_database';
+
+    const dataTypeConfig: { [key: string]: { checkboxId: string; otherCheckboxId: string } } = {
+        files: {
+            checkboxId: filesCheckboxId,
+            otherCheckboxId: databaseCheckboxId,
+        },
+        database: {
+            checkboxId: databaseCheckboxId,
+            otherCheckboxId: filesCheckboxId,
+        },
+    };
+
+    if (!dataTypeConfig[dataType]) {
+        throw new Error(`Invalid backup data type: "${dataType}". Expected "files" or "database".`);
+    }
+
+    const { checkboxId, otherCheckboxId } = dataTypeConfig[dataType];
+    const targetCheckbox = this.page.locator(`#${checkboxId}`);
+    const otherCheckbox = this.page.locator(`#${otherCheckboxId}`);
+
+    // Ensure the other backup type is active before deactivating the target,
+    // since at least one must remain active at all times.
+    const otherIsChecked = await otherCheckbox.isChecked();
+    if (!otherIsChecked) {
+        await this.page.locator(`label[for="${otherCheckboxId}"]`).click();
+        await expect(otherCheckbox).toBeChecked();
+    }
+
+    // Deactivate the target toggle only if it is currently active.
+    const targetIsChecked = await targetCheckbox.isChecked();
+    if (targetIsChecked) {
+        await this.page.locator(`label[for="${checkboxId}"]`).click();
+    }
+
+    // Assert final state: target is deactivated, other remains active.
+    await expect(targetCheckbox).not.toBeChecked();
+    await expect(otherCheckbox).toBeChecked();
+
+    // Brief settle time to allow the UI to stabilize before the caller continues.
+    await this.page.waitForTimeout(500);
+});
+
 const validateCheckboxSelection = async (page: Page, containerSelector: string, shouldBeChecked: boolean = true): Promise<void> => {
     const allCheckboxes = page.locator(`${containerSelector}`);
     const count = await allCheckboxes.count();
