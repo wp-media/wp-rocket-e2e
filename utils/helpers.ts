@@ -182,7 +182,8 @@ export const readAnyFile = async (file: string): Promise<string> => {
  * @param {string} exception - Object key to exclude from the check.
  * @returns {Promise<boolean>} - A Promise that resolves to true if settings are exported correctly, false otherwise.
  */
-export const isExportedCorrectly = async (exportedSettings: ExportedSettings, exception: Array<string>): Promise< boolean > => {
+export const isExportedCorrectly = async (exportedSettings: ExportedSettings, exception: Array<string>): Promise<string[]> => {
+    const failingSettings: string[] = [];
     for (const key in exportedSettings) {
         for (const option of uiReflectedSettings) {
             if (exception.includes(key)) {
@@ -190,12 +191,11 @@ export const isExportedCorrectly = async (exportedSettings: ExportedSettings, ex
             }
 
             if (key === option && exportedSettings[key] !== 0) {
-                return false;
+                failingSettings.push(`${key}=${exportedSettings[key]}`);
             }
         }
-     }
-
-     return true;
+    }
+    return failingSettings;
 }
 
 /**

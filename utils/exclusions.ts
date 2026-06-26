@@ -35,7 +35,6 @@ export const uiReflectedSettings = [
     'do_cloudflare',
     'sucury_waf_cache_sync',
     'control_heartbeat',
-    'cdn',
     'varnish_auto_purge',
     'image_dimensions',
     'delay_js', 
@@ -58,5 +57,6 @@ export const diffChecker = [
     "minify_css_key",
     "minify_js_key",
     "auto_preload_fonts",
+    "cdn",
     "analytics_enabled"
 ];

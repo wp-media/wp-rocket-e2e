@@ -456,12 +456,12 @@ export class PageUtils {
         if(await this.sections.doesSectionExist('cdn')) {
             // Disable all settings for CDN.
             await this.sections.set("cdn").visit();
+            await this.page.locator("button[data-cdn-driver='your-own-cdn']").click();
             await this.sections.massToggle();
-            await this.sections.fill("cnames", "");
             await this.saveSettings();
             await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
-           
+
         }
 
         if(await this.sections.doesSectionExist('addons')) {
@@ -567,6 +567,9 @@ export class PageUtils {
         if(await this.sections.doesSectionExist('cdn')) {
             // Enable all settings for CDN.
             await this.sections.set("cdn").visit();
+            // switch to YOCDN
+            await this.page.locator("button[data-cdn-driver='your-own-cdn']").click();
+            await this.page.getByRole('button', { name: 'Add CNAME' }).click();
             await this.sections.toggle("cdn");
             await this.sections.fill("cnames", "test.example.com");
             await this.saveSettings();

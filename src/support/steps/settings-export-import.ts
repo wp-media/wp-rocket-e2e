@@ -128,8 +128,8 @@ Then('data {string} is exported correctly', async function (fileNo: string) {
         enabledOptions.push(...exclusions);
     }
     
-    const validatedExportedSettings = await isExportedCorrectly(exportedSettings, enabledOptions);
-    expect(validatedExportedSettings, 'Settings was not exported correctly.').toBeTruthy();
+    const failingSettings = await isExportedCorrectly(exportedSettings, enabledOptions);
+    expect(failingSettings, `Settings not exported correctly, unexpected non-zero values: ${failingSettings.join(', ')}`).toHaveLength(0);
 });
 
 
