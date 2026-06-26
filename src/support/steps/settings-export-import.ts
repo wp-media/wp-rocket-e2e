@@ -123,10 +123,10 @@ Then('data {string} is exported correctly', async function (fileNo: string) {
     const exportedSettings: ExportedSettings = JSON.parse(jsonData);
     const version = parseFloat(exportedSettings['version'].toString());
 
-    if (version >= 3.16) {
-        const exclusions: Array<string> = ['do_caching_mobile_files', 'cache_mobile'];
-        enabledOptions.push(...exclusions);
-    }
+    // if (version >= 3.16) {
+    //     const exclusions: Array<string> = ['do_caching_mobile_files', 'cache_mobile'];
+    //     enabledOptions.push(...exclusions);
+    // }
     
     const failingSettings = await isExportedCorrectly(exportedSettings, enabledOptions);
     expect(failingSettings, `Settings not exported correctly, unexpected non-zero values: ${failingSettings.join(', ')}`).toHaveLength(0);

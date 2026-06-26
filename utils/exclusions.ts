@@ -15,8 +15,6 @@ export const uiReflectedSettings = [
     'remove_unused_css',
     'async_css',
     'cache_logged_user',
-    'cache_mobile',
-    'do_caching_mobile_files',
     'minify_css',
     'minify_js',
     'minify_concatenate_js',
@@ -42,6 +40,9 @@ export const uiReflectedSettings = [
 
 export const enabledOptions = [
     "lazyload",
+    'cache_mobile',
+    'do_caching_mobile_files',
+    "cdn",
 ];
 
 /**
@@ -57,6 +58,5 @@ export const diffChecker = [
     "minify_css_key",
     "minify_js_key",
     "auto_preload_fonts",
-    "cdn",
     "analytics_enabled"
 ];
