@@ -120,14 +120,7 @@ Then('data is imported correctly', async function (this: ICustomWorld) {
  */
 Then('data {string} is exported correctly', async function (fileNo: string) {
     const jsonData = await readAnyFile(`./plugin/exported_settings/wp-rocket-settings-test-2023-00-0${fileNo}-64e7ada0d3b70.json`);
-    const exportedSettings: ExportedSettings = JSON.parse(jsonData);
-    const version = parseFloat(exportedSettings['version'].toString());
-
-    // if (version >= 3.16) {
-    //     const exclusions: Array<string> = ['do_caching_mobile_files', 'cache_mobile'];
-    //     enabledOptions.push(...exclusions);
-    // }
-    
+    const exportedSettings: ExportedSettings = JSON.parse(jsonData);  
     const failingSettings = await isExportedCorrectly(exportedSettings, enabledOptions);
     expect(failingSettings, `Settings not exported correctly, unexpected non-zero values: ${failingSettings.join(', ')}`).toHaveLength(0);
 });
