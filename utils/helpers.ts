@@ -179,8 +179,8 @@ export const readAnyFile = async (file: string): Promise<string> => {
  * Check that settings are exported correctly, excluding a specified option.
  *
  * @param {ExportedSettings} exportedSettings - Object of exported settings.
- * @param {string} exception - Object key to exclude from the check.
- * @returns {Promise<boolean>} - A Promise that resolves to true if settings are exported correctly, false otherwise.
+ * @param {Array<string>} exception - Array of setting keys to exclude from the check.
+ * @returns {Promise<string[]>} - A Promise that resolves to an array of failing settings (key=value), empty if all are correct.
  */
 export const isExportedCorrectly = async (exportedSettings: ExportedSettings, exception: Array<string>): Promise<string[]> => {
     const failingSettings: string[] = [];

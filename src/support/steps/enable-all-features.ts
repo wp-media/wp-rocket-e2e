@@ -20,6 +20,7 @@ import { WP_BASE_URL } from '../../../config/wp.config';
  */
 Then('page loads successfully', async function (this: ICustomWorld) {
     const response = await this.page!.goto(WP_BASE_URL);
+    expect(response, 'Navigation failed or was aborted').not.toBeNull();
     expect(response?.status()).not.toEqual(500);
     expect(response?.status()).not.toEqual(404);
     await expect(this.page!.locator('body')).toBeVisible();
