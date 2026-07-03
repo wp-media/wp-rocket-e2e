@@ -23,8 +23,19 @@ Then('the backup should be added to the table', async function (this: ICustomWor
     await this.page.reload();
     await this.page.waitForLoadState('networkidle');
 
-    const newRowCount = await this.page.locator('table#backwpup-backup-history tbody tr').count();
-    expect(newRowCount).toBe(1);
+    // Scroll the table itself into the viewport (single-element locator avoids strict mode violation)
+    await this.page.locator('table#backwpup-backup-history').scrollIntoViewIfNeeded();
+    // Wait for the scroll animation to settle before reading table state
+    await this.page.waitForTimeout(500);
+
+    const currentBackups = await captureBackupTableData(this.page);
+
+    expect(currentBackups.length).toBe(1);
+
+    const failedBackups = currentBackups.filter(backup => backup.failed);
+    if (failedBackups.length > 0) {
+        throw new Error(`Expected no failed backups, but found ${failedBackups.length} failed backup(s). Details: ${JSON.stringify(failedBackups)}`);
+    }
 });
 
 Then('{string} backup is generated and added to history', async function (this: ICustomWorld, backupNumber: string) {

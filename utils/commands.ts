@@ -582,6 +582,20 @@ export async function deactivatePlugin(name: string): Promise<void> {
 }
 
 /**
+ * Reactivates a WordPress plugin using the WP-CLI command.
+ *
+ * @function
+ * @name reactivatePlugin
+ * @async
+ * @param {string} name - The name of the plugin to be reactivated.
+ * @returns {Promise<void>} - A Promise that resolves when the reactivation is completed.
+ */
+export async function reactivatePlugin(name: string): Promise<void> {
+    await deactivatePlugin(name);
+    await activatePlugin(name);
+}
+
+/**
  * Sets a WordPress option to the specified value using the WP-CLI command.
  *
  * @function

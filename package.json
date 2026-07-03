@@ -31,6 +31,9 @@
     "test:cloudflare-compatibility": "$npm_package_config_testCommand --tags @cloudflare-compatibility",
     "test:imagify-compatibility": "$npm_package_config_testCommand --tags @imagify-compatibility",
     "test:brokenlinks": "$npm_package_config_testCommand --tags @brokenlinks",
+    "test:renewal": "$npm_package_config_testCommand --tags @renewal",
+    "test:promo": "$npm_package_config_testCommand --tags @promo",
+    "test:notices": "$npm_package_config_testCommand --tags @notices",
     "test:qm": "$npm_package_config_testCommand --tags @qm",
     "healthcheck": "ts-node healthcheck.ts",
     "push-report": "ts-node report.ts",
@@ -38,7 +41,9 @@
     "test:bwpupstorage": "$npm_package_config_testCommand --tags @bwpupstorage",
     "test:bwpuponboarding": "$npm_package_config_testCommand --tags @bwpuponboarding",
     "test:bwpupsmoke": "$npm_package_config_testCommand --tags @bwpupsmoke",
-    "test:bwpup": "$npm_package_config_testCommand --tags @bwpup"
+    "test:bwpup": "$npm_package_config_testCommand --tags @bwpup",
+    "test:scenario": "$npm_package_config_testCommand --name \"$npm_config_scenario\"",
+    "test:tags": "$npm_package_config_testCommand --tags \"$npm_config_tags\""
   },
   "repository": {
     "type": "git",

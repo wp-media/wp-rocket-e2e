@@ -23,7 +23,7 @@ import { deleteFolder, extractFromStdout, isWprRelatedError } from "../../utils/
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 
-import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle} from "../../utils/commands";
+import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 import { PluginBuilder } from '../../utils/plugin-builder';
@@ -35,6 +35,7 @@ import { PluginBuilder } from '../../utils/plugin-builder';
  * @constant {string}
  */
 const TEMPLATE_LOADER_PLUGIN = 'template-loader-plugin-master';
+const TEST_HELPER_PLUGIN = 'wp-rocket-e2e-test-helper-main';
 
 /**
  * The Playwright Chromium browser instance used for testing.
@@ -75,10 +76,7 @@ BeforeAll(async function (this: ICustomWorld) {
         if (isTemplateLoaderInstalled) {
             const isTemplateLoaderActive = await isPluginActive(TEMPLATE_LOADER_PLUGIN);
             if (!isTemplateLoaderActive) {
-                console.log('Template loader plugin is not active, activating...');
                 await activatePlugin(TEMPLATE_LOADER_PLUGIN);
-            } else {
-                console.log('Template loader plugin is already active');
             }
         } else {
             console.log('Template loader plugin is not installed, skipping activation check');
@@ -183,6 +181,16 @@ Before({tags: '@setup'}, async function(this: ICustomWorld, {pickle}) {
     this.utils = new PageUtils(this.page, this.sections);
 
     await this.utils.cleanUp();
+
+    // Check if test helper plugin is installed and activate if needed
+    // const isTestHelperInstalled = await isPluginInstalled(TEST_HELPER_PLUGIN);
+    // if (isTestHelperInstalled) {
+    //     const isTestHelperActive = await isPluginActive(TEST_HELPER_PLUGIN);
+    //     if (!isTestHelperActive) {
+    //         await activatePlugin(TEST_HELPER_PLUGIN);
+    //     }
+    // }
+
     this.pickle = pickle;
 });
 
@@ -250,7 +258,7 @@ After(async function (this: ICustomWorld, { pickle, result }) {
     previousScenarioName = pickle.name
 
     if (result?.status == Status.FAILED) {
-        await this.utils.createScreenShot(this, pickle);
+        await this.utils.createScreenShot(this, pickle);  
     }
 
     const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
@@ -278,6 +286,13 @@ After(async function (this: ICustomWorld, { pickle, result }) {
  */
 After({tags: '@delaylcp'}, async function (this: ICustomWorld) {
     await uninstallPlugin('rocket-lcp-delay');
+});
+
+/**
+ * After each test scenario with the @renewal or @promo tag, performs teardown tasks.
+ */
+After({tags: '@renewal or @promo'}, async function (this: ICustomWorld) {
+    await reactivatePlugin(TEST_HELPER_PLUGIN);
 });
 
 /**
