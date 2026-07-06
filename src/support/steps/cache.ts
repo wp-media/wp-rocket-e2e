@@ -26,7 +26,7 @@ function getCachePaths(): { html: string; https: string } {
 }
 
 When('I refresh admin', async function (this: ICustomWorld) {
-    await this.page.goto(`${WP_BASE_URL}/wp-admin/`);
+    await this.page.reload();
 });
 
 /**
