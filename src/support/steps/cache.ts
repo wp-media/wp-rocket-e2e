@@ -43,6 +43,7 @@ Then('homepage cache should exist', async function (this: ICustomWorld) {
 
     recordedCacheFile = htmlExists ? html : https;
     recordedMtime = await getFileMtime(recordedCacheFile);
+    expect(recordedMtime).not.toBe('');
 });
 
 /**

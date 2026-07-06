@@ -1,5 +1,5 @@
 @smoke @local @setup @cache
-Feature: C383 - Cache should not be cleared when admin refreshes the page
+Feature: C383 - Cache should not be cleared with admin refresh
 
     Background:
         Given I am logged in
