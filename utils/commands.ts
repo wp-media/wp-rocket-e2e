@@ -281,7 +281,8 @@ export async function exists(filePath: string): Promise<boolean> {
     try {
         const result = await exec(command, {
             cwd: configurations.rootDir,
-            async: false
+            async: false,
+            silent: true
         });
         return result.stdout.trim() === '0';
     } catch (error) {
@@ -809,6 +810,30 @@ export async function readFile(path: string): Promise<string> {
     }
 
     return result.stdout;
+}
+
+/**
+ * Returns the last-modified timestamp (Unix epoch seconds) of a file on the server.
+ *
+ * @param {string} filePath - Absolute path to the file.
+ * @returns {Promise<string>} - Resolves to the mtime as a numeric string, or '' if the file is absent.
+ */
+export async function getFileMtime(filePath: string): Promise<string> {
+    const safePath = sanitizeShellArg(filePath);
+    let command: string;
+    if (configurations.type === ServerType.docker) {
+        command = `docker exec -T ${configurations.docker.container} stat -c %Y ${safePath}`;
+    } else if (configurations.type === ServerType.external) {
+        command = `ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} 'stat -c %Y ${safePath}'`;
+    } else {
+        command = `stat -c %Y ${safePath}`;
+    }
+    try {
+        const result = exec(command, { cwd: configurations.rootDir, async: false, silent: true });
+        return result.stdout.trim();
+    } catch {
+        return '';
+    }
 }
 
 export default wp;
