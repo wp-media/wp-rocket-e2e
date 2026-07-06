@@ -19,10 +19,11 @@ import { WP_BASE_URL } from '../../../config/wp.config';
  * Executes the step to assert successful page loading.
  */
 Then('page loads successfully', async function (this: ICustomWorld) {
-    this.page.on('response', async (response) => {
-        expect(response.status()).not.toEqual(500);
-        expect(response.status()).not.toEqual(404);
-    });
-    await this.page.goto(WP_BASE_URL);
+    const response = await this.page!.goto(WP_BASE_URL);
+    expect(response, 'Navigation failed or was aborted').not.toBeNull();
+    expect(response?.status()).not.toEqual(500);
+    expect(response?.status()).not.toEqual(404);
+    await expect(this.page!.locator('body')).toBeVisible();
+    await expect(this.page!.getByText('There has been a critical error')).not.toBeVisible();
     //Todo: future enahancement, we can do VR compared to nowprocket but if no CNAME is set or correct CNAME is set
 });
