@@ -64,6 +64,7 @@
     "@typescript-eslint/eslint-plugin": "^6.1.0",
     "@typescript-eslint/parser": "^6.1.0",
     "@wordpress/env": "^8.4.0",
+    "apvm-napi": "git+https://github.com/wp-media/automation-plugin-version-manager.git#cli/v2.0.1",
     "eslint": "^8.45.0",
     "eslint-plugin-es5": "^1.5.0",
     "multiple-cucumber-html-reporter": "^3.4.0",
