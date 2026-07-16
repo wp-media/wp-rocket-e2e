@@ -1,4 +1,4 @@
-@setup @smoke @local @cache @test
+@setup @smoke @local @cache 
 Feature: Cache Clear
 
     Background:
@@ -6,7 +6,7 @@ Feature: Cache Clear
         And plugin is installed 'new_release'
         And plugin is activated
 
-     Scenario: Shouldn't clear cache when refresh admin
+    Scenario: Shouldn't clear cache when refresh admin
         Given I log out
         And I visit site url
         When I am logged in
