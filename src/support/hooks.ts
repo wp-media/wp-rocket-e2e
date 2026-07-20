@@ -26,9 +26,8 @@ import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@
 import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
-
+import { PluginBuilder } from '../../utils/plugin-builder';
 // import {configurations, getWPDir} from "../../utils/configurations";
-
 
 /**
  * The name of the template loader plugin.
@@ -37,7 +36,6 @@ import type { Section } from "../../utils/types";
  */
 const TEMPLATE_LOADER_PLUGIN = 'template-loader-plugin-master';
 const TEST_HELPER_PLUGIN = 'wp-rocket-e2e-test-helper-main';
-
 
 /**
  * The Playwright Chromium browser instance used for testing.
@@ -57,21 +55,25 @@ let previousScenarioName: string;
 setDefaultTimeout(process.env.PWDEBUG ? -1 : 60 * 10000);
 
 /**
- * Before all tests, launches the Chromium browser.
+ * Before all tests: validates SSH connectivity, builds plugin artifacts (if configured),
+ * ensures prerequisite plugins are active, and launches the Chromium browser.
  */
 BeforeAll(async function (this: ICustomWorld) {
     try {
+        // ── SSH connectivity check ──────────────────────────────────────────
         await testSshConnection();
 
+        // ── Build plugin artifacts from Git refs (env vars / overrides) ─────
+        await PluginBuilder.buildAll();
+
+        // ── Clean up previous test artifacts ────────────────────────────────
         const folderPath = `${WP_SSH_ROOT_DIR}wp-content`;
         await rmFiles(folderPath, '*.log');
-
         await deleteFolder('./backstop_data/bitmaps_test');
-        
-        // Check if template loader plugin is installed
+
+        // ── Ensure template loader plugin is active ─────────────────────────
         const isTemplateLoaderInstalled = await isPluginInstalled(TEMPLATE_LOADER_PLUGIN);
         if (isTemplateLoaderInstalled) {
-            // Check if template loader plugin is active, activate if not
             const isTemplateLoaderActive = await isPluginActive(TEMPLATE_LOADER_PLUGIN);
             if (!isTemplateLoaderActive) {
                 await activatePlugin(TEMPLATE_LOADER_PLUGIN);
@@ -79,10 +81,9 @@ BeforeAll(async function (this: ICustomWorld) {
         } else {
             console.log('Template loader plugin is not installed, skipping activation check');
         }
-        
-        browser = await chromium.launch({ headless: false });
 
-        
+        // ── Launch browser ───────────────────────────────────────────────────
+        browser = await chromium.launch({ headless: false });
     } catch (error) {
         console.error('Setup failed: ', error.message);
         throw new Error('Setup failed: ' + error.message);
