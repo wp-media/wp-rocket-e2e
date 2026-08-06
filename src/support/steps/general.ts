@@ -269,7 +269,7 @@ When('I go to {string}', async function (this: ICustomWorld, page) {
  * Executes the step to click on a specific button.
  */
 When('I click on {string}', async function (this: ICustomWorld, selector) {
-    if (selector === '.wpr-tools:nth-child(4) a') {
+    if (selector === 'a[href*="action=rocket_rollback"]') {
         /**
          * Save WP Rocket last major version.
          */

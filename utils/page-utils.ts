@@ -599,7 +599,7 @@ export class PageUtils {
         await this.gotoWpr();
         await this.page.locator('#wpr-nav-tools').click();
         await this.page.locator('#upload').setInputFiles(file);
-        await this.page.locator('.wpr-tools:nth-child(3) button').click({ timeout: 120000 });
+        await this.page.locator('button:has-text("Upload file and import settings")').click({ timeout: 120000 });
     }
 
     /**
