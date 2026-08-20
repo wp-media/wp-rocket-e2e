@@ -130,7 +130,7 @@ When ('{string} page is deleted', async function (this: ICustomWorld, permalink:
     await this.utils.gotoPages();
     await this.page.locator('#post-search-input').fill(permalink);
     await this.page.locator('#search-submit').click();
-    await this.page.locator('td.title.column-title.has-row-actions.column-primary.page-title > strong > a').hover();
+    await this.page.locator('#the-list').getByRole('link', { name: permalink, exact: true }).hover();
     await this.page.waitForSelector('div.row-actions > span.trash > a', { state: 'visible' }); 
     await this.page.locator('div.row-actions > span.trash > a').click();
     await this.page.waitForSelector('#message', { state: 'visible' }); 
