@@ -74,7 +74,11 @@ function wrapPrefix(command: string, sshConfig?: SSHConfig): string {
  * @async
  * @param {string} args - Arguments to be passed to the WP-CLI command.
  * @param {boolean} show_errors - Show error
- * @returns {Promise<string>} - A Promise that resolves when the command is executed.
+ * @returns {Promise<boolean>} - True unless the command exited with code 1 (external/ssh);
+ *                               Docker/local resolve with no value.
+ * @remarks
+ * - On external (ssh) servers, opens a dedicated SSH connection per command and disposes it in a
+ *   finally block, so no connection is left open on the server even when connect or exec fails.
  */
 async function wp(args: string, show_errors: boolean = true): Promise<boolean> {
     const root = configurations.type === ServerType.docker ? ' --allow-root': '';
@@ -82,21 +86,25 @@ async function wp(args: string, show_errors: boolean = true): Promise<boolean> {
 
     if(configurations.type === ServerType.external) {
         const client = new NodeSSH();
-        await client.connect({
-            host: configurations.ssh.address,
-            username: configurations.ssh.username,
-            privateKeyPath: configurations.ssh.key
-        })
+        try {
+            await client.connect({
+                host: configurations.ssh.address,
+                username: configurations.ssh.username,
+                privateKeyPath: configurations.ssh.key
+            })
 
-        const result = await client.execCommand(`wp ${args}${root} --path=${cwd}`);
+            const result = await client.execCommand(`wp ${args}${root} --path=${cwd}`);
 
-        if(result.code === 1) {
-            if(show_errors){
-                console.error('Error :', result.stderr);
+            if(result.code === 1) {
+                if(show_errors){
+                    console.error('Error :', result.stderr);
+                }
+                return false
             }
-            return false
+            return true;
+        } finally {
+            client.dispose();
         }
-        return true;
     }
     const command = wrapPrefix(`wp ${args}${root} --path=${cwd}`);
 
@@ -145,7 +153,8 @@ type WPCliOutput = {
  * 
  * @remarks
  * - Automatically adds `--allow-root` flag when running in Docker environment
- * - For external SSH connections, establishes a new SSH connection for each command
+ * - For external SSH connections, establishes a new SSH connection for each command and disposes
+ *   it in a finally block after execution, so nothing is left open on the server on any exit path
  * - For local execution, uses shelljs exec with synchronous execution
  * - The `failed` property is determined by checking if the exit code equals 1
  */
@@ -156,20 +165,24 @@ export async function wpWithOutput(args: string): Promise<WPCliOutput> {
 
     if (configurations.type === ServerType.external) {
         const client = new NodeSSH();
-        await client.connect({
-            host: configurations.ssh.address,
-            username: configurations.ssh.username,
-            privateKeyPath: configurations.ssh.key
-        });
-        const command = `wp ${args}${root} --path=${cwd}`;
-        const result = await client.execCommand(
-            command
-        );
-        return {
-            stdout: result.stdout,
-            stderr: result.stderr,
-            failed: result.code === 1
-        } as WPCliOutput;
+        try {
+            await client.connect({
+                host: configurations.ssh.address,
+                username: configurations.ssh.username,
+                privateKeyPath: configurations.ssh.key
+            });
+            const command = `wp ${args}${root} --path=${cwd}`;
+            const result = await client.execCommand(
+                command
+            );
+            return {
+                stdout: result.stdout,
+                stderr: result.stderr,
+                failed: result.code === 1
+            } as WPCliOutput;
+        } finally {
+            client.dispose();
+        }
     }
     const command = wrapPrefix(`wp ${args}${root} --path=${cwd}`);
 
