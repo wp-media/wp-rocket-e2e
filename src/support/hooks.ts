@@ -291,7 +291,7 @@ After({tags: '@delaylcp'}, async function (this: ICustomWorld) {
 /**
  * After each test scenario with the @renewal or @promo tag, performs teardown tasks.
  */
-After({tags: '@renewal or @promo'}, async function (this: ICustomWorld) {
+After({tags: '@renewal or @promo or @cache'}, async function (this: ICustomWorld) {
     await reactivatePlugin(TEST_HELPER_PLUGIN);
 });
 
