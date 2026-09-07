@@ -12,6 +12,7 @@ Feature: No Regression with delayjs script update
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And I save settings 'fileOptimization' 'delayJs'
         And one click exclusions are enabled if exists
+        Then I must not see any error in debug.log
         When I log out
         Then no error nor warning in the console different than nowprocket page ''
 
@@ -28,7 +29,10 @@ Feature: No Regression with delayjs script update
             | genesis-sample         |
             | oceanwp                |
             | Avada                  |
-         
+            | blocksy                |
+            | twentytwentyfive       |
+            | twentytwentyfour       |
+
   
     Scenario Outline: Shouldnot cause console error when open mobile menu and click link works
         Given theme "<theme>" is activated via WP-CLI
