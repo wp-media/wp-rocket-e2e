@@ -1,5 +1,5 @@
-# Paid plugins (Elementor Pro, Advanced Custom Fields PRO) are intentionally left out of this
-# list for now - they require manual provisioning and are tracked in a follow-up ticket.
+# Paid plugins (Elementor Pro, Advanced Custom Fields PRO, Rank Math SEO PRO) are intentionally
+# left out of this list for now - they require manual provisioning and are tracked in a follow-up ticket.
 @setup @smoke @plugin-compatibility
 Feature: C397 - Third-party plugins should not cause a PHP fatal error alongside WP Rocket
 
@@ -17,7 +17,10 @@ Feature: C397 - Third-party plugins should not cause a PHP fatal error alongside
         Examples:
             | plugin                     |
             | wordpress-seo              |
+            | classic-editor             |
+            | elementor                  |
             | seo-by-rank-math           |
+            | imagify                    |
             | contact-form-7             |
             | google-site-kit            |
             | woocommerce                |
