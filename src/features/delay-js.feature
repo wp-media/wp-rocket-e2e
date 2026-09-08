@@ -6,7 +6,7 @@ Feature: No Regression with delayjs script update
         And plugin is installed 'new_release'
         And plugin is activated
         
-@test
+
     Scenario Outline: Shouldnot cause console error when enabling Delay JS with theme <theme> for desktop
         Given theme "<theme>" is activated via WP-CLI
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
@@ -36,6 +36,7 @@ Feature: No Regression with delayjs script update
             | Total                  |
             | Newspaper              |
             | woodmart               |
+            | bb-theme               |
 
   
     Scenario Outline: Shouldnot cause console error when open mobile menu and click link works
