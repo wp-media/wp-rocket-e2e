@@ -330,6 +330,29 @@ After({tags: '@qm'}, async function (this: ICustomWorld): Promise<void>  {
 });
 
 /**
+ * Before each test scenario with the @plugin-compatibility tag, clears debug.log so any
+ * PHP error surfaced by "I must not see any error in debug.log" is attributable to the
+ * plugin under test in that Example row, not a previous one.
+ */
+Before({tags: '@plugin-compatibility'}, async function (this: ICustomWorld) {
+    await rmFiles(`${WP_SSH_ROOT_DIR}wp-content`, 'debug.log');
+});
+
+/**
+ * After each test scenario with the @plugin-compatibility tag, deactivates and removes
+ * the plugin under test so it is never tested in combination with the next Example's plugin.
+ */
+After({tags: '@plugin-compatibility'}, async function (this: ICustomWorld): Promise<void> {
+    if (!this.activatedPlugin) {
+        return;
+    }
+
+    if (await isPluginInstalled(this.activatedPlugin)) {
+        await uninstallPlugin(this.activatedPlugin);
+    }
+});
+
+/**
  * To uncomment during implementation of cli
  */
 //  After(async function () {
