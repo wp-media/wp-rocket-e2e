@@ -61,6 +61,14 @@ Given('plugin is activated', async function (this: ICustomWorld) {
     await this.page.waitForSelector('a:has-text("Activate Plugin")');
     await this.page.locator('a:has-text("Activate Plugin")').click();
 
+    // Wait for the activation request itself to finish server-side before doing
+    // anything else. Steps that follow this one (e.g. "theme is activated via
+    // WP-CLI") bootstrap WordPress independently over SSH; if that bootstrap's
+    // `init` runs while the activation redirect is still being processed, both
+    // requests can call WP Rocket's table-install logic concurrently and one of
+    // them logs a spurious "table already exists" error to debug.log.
+    await this.page.waitForLoadState('load', { timeout: 30000 });
+
     // Activation schedules WP Rocket's preload cron 1 minute out. Scenarios in this
     // suite reinstall the plugin fresh on every iteration, so if that event is still
     // pending when the pseudo-cron fires mid-reinstall, it races the plugin's own
