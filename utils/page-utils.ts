@@ -378,6 +378,8 @@ export class PageUtils {
             await this.visitPage('wp-admin');
         }
 
+        await this.page.waitForLoadState('networkidle');
+
         if(! await this.page.locator('#user_login').isVisible()) {
             return ;
         }
@@ -561,7 +563,7 @@ export class PageUtils {
             await this.sections.set("database").visit();
             await this.sections.massToggle();
             await this.page.getByRole('button', { name: 'Save Changes and Optimize' }).click();
-            await expect(this.page.getByText('Database optimization process is complete')).toBeVisible();
+            await expect(this.page.getByText('Database optimization process is complete')).toBeVisible({ timeout: 30000 });
         }
 
         if(await this.sections.doesSectionExist('cdn')) {
@@ -569,6 +571,7 @@ export class PageUtils {
             await this.sections.set("cdn").visit();
             // switch to YOCDN
             await this.page.locator("button[data-cdn-driver='your-own-cdn']").click();
+            await expect(this.page.locator('.wpr-cdn-built-in.rocketcdn')).toBeHidden();
             await this.page.getByRole('button', { name: 'Add CNAME' }).click();
             await this.sections.toggle("cdn");
             await this.sections.fill("cnames", "test.example.com");
