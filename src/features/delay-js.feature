@@ -39,7 +39,7 @@ Feature: No Regression with delayjs script update
             | bb-theme               |
 
   
-    Scenario Outline: Shouldnot cause console error when open mobile menu and click link works
+    Scenario Outline: Shouldnot cause console error when open mobile menu of <theme> theme and click link works
         Given theme "<theme>" is activated via WP-CLI
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And I save settings 'fileOptimization' 'delayJs'
