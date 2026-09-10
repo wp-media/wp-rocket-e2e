@@ -38,7 +38,7 @@ Feature: No Regression with delayjs script update
             | woodmart               |
             | bb-theme               |
 
-  
+ 
     Scenario Outline: Shouldnot cause console error when open mobile menu of <theme> theme and click link works
         Given theme "<theme>" is activated via WP-CLI
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
@@ -60,3 +60,10 @@ Feature: No Regression with delayjs script update
             | generatepress          |
             | oceanwp                |
             | Avada                  |
+            | twentytwentyfive       |
+            | twentytwentyfour       |
+            | betheme                |
+            | Total                  |
+            | Newspaper              |
+            | woodmart               |
+            | bb-theme               |
