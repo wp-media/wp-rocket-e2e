@@ -623,22 +623,18 @@ export const isMobileMenuOpen = async (page: Page): Promise<boolean> => {
         Number(style.opacity) === 0
       ) continue;
 
-      // Check if there is a transform
-      const transform = style.transform;
-      if (transform && transform !== 'none') {
-        // Parse the matrix and check if it's fully translated offscreen
-        const values = transform.match(/matrix.*\((.+)\)/)?.[1].split(',').map(Number);
-        if (values) {
-          const translateX = values.length === 6 ? values[4] : 0;
-          const translateY = values.length === 6 ? values[5] : 0;
+      // getBoundingClientRect() already reflects any transform, so rather than
+      // special-casing transforms/offsets, measure how much of the element's box
+      // actually intersects the viewport. Off-canvas menus are frequently much
+      // larger than what little of them (if any) is scrolled/translated into
+      // view, e.g. Betheme's nav sits in normal flow far to the right of a
+      // horizontally-overflowing page, so most of its width falls outside the
+      // viewport even though its own bounding box is plenty large.
+      const visibleWidth = Math.max(0, Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0));
+      const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
 
-          // If fully off-screen, menu is closed
-          if (translateX <= -window.innerWidth || translateY <= -window.innerHeight) continue;
-        }
-      }
-
-      // Check if element is large enough to be considered open
-      const coversScreen = rect.width >= window.innerWidth * 0.3 && rect.height >= window.innerHeight * 0.3;
+      // Check if the visible portion is large enough to be considered open
+      const coversScreen = visibleWidth >= window.innerWidth * 0.3 && visibleHeight >= window.innerHeight * 0.3;
       if (coversScreen) return true;
      }
 
@@ -677,7 +673,21 @@ export const openMobileMenu = async (page: Page): Promise<void> => {
     }
 
     const genericToggle = page.locator(
-        '.menu-mobile-toggle, .mobile_menu_bar, [data-open="#main-menu"], .menu-toggle-icon, button.fusion-mobile-selector[aria-controls="mobile-menu-header-menu"], #site-header-inner > div.oceanwp-mobile-menu-icon.clr.mobile-right > a > i, .menu-toggle, .nav-toggle, .hamburger, .fusion-icon.fusion-icon-bars'
+        '.menu-mobile-toggle, .mobile_menu_bar, [data-open="#main-menu"], .menu-toggle-icon, button.fusion-mobile-selector[aria-controls="mobile-menu-header-menu"], #site-header-inner > div.oceanwp-mobile-menu-icon.clr.mobile-right > a > i, .menu-toggle, .nav-toggle, .hamburger, .fusion-icon.fusion-icon-bars, ' +
+        // WordPress block themes (e.g. Twenty Twenty-Four/Five) use the core Navigation
+        // block's own responsive toggle instead of any theme-specific class.
+        'button.wp-block-navigation__responsive-container-open, ' +
+        // Total
+        'a.mobile-menu-toggle, ' +
+        // Newspaper (tagDiv)
+        '#td-top-mobile-toggle, ' +
+        // WoodMart
+        'a[aria-label="Open mobile menu"], ' +
+        // BB Theme (Beaver Builder) renders a duplicate hidden toggle with the same
+        // classes, so this one must be scoped to the visible instance.
+        '.navbar-toggle.navbar-toggler:visible, ' +
+        // Betheme
+        'a.responsive-menu-toggle'
     ).first();
 
     await genericToggle.waitFor({ state: 'visible', timeout: 3000 });
