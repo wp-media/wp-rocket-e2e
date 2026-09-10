@@ -18,6 +18,7 @@ Feature: C2148 - Should not change the content of existing fields
         Given plugin is installed 'previous_stable'
         And plugin is activated
         Given I disabled all settings
+        And I save all settings
         When I export data '2'
         Then data '2' is exported correctly
 
@@ -26,7 +27,8 @@ Feature: C2148 - Should not change the content of existing fields
         And plugin is activated
         And I disabled all settings
         And I updated plugin to 'new_release'
-        And I save settings 'media' 'lazyload'
+        And I go to 'wp-admin/options-general.php?page=wprocket#file_optimization'
+        And I save all settings
         When I export data '3'
         Then data '3' is exported correctly
         Then Nothing changed in settings '3' compared to '2'
