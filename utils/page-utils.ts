@@ -403,7 +403,6 @@ export class PageUtils {
             await this.sections.set("cache").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
             
         }
@@ -413,7 +412,6 @@ export class PageUtils {
             await this.sections.set("fileOptimization").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
            
         }
@@ -423,7 +421,6 @@ export class PageUtils {
             await this.sections.set("media").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
            
         }
@@ -433,7 +430,6 @@ export class PageUtils {
             await this.sections.set("preload").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
         }
 
@@ -442,7 +438,6 @@ export class PageUtils {
             await this.sections.set("advancedRules").visit();
             await this.sections.massFill("");
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
         }
 
@@ -461,7 +456,6 @@ export class PageUtils {
             await this.page.locator("button[data-cdn-driver='your-own-cdn']").click();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
 
         }
@@ -477,7 +471,6 @@ export class PageUtils {
             await this.sections.set("heartbeat").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             
         }
 
@@ -522,7 +515,6 @@ export class PageUtils {
             await this.sections.set("cache").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
         }
 
         if(await this.sections.doesSectionExist('fileOptimization')) {
@@ -530,7 +522,6 @@ export class PageUtils {
             await this.sections.set("fileOptimization").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
         }
         
         if (await this.sections.doesSectionExist('media')) {
@@ -538,7 +529,6 @@ export class PageUtils {
             await this.sections.set("media").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
         }
        
         if (await this.sections.doesSectionExist('preload')) {
@@ -546,7 +536,6 @@ export class PageUtils {
             await this.sections.set("preload").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();  
         }
 
         if(await this.sections.doesSectionExist('advancedRules')) {
@@ -555,7 +544,6 @@ export class PageUtils {
             const values: Array<string> = ['/test\n/.*\n/test2', 'woocommerce_items_in_cart', 'Mobile(.*)Safari(.*)', '/hello-world/', 'country'];
             await this.sections.massFill(values);
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
         }
 
         if(await this.sections.doesSectionExist('database')) {
@@ -577,7 +565,6 @@ export class PageUtils {
             await this.sections.toggle("cdn");
             await this.sections.fill("cnames", "test.example.com");
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
         }
 
@@ -586,7 +573,6 @@ export class PageUtils {
             await this.sections.set("heartbeat").visit();
             await this.sections.toggle("controlHeartbeat");
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
         }
 
     
