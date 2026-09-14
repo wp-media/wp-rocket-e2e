@@ -23,7 +23,7 @@ import { deleteFolder, extractFromStdout, isWprRelatedError } from "../../utils/
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 
-import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin} from "../../utils/commands";
+import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, forceUninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 import { PluginBuilder } from '../../utils/plugin-builder';
@@ -341,6 +341,9 @@ Before({tags: '@plugin-compatibility'}, async function (this: ICustomWorld) {
 /**
  * After each test scenario with the @plugin-compatibility tag, deactivates and removes
  * the plugin under test so it is never tested in combination with the next Example's plugin.
+ * Uses forceUninstallPlugin so that a plugin fataling on every bootstrap (not just wp-admin
+ * requests) - which would otherwise also break WP-CLI's own bootstrap - still gets removed via
+ * --skip-plugins, instead of silently staying active and poisoning the rest of the matrix.
  */
 After({tags: '@plugin-compatibility'}, async function (this: ICustomWorld): Promise<void> {
     if (!this.activatedPlugin) {
@@ -348,7 +351,7 @@ After({tags: '@plugin-compatibility'}, async function (this: ICustomWorld): Prom
     }
 
     if (await isPluginInstalled(this.activatedPlugin)) {
-        await uninstallPlugin(this.activatedPlugin);
+        await forceUninstallPlugin(this.activatedPlugin);
     }
 });
 

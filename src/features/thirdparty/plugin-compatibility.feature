@@ -10,8 +10,8 @@ Feature: C397 - Third-party plugins should not cause a PHP fatal error alongside
 
     Scenario Outline: Activating "<plugin>" should not write a PHP error to debug.log
         Given the "<plugin>" plugin is installed and activated
-        When I go to ''
-        And I go to 'wp-admin'
+        When I visit '' and it must load successfully
+        And I visit 'wp-admin' and it must load successfully
         Then I must not see any error in debug.log
 
         Examples:
