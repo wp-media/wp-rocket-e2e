@@ -23,7 +23,7 @@ import { deleteFolder, extractFromStdout, isWprRelatedError } from "../../utils/
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 
-import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin} from "../../utils/commands";
+import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, forceUninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 import { PluginBuilder } from '../../utils/plugin-builder';
@@ -326,6 +326,32 @@ After({tags: '@cloudflare-compatibility'}, async function (this: ICustomWorld) {
 After({tags: '@qm'}, async function (this: ICustomWorld): Promise<void>  {
     if (await isPluginInstalled('query-monitor')) {
         await uninstallPlugin('query-monitor');
+    }
+});
+
+/**
+ * Before each test scenario with the @plugin-compatibility tag, clears debug.log so any
+ * PHP error surfaced by "I must not see any error in debug.log" is attributable to the
+ * plugin under test in that Example row, not a previous one.
+ */
+Before({tags: '@plugin-compatibility'}, async function (this: ICustomWorld) {
+    await rmFiles(`${WP_SSH_ROOT_DIR}wp-content`, 'debug.log');
+});
+
+/**
+ * After each test scenario with the @plugin-compatibility tag, deactivates and removes
+ * the plugin under test so it is never tested in combination with the next Example's plugin.
+ * Uses forceUninstallPlugin so that a plugin fataling on every bootstrap (not just wp-admin
+ * requests) - which would otherwise also break WP-CLI's own bootstrap - still gets removed via
+ * --skip-plugins, instead of silently staying active and poisoning the rest of the matrix.
+ */
+After({tags: '@plugin-compatibility'}, async function (this: ICustomWorld): Promise<void> {
+    if (!this.activatedPlugin) {
+        return;
+    }
+
+    if (await isPluginInstalled(this.activatedPlugin)) {
+        await forceUninstallPlugin(this.activatedPlugin);
     }
 });
 
