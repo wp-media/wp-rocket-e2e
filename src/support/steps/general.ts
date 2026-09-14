@@ -78,10 +78,11 @@ Given('I save settings {string} {string}', async function (this: ICustomWorld, s
         if (element === 'cacheLoggedUser') {
             await this.sections.set('addons').visit();
             await this.sections.state(true).toggle(element);
+            return;
         }
 
-        return;
-    }   
+        throw new Error(`Cannot save setting '${element}': section '${section}' does not exist on the current page.`);
+    }
 
     await this.sections.set(section).visit();
     await this.sections.state(true).toggle(element);

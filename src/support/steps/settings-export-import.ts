@@ -137,14 +137,14 @@ Then('Nothing changed in settings {string} compared to {string}', async function
 
     // Get excluded fields to ignore.
     const regex = new RegExp(diffCheckerExclusions.toString().replaceAll(',', '|'));
-    const result = diff(JSON.parse(jsonData1), JSON.parse(jsonData2));  
+    const result = diff(JSON.parse(jsonData1), JSON.parse(jsonData2));
 
     let counterCheck = 0;
     for (const key in result) {
         if (! regex.test(key)) {
             counterCheck++;
         }
-    } 
+    }
 
     expect(!(counterCheck > 0), `Settings changed between export '${fileNo2}' and '${fileNo1}'. Found ${counterCheck} differences.`).toBeTruthy();
 });

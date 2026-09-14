@@ -95,7 +95,7 @@ async function wp(args: string, show_errors: boolean = true): Promise<boolean> {
 
             const result = await client.execCommand(`wp ${args}${root} --path=${cwd}`);
 
-            if(result.code === 1) {
+            if(result.code !== 0) {
                 if(show_errors){
                     console.error('Error :', result.stderr);
                 }
@@ -511,7 +511,10 @@ export async function uninstallPlugin(plugin: string): Promise<void>  {
     const plugins = plugin.split(' ');
     for (const p of plugins) {
         if (await isPluginInstalled(p)) {
-            await wp(`plugin uninstall --deactivate ${p}`);
+            const uninstalled = await wp(`plugin uninstall --deactivate ${p}`);
+            if (uninstalled === false) {
+                throw new Error(`Failed to uninstall plugin '${p}'`);
+            }
         }
     }
 }
