@@ -534,7 +534,13 @@ export async function uninstallPlugin(plugin: string): Promise<void>  {
  *                  clean up is surfaced loudly rather than silently poisoning later scenarios.
  */
 export async function forceUninstallPlugin(plugin: string): Promise<void> {
-    await uninstallPlugin(plugin);
+    try {
+        await uninstallPlugin(plugin);
+    } catch {
+        // Swallow and fall through to the --skip-plugins retry below - uninstallPlugin()
+        // throws when the plain WP-CLI call fails, which is exactly the case (the plugin's
+        // own code breaking WP-CLI's bootstrap) this fallback exists to recover from.
+    }
 
     if (!(await isPluginInstalled(plugin))) {
         return;
