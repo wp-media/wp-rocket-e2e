@@ -17,7 +17,7 @@ import fs from "fs/promises";
 import {openMobileMenu, isMobileMenuOpen} from '../utils/helpers';
 
 import {WP_BASE_URL, WP_PASSWORD, WP_PASSWORD2, WP_USERNAME, WP_USERNAME2} from '../config/wp.config';
-import { uninstallPlugin, updatePermalinkStructure, deactivatePlugin, switchTheme, isPluginInstalled, isPluginActive } from "./commands";
+import { uninstallPlugin, updatePermalinkStructure, deactivatePlugin, switchTheme, isPluginInstalled, isPluginActive, wpWithOutput } from "./commands";
 
 /**
  * Utility class for interacting with a Playwright Page instance in WordPress testing.
@@ -612,6 +612,15 @@ export class PageUtils {
     public cleanUp = async (): Promise<void> => {
         // Remove helper plugin.
         await uninstallPlugin('wp-rocket force-wp-mobile');
+
+        // WP Rocket is no longer active at this point, so nothing here can race its
+        // own file writes. Clear any preload cron left pending from the previous
+        // iteration now, rather than relying solely on the guard right after the
+        // next activation - that guard runs while WP Rocket's plugin/config files
+        // can still be getting (re)written, which is exactly the kind of race that
+        // produced spurious "class not found" fatals in debug.log.
+        await wpWithOutput('cron event delete rocket_preload_process_pending');
+        await wpWithOutput('cron event delete rocket_preload_revert_old_failed_rows');
 
         // Deactivate WPML.
         await deactivatePlugin('sitepress-multilingual-cms');

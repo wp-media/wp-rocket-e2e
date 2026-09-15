@@ -69,13 +69,9 @@ Given('plugin is activated', async function (this: ICustomWorld) {
     // them logs a spurious "table already exists" error to debug.log.
     await this.page.waitForLoadState('load', { timeout: 30000 });
 
-    // Activation schedules WP Rocket's preload cron 1 minute out. Scenarios in this
-    // suite reinstall the plugin fresh on every iteration, so if that event is still
-    // pending when the pseudo-cron fires mid-reinstall, it races the plugin's own
-    // file/table (re)creation and throws spurious errors into debug.log (e.g. "table
-    // already exists", fatal "class not found"). Clear it immediately so it never fires.
-    await wpWithOutput('cron event delete rocket_preload_process_pending');
-    await wpWithOutput('cron event delete rocket_preload_revert_old_failed_rows');
+    // Note: WP Rocket's preload cron (scheduled by this activation) used to be
+    // cleared here. That's now handled in PageUtils.cleanUp()'s Before hook instead
+    // (see review discussion on PR #404).
 });
 
 /**
