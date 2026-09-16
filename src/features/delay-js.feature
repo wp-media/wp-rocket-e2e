@@ -7,11 +7,12 @@ Feature: No Regression with delayjs script update
         And plugin is activated
         
 
-    Scenario Outline: Shouldnot cause console error when enabling Delay JS with theme for desktop
+    Scenario Outline: Shouldnot cause console error when enabling Delay JS with theme <theme> for desktop
         Given theme "<theme>" is activated via WP-CLI
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And I save settings 'fileOptimization' 'delayJs'
         And one click exclusions are enabled if exists
+        Then I must not see any error in debug.log
         When I log out
         Then no error nor warning in the console different than nowprocket page ''
 
@@ -28,9 +29,17 @@ Feature: No Regression with delayjs script update
             | genesis-sample         |
             | oceanwp                |
             | Avada                  |
-         
-  
-    Scenario Outline: Shouldnot cause console error when open mobile menu and click link works
+            | blocksy                |
+            | twentytwentyfive       |
+            | twentytwentyfour       |
+            | betheme                |
+            | Total                  |
+            | Newspaper              |
+            | woodmart               |
+            | bb-theme               |
+
+ 
+    Scenario Outline: Shouldnot cause console error when open mobile menu of <theme> theme and click link works
         Given theme "<theme>" is activated via WP-CLI
         And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
         And I save settings 'fileOptimization' 'delayJs'
@@ -51,3 +60,10 @@ Feature: No Regression with delayjs script update
             | generatepress          |
             | oceanwp                |
             | Avada                  |
+            | twentytwentyfive       |
+            | twentytwentyfour       |
+            | betheme                |
+            | Total                  |
+            | Newspaper              |
+            | woodmart               |
+            | bb-theme               |
