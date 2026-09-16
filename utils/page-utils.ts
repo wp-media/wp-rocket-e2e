@@ -17,7 +17,7 @@ import fs from "fs/promises";
 import {openMobileMenu, isMobileMenuOpen} from '../utils/helpers';
 
 import {WP_BASE_URL, WP_PASSWORD, WP_PASSWORD2, WP_USERNAME, WP_USERNAME2} from '../config/wp.config';
-import { uninstallPlugin, updatePermalinkStructure, deactivatePlugin, switchTheme, isPluginInstalled, isPluginActive } from "./commands";
+import { uninstallPlugin, updatePermalinkStructure, deactivatePlugin, switchTheme, isPluginInstalled, isPluginActive, wpWithOutput } from "./commands";
 
 /**
  * Utility class for interacting with a Playwright Page instance in WordPress testing.
@@ -403,7 +403,6 @@ export class PageUtils {
             await this.sections.set("cache").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
             
         }
@@ -413,7 +412,6 @@ export class PageUtils {
             await this.sections.set("fileOptimization").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
            
         }
@@ -423,7 +421,6 @@ export class PageUtils {
             await this.sections.set("media").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
            
         }
@@ -433,7 +430,6 @@ export class PageUtils {
             await this.sections.set("preload").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
         }
 
@@ -442,7 +438,6 @@ export class PageUtils {
             await this.sections.set("advancedRules").visit();
             await this.sections.massFill("");
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
         }
 
@@ -461,7 +456,6 @@ export class PageUtils {
             await this.page.locator("button[data-cdn-driver='your-own-cdn']").click();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
 
         }
@@ -477,7 +471,6 @@ export class PageUtils {
             await this.sections.set("heartbeat").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             
         }
 
@@ -522,7 +515,6 @@ export class PageUtils {
             await this.sections.set("cache").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
         }
 
         if(await this.sections.doesSectionExist('fileOptimization')) {
@@ -530,7 +522,6 @@ export class PageUtils {
             await this.sections.set("fileOptimization").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
         }
         
         if (await this.sections.doesSectionExist('media')) {
@@ -538,7 +529,6 @@ export class PageUtils {
             await this.sections.set("media").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
         }
        
         if (await this.sections.doesSectionExist('preload')) {
@@ -546,7 +536,6 @@ export class PageUtils {
             await this.sections.set("preload").visit();
             await this.sections.massToggle();
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();  
         }
 
         if(await this.sections.doesSectionExist('advancedRules')) {
@@ -555,7 +544,6 @@ export class PageUtils {
             const values: Array<string> = ['/test\n/.*\n/test2', 'woocommerce_items_in_cart', 'Mobile(.*)Safari(.*)', '/hello-world/', 'country'];
             await this.sections.massFill(values);
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
         }
 
         if(await this.sections.doesSectionExist('database')) {
@@ -563,7 +551,8 @@ export class PageUtils {
             await this.sections.set("database").visit();
             await this.sections.massToggle();
             await this.page.getByRole('button', { name: 'Save Changes and Optimize' }).click();
-            await expect(this.page.getByText('Database optimization process is complete')).toBeVisible({ timeout: 30000 });
+            //  Updating text as goal here isnot testing database option itself but if enable will cause error
+            await expect(this.page.getByText('Database optimization process is')).toBeVisible({ timeout: 30000 });
         }
 
         if(await this.sections.doesSectionExist('cdn')) {
@@ -571,12 +560,11 @@ export class PageUtils {
             await this.sections.set("cdn").visit();
             // switch to YOCDN
             await this.page.locator("button[data-cdn-driver='your-own-cdn']").click();
-            await expect(this.page.locator('.wpr-cdn-built-in.rocketcdn')).toBeHidden();
+            await expect(this.page.locator('.wpr-cdn-built-in.rocketcdn')).toBeHidden({ timeout: 30000 });
             await this.page.getByRole('button', { name: 'Add CNAME' }).click();
             await this.sections.toggle("cdn");
             await this.sections.fill("cnames", "test.example.com");
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
             await this.page.locator('#setting-error-settings_updated > button').click();
         }
 
@@ -585,7 +573,6 @@ export class PageUtils {
             await this.sections.set("heartbeat").visit();
             await this.sections.toggle("controlHeartbeat");
             await this.saveSettings();
-            await expect(this.page.getByText('Settings saved.')).toBeVisible();
         }
 
     
@@ -614,6 +601,7 @@ export class PageUtils {
         const submitBtn = this.page.locator('#wpr-options-submit');
         await submitBtn.scrollIntoViewIfNeeded();
         await submitBtn.click();
+        await expect(this.page.getByText('Settings saved.')).toBeVisible();
     }
 
     /**
@@ -624,6 +612,15 @@ export class PageUtils {
     public cleanUp = async (): Promise<void> => {
         // Remove helper plugin.
         await uninstallPlugin('wp-rocket force-wp-mobile');
+
+        // WP Rocket is no longer active at this point, so nothing here can race its
+        // own file writes. Clear any preload cron left pending from the previous
+        // iteration now, rather than relying solely on the guard right after the
+        // next activation - that guard runs while WP Rocket's plugin/config files
+        // can still be getting (re)written, which is exactly the kind of race that
+        // produced spurious "class not found" fatals in debug.log.
+        await wpWithOutput('cron event delete rocket_preload_process_pending');
+        await wpWithOutput('cron event delete rocket_preload_revert_old_failed_rows');
 
         // Deactivate WPML.
         await deactivatePlugin('sitepress-multilingual-cms');

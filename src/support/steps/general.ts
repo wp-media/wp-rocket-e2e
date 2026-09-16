@@ -60,6 +60,18 @@ Given('plugin is activated', async function (this: ICustomWorld) {
     // Activate WPR
     await this.page.waitForSelector('a:has-text("Activate Plugin")');
     await this.page.locator('a:has-text("Activate Plugin")').click();
+
+    // Wait for the activation request itself to finish server-side before doing
+    // anything else. Steps that follow this one (e.g. "theme is activated via
+    // WP-CLI") bootstrap WordPress independently over SSH; if that bootstrap's
+    // `init` runs while the activation redirect is still being processed, both
+    // requests can call WP Rocket's table-install logic concurrently and one of
+    // them logs a spurious "table already exists" error to debug.log.
+    await this.page.waitForLoadState('load', { timeout: 30000 });
+
+    // Note: WP Rocket's preload cron (scheduled by this activation) used to be
+    // cleared here. That's now handled in PageUtils.cleanUp()'s Before hook instead
+    // (see review discussion on PR #404).
 });
 
 /**
@@ -522,10 +534,12 @@ Then('no error nor warning in the console different than nowprocket page {string
                 // Get unique messages from both versions
                 const uniqueMsg1 = [...new Set(consoleMsg1)].sort();
                 const uniqueMsg2 = [...new Set(consoleMsg2)].sort();
-                
-                // Check if actual version has any NEW messages not in nowprocket
-                // Allow duplicates in either version as long as the unique messages match
-                expect(uniqueMsg2).toEqual(uniqueMsg1);
+
+                // Fail only when the actual (cached/optimized) page logs a message that isn't
+                // present on the nowprocket baseline. A message present on nowprocket but
+                // missing from actual is not a regression introduced by WP Rocket.
+                const newMessages = uniqueMsg2.filter((msg) => !uniqueMsg1.includes(msg));
+                expect(newMessages).toEqual([]);
             } catch (e) {
                 throw new Error(
                     `\x1b[41m\x1b[37mConsole difference detected for: ${WP_BASE_URL}/${path}\x1b[0m\n` +

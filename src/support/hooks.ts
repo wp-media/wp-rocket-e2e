@@ -258,7 +258,13 @@ After(async function (this: ICustomWorld, { pickle, result }) {
     previousScenarioName = pickle.name
 
     if (result?.status == Status.FAILED) {
-        await this.utils.createScreenShot(this, pickle);  
+        try {
+            await this.utils?.createScreenShot(this, pickle);
+        } catch (error) {
+            // Log and continue cleanup to ensure debug log handling and browser closing still run
+            // eslint-disable-next-line no-console
+            console.error('Failed to create screenshot during After hook cleanup:', error);
+        }
     }
 
     const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
