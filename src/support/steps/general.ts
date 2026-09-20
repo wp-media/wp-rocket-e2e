@@ -20,7 +20,7 @@ import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl} f
 import type { Section } from "../../../utils/types";
 import { getConsoleMsg, getConsoleMsgWithMenuExpansion } from '../../../utils/page-utils';
 import {
-    deactivatePlugin, installRemotePlugin, wpWithOutput,switchTheme
+    activatePlugin, deactivatePlugin, installLocalPlugin, installRemotePlugin, wpWithOutput,switchTheme
 } from "../../../utils/commands";
 import backstop from 'backstopjs';
 
@@ -32,11 +32,20 @@ Given('I am logged in', async function (this: ICustomWorld) {
 });
 
 /**
- * Executes the step to install the WP Rocket plugin.
+ * Executes the step to install the plugin.
+ *
+ * Installs via WP-CLI (fast) unless the scenario is tagged @real-user-setup, in which case
+ * it goes through the real wp-admin upload UI instead, matching what an actual user does.
+ * See discussion on wp-media/wp-rocket-e2e#408.
  */
 Given('plugin is installed {string}', async function (this: ICustomWorld, pluginVersion: string) {
-    await this.utils.uploadNewPlugin(`./plugin/${pluginVersion}.zip`);
-    await expect(this.page).toHaveURL(/action=upload-plugin/); 
+    if (await isTagPresent(this.pickle, '@real-user-setup')) {
+        await this.utils.uploadNewPlugin(`./plugin/${pluginVersion}.zip`);
+        await expect(this.page).toHaveURL(/action=upload-plugin/);
+        return;
+    }
+
+    this.installedPluginSlug = await installLocalPlugin(`./plugin/${pluginVersion}.zip`);
 });
 
 
@@ -54,24 +63,37 @@ Given('I updated plugin to {string}', async function (this: ICustomWorld, plugin
 });
 
 /**
- * Executes the step to activate the WP Rocket plugin.
+ * Executes the step to activate the plugin.
+ *
+ * Activates via WP-CLI (fast) unless the scenario is tagged @real-user-setup, in which case
+ * it clicks the real "Activate Plugin" link, matching what an actual user does.
+ * See discussion on wp-media/wp-rocket-e2e#408.
  */
 Given('plugin is activated', async function (this: ICustomWorld) {
-    // Activate WPR
-    await this.page.waitForSelector('a:has-text("Activate Plugin")');
-    await this.page.locator('a:has-text("Activate Plugin")').click();
+    if (await isTagPresent(this.pickle, '@real-user-setup')) {
+        // Activate WPR
+        await this.page.waitForSelector('a:has-text("Activate Plugin")');
+        await this.page.locator('a:has-text("Activate Plugin")').click();
 
-    // Wait for the activation request itself to finish server-side before doing
-    // anything else. Steps that follow this one (e.g. "theme is activated via
-    // WP-CLI") bootstrap WordPress independently over SSH; if that bootstrap's
-    // `init` runs while the activation redirect is still being processed, both
-    // requests can call WP Rocket's table-install logic concurrently and one of
-    // them logs a spurious "table already exists" error to debug.log.
-    await this.page.waitForLoadState('load', { timeout: 30000 });
+        // Wait for the activation request itself to finish server-side before doing
+        // anything else. Steps that follow this one (e.g. "theme is activated via
+        // WP-CLI") bootstrap WordPress independently over SSH; if that bootstrap's
+        // `init` runs while the activation redirect is still being processed, both
+        // requests can call WP Rocket's table-install logic concurrently and one of
+        // them logs a spurious "table already exists" error to debug.log.
+        await this.page.waitForLoadState('load', { timeout: 30000 });
 
-    // Note: WP Rocket's preload cron (scheduled by this activation) used to be
-    // cleared here. That's now handled in PageUtils.cleanUp()'s Before hook instead
-    // (see review discussion on PR #404).
+        // Note: WP Rocket's preload cron (scheduled by this activation) used to be
+        // cleared here. That's now handled in PageUtils.cleanUp()'s Before hook instead
+        // (see review discussion on PR #404).
+        return;
+    }
+
+    if (!this.installedPluginSlug) {
+        throw new Error("No plugin slug recorded by a prior 'plugin is installed' step.");
+    }
+
+    await activatePlugin(this.installedPluginSlug);
 });
 
 /**
