@@ -13,9 +13,12 @@ Given('the {string} plugin is installed and activated', async function (this: IC
     if (!(await isPluginInstalled(plugin))) {
         await installRemotePlugin(plugin);
     }
-    await activatePlugin(plugin);
 
+    // Track before activating, not after: activatePlugin() throws if the plugin fatals on
+    // activation, and the After hook still needs to know what to clean up in that exact case.
     this.activatedPlugin = plugin;
+
+    await activatePlugin(plugin);
 });
 
 /**
