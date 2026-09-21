@@ -754,20 +754,43 @@ export class PageUtils {
     }
 
     /**
-     * Create cucumber screenshot.
+     * Create cucumber screenshot and capture the failing scenario's video path.
+     *
+     * The video itself is not read/attached here: Playwright only finalizes a recording into a
+     * valid webm container once its context is closed, so reading it this early would attach a
+     * truncated file. Callers must close the context, then pass the returned path to
+     * `attachVideo()`. See wp-media/wp-rocket-e2e#407.
      *
      * @param   {ICustomWorld}     world   ICustomWorld Interface
      * @param   {Pickle}  pickle  Pickle Object.
      *
-     * @return  {Promise<void>}
+     * @return  {Promise<string | undefined>} Path to the scenario's video, if any.
      */
-    public async createScreenShot(world: ICustomWorld, pickle: Pickle): Promise<void> {        
+    public async createScreenShot(world: ICustomWorld, pickle: Pickle): Promise<string | undefined> {
         const img: Buffer = await this.page?.screenshot({ path: `./test-results/screenshots/${pickle.name}.png`, type: "png" })
         const videoPath: string = await this.page?.video().path();
 
         world.attach(
             img, "image/png"
         );
+
+        return videoPath;
+    }
+
+    /**
+     * Attach a scenario's video recording. Must be called after the owning context has been
+     * closed, otherwise the recording is not yet finalized and the attached file is truncated.
+     * See wp-media/wp-rocket-e2e#407.
+     *
+     * @param   {ICustomWorld}  world      ICustomWorld Interface
+     * @param   {string}        videoPath  Path returned by `createScreenShot()`.
+     *
+     * @return  {Promise<void>}
+     */
+    public async attachVideo(world: ICustomWorld, videoPath?: string): Promise<void> {
+        if (!videoPath) {
+            return;
+        }
 
         const file = await fs.readFile(videoPath);
         world.attach(
