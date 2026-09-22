@@ -9,26 +9,59 @@
  * @requires {@link node-ssh}
  */
 import {exec} from "shelljs";
+
+// Utility to safely quote a value as a single shell argument.
+// - Validates that the argument is a non-empty string (after trimming).
+// - Wraps it in single quotes and escapes any embedded single quotes.
+function sanitizeShellArg(arg: string): string {
+    if (typeof arg !== 'string') {
+        throw new TypeError('sanitizeShellArg expects a string argument');
+    }
+    const trimmed = arg.trim();
+    if (trimmed.length === 0) {
+        // Empty/whitespace-only shell arguments are not allowed to avoid
+        // accidentally targeting "." or other unintended paths.
+        throw new Error('Empty shell argument is not allowed');
+    }
+    // POSIX-safe single-quote escaping: end quote, escape ', reopen quote.
+    const escaped = trimmed.replace(/'/g, `'\\''`);
+    return `'${escaped}'`;
+}
 import {configurations, getWPDir, ServerType} from "./configurations";
+import { SSHConfig } from "./types";
 
 const {NodeSSH} = require('node-ssh')
 
 /**
- * Wraps a command with the appropriate prefix based on the server type.
- *
- * @param {string} command - The command to be wrapped.
- * @returns {string} - The wrapped command.
+ * Wraps a command with the appropriate prefix based on the server configuration type.
+ * 
+ * @param command - The command string to be wrapped
+ * @param sshConfig - Optional SSH configuration to override default settings
+ * @param sshConfig.username - SSH username to use instead of the default
+ * @param sshConfig.host - SSH host address to use instead of the default
+ * @returns The wrapped command string with appropriate prefix for Docker or SSH execution,
+ *          or the original command if no specific server type is configured
+ * 
+ * @remarks
+ * - For Docker configurations: wraps command with docker-compose exec
+ * - For external configurations: wraps command with SSH and escapes special characters
+ * - For other configurations: returns the command unchanged
  */
-function wrapPrefix(command: string): string {
-    if(configurations.type === ServerType.docker) {
+function wrapPrefix(command: string, sshConfig?: SSHConfig): string {
+    if (configurations.type === ServerType.docker) {
         return `docker-compose exec -T ${configurations.docker.container} ${command}`;
     }
-    if(configurations.type === ServerType.external) {
-        return `ssh ${configurations.ssh.username}@${configurations.ssh.address} -i ${configurations.ssh.key} ${command}`
-            .replaceAll('"', '"\\"')
-            .replaceAll('}', '\\}')
-            .replaceAll('{', '\\{')
-            .replaceAll(',', '\\,');
+    if (configurations.type === ServerType.external) {
+        const username = sshConfig?.username || configurations.ssh.username;
+        const address = sshConfig?.host || configurations.ssh.address;
+        const privateKey = configurations.ssh.key;
+        // Wrap the entire command in double quotes and escape necessary characters
+        const escapedCommand = command
+            .replaceAll('\\', '\\\\')
+            .replaceAll('"', '\\"')
+            .replaceAll('$', '\\$')
+            .replaceAll('`', '\\`');
+        return `ssh ${username}@${address} -i ${privateKey} "${escapedCommand}"`;
     }
     return command;
 }
@@ -41,7 +74,11 @@ function wrapPrefix(command: string): string {
  * @async
  * @param {string} args - Arguments to be passed to the WP-CLI command.
  * @param {boolean} show_errors - Show error
- * @returns {Promise<string>} - A Promise that resolves when the command is executed.
+ * @returns {Promise<boolean>} - True unless the command exited with code 1 (external/ssh);
+ *                               Docker/local resolve with no value.
+ * @remarks
+ * - On external (ssh) servers, opens a dedicated SSH connection per command and disposes it in a
+ *   finally block, so no connection is left open on the server even when connect or exec fails.
  */
 async function wp(args: string, show_errors: boolean = true): Promise<boolean> {
     const root = configurations.type === ServerType.docker ? ' --allow-root': '';
@@ -49,21 +86,25 @@ async function wp(args: string, show_errors: boolean = true): Promise<boolean> {
 
     if(configurations.type === ServerType.external) {
         const client = new NodeSSH();
-        await client.connect({
-            host: configurations.ssh.address,
-            username: configurations.ssh.username,
-            privateKeyPath: configurations.ssh.key
-        })
+        try {
+            await client.connect({
+                host: configurations.ssh.address,
+                username: configurations.ssh.username,
+                privateKeyPath: configurations.ssh.key
+            })
 
-        const result = await client.execCommand(`wp ${args}${root} --path=${cwd}`);
+            const result = await client.execCommand(`wp ${args}${root} --path=${cwd}`);
 
-        if(result.code === 1) {
-            if(show_errors){
-                console.error('Error :', result.stderr);
+            if(result.code !== 0) {
+                if(show_errors){
+                    console.error('Error :', result.stderr);
+                }
+                return false
             }
-            return false
+            return true;
+        } finally {
+            client.dispose();
         }
-        return true;
     }
     const command = wrapPrefix(`wp ${args}${root} --path=${cwd}`);
 
@@ -72,7 +113,89 @@ async function wp(args: string, show_errors: boolean = true): Promise<boolean> {
         async: false
     });
 
-   }
+}
+type WPCliOutput = {
+    stdout: string,
+    stderr: string,
+    failed: boolean
+};
+
+/**
+ * Executes a WP-CLI command and returns the output along with execution status.
+ * 
+ * Unlike the standard `wp` function which returns a boolean, this function provides
+ * access to both stdout and stderr output from the executed command, making it useful
+ * for commands where you need to parse or analyze the output.
+ * 
+ * @async
+ * @function wpWithOutput
+ * @param {string} args - The WP-CLI command arguments to execute (e.g., 'plugin list --format=json')
+ * 
+ * @returns {Promise<WPCliOutput>} An object containing the command execution results:
+ * - `stdout`: The standard output from the command as a string
+ * - `stderr`: The error output from the command as a string (empty string if no errors)
+ * - `failed`: Boolean indicating if the command failed (exit code 1)
+ * 
+ * @example
+ * // Get list of installed plugins with details
+ * const result = await wpWithOutput('plugin list --format=json');
+ * if (!result.failed) {
+ *   const plugins = JSON.parse(result.stdout);
+ *   console.log('Installed plugins:', plugins);
+ * } else {
+ *   console.error('Failed to get plugins:', result.stderr);
+ * }
+ * 
+ * @example
+ * // Get WordPress version
+ * const versionInfo = await wpWithOutput('core version --extra');
+ * console.log('WordPress info:', versionInfo.stdout);
+ * 
+ * @remarks
+ * - Automatically adds `--allow-root` flag when running in Docker environment
+ * - For external SSH connections, establishes a new SSH connection for each command and disposes
+ *   it in a finally block after execution, so nothing is left open on the server on any exit path
+ * - For local execution, uses shelljs exec with synchronous execution
+ * - The `failed` property is determined by checking if the exit code equals 1
+ */
+export async function wpWithOutput(args: string): Promise<WPCliOutput> {
+    const root =
+        configurations.type === ServerType.docker ? ' --allow-root' : '';
+    const cwd = getWPDir(configurations);
+
+    if (configurations.type === ServerType.external) {
+        const client = new NodeSSH();
+        try {
+            await client.connect({
+                host: configurations.ssh.address,
+                username: configurations.ssh.username,
+                privateKeyPath: configurations.ssh.key
+            });
+            const command = `wp ${args}${root} --path=${cwd}`;
+            const result = await client.execCommand(
+                command
+            );
+            return {
+                stdout: result.stdout,
+                stderr: result.stderr,
+                failed: result.code === 1
+            } as WPCliOutput;
+        } finally {
+            client.dispose();
+        }
+    }
+    const command = wrapPrefix(`wp ${args}${root} --path=${cwd}`);
+
+    const result = exec(command, {
+        cwd: configurations.rootDir,
+        async: false
+    });
+    return {
+        stdout: result.stdout,
+        stderr: result.stderr,
+        failed: result.code === 1
+    } as WPCliOutput;
+}
 
 /**
  * Resets the WordPress instance by performing a database reset and reinstallation.
@@ -130,21 +253,20 @@ export async function cp(origin: string, destination: string): Promise<void> {
  * @returns {Promise<void>} - A Promise that resolves when the rename operation is completed.
  */
 export async function rename(oldName: string, newName: string): Promise<void> {
+    const safeOld = sanitizeShellArg(oldName);
+    const safeNew = sanitizeShellArg(newName);
     if(configurations.type === ServerType.docker) {
-        await exec(`docker exec -T ${configurations.docker.container} mv ${oldName} ${newName}`, {
+        await exec(`docker exec -T ${configurations.docker.container} mv ${safeOld} ${safeNew}`, {
             cwd: configurations.rootDir,
             async: false
         });
-
         return;
     }
-
     if(configurations.type === ServerType.external) {
-        await exec(`ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "sudo mv ${oldName} ${newName}"`);
+        await exec(`ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} "sudo mv ${safeOld} ${safeNew}"`);
         return;
     }
-
-    exec(`sudo mv ${oldName} ${newName}`, {
+    exec(`sudo mv ${safeOld} ${safeNew}`, {
         cwd: configurations.rootDir,
         async: false
     });
@@ -160,16 +282,15 @@ export async function rename(oldName: string, newName: string): Promise<void> {
  * @returns {Promise<boolean>} - A Promise that resolves with true if the file exists, false otherwise.
  */
 export async function exists(filePath: string): Promise<boolean> {
+    const safePath = sanitizeShellArg(filePath);
     let command: string;
-
     if(configurations.type === ServerType.docker) {
-        command = `docker exec -T ${configurations.docker.container} test -f ${filePath}; echo $?`;
+        command = `docker exec -T ${configurations.docker.container} test -f ${safePath}; echo $?`;
     } else if(configurations.type === ServerType.external) {
-        command = `ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} 'test -f ${filePath}; echo $?'`;
+        command = `ssh -i ${configurations.ssh.key} ${configurations.ssh.username}@${configurations.ssh.address} 'test -f ${safePath}; echo $?'`;
     } else {
-        command = `test -f ${filePath}; echo $?`;
+        command = `test -f ${safePath}; echo $?`;
     }
-
     try {
         const result = await exec(command, {
             cwd: configurations.rootDir,
@@ -209,9 +330,33 @@ export async function unzip(file: string, destination: string): Promise<void> {
  * @param {string} destination - The path to the file or directory to be removed.
  * @returns {Promise<void>} - A Promise that resolves when the removal is completed.
  */
-export async function rm(destination: string): Promise<void> {
+export async function rm(destination: string, sshConfig?: SSHConfig): Promise<void> {
     const cwd = configurations.rootDir;
-    const command = wrapPrefix(`sudo rm -rf ${destination}`);
+    const safeDest = sanitizeShellArg(destination);
+    const command = wrapPrefix(`sudo rm -rf ${safeDest}`, sshConfig);
+    await exec(command, {
+        cwd: cwd,
+        async: false
+    });
+}
+
+/**
+ * Removes files matching a glob pattern directly under a directory.
+ *
+ * @function
+ * @name rmFiles
+ * @async
+ * @param {string} directory - The directory to clean.
+ * @param {string} pattern - The filename pattern, e.g. '*.log' or 'debug-*.log'. Defaults to '*.log'.
+ * @param {SSHConfig} [sshConfig] - Optional SSH configuration to override the default credentials (username and host).
+ * @returns {Promise<void>} - A Promise that resolves when matching files are removed.
+ */
+export async function rmFiles(directory: string, pattern: string = '*.log', sshConfig?: SSHConfig): Promise<void> {
+    const cwd = configurations.rootDir;
+    const safeDir = sanitizeShellArg(directory);
+    const normalizedPattern = pattern.trim().replace(/^\/+/, '');
+    const safePattern = sanitizeShellArg(normalizedPattern);
+    const command = wrapPrefix(`sudo find ${safeDir} -maxdepth 1 -type f -name ${safePattern} -delete`, sshConfig);
     await exec(command, {
         cwd: cwd,
         async: false
@@ -249,6 +394,72 @@ export async function isPluginInstalled(name: string): Promise<boolean> {
 }
 
 /**
+ * Check if plugin is active
+ * @function
+ * @name isPluginActive
+ * @async
+ * @param {string} name - The name of the plugin to be checked if active.
+ * @returns {Promise<boolean>} - A Promise that resolves to true if plugin is active, false otherwise.
+ */
+export async function isPluginActive(name: string): Promise<boolean> {
+    return await wp(`plugin is-active ${name}`, false);
+}
+
+/**
+ * Check if theme is installed
+ * @function
+ * @name isThemeInstalled
+ * @async
+ * @param {string} name - The name of the theme to be checked if installed.
+ * @returns {Promise<boolean>} - A Promise that resolves to true if theme is installed, false otherwise.
+ */
+export async function isThemeInstalled(name: string): Promise<boolean> {
+    return await wp(`theme is-installed ${name}`, false);
+
+}
+
+/**
+ * Check if theme is activated
+ * @function
+ * @name isThemeActivated
+ * @async
+ * @param {string} name - The name of the theme to be checked if active
+ * @returns {Promise<boolean>} - A Promise that resolves to true if theme is active, false otherwise.
+ */
+export async function isThemeActivated(name: string): Promise<boolean> {
+    return await wp(`theme is-active ${name}`, false);
+}
+/** 
+ * Install a theme from the WordPress.org repository.
+ *
+ * If the theme is already installed, this function is a no-op.
+ * If installation fails (for example, because the theme does not exist on WordPress.org
+ * or is a premium theme that must be installed manually), an Error is thrown.
+ *
+ * @function
+ * @name installTheme
+ * @async
+ * @param {string} name - The slug of the theme to be installed.
+ * @returns {Promise<void>} - A Promise that resolves when the theme is installed.
+ * @throws {Error} If the theme cannot be installed from the WordPress.org repository.
+ */
+export async function installTheme(name: string): Promise<void> {
+    // If the theme is already installed, no further action is required.
+    const alreadyInstalled: boolean = await isThemeInstalled(name);
+    if (alreadyInstalled) {
+        return;
+    }
+    // Attempt to install the theme from WordPress.org and check the result.
+    const installedSuccessfully: boolean = await wp(`theme install ${name}`, false);
+    if (!installedSuccessfully) {
+        throw new Error(
+            `Failed to install theme "${name}". The theme may not exist in the WordPress.org repository ` +
+            `or may require manual installation (for example, premium themes).`
+        );
+    }
+}
+
+/**
  * Delete a plugin if exist.
  * Note: this is not ideal for wpr or imagify plugins as it doesn't delete DB data which relies on uninstall hook.
  * @function
@@ -275,6 +486,19 @@ export async function installRemotePlugin(url: string): Promise<void>  {
 }
 
 /**
+ * Install a WordPress plugin from a local zip file using the WP-CLI command.
+ *
+ * @function
+ * @name installLocalPlugin
+ * @async
+ * @param {string} filePath - The local file path to the plugin zip file.
+ * @returns {Promise<void>} - A Promise that resolves when the installation is completed.
+ */
+export async function installLocalPlugin(filePath: string): Promise<void>  {
+    await wp(`plugin install ${filePath}`)
+}
+
+/**
  * Uninstalls one or more plugins.
  *
  * @function
@@ -287,7 +511,10 @@ export async function uninstallPlugin(plugin: string): Promise<void>  {
     const plugins = plugin.split(' ');
     for (const p of plugins) {
         if (await isPluginInstalled(p)) {
-            await wp(`plugin uninstall --deactivate ${p}`);
+            const uninstalled = await wp(`plugin uninstall --deactivate ${p}`);
+            if (uninstalled === false) {
+                throw new Error(`Failed to uninstall plugin '${p}'`);
+            }
         }
     }
 }
@@ -315,7 +542,33 @@ export async function updatePermalinkStructure(structure: string): Promise<void>
  * @returns {Promise<void>} - A Promise that resolves when the theme is activated.
  */
 export async function switchTheme(theme: string): Promise<void> {
-    await wp(`theme activate ${theme}`);
+    // List of premium themes that cannot be auto-installed
+    const premiumThemes = ['flatsome', 'Divi', 'Avada', 'enfold'];
+    
+    // Check if theme is installed, install if not
+    const isInstalled = await isThemeInstalled(theme);
+    if (!isInstalled) {
+        if (premiumThemes.includes(theme)) {
+            throw new Error(`Theme ${theme} is a premium theme and must be installed manually before running tests.`);
+        }
+        await installTheme(theme);
+    }
+
+    // Check if theme is already active
+    let isActive = await isThemeActivated(theme);
+    if (isActive) {
+        return; // Theme is already active, no need to activate
+    }
+
+    // Activate the theme
+    await wp(`theme activate ${theme}`)
+
+    // Verify theme is actually activated
+    isActive = await isThemeActivated(theme);
+    if (!isActive) {
+        throw new Error(`Theme ${theme} was not activated successfully`);
+    }
+    
 }
 
 /**
@@ -342,6 +595,20 @@ export async function query(query: string): Promise<void> {
  */
 export async function deactivatePlugin(name: string): Promise<void> {
     await wp(`plugin deactivate ${name}`)
+}
+
+/**
+ * Reactivates a WordPress plugin using the WP-CLI command.
+ *
+ * @function
+ * @name reactivatePlugin
+ * @async
+ * @param {string} name - The name of the plugin to be reactivated.
+ * @returns {Promise<void>} - A Promise that resolves when the reactivation is completed.
+ */
+export async function reactivatePlugin(name: string): Promise<void> {
+    await deactivatePlugin(name);
+    await activatePlugin(name);
 }
 
 /**
@@ -464,12 +731,40 @@ export async function getWPTablePrefix(): Promise<string> {
     return tablePrefix;
 }
 
-export async function testSshConnection(): Promise<string> {
+/**
+ * Tests the SSH connection to an external server using the provided or configured SSH credentials.
+ * 
+ * @param sshConfig - Optional SSH configuration object containing connection details
+ * @param sshConfig.username - SSH username to use for the connection
+ * @param sshConfig.host - SSH host address to connect to
+ * @param sshConfig.privateKey - Path to the private key file for SSH authentication
+ * 
+ * @returns A promise that resolves to a string result if the connection is successful,
+ *          or undefined if the server type is not external
+ * 
+ * @throws {Error} Throws an error if the SSH connection fails, indicating that the SSH
+ *                  configuration should be checked or internet connection verified
+ * 
+ * @example
+ * ```typescript
+ * // Using default configuration
+ * await testSshConnection();
+ * 
+ * // Using custom SSH configuration
+ * await testSshConnection({
+ *   username: 'myuser',
+ *   host: '192.168.1.1',
+ * });
+ * ```
+ */
+export async function testSshConnection(sshConfig?: SSHConfig): Promise<string> {
     if(configurations.type !== ServerType.external) {
         return;
     }
-    
-    const command: string = `ssh ${configurations.ssh.username}@${configurations.ssh.address} -i ${configurations.ssh.key} env`;
+    const username = sshConfig?.username || configurations.ssh.username;
+    const address = sshConfig?.host || configurations.ssh.address;
+    const privateKey = configurations.ssh.key;
+    const command: string = `ssh ${username}@${address} -i ${privateKey} env`;
     const result = exec(command, { silent: true });
 
     if (result.code !== 0) {

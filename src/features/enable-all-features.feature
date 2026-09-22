@@ -1,4 +1,4 @@
-@smoke @local @setup
+@smoke @local @setup @requires-clean-imagify
 Feature: C1205 - Enabling all WP Rocket features should not throw any fatal errors
 
     Background:
@@ -11,5 +11,5 @@ Feature: C1205 - Enabling all WP Rocket features should not throw any fatal erro
         And I enable all settings
         And I log out
         Then page loads successfully
-        When I log in
+        When I am logged in
         Then I must not see any error in debug.log

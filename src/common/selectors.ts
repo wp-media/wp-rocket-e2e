@@ -62,15 +62,7 @@ export const selectors: Selectors = {
                     await activateFromPopUp(page, state, "text=Activate combine CSS") 
                }
             },
-            cpcss:{
-                type: FieldType.checkbox,
-                element: "#optimize_css_delivery",
-                target: "label[for=optimize_css_delivery]",
-                after: async (page: Page): Promise<void> => {
-                    await page.locator("#wpr-radio-async_css").click();
-                },
-            },
-    
+
             rucss:{
                 type: FieldType.checkbox,
                 element: "#optimize_css_delivery",
@@ -83,6 +75,15 @@ export const selectors: Selectors = {
                     await page.locator("text=Activate Remove Unused CSS").click();
                 }
             },
+            cpcss:{
+                type: FieldType.checkbox,
+                element: "#optimize_css_delivery",
+                target: "label[for=optimize_css_delivery]",
+                after: async (page: Page): Promise<void> => {
+                    await page.locator("#wpr-radio-async_css").click();
+                },
+            },
+    
             minifyJs: {
                 type: FieldType.checkbox,
                 element: "#minify_js",
@@ -144,6 +145,11 @@ export const selectors: Selectors = {
                 type: FieldType.checkbox,
                 element: "#auto_preload_fonts",
                 target: "label[for=auto_preload_fonts]"
+            },
+            selfHostGoogleFonts:{
+                type: FieldType.checkbox,
+                element: "#host_fonts_locally",
+                target: "label[for=host_fonts_locally]"
             }
         }
     },
@@ -288,3 +294,11 @@ export const selectors: Selectors = {
         }
     }
 }
+
+/**
+ * Global selectors for link validation and general page elements.
+ */
+export const linkValidationSelectors = {
+    allLinksInContent: '#wpbody-content a[href]',
+    tabLinksInContent: '#wpbody-content a[href*="page=wprocket#"]',
+} as const;

@@ -1,4 +1,4 @@
-@cpcss @setup 
+@cpcss @setup @notices
 Feature: CPCSS Notice
 
   Background:
@@ -36,13 +36,13 @@ Feature: CPCSS Notice
     Then I must not see the banner 'We highly recommend the updated Remove Unused CSS for a better CSS optimization. Load CSS Asynchronously is always available as a back-up.'
 
 
-  Scenario: Shouldnot display the CPCSS banner for expired user
+  Scenario: Should not display the CPCSS banner for expired user
     Given turn on 'CPCSS'
     And I have an expired account
     Then I must not see the banner 'We highly recommend the updated Remove Unused CSS for a better CSS optimization. Load CSS Asynchronously is always available as a back-up.'
 
 
-  Scenario: Shouldnot display the CPCSS banner to admin 2 if it was dismissed by admin 1
+  Scenario: Should not display the CPCSS banner to admin 2 if it was dismissed by admin 1
     Given I have an unexpired account
     And turn on 'CPCSS'
     Then I must see the banner 'We highly recommend the updated Remove Unused CSS for a better CSS optimization. Load CSS Asynchronously is always available as a back-up.'

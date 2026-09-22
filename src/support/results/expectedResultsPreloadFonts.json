@@ -1,10 +1,51 @@
 {
+  "preloadfonts_import": {
+    "fonts": [
+      "/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-upright-var.woff2",
+      "^https://fonts\\.gstatic\\.com/s/pacifico/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/quicksand/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/opensans/v\\d+/.+\\.woff2$",
+      "/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.woff2"
+    ],
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7493#issuecomment-3079723626",
+    "enabled": false
+  },
+  "preloadfonts_inlinestyle": {
+    "fonts": [
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/lora/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/opensans/v\\d+/.+\\.woff2$",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.woff2"
+    ],
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7493#issuecomment-3079723626",
+    "enabled": false
+  },
+  "preloadfonts_pseudo": {
+    "fonts": [
+      "/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-upright-var.woff2",
+      "/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-italic-var.woff2",
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/opensans/v\\d+/.+\\.woff2$",
+      "/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.woff2"
+    ],
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7416",
+    "enabled": false
+  },
+  "preloadfonts_cssfile": {
+    "fonts": [
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/lora/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/opensans/v\\d+/.+\\.woff2$",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ceviche-one-v11-latin-regular.woff2"
+    ],
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7493#issuecomment-3079723626",
+    "enabled": false
+  },
   "preloadfonts_usedcss": {
     "fonts": [
-      "https://fonts.gstatic.com/s/playfairdisplay/v39/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtM.woff2",
-      "https://fonts.gstatic.com/s/roboto/v48/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbVmUiAo.woff2"
+      "^https://fonts\\.gstatic\\.com/s/playfairdisplay/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$"
     ],
-
     "enabled": true
   },
   "preloadfonts_fonticon": {
@@ -12,7 +53,320 @@
       "/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-upright-var.woff2",
       "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/webfonts/fa-solid-900.woff2"
     ],
-  
+    "enabled": true
+  },
+  "preloadfonts_mockdata": {
+    "fonts": [
+      "^https://fonts\\.gstatic\\.com/s/poppins/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/poppins/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/poppins/v\\d+/.+\\.woff2$",
+      "https://fonts.cdnfonts.com/s/31427/Paper%20Sign.woff"
+    ],
+    "enabled": false
+  },
+  "preloadfonts_withrucss": {
+    "fonts": [
+      "/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-upright-var.woff2",
+      "h/wp-content/rocket-test-data/fonts/OpenSans-Regular.woff2",
+      "/wp-content/rocket-test-data/fonts/OpenSans-Bold.ttf",
+      "https://mega.wp-rocket.me/avada/wp-content/rocket-test-data/fonts/fa-solid-900.ttf",
+      "https://rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/Branda.ttf",
+      "https://rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.ttf",
+      "/wp-content/rocket-test-data/fonts/fa-solid-900.woff2"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_dynamicfont": {
+    "fonts": [
+      "/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-upright-var.woff2",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.woff2",
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/lora/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/opensans/v\\d+/.+\\.woff2$"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_incssonmega": {
+    "fonts": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ceviche-one-v11-latin-regular.woff2",
+      "https://mega.wp-rocket.me/avada/wp-content/rocket-test-data/fonts/bellefair-v6-latin-regular.woff2",
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_incssonmega2": {
+    "fonts": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ceviche-one-v11-latin-regular.woff2",
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$",
+      "https://mega.wp-rocket.me/avada/wp-content/rocket-test-data/fonts/bellefair-v6-latin-regular.woff2"
+    ],
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7493#issuecomment-3079723626",
+    "enabled": false
+  },
+  "preloadfonts_withfeatures": {
+    "fonts": [
+      "/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-upright-var.woff2",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.woff2",
+      "^https://fonts\\.gstatic\\.com/s/lora/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/lobster/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_undefinedfont": {
+    "fonts": [],
+    "enabled": true
+  },
+  "preloadfonts_withasyncscript": {
+    "fonts": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.woff2",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/bellefair-v6-latin-regular.woff2"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_differentfonts": {
+    "fonts": [
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$",
+      "/wp-content/rocket-test-data/fonts/OpenSans-Regular.woff2",
+      "^https://fonts\\.gstatic\\.com/s/lora/v\\d+/.+\\.woff2$"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_fontincsslocal": {
+    "fonts": [
+      "/wp-content/rocket-test-data/fonts/ceviche-one-v11-latin-regular.woff2",
+      "https://mega.wp-rocket.me/avada/wp-content/rocket-test-data/fonts/bellefair-v6-latin-regular.woff2"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_displaywithscript": {
+    "fonts": [
+      "/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-upright-var.woff2",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.woff2",
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/lora/v\\d+/.+\\.woff2$"
+    ],
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7493#issuecomment-3079723626",
+    "enabled": false
+  },
+  "preloadfonts_withsynscript": {
+    "fonts": [
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.woff2",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/bellefair-v6-latin-regular.woff2"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_test_exclusions": {
+    "fonts": [
+      "/wp-content/rocket-test-data/fonts/Linefont-Thin.woff2",
+      "/wp-content/rocket-test-data/fonts/Rubik-LightItalic.woff2",
+      "/wp-content/rocket-test-data/fonts/MonsieurLaDoulaise-Regular.woff2",
+      "/wp-content/rocket-test-data/fonts/UnifrakturCook-Bold.woff2",
+      "^https://fonts\\.gstatic\\.com/s/pacifico/v\\d+/.+\\.woff2$"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_test_crossorigin": {
+    "fonts": [
+      "/wp-content/rocket-test-data/fonts/ceviche-one-v11-latin-regular.woff2",
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$",
+      "/wp-content/rocket-test-data/fonts/UnifrakturCook-Bold.woff2"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_differentformats": {
+    "fonts": [
+      "/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-upright-var.woff2",
+      "/wp-content/rocket-test-data/fonts/OpenSans-Regular.woff",
+      "/wp-content/rocket-test-data/fonts/OpenSans-Regular.woff2",
+      "/wp-content/rocket-test-data/fonts/OpenSans-Regular.ttf"
+    ],
+    "comment": "Missing openSans-Regular.woff2 in actual result, despite being in DB, preload_fonts table, and page source",
+    "enabled": false
+  },
+  "preloadfonts_fontsbelowthefold": {
+    "fonts": [],
+    "enabled": true
+  },
+  "preloadfonts_singlecolon_local": {
+    "fonts": [
+      "/wp-content/rocket-test-data/fonts/OpenSans-Bold.ttf",
+      "/wp-content/rocket-test-data/fonts/test%20font/fa-solid-900.ttf",
+      "/wp-content/rocket-test-data/fonts/More-Punk-Than-You.ttf"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_withinvisiblefont": {
+    "fonts": [
+      "/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-upright-var.woff2"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_displaywithscript2": {
+    "fonts": [
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/lora/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/opensans/v\\d+/.+\\.woff2$",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.woff2"
+    ],
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7493#issuecomment-3079723626",
+    "enabled": false
+  },
+  "preloadfonts_pseudo_simple_local": {
+    "fonts": [
+      "/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-upright-var.woff2",
+      "/wp-content/rocket-test-data/fonts/Softizen.ttf",
+      "/wp-content/rocket-test-data/fonts/More-Punk-Than-You.ttf"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_customDifferentTill1200": {
+    "fonts": [
+      "/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-upright-var.woff2",
+      "/wp-content/rocket-test-data/fonts/%E3%83%95%E3%82%A9%E3%83%B3%E3%83%88.woff2",
+      "/wp-content/rocket-test-data/fonts/OpenSans-Regular.woff2",
+      "/wp-content/rocket-test-data/fonts/OpenSans-Bold.ttf",
+      "/wp-content/rocket-test-data/fonts/test%20font/fa-solid-900.ttf",
+      "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/test-font-with-nonlatinChar%C3%96.woff",
+      "https://rocketlabsqa.ovh/wp-content/rocket-test-data/fonts/ballet-v3-latin-regular.ttf",
+      "/wp-content/rocket-test-data/fonts/fa-solid-900.woff2"
+    ],
+    "comment": "tests failing with timeout for this template. need to investigate",
+    "enabled": false
+  },
+  "preloadfonts_multiple_external_fonts": {
+    "fonts": [
+      "/wp-content/themes/twentytwenty/assets/fonts/inter/Inter-upright-var.woff2",
+      "https://fonts.bunny.net/inter/files/inter-latin-400-normal.woff2",
+      "https://fonts.bunny.net/inter/files/inter-latin-700-normal.woff2",
+      "https://cdn.fontshare.com/wf/5T6APCD6XXAHAFTHDATQKT4RFVWRY3KR/VM6PC4PLGZYYJIHGMT63IIGYLTQKGSH6/TN7F4YNDQ3FJ6JRJV2XDS3CGMFKQRLXV.woff2",
+      "https://cdn.fontshare.com/wf/UDGUA26XVGIV6IQWMQNGGAL7FQZFY227/E6HQU6YVWTGYX3KW3DF66KAAJ224ZDU6/5ZZU4JM62PS7KOJ7BOKLPL3AEO2G76TS.woff2",
+      "^https://fonts\\.gstatic\\.com/s/playfairdisplay/v\\d+/.+\\.woff2$",
+      "https://unpkg.com/@fontsource/raleway@5.2.6/files/raleway-latin-400-normal.woff2",
+      "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/webfonts/fa-solid-900.woff2",
+      "https://unpkg.com/boxicons@2.1.4/fonts/boxicons.woff2",
+      "https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.woff2?t=1734404658139"
+    ],
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7417",
+    "enabled": false
+  },
+  "preloadfonts_20btf_differentweight-style": {
+    "fonts": [
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/opensans/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/lobster/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/pacifico/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/montserrat/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/quicksand/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/oswald/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/slabo27px/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/playfairdisplay/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/raleway/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/ptserif/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/ptserif/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/nunito/v\\d+/.+\\.woff2$"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_10atf_btf_gfonly_inlinestyle": {
+    "fonts": [
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/lobster/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/pacifico/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/montserrat/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/quicksand/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/oswald/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/slabo27px/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/playfairdisplay/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/raleway/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/ptserif/v\\d+/.+\\.woff2$"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_50atf_btf_gfonly_internalcss-3": {
+    "fonts": [
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/opensans/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/lobster/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/pacifico/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/montserrat/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/quicksand/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/oswald/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/slabo27px/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/playfairdisplay/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/raleway/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/ptserif/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/nunito/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/anton/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/permanentmarker/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/lora/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/dancingscript/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/merriweather/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/poppins/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/fredokaone/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/cinzel/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/archivo/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/archivoblack/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/alfaslabone/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/amaticsc/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/andika/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/angkor/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/anticslab/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/arimo/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/asap/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/athiti/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/barlow/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/bevietnam/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/belleza/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/cabin/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/cardo/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/chivo/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/crimsonpro/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/cuprum/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/daysone/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/eater/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/ebgaramond/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/exo/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/exo2/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/firasans/v\\d+/.+\\.woff2$"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_10atf_btf_gfonly_internalstyle": {
+    "fonts": [
+      "^https://fonts\\.gstatic\\.com/s/opensans/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/lobster/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/pacifico/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/montserrat/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/quicksand/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/oswald/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/slabo27px/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/playfairdisplay/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/raleway/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/ptserif/v\\d+/.+\\.woff2$"
+    ],
+    "enabled": true
+  },
+  "preloadfonts_10atf_btf_gfonly_externalcsswithimport": {
+    "fonts": [
+      "^https://fonts\\.gstatic\\.com/s/opensans/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/roboto/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/lobster/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/pacifico/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/montserrat/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/quicksand/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/oswald/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/slabo27px/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/playfairdisplay/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/raleway/v\\d+/.+\\.woff2$",
+      "^https://fonts\\.gstatic\\.com/s/ptserif/v\\d+/.+\\.woff2$"
+    ],
+    "comment": "https://github.com/wp-media/wp-rocket/issues/7493",
+    "enabled": false
+  },
+  "preloadfonts_10atf_10btf_system": {
+    "fonts": [],
     "enabled": true
   }
 }

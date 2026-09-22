@@ -29,21 +29,6 @@ Given('I disabled all settings', async function (this: ICustomWorld) {
 });
 
 /**
- * Executes the step to update to the latest version of the WP Rocket plugin.
- */
-Given('I updated to latest version', async function (this: ICustomWorld) {
-    await this.utils.uploadNewPlugin('./plugin/new_release.zip');
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-    await expect(this.page).toHaveURL(/action=upload-plugin/); 
-    
-    // Replace current with uploaded
-    await this.page.locator('a:has-text("Replace current with uploaded")').click();
-
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-    await expect(this.page).toHaveURL(/overwrite=update-plugin/); 
-});
-
-/**
  * Executes the step to import data.
  */
 When('I import data', async function (this: ICustomWorld) {
@@ -64,7 +49,7 @@ When('I export data {string}', async function (this: ICustomWorld, fileNo: strin
     await this.page.locator('#wpr-nav-tools').click();
     // Export settings.
     const downloadPromise = this.page.waitForEvent('download');
-    await this.page.locator('.wpr-tools:nth-child(2) a').click();
+    await this.page.locator('a[href*="action=rocket_export"]').click();
     const download = await downloadPromise;
     // Wait for the download process to complete
     await download.path();
@@ -135,36 +120,31 @@ Then('data is imported correctly', async function (this: ICustomWorld) {
  */
 Then('data {string} is exported correctly', async function (fileNo: string) {
     const jsonData = await readAnyFile(`./plugin/exported_settings/wp-rocket-settings-test-2023-00-0${fileNo}-64e7ada0d3b70.json`);
-    const exportedSettings: ExportedSettings = JSON.parse(jsonData);
-    const version = parseFloat(exportedSettings['version'].toString());
-
-    if (version >= 3.16) {
-        const exclusions: Array<string> = ['do_caching_mobile_files', 'cache_mobile'];
-        enabledOptions.push(...exclusions);
-    }
-    
-    const validatedExportedSettings = await isExportedCorrectly(exportedSettings, enabledOptions);
-    expect(validatedExportedSettings, 'Settings was not exported correctly.').toBeTruthy();
+    const exportedSettings: ExportedSettings = JSON.parse(jsonData);  
+    const failingSettings = await isExportedCorrectly(exportedSettings, enabledOptions);
+    expect(failingSettings, `Settings not exported correctly, unexpected non-zero values: ${failingSettings.join(', ')}`).toHaveLength(0);
 });
 
+
+
 /**
- * Executes the step to assert that there are no changes in exported files.
+ * Executes the step to assert that nothing changed in settings between two exported files.
  */
-Then('I must not see changes in exported files', async function () {
+Then('Nothing changed in settings {string} compared to {string}', async function (fileNo1: string, fileNo2: string) {
     // Get exported settings data.
-    const jsonData1 = await readAnyFile('./plugin/exported_settings/wp-rocket-settings-test-2023-00-02-64e7ada0d3b70.json');
-    const jsonData2 = await readAnyFile('./plugin/exported_settings/wp-rocket-settings-test-2023-00-03-64e7ada0d3b70.json');
+    const jsonData1 = await readAnyFile(`./plugin/exported_settings/wp-rocket-settings-test-2023-00-0${fileNo2}-64e7ada0d3b70.json`);
+    const jsonData2 = await readAnyFile(`./plugin/exported_settings/wp-rocket-settings-test-2023-00-0${fileNo1}-64e7ada0d3b70.json`);
 
     // Get excluded fields to ignore.
     const regex = new RegExp(diffCheckerExclusions.toString().replaceAll(',', '|'));
-    const result = diff(JSON.parse(jsonData1), JSON.parse(jsonData2));  
+    const result = diff(JSON.parse(jsonData1), JSON.parse(jsonData2));
 
     let counterCheck = 0;
     for (const key in result) {
         if (! regex.test(key)) {
             counterCheck++;
         }
-    } 
+    }
 
-    expect(!(counterCheck > 0), 'Exported data are not similar').toBeTruthy();
+    expect(!(counterCheck > 0), `Settings changed between export '${fileNo2}' and '${fileNo1}'. Found ${counterCheck} differences.`).toBeTruthy();
 });

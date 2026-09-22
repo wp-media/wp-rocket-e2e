@@ -10,15 +10,14 @@
  * @requires {@link ../../../utils/configurations}
  */
 import {expect} from "@playwright/test";
-import wp, {
+import {
     activatePlugin,
     setTransient
 } from "../../../utils/commands";
 import { ICustomWorld } from "../../common/custom-world";
 import {configurations} from "../../../utils/configurations";
 import {match} from "ts-pattern";
-
-const { Given, When, Then } = require("@cucumber/cucumber");
+import { Given, When, Then } from "@cucumber/cucumber";
 
 /**
  * Executes the step to set up a WP account based on the provided status.
@@ -32,6 +31,7 @@ Given('I have an {word} account', { timeout: 60 * 1000 }, async function (this: 
         return
     }
 
+    /* eslint-disable @typescript-eslint/naming-convention */
     await setTransient('wp_rocket_customer_data', JSON.stringify({
         'ID' : 1,
         'firstname' : 'Rocket',
@@ -51,6 +51,7 @@ Given('I have an {word} account', { timeout: 60 * 1000 }, async function (this: 
         'upgrade_infinite_url' : 'https://example.org/upgrade_infinite_url'
     }).replaceAll('"', '\\"')
         .replaceAll('}', '\\}'))
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     await this.page.reload();
 });
@@ -67,6 +68,46 @@ Given('plugin {word} is activated', async function (plugin: string) {
  */
 Then('I must see the banner {string}', async function (this: ICustomWorld, text: string) {
     await expect(this.page.getByText(text)).toBeVisible({ timeout: 15000 });
+});
+
+/**
+ * Executes the step to assert the visibility of a banner with specific selector.
+ */
+Then('I must see the banner using selector {string}', async function (this: ICustomWorld, selector: string) {
+    await expect(this.page.locator(selector)).toBeVisible({ timeout: 15000 });
+});
+
+
+/**
+ * Executes the step to assert the visibility of a banner in iframe with specific text.
+ */
+Then('I must see the banner {string} in iframe {string}', async function (this: ICustomWorld, text: string, iframeSelector: string) {
+    const frameLocator = this.page.frameLocator(iframeSelector);
+
+    // Wait for the text to be present and visible inside the iframe
+    await expect(frameLocator.getByText(text)).toBeVisible({ timeout: 15000 });
+
+    // Ensure the iframe is visible and get its box
+    const iframeBox = await this.page.locator(iframeSelector).boundingBox();
+    if (!iframeBox) {
+        throw new Error(`Iframe ${iframeSelector} is not visible on the page`);
+    }
+
+    // Use the iframe center point on the main page to check topmost element
+    const centerX = iframeBox.x + iframeBox.width / 2;
+    const centerY = iframeBox.y + iframeBox.height / 2;
+
+    const iframeIsTopMost = await this.page.evaluate(({ x, y, sel }) => {
+        const el = document.elementFromPoint(x, y);
+        if (!el) return false;
+        const iframe = document.querySelector(sel);
+        // elementFromPoint returns the topmost element at viewport coords. If it's the iframe element, it's not covered.
+        return el === iframe;
+    }, { x: centerX, y: centerY, sel: iframeSelector });
+
+    if (!iframeIsTopMost) {
+        throw new Error(`Iframe ${iframeSelector} appears to be covered by another element at its center point`);
+    }
 });
 
 /**
@@ -94,7 +135,7 @@ When(/^refresh the page$/, async function (this: ICustomWorld) {
  * Executes the step to save the options on the page.
  */
 When(/^save the option$/, async function (this: ICustomWorld) {
-    await this.page.click('#wpr-options-submit', {force: true})
+    await this.utils.saveSettings();
 });
 
 /**
@@ -109,7 +150,7 @@ When('turn on {string}', async function (this: ICustomWorld, option: string) {
     this.sections.set('fileOptimization');
     this.sections.state(true);
     await this.sections.toggle(optionName);
-    await this.page.click('#wpr-options-submit', {force: true})
+    await this.utils.saveSettings();
 });
 
 /**
@@ -124,7 +165,7 @@ When('I go {string}', async function (this: ICustomWorld, url: string) {
  */
 When('I connect as {string}', async function (this: ICustomWorld, user: string) {
    await this.utils.wpAdminLogout();
-    await this.utils.auth('admin2');
+    await this.utils.auth(user);
 });
 
 /**

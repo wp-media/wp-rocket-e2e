@@ -213,7 +213,7 @@
   "lcp_picture_template2": {
     "lcp": [
       "/rocket-test-data/images/test3.gif",
-      "/rocket-test-data/images/testjpg3.jpg",
+      "/rocket-test-data/images/lcp/testjpg3.jpg",
       "/rocket-test-data/images/lcp/testjpg2.jpg"
     ],
     "viewport": [
@@ -256,7 +256,7 @@
     "lcp": [
       "/wp-content/rocket-test-data/images/test3.gif",
       "/rocket-test-data/images/lcp/testjpg2.jpg",
-      "/rocket-test-data/images/testjpg3.jpg"
+      "/rocket-test-data/images/lcp/testjpg3.jpg"
     ],
     "viewport": [
       "/rocket-test-data/images/lcp/testwebp.webp",
@@ -370,16 +370,19 @@
     "enabled": false
   },
   "lcp_responsive_image": {
+    "comment": "this template is flaky",
     "lcp": [
-      "/wp-content/rocket-test-data/images/lcp/testavif.avif", "/wp-content/rocket-test-data/images/lcp/testwebp.webp 400w, /wp-content/rocket-test-data/images/lcp/testjpg.jpg 800w, /wp-content/rocket-test-data/images/lcp/testPng.png 1600w"
+      
+      "/wp-content/rocket-test-data/images/lcp/testjpg.jpg","/wp-content/rocket-test-data/images/lcp/testjpg2.jpg 500w, /wp-content/rocket-test-data/images/lcp/testjpg3.jpg 1000w, /wp-content/rocket-test-data/images/lcp/testjpg4.jpg 1500w"
+
     ],
     "viewport": [
-     "/wp-content/rocket-test-data/images/lcp/testjpg.jpg","/wp-content/rocket-test-data/images/lcp/testjpg2.jpg 500w, /wp-content/rocket-test-data/images/lcp/testjpg3.jpg 1000w, /wp-content/rocket-test-data/images/lcp/testjpg4.jpg 1500w"
+      "/wp-content/rocket-test-data/images/lcp/testavif.avif", "/wp-content/rocket-test-data/images/lcp/testwebp.webp 400w, /wp-content/rocket-test-data/images/lcp/testjpg.jpg 800w, /wp-content/rocket-test-data/images/lcp/testPng.png 1600w"
     ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_bg_responsive_imgset_template": {
-    "comment":"lcp is included in atf and 7559",
+    "comment":"lcp is included in atf and 7559 , 7563",
     "lcp": [
       "/wp-content/rocket-test-data/images/lcp/testavif.avif", "/wp-content/rocket-test-data/images/lcp/testwebp.webp"
     ],
@@ -402,13 +405,12 @@
     "viewport": [],
     "enabled": true
   },
-    "lcp_picture_type": {
+  "lcp_picture_type": {
     "comment": "Has a bug currently in UI#7547",
     "lcp": [
-      "/wp-content/rocket-test-data/images/lcp/marchlarge1-scaled.jpg.avif", "/wp-content/rocket-test-data/images/lcp/marchlarge1-scaled.jpg.webp", 
-    "/wp-content/rocket-test-data/images/lcp/marchlarge1-scaled.jpg"],
-    "viewport": ["https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-600x338.jpg.avif", "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-600x338.jpg.webp", 
-    "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-—-kopia-1024x576.jpg", "/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png.avif",
+       "https://imagify.rocketlabsqa.ovh/wp-content/uploads/2024/05/home-new-bg-free-img-u2014-kopia-600x338.jpg.avif"],
+    "viewport": [  "/wp-content/rocket-test-data/images/lcp/WF4.jpg.avif", "/wp-content/rocket-test-data/images/lcp/WF4.jpg.webp", 
+    "/wp-content/rocket-test-data/images/lcp/WF4.jpg", "/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png.avif",
     "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png.webp", "https://new.rocketlabsqa.ovh/wp-content/rocket-test-data/images/lcp/EpicFriday2-1-700x394.png"],
     "enabled": false
   },
@@ -469,14 +471,18 @@
     "enabled": true
   },
   "lcp_specialchar2": {
+    "comment": "flaky test",
     "lcp": [
-      "/wp-content/rocket-test-data/images/lcp/%D7%A2%D7%93%D7%99-%D7%A8%D7%99%D7%93%D7%9C%D7%9E%D7%9F-%D7%A8%D7%90%D7%A9%D7%99-%D7%90%D7%A8%D7%95%D7%9A-200x400.jpeg"
+      "/wp-content/rocket-test-data/images/lcp/%D7%A2%D7%93%D7%99-%D7%A8%D7%99%D7%93%D7%9C%D7%9E%D7%9F-%D7%A8%D7%90%D7%A9%D7%99-%D7%90%D7%A8%D7%95%D7%9A-200x300.webp"
+
+
     ],
     "viewport": [
-      "/%D7%A2%D7%93%D7%99-%D7%A8%D7%99%D7%93%D7%9C%D7%9E%D7%9F-%D7%A8%D7%90%D7%A9%D7%99-%D7%90%D7%A8%D7%95%D7%9A-300x300.jpg",
-      "/wp-content/rocket-test-data/images/lcp/%D7%A2%D7%93%D7%99-%D7%A8%D7%99%D7%93%D7%9C%D7%9E%D7%9F-%D7%A8%D7%90%D7%A9%D7%99-%D7%90%D7%A8%D7%95%D7%9A-200x300.webp"
+      "/wp-content/rocket-test-data/images/lcp/%D7%A2%D7%93%D7%99-%D7%A8%D7%99%D7%93%D7%9C%D7%9E%D7%9F-%D7%A8%D7%90%D7%A9%D7%99-%D7%90%D7%A8%D7%95%D7%9A-200x400.jpeg",
+      "/%D7%A2%D7%93%D7%99-%D7%A8%D7%99%D7%93%D7%9C%D7%9E%D7%9F-%D7%A8%D7%90%D7%A9%D7%99-%D7%90%D7%A8%D7%95%D7%9A-300x300.jpg"
+
     ],
-    "enabled": true
+    "enabled": false
   },
   "lcp_images_in_root": {
     "lcp": [

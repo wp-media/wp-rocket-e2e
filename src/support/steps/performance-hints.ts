@@ -130,7 +130,7 @@ When ('{string} page is deleted', async function (this: ICustomWorld, permalink:
     await this.utils.gotoPages();
     await this.page.locator('#post-search-input').fill(permalink);
     await this.page.locator('#search-submit').click();
-    await this.page.locator('td.title.column-title.has-row-actions.column-primary.page-title > strong > a').hover();
+    await this.page.locator('#the-list').getByRole('link', { name: permalink, exact: true }).hover();
     await this.page.waitForSelector('div.row-actions > span.trash > a', { state: 'visible' }); 
     await this.page.locator('div.row-actions > span.trash > a').click();
     await this.page.waitForSelector('#message', { state: 'visible' }); 
@@ -140,5 +140,18 @@ When ('{string} page is deleted', async function (this: ICustomWorld, permalink:
 Then ('untrash and republish {string} page', async function (this: ICustomWorld, permalink: string) {
     const postDataStdout = await getPostDataFromTitle(permalink, 'trash', 'ID,post_title');
     const postData = await extractFromStdout(postDataStdout);
+    
+    if (!postData || postData.length === 0) {
+        throw new Error(`Failed to find page '${permalink}' in trash`);
+    }
+    
     await updatePostStatus(parseInt(postData[0].ID, 10), 'publish');
+    
+    // Verify it actually worked
+    const verifyStdout = await getPostDataFromTitle(permalink, 'publish', 'ID,post_status');
+    const verifyData = await extractFromStdout(verifyStdout);
+    
+    if (!verifyData || verifyData.length === 0 || verifyData[0].post_status !== 'publish') {
+        throw new Error(`Failed to restore page '${permalink}' to published status`);
+    }
 });

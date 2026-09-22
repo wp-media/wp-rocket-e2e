@@ -19,13 +19,23 @@ import { ChromiumBrowser, chromium } from '@playwright/test';
 import { Sections } from '../common/sections';
 import { selectors as pluginSelectors } from "./../common/selectors";
 import { PageUtils } from "../../utils/page-utils";
-import { deleteFolder, isWprRelatedError } from "../../utils/helpers";
+import { deleteFolder, extractFromStdout, isWprRelatedError } from "../../utils/helpers";
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
-import {rename, exists, rm, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile} from "../../utils/commands";
+
+import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
+import { PluginBuilder } from '../../utils/plugin-builder';
 // import {configurations, getWPDir} from "../../utils/configurations";
+
+/**
+ * The name of the template loader plugin.
+ * This plugin must be active before running tests to avoid false positives.
+ * @constant {string}
+ */
+const TEMPLATE_LOADER_PLUGIN = 'template-loader-plugin-master';
+const TEST_HELPER_PLUGIN = 'wp-rocket-e2e-test-helper-main';
 
 /**
  * The Playwright Chromium browser instance used for testing.
@@ -45,21 +55,47 @@ let previousScenarioName: string;
 setDefaultTimeout(process.env.PWDEBUG ? -1 : 60 * 10000);
 
 /**
- * Before all tests, launches the Chromium browser.
+ * Before all tests: validates SSH connectivity, builds plugin artifacts (if configured),
+ * ensures prerequisite plugins are active, and launches the Chromium browser.
  */
 BeforeAll(async function (this: ICustomWorld) {
     try {
+        // ── SSH connectivity check ──────────────────────────────────────────
         await testSshConnection();
 
-        const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/*.log`;
-        await rm(debugLogPath);
+        // ── Build plugin artifacts from Git refs (env vars / overrides) ─────
+        await PluginBuilder.buildAll();
 
+        // ── Clean up previous test artifacts ────────────────────────────────
+        const folderPath = `${WP_SSH_ROOT_DIR}wp-content`;
+        await rmFiles(folderPath, '*.log');
         await deleteFolder('./backstop_data/bitmaps_test');
+
+        // ── Ensure template loader plugin is active ─────────────────────────
+        const isTemplateLoaderInstalled = await isPluginInstalled(TEMPLATE_LOADER_PLUGIN);
+        if (isTemplateLoaderInstalled) {
+            const isTemplateLoaderActive = await isPluginActive(TEMPLATE_LOADER_PLUGIN);
+            if (!isTemplateLoaderActive) {
+                await activatePlugin(TEMPLATE_LOADER_PLUGIN);
+            }
+        } else {
+            console.log('Template loader plugin is not installed, skipping activation check');
+        }
+
+        // ── Launch browser ───────────────────────────────────────────────────
         browser = await chromium.launch({ headless: false });
     } catch (error) {
         console.error('Setup failed: ', error.message);
         throw new Error('Setup failed: ' + error.message);
     }
+});
+
+/**
+ * Before each scenario tagged with @requires-clean-imagify, except those also tagged with
+ * @imagify-compatibility, ensures Imagify is not installed.
+ */
+Before({ tags: '@requires-clean-imagify and not @imagify-compatibility' }, async function (this: ICustomWorld): Promise<void> {
+    await uninstallPlugin('imagify');
 });
 
 /**
@@ -145,6 +181,16 @@ Before({tags: '@setup'}, async function(this: ICustomWorld, {pickle}) {
     this.utils = new PageUtils(this.page, this.sections);
 
     await this.utils.cleanUp();
+
+    // Check if test helper plugin is installed and activate if needed
+    // const isTestHelperInstalled = await isPluginInstalled(TEST_HELPER_PLUGIN);
+    // if (isTestHelperInstalled) {
+    //     const isTestHelperActive = await isPluginActive(TEST_HELPER_PLUGIN);
+    //     if (!isTestHelperActive) {
+    //         await activatePlugin(TEST_HELPER_PLUGIN);
+    //     }
+    // }
+
     this.pickle = pickle;
 });
 
@@ -187,13 +233,38 @@ Before({tags: '@vr'}, async function (this: ICustomWorld) {
 });
 
 /**
+ * Before each test scenario with the @performancehints tag, verifies required pages exist.
+ */
+Before({tags: '@performancehints'}, async function (this: ICustomWorld) {
+    const requiredPages = ['atf-lrc-1', 'atf-lrc-2'];
+    
+    for (const pageName of requiredPages) {
+        const pageDataStdout = await getPostDataFromTitle(pageName, 'publish', 'ID,post_status');
+        const pageData = await extractFromStdout(pageDataStdout);
+        
+        if (!pageData || pageData.length === 0) {
+            throw new Error(
+                `Required test page '${pageName}' does not exist. ` +
+                `Template loader plugin may have failed.`
+            );
+        }
+    }
+});
+
+/**
  * After each test scenario, performs cleanup tasks and captures screenshots and videos in case of failure.
  */
 After(async function (this: ICustomWorld, { pickle, result }) {
     previousScenarioName = pickle.name
 
     if (result?.status == Status.FAILED) {
-        await this.utils.createScreenShot(this, pickle);
+        try {
+            await this.utils?.createScreenShot(this, pickle);
+        } catch (error) {
+            // Log and continue cleanup to ensure debug log handling and browser closing still run
+            // eslint-disable-next-line no-console
+            console.error('Failed to create screenshot during After hook cleanup:', error);
+        }
     }
 
     const debugLogPath = `${WP_SSH_ROOT_DIR}wp-content/debug.log`;
@@ -221,6 +292,47 @@ After(async function (this: ICustomWorld, { pickle, result }) {
  */
 After({tags: '@delaylcp'}, async function (this: ICustomWorld) {
     await uninstallPlugin('rocket-lcp-delay');
+});
+
+/**
+ * After each test scenario with the @renewal or @promo tag, performs teardown tasks.
+ */
+After({tags: '@renewal or @promo'}, async function (this: ICustomWorld) {
+    await reactivatePlugin(TEST_HELPER_PLUGIN);
+});
+
+/**
+ * After each test scenario with the @imagify-compatibility tag, performs teardown tasks.
+ */
+After({tags: '@imagify-compatibility'}, async function (this: ICustomWorld) {
+    // Only uninstall if Imagify is installed
+    if (await isPluginInstalled('imagify')) {
+        await uninstallPlugin('imagify');
+    }
+});
+
+/**
+ * After each test scenario with the @compatibility tag, cleans up the Cloudflare plugin.
+ * Deactivates and removes the Cloudflare plugin via the UI when installed to ensure
+ * credentials and configuration are cleared after compatibility tests.
+ */
+After({tags: '@cloudflare-compatibility'}, async function (this: ICustomWorld) {
+    // Deactivate and remove Cloudflare plugin from UI if it was installed, using UI because CLI doesn't clear credentials
+    if (await isPluginInstalled('cloudflare')) {
+        try {
+            await this.utils.removeCloudflareViaUi();
+        } catch (error) {
+            // Log and continue cleanup to ensure debug log handling and browser closing still run
+            // eslint-disable-next-line no-console
+            console.error('Failed to remove Cloudflare via UI during After hook cleanup:', error);
+        }
+    }
+});
+
+After({tags: '@qm'}, async function (this: ICustomWorld): Promise<void>  {
+    if (await isPluginInstalled('query-monitor')) {
+        await uninstallPlugin('query-monitor');
+    }
 });
 
 /**

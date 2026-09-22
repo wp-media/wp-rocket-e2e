@@ -91,7 +91,7 @@ export interface VRurlConfig {
     }
 }
 export interface Pickle {
-    name: string;
+    name: string;   
 }
 
 export type Viewport = {
@@ -106,6 +106,17 @@ export interface PreloadFontsData {
         fonts: string,
         comment: string
     }
+}
+
+export interface SelfHostGoogleFontsData {
+    fonts: string[];
+    gfParameters?: string;
+    enabled: boolean;
+    comment?: string;
+}
+
+export interface SelfHostGoogleFontsConfig {
+    [key: string]: SelfHostGoogleFontsData;
 }
 
 export interface Row {
@@ -130,4 +141,23 @@ export interface BackupRowData {
     date: string;
     type: string;
     storedOn: string;
+}
+
+/**
+ * Configuration needed to establish an SSH connection.
+ *
+ * Provides the remote host address and the user account to authenticate as.
+ *
+ * @property host - The SSH server address (hostname or IP). For non-standard ports, include the port (e.g. "example.com:2222").
+ * @property username - The username to use when logging into the remote host.
+ *
+ * @example
+ * const cfg: SSHConfig = {
+ *   host: "example.com",
+ *   username: "deploy",
+ * };
+ */
+export type SSHConfig = {
+    host: string;
+    username: string;
 }

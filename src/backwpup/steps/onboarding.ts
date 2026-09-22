@@ -1,38 +1,38 @@
-import {Then, When} from "@cucumber/cucumber";
+import {Given, Then, When} from "@cucumber/cucumber";
 import {ICustomWorld} from "../../common/custom-world";
 import {expect, Page} from "@playwright/test";
+import { clickContinueButton, configureWebServerStorage } from "../utils/helpers";
+import { WP_BASE_URL } from "../../../config/wp.config";
+import { waitForBackupJobCompletion } from "../utils/helpers";
+
+/**
+ * Given step to to do onboarding
+ */
+Given('First backup generated with default settings and local storage', async function (this: ICustomWorld) {
+    await this.page.goto(WP_BASE_URL + '/wp-admin/admin.php?page=backwpup');
+    await clickContinueButton(this.page, '.js-backwpup-onboarding-step-2');
+    await clickContinueButton(this.page, '.js-backwpup-onboarding-step-3');
+    await configureWebServerStorage(this.page);
+    await this.page.goto(WP_BASE_URL + '/wp-admin/admin.php?page=backwpup');
+});
 
 /**
  * Click on save and continue button during onboarding.
  *
 */
 When('I click {string} button to continue', async function (this: ICustomWorld, button) {
-
-    await this.page.waitForSelector(button, {
-        state: 'visible',
-        timeout: 10000
-    });
-
-    await this.page.click(button);
+    await clickContinueButton(this.page, button);
 });
 
 When('I Configure web server storage', async function (this: ICustomWorld) {
-    await this.page.locator('.js-backwpup-toggle-storage').first().click();
-    await this.page.click('.js-backwpup-test-FOLDER-storage')
-
-    //Save and submit onboarding form
-    await this.page.click('.js-backwpup-onboarding-submit-form');
-
-    await this.page.waitForTimeout(60000);
-
-    const closeButton = '#showworkingclose'
-    await this.page.waitForSelector(closeButton, {
-        state: 'visible',
-        timeout: 10000
-    });
-    await this.page.click(closeButton)
+    await configureWebServerStorage(this.page);
 });
 
+Then('I save and submit the onboarding form', async function (this: ICustomWorld) {
+    //Save and submit onboarding form
+    await this.page.click('.js-backwpup-onboarding-submit-form');
+    await waitForBackupJobCompletion(this.page);
+});
 
 /**
  * Set backup frequency to a specific period
@@ -116,8 +116,10 @@ Then('all database tables should be selected', async function (this: ICustomWorl
 
 When('I uncheck the {string} from files backup option', async function (this: ICustomWorld, value: string) {
     await this.page.locator('button[data-content="select-files"][data-job-id="1"]').click();
+    await this.page.waitForSelector('#sidebar-select-files', { state: 'visible' });
 
     const checkbox = this.page.locator(`label:has(input[name="${value}"])`);
+    await checkbox.scrollIntoViewIfNeeded();
     const isChecked = await checkbox.isChecked();
 
     if (isChecked) {
@@ -126,12 +128,15 @@ When('I uncheck the {string} from files backup option', async function (this: IC
 
     await expect(checkbox).not.toBeChecked();
     await this.page.locator('button#file-exclusions-submit').click();
+    await expect(this.page.locator('#sidebar-select-files')).not.toBeInViewport();
 });
 
 When('I uncheck the {string} from database backup option', async function (this: ICustomWorld, value: string) {
     await this.page.locator('button[data-content="select-tables"][data-job-id="1"]').click();
+    await this.page.waitForSelector('#sidebar-select-tables', { state: 'visible' });
 
     const checkbox = this.page.locator(`label:has(input[value="${value}"])`);
+    await checkbox.scrollIntoViewIfNeeded();
     const isChecked = await checkbox.isChecked();
 
     if (isChecked) {
@@ -140,6 +145,59 @@ When('I uncheck the {string} from database backup option', async function (this:
 
     await expect(checkbox).not.toBeChecked();
     await this.page.locator('button#save-excluded-tables').click();
+    await expect(this.page.locator('#sidebar-select-tables')).not.toBeInViewport();
+});
+
+/**
+ * Deactivate a backup data type toggle, ensuring the other one remains active.
+ * At least one of "files" or "database" must remain active at all times.
+ * @step
+ * @param {string} dataType - The backup type to deactivate ('files' or 'database').
+ */
+When('I deactivate {string} backup data', async function (this: ICustomWorld, dataType: string) {
+    // Named checkbox id variables for clarity and easy reuse
+    const filesCheckboxId = 'backup_files';
+    const databaseCheckboxId = 'backup_database';
+
+    const dataTypeConfig: { [key: string]: { checkboxId: string; otherCheckboxId: string } } = {
+        files: {
+            checkboxId: filesCheckboxId,
+            otherCheckboxId: databaseCheckboxId,
+        },
+        database: {
+            checkboxId: databaseCheckboxId,
+            otherCheckboxId: filesCheckboxId,
+        },
+    };
+
+    if (!dataTypeConfig[dataType]) {
+        throw new Error(`Invalid backup data type: "${dataType}". Expected "files" or "database".`);
+    }
+
+    const { checkboxId, otherCheckboxId } = dataTypeConfig[dataType];
+    const targetCheckbox = this.page.locator(`#${checkboxId}`);
+    const otherCheckbox = this.page.locator(`#${otherCheckboxId}`);
+
+    // Ensure the other backup type is active before deactivating the target,
+    // since at least one must remain active at all times.
+    const otherIsChecked = await otherCheckbox.isChecked();
+    if (!otherIsChecked) {
+        await this.page.locator(`label[for="${otherCheckboxId}"]`).click();
+        await expect(otherCheckbox).toBeChecked();
+    }
+
+    // Deactivate the target toggle only if it is currently active.
+    const targetIsChecked = await targetCheckbox.isChecked();
+    if (targetIsChecked) {
+        await this.page.locator(`label[for="${checkboxId}"]`).click();
+    }
+
+    // Assert final state: target is deactivated, other remains active.
+    await expect(targetCheckbox).not.toBeChecked();
+    await expect(otherCheckbox).toBeChecked();
+
+    // Brief settle time to allow the UI to stabilize before the caller continues.
+    await this.page.waitForTimeout(500);
 });
 
 const validateCheckboxSelection = async (page: Page, containerSelector: string, shouldBeChecked: boolean = true): Promise<void> => {

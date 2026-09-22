@@ -1,0 +1,34 @@
+{
+"prefetch_external1": {
+    "domains": ["https://example.com", "https://www.youtube.com"],
+    "enabled": true
+  },
+
+"preconnect_beexclusion": {
+    "domains": [],
+    "enabled": true
+  },
+  
+"preconnect_ext_domains_preload_fonts_compa": {
+    "domains": ["https://fonts.googleapis.com", "https://fonts.bunny.net",
+     "https://www.youtube.com", "https://player.vimeo.com"],
+    "enabled": true
+  },
+
+"preconnect_external_differentelements": {
+    "domains": ["https://example.org"],
+    "enabled": true
+  },
+
+"preconnect_external_dynamiclink": {
+    "domains": ["https://cdn.jsdelivr.net", "https://example.org",
+    "https://unpkg.com"],
+    "enabled": true
+  },
+  
+"preconnect_test_dupli": {
+    "domains": ["https://fonts.googleapis.com", "https://fonts.bunny.net",
+    "https://www.youtube.com","https://player.vimeo.com"],
+    "enabled": true
+  }
+}

@@ -16,11 +16,11 @@ import { ICustomWorld } from "../../common/custom-world";
 import { Given, When, Then } from '@cucumber/cucumber';
 import {WP_BASE_URL} from '../../../config/wp.config';
 import scenarioUrls from "./../../../config/scenarioUrls.json";
-import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl } from "../../../utils/helpers";
+import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl} from "../../../utils/helpers";
 import type { Section } from "../../../utils/types";
-import { Page } from '@playwright/test';
+import { getConsoleMsg, getConsoleMsgWithMenuExpansion } from '../../../utils/page-utils';
 import {
-    deactivatePlugin, installRemotePlugin,
+    deactivatePlugin, installRemotePlugin, wpWithOutput,switchTheme
 } from "../../../utils/commands";
 import backstop from 'backstopjs';
 
@@ -38,6 +38,7 @@ Given('plugin is installed {string}', async function (this: ICustomWorld, plugin
     await this.utils.uploadNewPlugin(`./plugin/${pluginVersion}.zip`);
     await expect(this.page).toHaveURL(/action=upload-plugin/); 
 });
+
 
 /**
  * Executests the step to update WP Rocket plugin.
@@ -59,6 +60,18 @@ Given('plugin is activated', async function (this: ICustomWorld) {
     // Activate WPR
     await this.page.waitForSelector('a:has-text("Activate Plugin")');
     await this.page.locator('a:has-text("Activate Plugin")').click();
+
+    // Wait for the activation request itself to finish server-side before doing
+    // anything else. Steps that follow this one (e.g. "theme is activated via
+    // WP-CLI") bootstrap WordPress independently over SSH; if that bootstrap's
+    // `init` runs while the activation redirect is still being processed, both
+    // requests can call WP Rocket's table-install logic concurrently and one of
+    // them logs a spurious "table already exists" error to debug.log.
+    await this.page.waitForLoadState('load', { timeout: 30000 });
+
+    // Note: WP Rocket's preload cron (scheduled by this activation) used to be
+    // cleared here. That's now handled in PageUtils.cleanUp()'s Before hook instead
+    // (see review discussion on PR #404).
 });
 
 /**
@@ -77,16 +90,25 @@ Given('I save settings {string} {string}', async function (this: ICustomWorld, s
         if (element === 'cacheLoggedUser') {
             await this.sections.set('addons').visit();
             await this.sections.state(true).toggle(element);
+            return;
         }
 
-        return;
-    }   
+        throw new Error(`Cannot save setting '${element}': section '${section}' does not exist on the current page.`);
+    }
 
     await this.sections.set(section).visit();
     await this.sections.state(true).toggle(element);
     await this.utils.saveSettings();
 
 });
+
+/**
+ * Executes the step to save all WP Rocket settings.
+ */
+Given('I save all settings', async function (this: ICustomWorld) {
+        await this.utils.saveSettings();
+});
+
 
 /**
  * Executes the step to activate the WP plugin.
@@ -101,6 +123,25 @@ Given('activate {string} plugin', async function (this: ICustomWorld, plugin) {
  */
 Given('theme {string} is activated', async function (this:ICustomWorld, theme) {
     await this.utils.switchThemeViaUi(theme);
+
+    // Check tags via pickle.
+    if (! await isTagPresent(this.pickle, '@delayjs')) {
+        return;
+    }
+
+    // Set the THEME environment variable to the current theme.
+    process.env.THEME = theme;
+});
+
+/**
+ * Executes the step to activate a theme via WP-CLI
+ *  NOTE: We use WP-CLI-based theme activation (switchTheme) instead of UI-based switching (switchThemeViaUi)
+ *  because it is faster and more reliable for automated tests. This approach may not trigger all the same
+ *  WordPress hooks or actions as switching via the admin UI, but for this scenario, only the active theme
+ *  state is required. If UI-specific side effects are needed, consider using the UI-based method instead.
+ */
+Given('theme {string} is activated via WP-CLI', async function (this:ICustomWorld, theme: string) {
+    await switchTheme(theme);
 
     // Check tags via pickle.
     if (! await isTagPresent(this.pickle, '@delayjs')) {
@@ -169,10 +210,65 @@ Given('I install plugin {string}', async function (pluginUrl) {
 });
 
 /**
- * Executes the step to log in.
+ * Ensures WordPress core is latest stable or newer.
+ * Fails only when current version is lower than latest stable.
+ * Allows prerelease/dev builds (RC, beta, dev) as long as they're >= latest stable numeric release.
  */
-When('I log in', async function (this: ICustomWorld) {
-    await this.utils.auth();
+Given('WordPress core is up to date', async function (): Promise<void> {
+    const currentResult = await wpWithOutput('core version');
+    if (currentResult.failed) {
+        throw new Error(
+            `Failed to read current WordPress version via "wp core version".` +
+            `\nSTDOUT:\n${currentResult.stdout}\nSTDERR:\n${currentResult.stderr}`
+        );
+    }
+
+    const current = (currentResult.stdout ?? '').trim();
+    if (!current) {
+        throw new Error(
+            `Current WordPress version is empty.` +
+            `\nSTDOUT:\n${currentResult.stdout}\nSTDERR:\n${currentResult.stderr}`
+        );
+    }
+
+    const updatesResult = await wpWithOutput("core check-update --field=version");
+    if (updatesResult.failed) {
+        throw new Error(
+            `Failed to check available WordPress updates via "wp core check-update --field=version".` +
+            `\nSTDOUT:\n${updatesResult.stdout}\nSTDERR:\n${updatesResult.stderr}`
+        );
+    }
+
+    const latestStable = (updatesResult.stdout ?? '')
+        .split('\n')
+        .map(v => v.trim())
+        .filter(v => v && !v.includes('-'))
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+        .pop();
+
+    if (!latestStable) return;
+
+    const compare = await wpWithOutput(
+        `eval "echo version_compare('${current.replace(/'/g, "\\'")}', '${latestStable.replace(/'/g, "\\'")}', '>=') ? '1' : '0';"`
+    );
+
+    if (compare.failed) {
+        throw new Error(
+            `Failed to compare WordPress core version against latest stable.` +
+            `\nCurrent: ${current}\nLatest stable: ${latestStable}` +
+            `\nComparison STDOUT:\n${compare.stdout}` +
+            `\nComparison STDERR:\n${compare.stderr}`
+        );
+    }
+
+    if ((compare.stdout ?? '').trim() !== '1') {
+        throw new Error(
+            `WordPress core is below the latest stable version.` +
+            `\nCurrent: ${current}\nLatest stable: ${latestStable}` +
+            `\nComparison STDOUT:\n${compare.stdout}` +
+            `\nComparison STDERR:\n${compare.stderr}`
+        );
+    }
 });
 
 /**
@@ -186,7 +282,7 @@ When('I go to {string}', async function (this: ICustomWorld, page) {
  * Executes the step to click on a specific button.
  */
 When('I click on {string}', async function (this: ICustomWorld, selector) {
-    if (selector === '.wpr-tools:nth-child(4) a') {
+    if (selector === 'a[href*="action=rocket_rollback"]') {
         /**
          * Save WP Rocket last major version.
          */
@@ -263,35 +359,30 @@ When('I visit {string} in mobile view', async function (this:ICustomWorld, page)
     await this.utils.visitPage(page);
 });
 
+
+
 /**
- * Executes the step to expand the mobile menu.
+ * Executes the step to expand mobile menu and validate no console error compared to nowprocket
  */
-When('expand mobile menu', async function (this:ICustomWorld) {
-    let target: string;
+When('expand mobile menu and validate no console error nor warning', async function (this:ICustomWorld) {
     const theme = process.env.THEME ? process.env.THEME : '';
 
-    if (theme === '') {
-        return;
+    // Get console messages when expanding menu on both versions
+    const consoleMsg2 = await getConsoleMsgWithMenuExpansion(this.page, `${WP_BASE_URL}/`);
+    const consoleMsg1 = await getConsoleMsgWithMenuExpansion(this.page, `${WP_BASE_URL}/?nowprocket`);
+    
+    // Compare console messages
+    try {
+        const uniqueMsg1 = [...new Set(consoleMsg1)].sort();
+        const uniqueMsg2 = [...new Set(consoleMsg2)].sort();
+        expect(uniqueMsg2).toEqual(uniqueMsg1);
+    } catch (e) {
+        throw new Error(
+            `\x1b[41m\x1b[37mConsole difference detected when expanding mobile menu for theme '${theme}'\x1b[0m\n` +
+            `nowprocket console: ${consoleMsg1}\nactual console: ${consoleMsg2}`
+        );
     }
-
-    switch (theme) {
-        case 'flatsome':
-            target = '[data-open="#main-menu"]';
-            break;
-        case 'Divi':
-            target = '#et_mobile_nav_menu';
-            break;
-        case 'astra':
-            target = '.ast-mobile-menu-trigger-minimal';
-            break;
-    }
-
-    await this.page.locator(target).click();
 });
-
-/**
- * Executes the step to clear wp rocket cache.
- */
 When('I clear cache', async function (this:ICustomWorld) {
     // Goto WP Rocket dashboard
     await this.utils.gotoWpr();
@@ -434,61 +525,30 @@ Then('I must not see any visual regression in scenario urls', async function (th
 /**
  * Executes the step to check for that there is no console error different from the nowprocket page version.
  */
-Then('no error in the console different than nowprocket page {string}', async function (this: ICustomWorld, path: string) {
+Then('no error nor warning in the console different than nowprocket page {string}', async function (this: ICustomWorld, path: string) {
     const consoleMsg1 = await getConsoleMsg(this.page, `${WP_BASE_URL}/${path}?nowprocket`);
     const consoleMsg2 = await getConsoleMsg(this.page, `${WP_BASE_URL}/${path}`);
 
     if (consoleMsg2.length !== 0) {
-        expect(consoleMsg2).toEqual(consoleMsg1);
+         try {
+                // Get unique messages from both versions
+                const uniqueMsg1 = [...new Set(consoleMsg1)].sort();
+                const uniqueMsg2 = [...new Set(consoleMsg2)].sort();
+
+                // Fail only when the actual (cached/optimized) page logs a message that isn't
+                // present on the nowprocket baseline. A message present on nowprocket but
+                // missing from actual is not a regression introduced by WP Rocket.
+                const newMessages = uniqueMsg2.filter((msg) => !uniqueMsg1.includes(msg));
+                expect(newMessages).toEqual([]);
+            } catch (e) {
+                throw new Error(
+                    `\x1b[41m\x1b[37mConsole difference detected for: ${WP_BASE_URL}/${path}\x1b[0m\n` +
+                    `nowprocket console: ${consoleMsg1}\nactual console: ${consoleMsg2}`
+                );
+            }
     }
 });
 
-const getConsoleMsg = async (page: Page, url: string): Promise<Array<string>> => {
-    const consoleMsg: string[] = [];
-
-    const consoleHandler = (msg): void => {
-        consoleMsg.push(msg.text());
-    };
-
-    const pageErrorHandler = (error: Error): void => {
-        consoleMsg.push(error.message);
-    };
-
-    // Listen for console messages.
-    page.on('console', consoleHandler);
-
-    // Listen for page errors.
-    page.on('pageerror', pageErrorHandler);
-
-    await page.goto(url);
-    await page.waitForLoadState('load', { timeout: 30000 });
-
-    await page.evaluate(async () => {
-        // Scroll to the bottom of page.
-        const scrollPage: Promise<void> = new Promise((resolve) => {
-            let totalHeight = 0;
-            const distance = 100;
-            const timer = setInterval(() => {
-            const scrollHeight = document.body.scrollHeight;
-            window.scrollBy(0, distance);
-            totalHeight += distance;
-    
-            if(totalHeight >= scrollHeight){
-                clearInterval(timer);
-                resolve();
-            }
-            }, 500);
-        });
-    
-        await scrollPage;
-      });
-
-    // Remove the event listeners to prevent duplicate messages.
-    page.off('console', consoleHandler);
-    page.off('pageerror', pageErrorHandler);
-
-    return consoleMsg;
-}
 
 /**
  * Executes the step to assert that page navigation.

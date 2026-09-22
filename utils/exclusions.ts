@@ -15,8 +15,6 @@ export const uiReflectedSettings = [
     'remove_unused_css',
     'async_css',
     'cache_logged_user',
-    'cache_mobile',
-    'do_caching_mobile_files',
     'minify_css',
     'minify_js',
     'minify_concatenate_js',
@@ -35,7 +33,6 @@ export const uiReflectedSettings = [
     'do_cloudflare',
     'sucury_waf_cache_sync',
     'control_heartbeat',
-    'cdn',
     'varnish_auto_purge',
     'image_dimensions',
     'delay_js', 
@@ -43,6 +40,9 @@ export const uiReflectedSettings = [
 
 export const enabledOptions = [
     "lazyload",
+    'cache_mobile',
+    'do_caching_mobile_files',
+    "cdn",
 ];
 
 /**
