@@ -486,16 +486,61 @@ export async function installRemotePlugin(url: string): Promise<void>  {
 }
 
 /**
- * Install a WordPress plugin from a local zip file using the WP-CLI command.
+ * Reads a local zip file's own listing to find its top-level directory name.
+ * WP-CLI/WordPress core extract a plugin zip into wp-content/plugins/<this-name>/,
+ * so this is also the slug `wp plugin activate` expects - and unlike diffing the
+ * plugin list before/after install, it works even when the plugin is already present
+ * (a force-reinstall doesn't add a new entry to that list).
+ *
+ * @param {string} filePath - The local file path to the plugin zip file.
+ * @returns {string} - The zip's top-level directory name.
+ */
+function getZipTopLevelDir(filePath: string): string {
+    const result = exec(`unzip -Z1 ${sanitizeShellArg(filePath)}`, { silent: true });
+    if (result.code !== 0) {
+        throw new Error(`Failed to read contents of zip '${filePath}': ${result.stderr}`);
+    }
+
+    const firstEntry = result.stdout.split('\n').find(line => line.trim().length > 0);
+    if (!firstEntry) {
+        throw new Error(`Zip file '${filePath}' appears to be empty`);
+    }
+
+    return firstEntry.split('/')[0];
+}
+
+/**
+ * Install a WordPress plugin from a local zip file (on the machine running the tests)
+ * using the WP-CLI command. Copies the zip to the WordPress instance, installs it with
+ * --force so re-installing an already-present plugin doesn't fail, then removes the
+ * copied zip regardless of outcome.
  *
  * @function
  * @name installLocalPlugin
  * @async
  * @param {string} filePath - The local file path to the plugin zip file.
- * @returns {Promise<void>} - A Promise that resolves when the installation is completed.
+ * @returns {Promise<string>} - A Promise that resolves with the installed plugin's slug
+ *                              (its wp-content/plugins directory name), for use with
+ *                              `activatePlugin`.
  */
-export async function installLocalPlugin(filePath: string): Promise<void>  {
-    await wp(`plugin install ${filePath}`)
+export async function installLocalPlugin(filePath: string): Promise<string>  {
+    const slug = getZipTopLevelDir(filePath);
+    const fileName = filePath.split('/').pop();
+    const remotePath = `${getWPDir(configurations).replace(/\/$/, '')}/wp-content/plugins/${fileName}`;
+
+    await cp(filePath, remotePath);
+    let installed = false;
+    try {
+        installed = await wp(`plugin install ${remotePath} --force`);
+    } finally {
+        await rm(remotePath);
+    }
+
+    if (!installed) {
+        throw new Error(`Failed to install plugin from '${filePath}'.`);
+    }
+
+    return slug;
 }
 
 /**
@@ -804,6 +849,68 @@ export async function getPostDataFromTitle(title: string, status: string, fields
  */
 export async function updatePostStatus(id: number, status: string): Promise<void> {
     await wp(`post update ${id} --post_status=${status}`);
+}
+
+/**
+ * Runs a raw command on the WordPress server's remote shell.
+ *
+ * Unlike `wp`/`wpWithOutput`, which only support a single `wp <args>` invocation, this accepts
+ * any command string - used for compound one-liners (chained WP-CLI calls via `&&`/`$()`) that
+ * don't fit that shape. External (SSH) servers only.
+ *
+ * @param   {string}   command  The full remote shell command to run.
+ * @return  {Promise<WPCliOutput>}  stdout/stderr/failed, or a failed no-op result for non-external servers.
+ */
+async function runRemoteCommand(command: string): Promise<WPCliOutput> {
+    if (configurations.type !== ServerType.external) {
+        return { stdout: '', stderr: 'runRemoteCommand only supports external SSH servers', failed: true };
+    }
+
+    const cwd = getWPDir(configurations);
+    const client = new NodeSSH();
+    try {
+        await client.connect({
+            host: configurations.ssh.address,
+            username: configurations.ssh.username,
+            privateKeyPath: configurations.ssh.key
+        });
+        const result = await client.execCommand(command, { cwd });
+        return {
+            stdout: result.stdout,
+            stderr: result.stderr,
+            failed: result.code !== 0
+        } as WPCliOutput;
+    } finally {
+        client.dispose();
+    }
+}
+
+/**
+ * Clones a page's content to recreate a required test page that is missing in every status
+ * (not published, not trashed). Runs entirely as one remote command so the post content -
+ * potentially large and multi-line - never round-trips through this process.
+ *
+ * This is a guarded, last-resort fallback (see wp-media/wp-rocket-e2e#310): callers must confirm
+ * the target page is truly absent before calling this, to avoid ever duplicating it under a
+ * `-2` slug.
+ *
+ * @param   {string}   sourceTitle  Title of the untouched page to copy content from.
+ * @param   {string}   newTitle  Title (and slug) to give the recreated page.
+ * @return  {Promise<string>}  The new page's ID, or '' if the source page or creation failed.
+ */
+export async function clonePageContent(sourceTitle: string, newTitle: string): Promise<string> {
+    const command =
+        `SRC_ID=$(wp post list --post_status=publish --post_type=page --field=ID --title='${sourceTitle}') && ` +
+        `test -n "$SRC_ID" && ` +
+        `NEW_ID=$(wp post create --post_type=page --post_status=publish --post_title='${newTitle}' --post_name='${newTitle}' --porcelain) && ` +
+        `wp post update "$NEW_ID" --post_content="$(wp post get "$SRC_ID" --field=post_content)" && ` +
+        `echo "$NEW_ID"`;
+
+    const result = await runRemoteCommand(command);
+    if (result.failed) {
+        return '';
+    }
+    return result.stdout.trim();
 }
 
 /**
