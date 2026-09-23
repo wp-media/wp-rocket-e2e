@@ -556,7 +556,9 @@ export async function forceUninstallPlugin(plugin: string): Promise<void> {
     }
 
     await wpWithOutput(`plugin deactivate ${plugin} --skip-plugins=${plugin}`);
-    await wpWithOutput(`plugin uninstall ${plugin} --skip-plugins=${plugin}`);
+    // `delete`, not `uninstall`: uninstall runs the plugin's own uninstall.php / uninstall hook,
+    // which loads the very code that is fataling. WP-CLI's delete just removes the plugin folder.
+    await wpWithOutput(`plugin delete ${plugin} --skip-plugins=${plugin}`);
 
     if (await isStillInstalled()) {
         throw new Error(
