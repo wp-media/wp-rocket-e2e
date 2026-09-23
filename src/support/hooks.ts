@@ -350,15 +350,16 @@ Before({tags: '@plugin-compatibility'}, async function (this: ICustomWorld) {
  * Uses forceUninstallPlugin so that a plugin fataling on every bootstrap (not just wp-admin
  * requests) - which would otherwise also break WP-CLI's own bootstrap - still gets removed via
  * --skip-plugins, instead of silently staying active and poisoning the rest of the matrix.
+ * No isPluginInstalled() pre-check here: it bootstraps without --skip-plugins, so that same
+ * fatal would make it report "not installed" and skip cleanup. forceUninstallPlugin does its
+ * own --skip-plugins check and returns early if the plugin is genuinely gone.
  */
 After({tags: '@plugin-compatibility'}, async function (this: ICustomWorld): Promise<void> {
     if (!this.activatedPlugin) {
         return;
     }
 
-    if (await isPluginInstalled(this.activatedPlugin)) {
-        await forceUninstallPlugin(this.activatedPlugin);
-    }
+    await forceUninstallPlugin(this.activatedPlugin);
 });
 
 /**
