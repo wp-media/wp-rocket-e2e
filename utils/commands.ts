@@ -520,6 +520,55 @@ export async function uninstallPlugin(plugin: string): Promise<void>  {
 }
 
 /**
+ * Uninstalls a single plugin, retrying with `--skip-plugins=<plugin>` if the plain attempt
+ * leaves it installed. This covers plugins whose code fatals on every WordPress bootstrap
+ * (not just wp-admin requests), which would otherwise also crash WP-CLI's own bootstrap and
+ * leave the plugin stuck active for subsequent scenarios.
+ *
+ * @function
+ * @name forceUninstallPlugin
+ * @async
+ * @param {string} plugin - The plugin slug to uninstall.
+ * @returns {Promise<void>} - A Promise that resolves once the plugin is confirmed uninstalled.
+ * @throws {Error} If the plugin is still installed after both attempts, so the failure to
+ *                  clean up is surfaced loudly rather than silently poisoning later scenarios.
+ */
+export async function forceUninstallPlugin(plugin: string): Promise<void> {
+    // isPluginInstalled() bootstraps WordPress without --skip-plugins, so it can't be trusted
+    // here: if the plugin fatals on every bootstrap (the case this function exists to handle),
+    // that fatal makes the check itself fail and report "not installed" indistinguishably from
+    // it genuinely being gone. Check with --skip-plugins so the result is trustworthy either way.
+    const isStillInstalled = async (): Promise<boolean> => {
+        const result = await wpWithOutput(`plugin is-installed ${plugin} --skip-plugins=${plugin}`);
+        return !result.failed;
+    };
+
+    try {
+        await uninstallPlugin(plugin);
+    } catch {
+        // Swallow and fall through to the --skip-plugins retry below - uninstallPlugin()
+        // throws when the plain WP-CLI call fails, which is exactly the case (the plugin's
+        // own code breaking WP-CLI's bootstrap) this fallback exists to recover from.
+    }
+
+    if (!(await isStillInstalled())) {
+        return;
+    }
+
+    await wpWithOutput(`plugin deactivate ${plugin} --skip-plugins=${plugin}`);
+    // `delete`, not `uninstall`: uninstall runs the plugin's own uninstall.php / uninstall hook,
+    // which loads the very code that is fataling. WP-CLI's delete just removes the plugin folder.
+    await wpWithOutput(`plugin delete ${plugin} --skip-plugins=${plugin}`);
+
+    if (await isStillInstalled()) {
+        throw new Error(
+            `Failed to remove plugin "${plugin}" even with --skip-plugins. It may still be ` +
+            `active and could affect subsequent scenarios - manual cleanup required.`
+        );
+    }
+}
+
+/**
  * Update Permalink.
  *
  * @function
