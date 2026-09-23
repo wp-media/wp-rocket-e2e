@@ -8,7 +8,8 @@ Feature: C397 - Third-party plugins should not cause a PHP fatal error alongside
 
     Background:
         Given I am logged in
-        And WP Rocket 'new_release' is installed and activated once per run
+        And plugin is installed 'new_release'
+        And plugin is activated
 
     Scenario Outline: Activating "<plugin>" should not write a PHP error to debug.log
         Given the "<plugin>" plugin is installed and activated

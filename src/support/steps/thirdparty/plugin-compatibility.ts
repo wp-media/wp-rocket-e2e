@@ -1,41 +1,8 @@
-import { expect } from '@playwright/test';
 import { Given, When } from '@cucumber/cucumber';
 
 import { ICustomWorld } from "../../../common/custom-world";
 import { WP_BASE_URL, WP_SSH_ROOT_DIR } from "../../../../config/wp.config";
 import { activatePlugin, installRemotePlugin, isPluginInstalled, rm } from "../../../../utils/commands";
-
-/**
- * Whether WP Rocket has already been installed and activated once in this process.
- * `cleanUp()` only removes WP Rocket between scenarios when npm_config_env is 'local'
- * (see utils/page-utils.ts), so on the shared/live QA server it stays installed and
- * active across every Example in this Scenario Outline. Re-running "plugin is installed"
- * on Example #2+ would hit WordPress's "this plugin is already installed" screen instead
- * of the normal install flow, with no "Activate Plugin" link - the exact step this suite's
- * Background is built to click. Provisioning WP Rocket once, module-wide, avoids that.
- */
-let wpRocketProvisioned = false;
-
-/**
- * Installs and activates WP Rocket via the admin UI exactly once for the whole run,
- * mirroring the shared "plugin is installed"/"plugin is activated" steps in general.ts -
- * duplicated here (not reused) because this feature is the only one in the suite that
- * needs this idempotent, once-per-run behavior instead of once-per-scenario.
- */
-Given('WP Rocket {string} is installed and activated once per run', async function (this: ICustomWorld, pluginVersion: string) {
-    if (wpRocketProvisioned) {
-        return;
-    }
-
-    await this.utils.uploadNewPlugin(`./plugin/${pluginVersion}.zip`);
-    await expect(this.page).toHaveURL(/action=upload-plugin/);
-
-    await this.page.waitForSelector('a:has-text("Activate Plugin")');
-    await this.page.locator('a:has-text("Activate Plugin")').click();
-    await this.page.waitForLoadState('load', { timeout: 30000 });
-
-    wpRocketProvisioned = true;
-});
 
 /**
  * Installs (if needed) and activates a free, WordPress.org-hosted plugin via WP-CLI,
