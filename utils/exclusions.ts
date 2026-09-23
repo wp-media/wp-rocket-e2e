@@ -58,5 +58,6 @@ export const diffChecker = [
     "minify_css_key",
     "minify_js_key",
     "auto_preload_fonts",
-    "analytics_enabled"
+    "analytics_enabled",
+    "cdn_state"
 ];
