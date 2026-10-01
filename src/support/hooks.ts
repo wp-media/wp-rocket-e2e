@@ -23,7 +23,10 @@ import { deleteFolder, extractFromStdout, isWprRelatedError } from "../../utils/
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 
-import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin} from "../../utils/commands";
+import {rename, exists, rm, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin, wpWithOutput} from "../../utils/commands";
+import { CRON_SUBSCRIBER } from "./steps/cron-unschedule";
+import { UPDATE_MOCK_MU_PLUGIN, UPDATE_PACKAGE_DIR } from "./steps/upgrading-plugin";
+import { COMPOSER_PROJECT_NAME } from "./steps/composer-install";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 import { PluginBuilder } from '../../utils/plugin-builder';
@@ -332,6 +335,37 @@ After({tags: '@cloudflare-compatibility'}, async function (this: ICustomWorld) {
 After({tags: '@qm'}, async function (this: ICustomWorld): Promise<void>  {
     if (await isPluginInstalled('query-monitor')) {
         await uninstallPlugin('query-monitor');
+    }
+});
+
+/**
+ * After each test scenario with the @cronunschedule tag, removes the subscriber used for logged-in visits.
+ */
+After({tags: '@cronunschedule'}, async function (this: ICustomWorld): Promise<void> {
+    await wpWithOutput(`user delete ${CRON_SUBSCRIBER} --yes`);
+});
+
+/**
+ * After each test scenario with the @updatebanner tag, removes the mocked update check and its package.
+ */
+After({tags: '@updatebanner'}, async function (this: ICustomWorld): Promise<void> {
+    await rm(`${WP_SSH_ROOT_DIR}${UPDATE_MOCK_MU_PLUGIN}`);
+    await rm(`${WP_SSH_ROOT_DIR}${UPDATE_PACKAGE_DIR}`);
+    await wpWithOutput('transient delete update_plugins --network');
+    await wpWithOutput('transient delete wp_rocket_update_data --network');
+});
+
+/**
+ * After each test scenario with the @composer tag, removes the Composer install of WP Rocket and its files.
+ */
+After({tags: '@composer'}, async function (this: ICustomWorld): Promise<void> {
+    await uninstallPlugin('wp-rocket');
+    await rm(`${WP_SSH_ROOT_DIR}wp-content/plugins/wp-rocket`);
+
+    // Only remove a composer.json written by the Composer scenario.
+    if ((await readFile(`${WP_SSH_ROOT_DIR}composer.json`)).includes(COMPOSER_PROJECT_NAME)) {
+        await rm(`${WP_SSH_ROOT_DIR}composer.json`);
+        await rm(`${WP_SSH_ROOT_DIR}composer.lock`);
     }
 });
 
