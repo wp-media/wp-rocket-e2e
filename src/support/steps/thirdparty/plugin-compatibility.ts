@@ -11,10 +11,8 @@ import { activatePlugin, installRemotePlugin, isPluginInstalled, rm } from "../.
  */
 Given('the {string} plugin is installed and activated', async function (this: ICustomWorld, plugin: string) {
     if (!(await isPluginInstalled(plugin))) {
-        // A previous scenario that crashed mid-install (this suite's whole point is to trigger
-        // exactly that) can leave a partially-extracted plugin folder on disk without WP ever
-        // registering it as installed. `wp plugin install` refuses to extract into a destination
-        // folder that already exists, so clear it first to guarantee a clean install target.
+        // A crashed earlier scenario can leave a half-extracted folder that WP doesn't see as
+        // installed; `wp plugin install` won't extract over an existing folder, so clear it first.
         await rm(`${WP_SSH_ROOT_DIR}wp-content/plugins/${plugin}`);
         await installRemotePlugin(plugin);
     }

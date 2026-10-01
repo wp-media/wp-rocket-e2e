@@ -534,10 +534,8 @@ export async function uninstallPlugin(plugin: string): Promise<void>  {
  *                  clean up is surfaced loudly rather than silently poisoning later scenarios.
  */
 export async function forceUninstallPlugin(plugin: string): Promise<void> {
-    // isPluginInstalled() bootstraps WordPress without --skip-plugins, so it can't be trusted
-    // here: if the plugin fatals on every bootstrap (the case this function exists to handle),
-    // that fatal makes the check itself fail and report "not installed" indistinguishably from
-    // it genuinely being gone. Check with --skip-plugins so the result is trustworthy either way.
+    // Not isPluginInstalled(): it bootstraps without --skip-plugins, so a plugin that fatals on
+    // every bootstrap would make it report "not installed". --skip-plugins keeps the check reliable.
     const isStillInstalled = async (): Promise<boolean> => {
         const result = await wpWithOutput(`plugin is-installed ${plugin} --skip-plugins=${plugin}`);
         return !result.failed;
@@ -546,9 +544,8 @@ export async function forceUninstallPlugin(plugin: string): Promise<void> {
     try {
         await uninstallPlugin(plugin);
     } catch {
-        // Swallow and fall through to the --skip-plugins retry below - uninstallPlugin()
-        // throws when the plain WP-CLI call fails, which is exactly the case (the plugin's
-        // own code breaking WP-CLI's bootstrap) this fallback exists to recover from.
+        // Fall through to the --skip-plugins retry: a failing plain uninstall (the plugin breaking
+        // WP-CLI's bootstrap) is exactly what that retry recovers from.
     }
 
     if (!(await isStillInstalled())) {
