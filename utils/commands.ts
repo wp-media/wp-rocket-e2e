@@ -566,6 +566,32 @@ export async function forceUninstallPlugin(plugin: string): Promise<void> {
 }
 
 /**
+ * Deactivates a plugin with `--skip-plugins=<plugin>`, so it works even when the plugin fatals on
+ * every WordPress bootstrap (which would otherwise also crash WP-CLI's own bootstrap). Unlike
+ * forceUninstallPlugin, the plugin files are kept: use it for plugins pre-provisioned on the
+ * e2e environment that must survive the scenario.
+ *
+ * @function
+ * @name forceDeactivatePlugin
+ * @async
+ * @param {string} plugin - The plugin slug to deactivate.
+ * @returns {Promise<void>} - A Promise that resolves once the plugin is confirmed inactive.
+ * @throws {Error} If the plugin is still active afterwards, so a helper left active is surfaced
+ *                  loudly rather than silently poisoning later scenarios.
+ */
+export async function forceDeactivatePlugin(plugin: string): Promise<void> {
+    await wpWithOutput(`plugin deactivate ${plugin} --skip-plugins=${plugin}`);
+
+    const stillActive = await wpWithOutput(`plugin is-active ${plugin} --skip-plugins=${plugin}`);
+    if (!stillActive.failed) {
+        throw new Error(
+            `Failed to deactivate plugin "${plugin}" even with --skip-plugins. It could affect ` +
+            `subsequent scenarios - manual cleanup required.`
+        );
+    }
+}
+
+/**
  * Update Permalink.
  *
  * @function

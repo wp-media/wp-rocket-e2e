@@ -23,7 +23,7 @@ import { deleteFolder, extractFromStdout, isWprRelatedError } from "../../utils/
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 
-import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, forceUninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin} from "../../utils/commands";
+import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, forceUninstallPlugin, forceDeactivatePlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 import { PluginBuilder } from '../../utils/plugin-builder';
@@ -351,6 +351,20 @@ After({tags: '@plugin-compatibility'}, async function (this: ICustomWorld): Prom
     }
 
     await forceUninstallPlugin(this.activatedPlugin);
+});
+
+/**
+ * After each test scenario with the @wpr-helper-compatibility tag, deactivates the WP Rocket
+ * helper plugin under test so it is never tested in combination with the next Example's helper.
+ * Deactivate only, not uninstall: helpers are not on WordPress.org, they are pre-installed on the
+ * e2e environment, so removing them would break the next run.
+ */
+After({tags: '@wpr-helper-compatibility'}, async function (this: ICustomWorld): Promise<void> {
+    if (!this.activatedPlugin) {
+        return;
+    }
+
+    await forceDeactivatePlugin(this.activatedPlugin);
 });
 
 /**
