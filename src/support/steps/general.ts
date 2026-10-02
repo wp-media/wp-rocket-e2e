@@ -61,17 +61,12 @@ Given('plugin is activated', async function (this: ICustomWorld) {
     await this.page.waitForSelector('a:has-text("Activate Plugin")');
     await this.page.locator('a:has-text("Activate Plugin")').click();
 
-    // Wait for the activation request itself to finish server-side before doing
-    // anything else. Steps that follow this one (e.g. "theme is activated via
-    // WP-CLI") bootstrap WordPress independently over SSH; if that bootstrap's
-    // `init` runs while the activation redirect is still being processed, both
-    // requests can call WP Rocket's table-install logic concurrently and one of
-    // them logs a spurious "table already exists" error to debug.log.
+    // Let activation finish before later WP-CLI steps bootstrap WP, or both can run
+    // WP Rocket's table install and log a spurious "table already exists" error.
     await this.page.waitForLoadState('load', { timeout: 30000 });
 
-    // Note: WP Rocket's preload cron (scheduled by this activation) used to be
-    // cleared here. That's now handled in PageUtils.cleanUp()'s Before hook instead
-    // (see review discussion on PR #404).
+    // The preload cron this activation schedules is cleared in PageUtils.cleanUp()
+    // instead (see PR #404).
 });
 
 /**
@@ -535,9 +530,8 @@ Then('no error nor warning in the console different than nowprocket page {string
                 const uniqueMsg1 = [...new Set(consoleMsg1)].sort();
                 const uniqueMsg2 = [...new Set(consoleMsg2)].sort();
 
-                // Fail only when the actual (cached/optimized) page logs a message that isn't
-                // present on the nowprocket baseline. A message present on nowprocket but
-                // missing from actual is not a regression introduced by WP Rocket.
+                // Fail only on messages the optimized page logs that the nowprocket baseline
+                // doesn't; a message missing from the optimized page isn't a WP Rocket regression.
                 const newMessages = uniqueMsg2.filter((msg) => !uniqueMsg1.includes(msg));
                 expect(newMessages).toEqual([]);
             } catch (e) {
