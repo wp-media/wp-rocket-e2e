@@ -256,10 +256,11 @@ Before({tags: '@performancehints'}, async function (this: ICustomWorld) {
  */
 After(async function (this: ICustomWorld, { pickle, result }) {
     previousScenarioName = pickle.name
+    let videoPath: string | undefined;
 
     if (result?.status == Status.FAILED) {
         try {
-            await this.utils?.createScreenShot(this, pickle);
+            videoPath = await this.utils?.createScreenShot(this, pickle);
         } catch (error) {
             // Log and continue cleanup to ensure debug log handling and browser closing still run
             // eslint-disable-next-line no-console
@@ -282,6 +283,17 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 
     await this.page?.close()
     await this.context?.close()
+
+    // Video recordings are only finalized into a valid webm container once the context that
+    // owns them closes, so the attach must happen after the closes above. See #407.
+    if (videoPath) {
+        try {
+            await this.utils?.attachVideo(this, videoPath);
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to attach video during After hook cleanup:', error);
+        }
+    }
 
     //  await resetWP();
 
