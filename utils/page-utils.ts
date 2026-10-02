@@ -613,12 +613,8 @@ export class PageUtils {
         // Remove helper plugin.
         await uninstallPlugin('wp-rocket force-wp-mobile');
 
-        // WP Rocket is no longer active at this point, so nothing here can race its
-        // own file writes. Clear any preload cron left pending from the previous
-        // iteration now, rather than relying solely on the guard right after the
-        // next activation - that guard runs while WP Rocket's plugin/config files
-        // can still be getting (re)written, which is exactly the kind of race that
-        // produced spurious "class not found" fatals in debug.log.
+        // Clear leftover preload cron while WP Rocket is inactive; doing it after activation
+        // raced WP Rocket's file writes and caused spurious "class not found" fatals.
         await wpWithOutput('cron event delete rocket_preload_process_pending');
         await wpWithOutput('cron event delete rocket_preload_revert_old_failed_rows');
 

@@ -557,9 +557,8 @@ Then('no error nor warning in the console different than nowprocket page {string
                 const uniqueMsg1 = [...new Set(consoleMsg1)].sort();
                 const uniqueMsg2 = [...new Set(consoleMsg2)].sort();
 
-                // Fail only when the actual (cached/optimized) page logs a message that isn't
-                // present on the nowprocket baseline. A message present on nowprocket but
-                // missing from actual is not a regression introduced by WP Rocket.
+                // Fail only on messages the optimized page logs that the nowprocket baseline
+                // doesn't; a message missing from the optimized page isn't a WP Rocket regression.
                 const newMessages = uniqueMsg2.filter((msg) => !uniqueMsg1.includes(msg));
                 expect(newMessages).toEqual([]);
             } catch (e) {
