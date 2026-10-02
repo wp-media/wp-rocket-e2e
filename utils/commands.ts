@@ -74,8 +74,7 @@ function wrapPrefix(command: string, sshConfig?: SSHConfig): string {
  * @async
  * @param {string} args - Arguments to be passed to the WP-CLI command.
  * @param {boolean} show_errors - Show error
- * @returns {Promise<boolean>} - True unless the command exited with code 1 (external/ssh);
- *                               Docker/local resolve with no value.
+ * @returns {Promise<boolean>} - True if the command exited with code 0, false otherwise.
  * @remarks
  * - On external (ssh) servers, opens a dedicated SSH connection per command and disposes it in a
  *   finally block, so no connection is left open on the server even when connect or exec fails.
@@ -108,11 +107,12 @@ async function wp(args: string, show_errors: boolean = true): Promise<boolean> {
     }
     const command = wrapPrefix(`wp ${args}${root} --path=${cwd}`);
 
-    await exec(command, {
+    const result = exec(command, {
         cwd: configurations.rootDir,
         async: false
     });
 
+    return result.code === 0;
 }
 type WPCliOutput = {
     stdout: string,
@@ -341,6 +341,31 @@ export async function rm(destination: string, sshConfig?: SSHConfig): Promise<vo
 }
 
 /**
+ * Gives paths under wp-content the same owner/group as wp-content itself.
+ *
+ * WP-CLI runs as the SSH user, while wp-admin runs as the web server's PHP user, so anything
+ * WP-CLI creates (an installed plugin's folder, files a plugin writes on activation) would
+ * otherwise be unwritable from wp-admin - breaking later UI steps such as deleting or
+ * replacing the plugin. Paths that don't exist are skipped.
+ *
+ * @function
+ * @name matchWpContentOwnership
+ * @async
+ * @param {string[]} relativePaths - Paths relative to wp-content.
+ * @returns {Promise<void>} - A Promise that resolves when ownership is updated.
+ */
+export async function matchWpContentOwnership(relativePaths: string[]): Promise<void> {
+    const wpContent = `${getWPDir(configurations).replace(/\/$/, '')}/wp-content`;
+    const safeRef = sanitizeShellArg(wpContent);
+    const safePaths = relativePaths.map(path => sanitizeShellArg(`${wpContent}/${path}`)).join(' ');
+    const command = wrapPrefix(`for p in ${safePaths}; do [ -e "$p" ] && sudo chown -R --reference=${safeRef} "$p"; done; true`);
+    await exec(command, {
+        cwd: configurations.rootDir,
+        async: false
+    });
+}
+
+/**
  * Removes files matching a glob pattern directly under a directory.
  *
  * @function
@@ -539,6 +564,8 @@ export async function installLocalPlugin(filePath: string): Promise<string>  {
     if (!installed) {
         throw new Error(`Failed to install plugin from '${filePath}'.`);
     }
+
+    await matchWpContentOwnership([`plugins/${slug}`]);
 
     return slug;
 }
@@ -895,68 +922,6 @@ export async function getPostDataFromTitle(title: string, status: string, fields
  */
 export async function updatePostStatus(id: number, status: string): Promise<void> {
     await wp(`post update ${id} --post_status=${status}`);
-}
-
-/**
- * Runs a raw command on the WordPress server's remote shell.
- *
- * Unlike `wp`/`wpWithOutput`, which only support a single `wp <args>` invocation, this accepts
- * any command string - used for compound one-liners (chained WP-CLI calls via `&&`/`$()`) that
- * don't fit that shape. External (SSH) servers only.
- *
- * @param   {string}   command  The full remote shell command to run.
- * @return  {Promise<WPCliOutput>}  stdout/stderr/failed, or a failed no-op result for non-external servers.
- */
-async function runRemoteCommand(command: string): Promise<WPCliOutput> {
-    if (configurations.type !== ServerType.external) {
-        return { stdout: '', stderr: 'runRemoteCommand only supports external SSH servers', failed: true };
-    }
-
-    const cwd = getWPDir(configurations);
-    const client = new NodeSSH();
-    try {
-        await client.connect({
-            host: configurations.ssh.address,
-            username: configurations.ssh.username,
-            privateKeyPath: configurations.ssh.key
-        });
-        const result = await client.execCommand(command, { cwd });
-        return {
-            stdout: result.stdout,
-            stderr: result.stderr,
-            failed: result.code !== 0
-        } as WPCliOutput;
-    } finally {
-        client.dispose();
-    }
-}
-
-/**
- * Clones a page's content to recreate a required test page that is missing in every status
- * (not published, not trashed). Runs entirely as one remote command so the post content -
- * potentially large and multi-line - never round-trips through this process.
- *
- * This is a guarded, last-resort fallback (see wp-media/wp-rocket-e2e#310): callers must confirm
- * the target page is truly absent before calling this, to avoid ever duplicating it under a
- * `-2` slug.
- *
- * @param   {string}   sourceTitle  Title of the untouched page to copy content from.
- * @param   {string}   newTitle  Title (and slug) to give the recreated page.
- * @return  {Promise<string>}  The new page's ID, or '' if the source page or creation failed.
- */
-export async function clonePageContent(sourceTitle: string, newTitle: string): Promise<string> {
-    const command =
-        `SRC_ID=$(wp post list --post_status=publish --post_type=page --field=ID --title='${sourceTitle}') && ` +
-        `test -n "$SRC_ID" && ` +
-        `NEW_ID=$(wp post create --post_type=page --post_status=publish --post_title='${newTitle}' --post_name='${newTitle}' --porcelain) && ` +
-        `wp post update "$NEW_ID" --post_content="$(wp post get "$SRC_ID" --field=post_content)" && ` +
-        `echo "$NEW_ID"`;
-
-    const result = await runRemoteCommand(command);
-    if (result.failed) {
-        return '';
-    }
-    return result.stdout.trim();
 }
 
 /**

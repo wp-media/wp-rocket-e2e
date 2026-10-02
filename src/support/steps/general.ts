@@ -20,7 +20,7 @@ import { compareReference, isTagPresent, getScenarioTag, batchUpdateVRTestUrl} f
 import type { Section } from "../../../utils/types";
 import { getConsoleMsg, getConsoleMsgWithMenuExpansion } from '../../../utils/page-utils';
 import {
-    activatePlugin, deactivatePlugin, installLocalPlugin, installRemotePlugin, wpWithOutput,switchTheme
+    activatePlugin, deactivatePlugin, installLocalPlugin, installRemotePlugin, matchWpContentOwnership, wpWithOutput,switchTheme
 } from "../../../utils/commands";
 import backstop from 'backstopjs';
 
@@ -94,6 +94,11 @@ Given('plugin is activated', async function (this: ICustomWorld) {
     }
 
     await activatePlugin(this.installedPluginSlug);
+
+    // Files WP Rocket writes on activation are created by the WP-CLI (SSH) user; hand them
+    // to the web server user so later wp-admin steps (settings saves, delete, upgrade) can
+    // still rewrite or remove them.
+    await matchWpContentOwnership(['advanced-cache.php', 'wp-rocket-config', 'cache']);
 });
 
 /**
