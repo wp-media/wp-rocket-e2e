@@ -40,7 +40,7 @@ CI on PRs is only "Typescript eslint" and "PR Template Checker" — no CI job ru
 
 3. **Check for parent epics** — if `Parent Epic (GitHub)` or `Parent Epics (Task List)` has entries, sync each parent with `issue-sync.sh <epic-N>` and read those files for context. (Related issues are synced automatically unless `WPROCKET_E2E_SYNC_RELATED=0`.)
 
-4. **Check for a linked WP Rocket / BackWPup issue or PR** — e2e issues often automate a TestRail case or a QA checklist from a `wp-media/wp-rocket` (or BackWPup) issue/PR. If one is linked, note it; the grooming agent will read it with `gh issue view <N> --repo wp-media/wp-rocket` / `gh pr view`. The `issue-sync.sh` script only syncs `wp-media/wp-rocket-e2e` issues.
+4. **Check for a linked WP Rocket / BackWPup issue or PR** — e2e issues often automate a TestRail case or a QA checklist from a `wp-media/wp-rocket` (or BackWPup) issue/PR. If one is linked, note it; the grooming agent will read it with `gh issue view <N> --repo wp-media/wp-rocket --json title,body,comments` / `gh pr view <N> --repo wp-media/wp-rocket --json title,body,state`. The `issue-sync.sh` script only syncs `wp-media/wp-rocket-e2e` issues.
 
 5. **Check if this is an Epic** — if the issue has label `epics`, Issue Type `EPIC`, or has sub-issues listed, ask the user: "Work the epic as a whole, or a specific sub-issue?" If a sub-issue is chosen, sync it and proceed with the epic context in mind.
 

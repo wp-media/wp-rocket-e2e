@@ -41,7 +41,7 @@ You receive (from the orchestrator or the `qa` skill):
 ```bash
 # 1. Resolve the PR number from the issue number, then check out the branch
 ISSUE_NUMBER=<N>  # the GitHub issue number — the primary identifier throughout
-PR_NUMBER=$(gh issue view $ISSUE_NUMBER --repo wp-media/wp-rocket-e2e --json pullRequests --jq '.pullRequests[0].number // empty')
+PR_NUMBER=$(gh pr list --repo wp-media/wp-rocket-e2e --state open --search "$ISSUE_NUMBER in:body" --json number --jq '.[0].number // empty')
 if [ -z "$PR_NUMBER" ]; then
   echo "ERROR: No PR linked to issue #$ISSUE_NUMBER"
   exit 1
@@ -72,7 +72,7 @@ If `npm ci` fails, that is a FAIL for the PR when `package.json`/`package-lock.j
 Collect the following before doing anything else:
 
 1. **Ticket specification** — in order of preference:
-   - The linked issue from the PR body (`Fixes #N`, `Closes #N`, or a URL): `gh issue view N --repo wp-media/wp-rocket-e2e`.
+   - The linked issue from the PR body (`Fixes #N`, `Closes #N`, or a URL): `gh issue view N --repo wp-media/wp-rocket-e2e --json title,body,comments`.
    - The PR body: `gh pr view $PR_NUMBER --repo wp-media/wp-rocket-e2e --json body -q .body` — especially **"How to test"**, which usually names the tags/scenarios to run.
    - The input provided to you, and the grooming spec at `.TemporaryItems/Issues/wp-rocket-e2e/issues/<N>-spec.md` if it exists.
    - If the e2e issue links a WP Rocket issue/PR or a TestRail case (the behavior being automated), read it — that is the behavior the scenario must prove.

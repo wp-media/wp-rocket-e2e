@@ -19,7 +19,7 @@ You receive:
 
 ## Step 1 — Read
 
-Read the issue file in full, then the spec file in full. Do not start reviewing until you have read both. If the spec cites a linked WP Rocket issue/PR, skim it (`gh issue view <M> --repo wp-media/wp-rocket` / `gh pr view <M> --repo wp-media/wp-rocket`) to check the spec's expected behavior matches it.
+Read the issue file in full, then the spec file in full. Do not start reviewing until you have read both. If the spec cites a linked WP Rocket issue/PR, skim it (`gh issue view <M> --json title,body --repo wp-media/wp-rocket` / `gh pr view <M> --repo wp-media/wp-rocket`) to check the spec's expected behavior matches it.
 
 Verify claims against the code with Grep/Glob (`src/features/`, `src/support/`, `src/backwpup/`, `src/common/`, `utils/`, `package.json`, `cucumber.json`) — do not take "reuse existing step X" or "helper Y exists" on trust.
 

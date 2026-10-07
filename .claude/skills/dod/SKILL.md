@@ -163,7 +163,7 @@ cat .claude/skills/issue-workflow/refs/pr-template.md
 
 Then fetch the PR body:
 - Layer 1: read `.TemporaryItems/Issues/wp-rocket-e2e/pull/<N>.md`
-- Layer 2: `gh pr view <PR_NUMBER> --repo wp-media/wp-rocket-e2e --json body -q .body`
+- Layer 2: `gh api repos/wp-media/wp-rocket-e2e/pulls/<PR_NUMBER> --jq .body`
 
 Check that all required sections from the template are present and non-empty:
 - Description (with `Fixes #N`)
@@ -180,6 +180,13 @@ Check that all required sections from the template are present and non-empty:
 - Additional Checks
 
 The `PR Template Checker` CI (`wp-media/pr-checklist-action`) enforces the checklist — an unticked mandatory item without justification fails it.
+
+**Layer 2 — description matches the code.** Present is not enough; compare the body with the full PR diff (`git diff origin/<base>...HEAD`):
+- Every tag added or renamed in a `.feature` file, and every new `test:<tag>` script, appears in **How to test** (the command to run it) and **Documentation**. "How to test" pointing at tags or scenarios that no longer exist or no longer cover the change → **FAIL**.
+- New or changed steps, hooks and shared helpers are mentioned in **Documentation**.
+- Changes to shared infrastructure (`src/support/hooks.ts`, `src/backwpup/support/hooks.ts`, `utils/page-utils.ts`, `utils/commands.ts`, `src/common/*`, steps in `general.ts`) are listed under **Risks** / **Affected Features**.
+- New site prerequisites (plugin zips, pre-installed plugins, config keys) are under **New dependencies**.
+Any other mismatch → **WARN**, naming the section and what is missing, so the orchestrator can sync it (Step 6b).
 
 Also confirm the body contains no credentials, SSH details, or private hostnames.
 

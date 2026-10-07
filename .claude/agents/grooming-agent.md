@@ -53,8 +53,8 @@ The following steps MUST be completed before returning:
    If a parent epic file exists (noted in the issue), read it too for context.
 2. **Linked WP Rocket issue/PR.** E2E issues often automate a QA checklist or reproduce a bug from the product repo. If the issue links or references a `wp-media/wp-rocket` issue or PR (URL, `wp-media/wp-rocket#123`, or a TestRail case that points to one), read it for the expected product behavior:
    ```bash
-   gh issue view <M> --repo wp-media/wp-rocket --comments
-   gh pr view <M> --repo wp-media/wp-rocket --comments   # plus `gh pr diff` if the UI/markup changed
+   gh issue view <M> --repo wp-media/wp-rocket --json title,body,state,comments
+   gh pr view <M> --repo wp-media/wp-rocket --json title,body,state,mergedAt,comments   # plus `gh pr diff` if the UI/markup changed
    ```
    Note whether a linked PR is **merged and released**, merged but unreleased, or still open — that determines which plugin build the scenario needs (`plugin/new_release.zip`, or a build via `E2E_WPR_NEW_REF`) and whether the test can pass today.
 

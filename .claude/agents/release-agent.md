@@ -173,20 +173,22 @@ Then assign and label:
 gh label list --repo wp-media/wp-rocket-e2e --json name -q '.[].name' | grep -q "^Made by AI$" \
   || gh label create "Made by AI" --repo wp-media/wp-rocket-e2e --color "0075ca" --description "Created or assisted by an AI agent"
 
-gh pr edit "$PR_NUMBER" --repo wp-media/wp-rocket-e2e --add-assignee @me --add-label "Made by AI"
+# REST, not `gh pr edit` — that fails on this repo with a "Projects (classic)" GraphQL error
+gh api -X POST "repos/wp-media/wp-rocket-e2e/issues/$PR_NUMBER/labels" -f "labels[]=Made by AI" --silent
+gh api -X POST "repos/wp-media/wp-rocket-e2e/issues/$PR_NUMBER/assignees" -f "assignees[]=$(gh api user --jq .login)" --silent
 ```
 
 Verify both were applied:
 ```bash
 gh pr view "$PR_NUMBER" --repo wp-media/wp-rocket-e2e --json assignees,labels -q '{assignees: [.assignees[].login], labels: [.labels[].name]}'
 ```
-If `labels` does not include `"Made by AI"` or `assignees` is empty, retry the `gh pr edit` command once. If it still fails, log the error in `notes` — do not proceed silently.
+If `labels` does not include `"Made by AI"` or `assignees` is empty, retry the two `gh api` commands once. If it still fails, log the error in `notes` — do not proceed silently.
 
 Verify the AI-generated notice is the first line of the live PR body:
 ```bash
 gh pr view "$PR_NUMBER" --repo wp-media/wp-rocket-e2e --json body -q .body | head -1
 ```
-If the first line is not the notice, edit the PR body to fix it.
+If the first line is not the notice, fix the body with `gh api -X PATCH repos/wp-media/wp-rocket-e2e/pulls/$PR_NUMBER -F body=@<file>`.
 
 ---
 

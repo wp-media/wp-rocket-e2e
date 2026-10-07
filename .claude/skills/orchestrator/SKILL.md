@@ -205,9 +205,12 @@ fields — prose is for human readability only.
     "hesitations": ["what was unclear or uncertain during implementation"],
     "decision_rationale": "why the chosen approach was taken over the alternatives"
   },
+  "pr_description_updates": [{ "section": "string", "text": "string" }],
   "notes": "string"
 }
 ```
+
+`pr_description_updates` is only used on fix loops — see Step 6b.
 
 `tests_passing` is `true` only when `test-developer` ran the changed scenarios for real
 against the target site (`e2e-run` skill, `--retry 0`) and they passed, after `npm run lint`
@@ -513,6 +516,36 @@ Update the decisions strip Pull request field with the PR URL.
 
 ---
 
+### Step 6b — PR description sync *(after every fix push)*
+
+Every time `test-developer` pushes a fix after the PR exists (DOD L2, Lead Review or QA
+loop-backs in Steps 7–9, and "tackle" items in Step 10), sync the PR description **before**
+re-running the gates:
+
+1. Read `pr_description_updates` from the test-developer return JSON.
+2. If it is empty, still compare the fix commit's diff (`git diff <previous-head>..HEAD`)
+   against the description: a new or renamed tag/npm script must appear in **How to test**
+   and **Documentation**; a change to shared hooks, `PageUtils` or `utils/commands.ts`
+   must appear in **Risks**. If something is missing, write the update yourself.
+3. Apply the updates with the REST API (`gh pr edit` fails on this repo, see below). Replace
+   only the content under each affected heading; keep every template heading and checklist
+   line exactly as it is, so the PR Template Checker still passes:
+   ```bash
+   gh api repos/wp-media/wp-rocket-e2e/pulls/<PR#> --jq .body > "$TMP/pr-body.md"
+   # edit the affected sections in $TMP/pr-body.md
+   gh api -X PATCH repos/wp-media/wp-rocket-e2e/pulls/<PR#> -F body=@"$TMP/pr-body.md" --jq .html_url
+   ```
+4. Log an AGENT event "PR description synced" listing the sections changed, or "no change".
+
+DOD L2 Check 4 then verifies the description against the diff.
+
+**GitHub CLI on this repo:** commands that load the whole PR or issue (`gh pr edit`,
+`gh pr view <N>` / `gh issue view <N>` without `--json`, `gh issue edit`) fail with a
+"Projects (classic) is being deprecated" GraphQL error. Always pass `--json <fields>` to
+`view`, and use `gh api` (REST) to edit bodies, labels and assignees.
+
+---
+
 ### Steps 7–9 — Parallel quality gates
 
 After the PR is created (Step 6), GitHub Actions CI ("Typescript eslint", "PR Template
@@ -526,6 +559,9 @@ QA           ──────────────────┘
 ```
 
 CI is monitored by DOD L2 Check 5.
+
+Whenever a routing table below says "re-push", run Step 6b right after the push and before
+re-running any gate.
 
 **Spawning:**
 - **DOD L2** — invoke the `dod` skill with `layer: "2"` in your context. DOD L2 polls
@@ -703,33 +739,35 @@ If the list is non-empty:
 ### Step 11 — Finalize
 
 1. **Collect all NTH ticket URLs** — gather every URL returned by `ticket-writer` throughout
-   the run (from grooming, challenger, lead review, and QA dispatches). Update the PR body
+   the run (from grooming, challenger, lead review, and QA dispatches). Update the PR body (REST PATCH, as in Step 6b)
    to append or replace the "Follow-up tickets" section with links to all created tickets.
    If no NTH tickets were created, write "None".
-2. Update PR body: replace "What was tested" with the full QA report
+2. Update PR body: replace "What was tested" with the full QA report (REST PATCH, as in Step 6b)
 3. Move PR out of draft — this step is **mandatory and must be verified**:
    ```bash
-   gh pr ready <PR#>
+   gh pr ready <PR#> --repo wp-media/wp-rocket-e2e \
+     || gh api graphql -f query='mutation($id:ID!){markPullRequestReadyForReview(input:{pullRequestId:$id}){pullRequest{isDraft}}}' \
+          -F id="$(gh api repos/wp-media/wp-rocket-e2e/pulls/<PR#> --jq .node_id)"
    # Verify isDraft == false
-   gh pr view <PR#> --json isDraft,labels -q '{isDraft: .isDraft, labels: [.labels[].name]}'
+   gh pr view <PR#> --repo wp-media/wp-rocket-e2e --json isDraft,labels -q '{isDraft: .isDraft, labels: [.labels[].name]}'
    ```
-   If `isDraft` is still `true`, run `gh pr ready <PR#>` again and re-verify. Do not proceed
-   until the PR is confirmed out of draft.
+   If `isDraft` is still `true`, run the GraphQL mutation above again and re-verify. Do not
+   proceed until the PR is confirmed out of draft.
 
    Also verify `Made by AI` is still on the PR labels. If it is missing, re-apply it:
    ```bash
-   gh pr edit <PR#> --add-label "Made by AI"
+   gh api -X POST repos/wp-media/wp-rocket-e2e/issues/<PR#>/labels -f "labels[]=Made by AI" --silent
    ```
 
    Then transition the linked issue label from `In Progress` → `Ready for review` (best-effort — log the skip if the label does not exist rather than failing the pipeline):
    ```bash
    ISSUE_N=<N>
    # Remove "In Progress" label if present
-   gh issue edit $ISSUE_N --repo wp-media/wp-rocket-e2e --remove-label "In Progress" 2>/dev/null || true
+   gh api -X DELETE "repos/wp-media/wp-rocket-e2e/issues/$ISSUE_N/labels/In%20Progress" --silent 2>/dev/null || true
    # Add "Ready for review" label (create it if missing)
    gh label list --repo wp-media/wp-rocket-e2e --json name -q '.[].name' | grep -q "^Ready for review$" \
      || gh label create "Ready for review" --repo wp-media/wp-rocket-e2e --color "0e8a16" --description "Ready for human review" 2>/dev/null || true
-   gh issue edit $ISSUE_N --repo wp-media/wp-rocket-e2e --add-label "Ready for review" 2>/dev/null || true
+   gh api -X POST "repos/wp-media/wp-rocket-e2e/issues/$ISSUE_N/labels" -f "labels[]=Ready for review" --silent 2>/dev/null || true
    ```
 4. Post final summary to the GitHub issue as a comment. The table is the entire body — no prose before or after it. Lead Review and QA details live on the PR; the issue comment must not repeat them.
 5. Log final ROUTING DECISION event: "Pipeline complete — READY FOR REVIEW"

@@ -138,7 +138,8 @@ Return the following JSON object directly to the orchestrator.
       { "name": "automated-tests", "status": "PASS|WARN", "evidence": "N scenarios passed with --retry 0, or SKIP reason" },
       { "name": "documentation", "status": "PASS|WARN", "evidence": "README/copilot-instructions updated, or SKIP if nothing user-visible changed" },
       { "name": "pr-description", "status": "PASS|WARN", "evidence": "draft filled" },
-      { "name": "ci", "status": "PASS|WARN", "evidence": "npm run lint: 0 errors · tsc: no new errors · cucumber dry-run: 0 undefined/ambiguous" }
+      { "name": "ci", "status": "PASS|WARN", "evidence": "npm run lint: 0 errors · tsc: no new errors · cucumber dry-run: 0 undefined/ambiguous" },
+      { "name": "file-scope", "status": "PASS|WARN", "evidence": "all changed files within the dispatch file_scope" }
     ]
   },
   "co_authored_by": "CURRENT_MODEL <noreply@anthropic.com>",
@@ -147,9 +148,14 @@ Return the following JSON object directly to the orchestrator.
     "hesitations": ["what was unclear or uncertain — spec gaps, flaky timing, site state assumptions, behaviour not covered by a run"],
     "decision_rationale": "why the chosen approach was taken over the alternatives"
   },
+  "pr_description_updates": [
+    { "section": "exact template heading, e.g. How to test", "text": "full replacement text for that section" }
+  ],
   "notes": "any deviations from spec with reason, or empty string"
 }
 ```
+
+`pr_description_updates` is for fix loops (a PR already exists). List every PR template section whose content no longer matches the code after your fix — typically **How to test** (tags or commands changed), **Documentation** (steps, hooks, helpers added or changed), **Risks** (shared hooks/helpers touched, new site side effects), **Affected Features & Quality Assurance Scope**. Give the full new text of each section, not a diff. Use an empty array when nothing in the description changes, and on the first implementation (the release-agent writes the initial description).
 
 `tests_passing` must reflect real scenario runs, not just lint or dry-run. If no real run happened, it is `false` and `test_output` says why.
 

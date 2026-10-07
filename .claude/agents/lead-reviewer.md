@@ -43,7 +43,7 @@ EXISTING_REVIEW_ID=$(gh api repos/wp-media/wp-rocket-e2e/issues/{ISSUE_NUMBER}/c
    ```bash
    git diff <base-branch>
    ```
-5. If the spec or issue links a WP Rocket issue/PR (the behavior under test), skim it (`gh issue view <N> --repo wp-media/wp-rocket` / `gh pr view <N> --repo wp-media/wp-rocket`) so you can judge whether the scenario actually asserts that behavior.
+5. If the spec or issue links a WP Rocket issue/PR (the behavior under test), skim it (`gh issue view <N> --repo wp-media/wp-rocket --json title,body` / `gh pr view <N> --repo wp-media/wp-rocket --json title,body,state`) so you can judge whether the scenario actually asserts that behavior.
 
 ---
 
