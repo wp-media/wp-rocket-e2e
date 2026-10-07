@@ -61,11 +61,10 @@ belong in `wp-media/wp-rocket` (or BackWPup's repo) — only create them there w
    ```
    If a template exists, read it and use it. If not, use the built-in template below.
 
-5. Search for duplicates before creating:
-   ```bash
-   gh issue list --repo wp-media/wp-rocket-e2e --search "<keywords>" --state all
-   ```
-   If duplicates are found, surface them and ask whether to proceed.
+5. Search for duplicates before creating — follow **Duplicate check** below. If it finds a
+   duplicate or a likely duplicate, show it to the user (number, title, state, why it
+   matches) and ask whether to use the existing issue, or to create a new one anyway and
+   link it. Do not create anything until they answer.
 
 6. Determine scope: single issue or EPIC?
    - **EPIC**: create the EPIC issue first (label `project`), then create sub-tickets
@@ -110,6 +109,23 @@ belong in `wp-media/wp-rocket` (or BackWPup's repo) — only create them there w
 
 ---
 
+## Duplicate check (both modes)
+
+Run it before every `gh issue create`. Never skip it.
+
+1. Run 2–3 searches over open and closed issues, each with different keywords: the key words
+   of the title, the tag or feature (e.g. `@delayjs`, "delay JS"), and the file, step or
+   helper name (e.g. `clearWPRCache`, `hooks.ts`). Use the REST search (it returns the closed
+   reason; `gh issue list --json` lacks it on older gh versions such as 2.45):
+   ```bash
+   gh api -X GET search/issues -f q="repo:wp-media/wp-rocket-e2e is:issue <keywords>" \
+     --jq '.items[:10][] | "\(.number)\t\(.state)\t\(.state_reason)\t\(.title)"'
+   ```
+2. For the closest candidates, read the body (`gh issue view <N> --repo wp-media/wp-rocket-e2e --json title,body,state`).
+   A **duplicate** asks for the same change to the same scenario, step, helper or behavior.
+   Same area with a different change is not a duplicate; mention it as related instead.
+3. Record what you searched and the result (`duplicate_of`, `related`) in the return object.
+
 ## Mode: nth_followup
 
 Receive a single NTH feedback item from the orchestrator:
@@ -126,7 +142,19 @@ Receive a single NTH feedback item from the orchestrator:
 
 For NTH items:
 - **Do not ask clarifying questions.** The orchestrator has already classified these.
-- Create a follow-up ticket immediately with label `enhancement` (or `Test Maintenance` for
+- Run the **Duplicate check** first, then act on the result without asking:
+  - **Open duplicate:** do not create an issue. Add a comment to the existing issue so the new
+    occurrence is recorded, and return `ticket_created: false` with `duplicate_of` set:
+    ```bash
+    gh api -X POST repos/wp-media/wp-rocket-e2e/issues/<existing>/comments \
+      -f body="> 🤖 AI-generated — the same point came up again in <source_pr_or_ticket> (<source_agent>, <severity>): <description>"
+    ```
+  - **Duplicate closed as `not_planned`:** do not create or comment. Return
+    `ticket_created: false`, `duplicate_of` set and `skipped_reason: "closed as not planned"`.
+  - **Duplicate closed as `completed`:** the problem came back. Create a new issue that links
+    the old one ("Previously fixed in #<old>; came up again in <source_pr_or_ticket>").
+  - **No duplicate:** create the issue as below; list any related issues in its body.
+- Create a follow-up ticket with label `enhancement` (or `Test Maintenance` for
   refactoring/cleanup of existing tests). Always add the `Made by AI` label too (ensure it exists, as in create mode step 7).
 - Title format: short imperative statement derived from the `description` field.
 - Body: include the `source_agent`, `source_pr_or_ticket`, and `suggestion` as context.
@@ -155,7 +183,7 @@ EOF
   --label "Made by AI" --label "Test Maintenance"
 ```
 
-Create the issue and return immediately. Do NOT wait for a response.
+Create the issue (or comment on the duplicate) and return immediately. Do NOT wait for a response.
 
 ---
 
@@ -170,9 +198,16 @@ Create the issue and return immediately. Do NOT wait for a response.
   "description": "Full ticket content as markdown",
   "labels": ["enhancement", "Made by AI"],
   "sub_tickets": [],
-  "ticket_created": true
+  "ticket_created": true,
+  "duplicate_of": "URL of the existing issue when one was found and reused, or null",
+  "duplicate_comment_url": "URL of the comment added to the existing issue (nth_followup), or null",
+  "skipped_reason": "why nothing was created or commented (e.g. 'closed as not planned'), or null",
+  "related": ["URLs of similar but non-duplicate issues"],
+  "searches": ["the search queries that were run"]
 }
 ```
+
+When `ticket_created` is `false`, `ticket_url` is the existing issue's URL.
 
 ---
 
@@ -181,7 +216,7 @@ Create the issue and return immediately. Do NOT wait for a response.
 - Title: **imperative mood**, under 70 chars (e.g. "Automate delay JS exclusion test case")
 - Repo is always `wp-media/wp-rocket-e2e` unless explicitly overridden
 - Each issue must be **standalone**: one concern, one definition of done
-- Never create an issue without first searching for duplicates (skip this check in `nth_followup` mode)
+- Never create an issue without first running the **Duplicate check**, in both modes
 - **All created issues must include the AI-generated notice** at the top of the body:
   `> 🤖 AI-generated — created by an automated pipeline. Review before acting on this.`
 - Apply the `Made by AI` label on every issue created by this agent
@@ -232,4 +267,4 @@ Grooming confidence: High / Medium / Low
 
 - ✅ **Always do**: read the input fully, search for duplicates, prepend the AI-generated notice, label with `Made by AI`
 - ⚠️ **Ask first**: only in `create` mode if the input is incomplete; never in `nth_followup` mode
-- 🚫 **Never do**: modify source or test code, hardcode repo names other than wp-media/wp-rocket-e2e (unless explicitly told), skip the duplicate search in create mode, omit the AI-generated notice, invent labels other than `Made by AI`
+- 🚫 **Never do**: modify source or test code, hardcode repo names other than wp-media/wp-rocket-e2e (unless explicitly told), skip the duplicate check in either mode, create an issue that duplicates an open one, omit the AI-generated notice, invent labels other than `Made by AI`

@@ -288,9 +288,18 @@ prerequisite that prevented verification, or is an empty string when not applica
   "description": "string",
   "labels": ["string"],
   "sub_tickets": ["string"],
-  "ticket_created": true
+  "ticket_created": true,
+  "duplicate_of": "string|null",
+  "duplicate_comment_url": "string|null",
+  "skipped_reason": "string|null",
+  "related": ["string"],
+  "searches": ["string"]
 }
 ```
+
+`ticket-writer` checks for duplicates in both modes. In `nth_followup` mode, when an open
+duplicate exists it comments on that issue instead of creating one (`ticket_created: false`,
+`duplicate_of` set); a duplicate closed as not planned is skipped (`skipped_reason`).
 
 ---
 
@@ -728,7 +737,9 @@ If the list is non-empty:
      DOD L2 + Lead Review + QA in parallel (same loop counters apply). Log a ROUTING
      DECISION event: "Tackling NTH item N in current PR."
    - **ticket** — dispatch `ticket-writer` (`mode: "nth_followup"`) with the single NTH item.
-     Collect the returned ticket URL. Log an AGENT event with the ticket URL.
+     Collect the returned ticket URL. If `ticket_created` is `false`, record the item as
+     "linked to existing #X" (`duplicate_of`) or "skipped: <skipped_reason>" instead of a new
+     ticket. Log an AGENT event with the result.
    - **discard** — log a ROUTING DECISION event: "NTH item N discarded by user." No further action.
 
 4. After all items are resolved, proceed to Step 11. Log a ROUTING DECISION event listing
@@ -740,8 +751,9 @@ If the list is non-empty:
 
 1. **Collect all NTH ticket URLs** — gather every URL returned by `ticket-writer` throughout
    the run (from grooming, challenger, lead review, and QA dispatches). Update the PR body (REST PATCH, as in Step 6b)
-   to append or replace the "Follow-up tickets" section with links to all created tickets.
-   If no NTH tickets were created, write "None".
+   to append or replace the "Follow-up tickets" section with links to all created tickets,
+   and "linked to existing #X" / "skipped: <reason>" for items ticket-writer matched to an
+   existing issue. If there are none, write "None".
 2. Update PR body: replace "What was tested" with the full QA report (REST PATCH, as in Step 6b)
 3. Move PR out of draft — this step is **mandatory and must be verified**:
    ```bash
