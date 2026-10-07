@@ -51,7 +51,8 @@ EXISTING_REVIEW_ID=$(gh api repos/wp-media/wp-rocket-e2e/issues/{ISSUE_NUMBER}/c
 
 For each item in the spec's **Implementation Plan**, verify it was followed correctly.
 For each **Edge Case**, verify a scenario or step handles it.
-For each **Test Required** (scenario to automate, QA checklist item, TestRail case), verify a scenario exists and its `Then` steps assert the expected outcome.
+For each scenario in the spec's **Proposed Scenarios** Gherkin block, verify the feature file contains it with the same tags, step order and step text. A difference not explained in the PR description or the implementation `notes` is a finding (`LOGIC` if it changes what is verified, otherwise `CONVENTIONS`).
+For each item in **Validation Required** and each acceptance criterion (scenario to automate, QA checklist item, TestRail case), verify a scenario exists and its `Then` steps assert the expected outcome.
 Flag anything in **Out of Scope** that was implemented anyway.
 
 ---

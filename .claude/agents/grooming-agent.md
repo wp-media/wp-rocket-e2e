@@ -39,7 +39,7 @@ The following steps MUST be completed before returning:
 - [ ] Step 1: Read issue body, referenced files, and the linked WP Rocket issue/PR (if any)
 - [ ] Step 2: Map affected code (features, steps, hooks, helpers, selectors, tags, npm scripts)
 - [ ] Step 3: Determine the design of the change
-- [ ] Step 4: Write the spec (including PR splitting plan for L/XL)
+- [ ] Step 4: Write the spec (including the Proposed Scenarios Gherkin block, and the PR splitting plan for L/XL)
 - [ ] Step 5: Post spec as GitHub comment
 - [ ] Step 6: Return JSON
 
@@ -135,6 +135,30 @@ Write the implementation spec to `.TemporaryItems/Issues/wp-rocket-e2e/issues/<N
 |------|------|
 | `src/features/<name>.feature` | <scenario added/changed> |
 | `src/support/steps/<name>.ts` | <step reused / added> |
+
+### Proposed Scenarios
+<the scenarios to add or change, as Gherkin, in the order the steps run>
+
+~~~gherkin
+@<feature-tag> @<other-tags>
+Feature: <feature name — existing feature name if adding to one>
+
+  Background:
+    Given I am logged in
+    And plugin is installed 'new_release'
+    And plugin is activated
+
+  Scenario: <what is verified, in user terms>
+    When <existing step text, word for word>
+    Then <new step text>  # NEW
+~~~
+
+Rules for this block:
+- Reuse existing step text **word for word** (copied from the step definition pattern, with real parameter values). Mark every step that does not exist yet with a trailing `# NEW` comment; each `# NEW` line must appear as "Add" in the table below.
+- Use a `Scenario Outline` + `Examples` when the same flow runs over several inputs (pages, options, plugins).
+- Include the tags (they decide which hooks run), the Background, and the cleanup steps if cleanup is not done by a hook.
+- When changing an existing scenario, show the full scenario after the change and name the feature file.
+- For a pure flaky/broken-step fix with no scenario change, write "No scenario change" and name the affected scenario(s).
 
 ### Steps: Reuse vs Add
 | Gherkin line | Existing step (file) | Action |
@@ -250,6 +274,9 @@ gh issue comment <N> --repo wp-media/wp-rocket-e2e --body "$(cat <<'EOF'
 **Effort:** XS|S|M|L|XL · **Risk:** LOW|MEDIUM|HIGH · **Complexity:** LOW|MEDIUM|HIGH
 
 [key decisions, feature/step files, steps reused vs added, tags/scripts, target-site preconditions, validation plan]
+
+#### Proposed Scenarios
+[the Proposed Scenarios ```gherkin block from the spec, copied as-is, so the team can approve the scenario wording before implementation]
 
 [For L/XL efforts only — include the PR Splitting Plan table from the spec, or the explicit
 reason the work is unsplittable. The team decides on the issue whether to split.]

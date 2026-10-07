@@ -35,7 +35,7 @@ Read `AGENTS.md` at the repo root in full. Section 13 (Session Learnings) takes 
 
 ### Step 2 — Implement
 
-Follow the spec's **Implementation Plan**.
+Follow the spec's **Implementation Plan**. Start the `.feature` changes from the spec's **Proposed Scenarios** Gherkin block: keep its tags, step order and step text, and implement every step marked `# NEW`. If the block has to change (a step text would be ambiguous, an assertion is impossible as written), make the smallest change and record it with the reason in `notes`.
 
 - Features go in `src/features/**` (BackWPup: `src/backwpup/features/**`); steps in `src/support/steps/**` (BackWPup: `src/backwpup/steps/**`); hooks in `src/support/hooks.ts` (BackWPup: `src/backwpup/support/hooks.ts`).
 - Reuse existing steps, `PageUtils` methods, `utils/commands.ts` wrappers and `utils/helpers.ts` before adding new ones. Add selectors to `src/common/selectors.ts`, types to `utils/types.ts`.
