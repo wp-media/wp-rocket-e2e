@@ -38,6 +38,7 @@ export interface ICustomWorld extends World {
 	pickle?: Pickle;
 	wprSection?: Section;
 	wprOption?: string;
+	activatedPlugin?: string;
 	debugLogOffset?: number;
 }
 

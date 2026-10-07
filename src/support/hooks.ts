@@ -23,7 +23,7 @@ import { deleteFolder, extractFromStdout, isWprRelatedError } from "../../utils/
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 
-import {rename, exists, rm, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin, wpWithOutput} from "../../utils/commands";
+import {rename, exists, rm, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, forceUninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin, wpWithOutput} from "../../utils/commands";
 import { CRON_SUBSCRIBER } from "./steps/cron-unschedule";
 import { UPDATE_MOCK_MU_PLUGIN, UPDATE_PACKAGE_DIR } from "./steps/upgrading-plugin";
 import { COMPOSER_PROJECT_NAME } from "./steps/composer-install";
@@ -259,10 +259,11 @@ Before({tags: '@performancehints'}, async function (this: ICustomWorld) {
  */
 After(async function (this: ICustomWorld, { pickle, result }) {
     previousScenarioName = pickle.name
+    let videoPath: string | undefined;
 
     if (result?.status == Status.FAILED) {
         try {
-            await this.utils?.createScreenShot(this, pickle);
+            videoPath = await this.utils?.createScreenShot(this, pickle);
         } catch (error) {
             // Log and continue cleanup to ensure debug log handling and browser closing still run
             // eslint-disable-next-line no-console
@@ -285,6 +286,17 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 
     await this.page?.close()
     await this.context?.close()
+
+    // Video recordings are only finalized into a valid webm container once the context that
+    // owns them closes, so the attach must happen after the closes above. See #407.
+    if (videoPath) {
+        try {
+            await this.utils?.attachVideo(this, videoPath);
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to attach video during After hook cleanup:', error);
+        }
+    }
 
     //  await resetWP();
 
@@ -367,6 +379,24 @@ After({tags: '@composer'}, async function (this: ICustomWorld): Promise<void> {
         await rm(`${WP_SSH_ROOT_DIR}composer.json`);
         await rm(`${WP_SSH_ROOT_DIR}composer.lock`);
     }
+});
+
+/**
+ * After each test scenario with the @plugin-compatibility tag, deactivates and removes
+ * the plugin under test so it is never tested in combination with the next Example's plugin.
+ * Uses forceUninstallPlugin so that a plugin fataling on every bootstrap (not just wp-admin
+ * requests) - which would otherwise also break WP-CLI's own bootstrap - still gets removed via
+ * --skip-plugins, instead of silently staying active and poisoning the rest of the matrix.
+ * No isPluginInstalled() pre-check here: it bootstraps without --skip-plugins, so that same
+ * fatal would make it report "not installed" and skip cleanup. forceUninstallPlugin does its
+ * own --skip-plugins check and returns early if the plugin is genuinely gone.
+ */
+After({tags: '@plugin-compatibility'}, async function (this: ICustomWorld): Promise<void> {
+    if (!this.activatedPlugin) {
+        return;
+    }
+
+    await forceUninstallPlugin(this.activatedPlugin);
 });
 
 /**
