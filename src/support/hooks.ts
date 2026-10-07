@@ -23,7 +23,7 @@ import { deleteFolder, extractFromStdout, isWprRelatedError } from "../../utils/
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 
-import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, forceUninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin} from "../../utils/commands";
+import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, forceUninstallPlugin, forceDeactivatePlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin, wpWithOutput} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 import { PluginBuilder } from '../../utils/plugin-builder';
@@ -195,6 +195,26 @@ Before({tags: '@setup'}, async function(this: ICustomWorld, {pickle}) {
 });
 
 /**
+ * Before each test scenario with the @wpr-helper-compatibility tag, deactivates any WP Rocket
+ * helper left active on the site, e.g. by a run killed mid-scenario before its After hook ran,
+ * so the helper under test is never combined with a leftover one.
+ * Matches helpers by their 'wp-rocket-' slug prefix rather than the Examples list, so new helpers
+ * are covered without updating this hook. 'wp-rocket-e2e-' plugins (e.g. TEST_HELPER_PLUGIN) are
+ * skipped. --skip-plugins keeps the listing working even if a leftover helper fatals on every bootstrap.
+ */
+Before({tags: '@wpr-helper-compatibility'}, async function (this: ICustomWorld): Promise<void> {
+    const activePlugins = await wpWithOutput('plugin list --status=active --field=name --skip-plugins');
+    const leftoverHelpers = activePlugins.stdout
+        .split('\n')
+        .map((plugin) => plugin.trim())
+        .filter((plugin) => plugin.startsWith('wp-rocket-') && !plugin.startsWith('wp-rocket-e2e-'));
+
+    for (const helper of leftoverHelpers) {
+        await forceDeactivatePlugin(helper);
+    }
+});
+
+/**
  * Before each test scenario with the @delaylcp tag, performs setup tasks.
  */
 Before({tags: '@delaylcp'}, async function (this: ICustomWorld) {
@@ -363,6 +383,20 @@ After({tags: '@plugin-compatibility'}, async function (this: ICustomWorld): Prom
     }
 
     await forceUninstallPlugin(this.activatedPlugin);
+});
+
+/**
+ * After each test scenario with the @wpr-helper-compatibility tag, deactivates the WP Rocket
+ * helper plugin under test so it is never tested in combination with the next Example's helper.
+ * Deactivate only, not uninstall: helpers are not on WordPress.org, they are pre-installed on the
+ * e2e environment, so removing them would break the next run.
+ */
+After({tags: '@wpr-helper-compatibility'}, async function (this: ICustomWorld): Promise<void> {
+    if (!this.activatedPlugin) {
+        return;
+    }
+
+    await forceDeactivatePlugin(this.activatedPlugin);
 });
 
 /**

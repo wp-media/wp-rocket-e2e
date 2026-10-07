@@ -117,7 +117,8 @@ async function wp(args: string, show_errors: boolean = true): Promise<boolean> {
 type WPCliOutput = {
     stdout: string,
     stderr: string,
-    failed: boolean
+    failed: boolean,
+    code: number | null
 };
 
 /**
@@ -135,6 +136,7 @@ type WPCliOutput = {
  * - `stdout`: The standard output from the command as a string
  * - `stderr`: The error output from the command as a string (empty string if no errors)
  * - `failed`: Boolean indicating if the command failed (exit code 1)
+ * - `code`: The raw exit code (e.g. 255 when a PHP fatal crashes WP-CLI), or null if unavailable
  * 
  * @example
  * // Get list of installed plugins with details
@@ -178,7 +180,8 @@ export async function wpWithOutput(args: string): Promise<WPCliOutput> {
             return {
                 stdout: result.stdout,
                 stderr: result.stderr,
-                failed: result.code === 1
+                failed: result.code === 1,
+                code: result.code
             } as WPCliOutput;
         } finally {
             client.dispose();
@@ -193,7 +196,8 @@ export async function wpWithOutput(args: string): Promise<WPCliOutput> {
     return {
         stdout: result.stdout,
         stderr: result.stderr,
-        failed: result.code === 1
+        failed: result.code === 1,
+        code: result.code
     } as WPCliOutput;
 }
 
@@ -561,6 +565,46 @@ export async function forceUninstallPlugin(plugin: string): Promise<void> {
         throw new Error(
             `Failed to remove plugin "${plugin}" even with --skip-plugins. It may still be ` +
             `active and could affect subsequent scenarios - manual cleanup required.`
+        );
+    }
+}
+
+/**
+ * Deactivates a single plugin, retrying with `--skip-plugins=<plugin>` if the plain attempt
+ * leaves it active. The plain attempt comes first because it loads the plugin and so runs its
+ * own deactivation hook (e.g. wp-rocket-modify-used-css clears the cache and used CSS there);
+ * the retry covers plugins that fatal on every WordPress bootstrap, which would otherwise also
+ * crash WP-CLI's own bootstrap. Unlike forceUninstallPlugin, the plugin files are kept: use it
+ * for plugins pre-provisioned on the e2e environment that must survive the scenario.
+ *
+ * @function
+ * @name forceDeactivatePlugin
+ * @async
+ * @param {string} plugin - The plugin slug to deactivate.
+ * @returns {Promise<void>} - A Promise that resolves once the plugin is confirmed inactive.
+ * @throws {Error} If the plugin is still active after both attempts, so a helper left active is
+ *                  surfaced loudly rather than silently poisoning later scenarios.
+ */
+export async function forceDeactivatePlugin(plugin: string): Promise<void> {
+    // Not isPluginActive(): it bootstraps without --skip-plugins, so a plugin that fatals on
+    // every bootstrap would make it report "not active". --skip-plugins keeps the check reliable.
+    const isStillActive = async (): Promise<boolean> => {
+        const result = await wpWithOutput(`plugin is-active ${plugin} --skip-plugins=${plugin}`);
+        return !result.failed;
+    };
+
+    await wpWithOutput(`plugin deactivate ${plugin}`);
+
+    if (!(await isStillActive())) {
+        return;
+    }
+
+    await wpWithOutput(`plugin deactivate ${plugin} --skip-plugins=${plugin}`);
+
+    if (await isStillActive()) {
+        throw new Error(
+            `Failed to deactivate plugin "${plugin}" even with --skip-plugins. It could affect ` +
+            `subsequent scenarios - manual cleanup required.`
         );
     }
 }
