@@ -140,6 +140,7 @@ Any confirmed secret exposure is CRITICAL.
 
 **General**
 - No dead code, no commented-out blocks added (the repo has legacy ones — don't add more).
+- Inline code comments added in the diff: only where the code cannot explain itself, at most 2 lines, not restating the code. A longer or redundant comment is a LOW `CONVENTIONS` nice-to-have; a needed comment that is missing (e.g. an unexplained wait or workaround) follows the rule for that item. JSDoc blocks are not limited.
 - No `.only`, `@only`/`@test`-style debug tags or `PWDEBUG` toggles left behind.
 - No unrelated reformatting of files outside the scope.
 

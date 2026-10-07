@@ -40,6 +40,7 @@ Follow the spec's **Implementation Plan**. Start the `.feature` changes from the
 - Features go in `src/features/**` (BackWPup: `src/backwpup/features/**`); steps in `src/support/steps/**` (BackWPup: `src/backwpup/steps/**`); hooks in `src/support/hooks.ts` (BackWPup: `src/backwpup/support/hooks.ts`).
 - Reuse existing steps, `PageUtils` methods, `utils/commands.ts` wrappers and `utils/helpers.ts` before adding new ones. Add selectors to `src/common/selectors.ts`, types to `utils/types.ts`.
 - Step functions are `function (this: ICustomWorld)`, not arrow functions. Explicit return types and JSDoc on new functions (`@typescript-eslint/explicit-function-return-type` is an error).
+- Inline code comments only when the code cannot explain itself (why a wait or workaround exists, a non-obvious site condition), at most 2 lines, never restating what the code does. JSDoc on functions is separate and not limited.
 - No hardcoded waits (`waitForTimeout`, `sleep`) — wait on a selector, a response or a state.
 - Scenarios must clean up what they change on the shared target site (use `@setup` or a tag-scoped `After` hook). Never leave plugins installed or settings changed for the next scenario.
 - New tag → add an `npm run test:<tag>` script in `package.json` and decide deliberately whether `test:e2e` should exclude it. Update docs accordingly (Step 2.5).

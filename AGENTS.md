@@ -88,6 +88,7 @@ Before making changes that affect standards, tooling or test execution, locate a
 
 - Step definitions use `function (this: ICustomWorld)`, never arrow functions.
 - Explicit return types and JSDoc on new functions (`@typescript-eslint/explicit-function-return-type` is an error).
+- Inline code comments only when the code cannot explain itself (why a wait or workaround exists, a non-obvious site condition), at most 2 lines, never restating what the code does. JSDoc on functions is separate and not limited.
 - Reuse an existing step, `PageUtils` method or `utils/commands.ts` wrapper before adding a new one.
 - New selectors go in `src/common/selectors.ts`; new types in `utils/types.ts`.
 - No hardcoded waits (`waitForTimeout`, `sleep`); wait on a selector, response or state.
