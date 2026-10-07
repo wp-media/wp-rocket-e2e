@@ -1,8 +1,8 @@
 # E2E Test Best Practices — References
 
-Reference list for any agent writing or changing e2e test cases (`test-developer`, and
-`grooming-agent` when it specs a test). Read the entries that match the task before writing
-code. This list is meant to grow: add a link plus one line on when to use it.
+Reference list for any agent writing or changing e2e test cases (`test-developer`,
+`grooming-agent` when it specs a test, and `lead-reviewer` when it reviews one). Read the
+entries that match the task before writing or reviewing code. This list is meant to grow: add a link plus one line on when to use it.
 
 Repo rules in `.claude/skills/wp-rocket-e2e-architecture/SKILL.md` and `AGENTS.md` take
 precedence when they conflict with an external guide.

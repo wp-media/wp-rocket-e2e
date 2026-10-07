@@ -94,7 +94,7 @@ These findings are the class of issue most likely missed in a diff-only review.
 Load the project rule file using the Read tool:
 - `.claude/skills/wp-rocket-e2e-architecture/SKILL.md`
 
-Read `.github/copilot-instructions.md` for the repo's conventions (tags, helpers, wait strategies). Verify every changed file complies, then also check:
+Read `.github/copilot-instructions.md` for the repo's conventions (tags, helpers, wait strategies), and `.claude/skills/wp-rocket-e2e-architecture/refs/best-practices.md` plus the domain guide it lists for the changed test area. A deviation from those best practices is a finding: `CONVENTIONS` type, MEDIUM by default, LOW when it is a style preference with no reliability impact. Verify every changed file complies, then also check:
 
 **Step definitions (Cucumber)**
 - **Reuse before adding.** A new step that duplicates an existing one (same intent, slightly different wording) is a finding — point to the existing step (`grep -rn "Given(\|When(\|Then(" src/support/steps src/backwpup/steps`).
