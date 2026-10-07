@@ -199,15 +199,15 @@ Before({tags: '@setup'}, async function(this: ICustomWorld, {pickle}) {
  * helper left active on the site, e.g. by a run killed mid-scenario before its After hook ran,
  * so the helper under test is never combined with a leftover one.
  * Matches helpers by their 'wp-rocket-' slug prefix rather than the Examples list, so new helpers
- * are covered without updating this hook. --skip-plugins keeps the listing working even if a
- * leftover helper fatals on every bootstrap.
+ * are covered without updating this hook. 'wp-rocket-e2e-' plugins (e.g. TEST_HELPER_PLUGIN) are
+ * skipped. --skip-plugins keeps the listing working even if a leftover helper fatals on every bootstrap.
  */
 Before({tags: '@wpr-helper-compatibility'}, async function (this: ICustomWorld): Promise<void> {
     const activePlugins = await wpWithOutput('plugin list --status=active --field=name --skip-plugins');
     const leftoverHelpers = activePlugins.stdout
         .split('\n')
         .map((plugin) => plugin.trim())
-        .filter((plugin) => plugin.startsWith('wp-rocket-'));
+        .filter((plugin) => plugin.startsWith('wp-rocket-') && !plugin.startsWith('wp-rocket-e2e-'));
 
     for (const helper of leftoverHelpers) {
         await forceDeactivatePlugin(helper);

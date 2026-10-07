@@ -16,6 +16,7 @@ Feature: C426 - WP Rocket helper plugins should not cause a PHP fatal error alon
         And The WP Rocket dashboard is displayed
         And I log out
         And I visit '' and it must load successfully
+        And I am logged in
         Then I must not see any error in debug.log
 
         Examples:
