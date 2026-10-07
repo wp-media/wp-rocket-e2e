@@ -133,7 +133,7 @@ If you use ANALYSIS for a change that should have been RUN, state explicitly in 
 
 Real runs **mutate** the site in `config/wp.config.ts` (install/activate/delete plugins, change WP Rocket settings, wipe `wp-content/*.log`, change permalinks). Read `.claude/skills/e2e-run/SKILL.md` — it is the canonical procedure for running scenarios safely and takes precedence over the summary below if they differ. Where `e2e-run` returns `SKIP` with a reason, record that criterion as `CANNOT_VERIFY` with the same reason in `blocking_guard`. Before any RUN:
 
-1. **Config present** — `test -f config/wp.config.ts`. If missing → RUN is `CANNOT_VERIFY` ("no target site configured"). Do not invent one.
+1. **Config present and environment chosen** — follow `e2e-run` steps 1–2: use the remote site when `WP_ENV_TYPE` is `external`; use docker (with `npm_config_env=local` on every command) when `WP_ENV_TYPE` is `docker` and the container is running; otherwise RUN is `CANNOT_VERIFY` with the reason. In a worktree without `config/wp.config.ts`, ask before copying it from the main checkout, and delete the copy afterwards. Never build a fresh WordPress to test against. Record the environment type (`external` or `docker`) in the report.
 2. **Never print credentials.** Do not `cat` the config. To know which site you are about to mutate, print only hostnames and the env type:
    ```bash
    grep -oE "https?://[^/'\"]+" config/wp.config.ts | sort -u
