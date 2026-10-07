@@ -566,24 +566,38 @@ export async function forceUninstallPlugin(plugin: string): Promise<void> {
 }
 
 /**
- * Deactivates a plugin with `--skip-plugins=<plugin>`, so it works even when the plugin fatals on
- * every WordPress bootstrap (which would otherwise also crash WP-CLI's own bootstrap). Unlike
- * forceUninstallPlugin, the plugin files are kept: use it for plugins pre-provisioned on the
- * e2e environment that must survive the scenario.
+ * Deactivates a single plugin, retrying with `--skip-plugins=<plugin>` if the plain attempt
+ * leaves it active. The plain attempt comes first because it loads the plugin and so runs its
+ * own deactivation hook (e.g. wp-rocket-modify-used-css clears the cache and used CSS there);
+ * the retry covers plugins that fatal on every WordPress bootstrap, which would otherwise also
+ * crash WP-CLI's own bootstrap. Unlike forceUninstallPlugin, the plugin files are kept: use it
+ * for plugins pre-provisioned on the e2e environment that must survive the scenario.
  *
  * @function
  * @name forceDeactivatePlugin
  * @async
  * @param {string} plugin - The plugin slug to deactivate.
  * @returns {Promise<void>} - A Promise that resolves once the plugin is confirmed inactive.
- * @throws {Error} If the plugin is still active afterwards, so a helper left active is surfaced
- *                  loudly rather than silently poisoning later scenarios.
+ * @throws {Error} If the plugin is still active after both attempts, so a helper left active is
+ *                  surfaced loudly rather than silently poisoning later scenarios.
  */
 export async function forceDeactivatePlugin(plugin: string): Promise<void> {
+    // Not isPluginActive(): it bootstraps without --skip-plugins, so a plugin that fatals on
+    // every bootstrap would make it report "not active". --skip-plugins keeps the check reliable.
+    const isStillActive = async (): Promise<boolean> => {
+        const result = await wpWithOutput(`plugin is-active ${plugin} --skip-plugins=${plugin}`);
+        return !result.failed;
+    };
+
+    await wpWithOutput(`plugin deactivate ${plugin}`);
+
+    if (!(await isStillActive())) {
+        return;
+    }
+
     await wpWithOutput(`plugin deactivate ${plugin} --skip-plugins=${plugin}`);
 
-    const stillActive = await wpWithOutput(`plugin is-active ${plugin} --skip-plugins=${plugin}`);
-    if (!stillActive.failed) {
+    if (await isStillActive()) {
         throw new Error(
             `Failed to deactivate plugin "${plugin}" even with --skip-plugins. It could affect ` +
             `subsequent scenarios - manual cleanup required.`
