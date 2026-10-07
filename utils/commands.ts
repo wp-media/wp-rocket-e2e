@@ -873,4 +873,55 @@ export async function readFile(path: string): Promise<string> {
     return result.stdout;
 }
 
+type ShellOutput = {
+    code: number,
+    stdout: string,
+    stderr: string
+};
+
+/**
+ * Runs a shell command on the server, from the WordPress root directory.
+ *
+ * @function
+ * @name execOnServer
+ * @async
+ * @param {string} command - The shell command to run.
+ * @returns {Promise<ShellOutput>} - A Promise that resolves with the exit code and output of the command.
+ */
+export async function execOnServer(command: string): Promise<ShellOutput> {
+    const cwd = sanitizeShellArg(getWPDir(configurations));
+    const result = exec(wrapPrefix(`cd ${cwd} && ${command}`), {
+        cwd: configurations.rootDir,
+        async: false,
+        silent: true
+    });
+
+    return {
+        code: result.code,
+        stdout: result.stdout,
+        stderr: result.stderr
+    };
+}
+
+/**
+ * Writes a file on the server, creating its parent directory if needed.
+ *
+ * @function
+ * @name writeFile
+ * @async
+ * @param {string} path - The path of the file to write.
+ * @param {string} contents - The contents of the file.
+ * @returns {Promise<void>} - A Promise that resolves when the file is written.
+ */
+export async function writeFile(path: string, contents: string): Promise<void> {
+    const safePath = sanitizeShellArg(path);
+    // Base64 keeps the contents intact through the docker/ssh quoting layers.
+    const encoded = Buffer.from(contents).toString('base64');
+    const result = await execOnServer(`sudo mkdir -p "$(dirname ${safePath})" && echo ${encoded} | base64 -d | sudo tee ${safePath} > /dev/null`);
+
+    if (result.code !== 0) {
+        throw new Error(`Failed to write '${path}' on the server:\n${result.stderr}`);
+    }
+}
+
 export default wp;

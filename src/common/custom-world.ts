@@ -39,6 +39,7 @@ export interface ICustomWorld extends World {
 	wprSection?: Section;
 	wprOption?: string;
 	activatedPlugin?: string;
+	debugLogOffset?: number;
 }
 
 export class CustomWorld extends World implements ICustomWorld {
