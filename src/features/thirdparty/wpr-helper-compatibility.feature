@@ -12,12 +12,10 @@ Feature: C426 - WP Rocket helper plugins should not cause a PHP fatal error alon
     Scenario Outline: Shouldn't cause fatal error when updating WPR with helper "<plugin>" active
         Given the WP Rocket helper "<plugin>" is pre-installed and activated
         And I updated plugin to 'new_release'
-        When I visit 'wp-admin/options-general.php?page=wprocket' and it must load successfully
-        And I log out
-        And I visit '' and it must load successfully
-        And I am logged in
         And I visit 'wp-admin/options-general.php?page=wprocket#dashboard' and it must load successfully
         And The WP Rocket dashboard is displayed
+        And I log out
+        And I visit '' and it must load successfully
         Then I must not see any error in debug.log
 
         Examples:
