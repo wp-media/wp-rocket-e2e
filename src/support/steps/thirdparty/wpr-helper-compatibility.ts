@@ -15,6 +15,17 @@ Given('the WP Rocket helper {string} is pre-installed and activated', async func
     // Not isPluginInstalled(): it bootstraps without --skip-plugins, so any plugin fataling on
     // every bootstrap would make it report "not installed". --skip-plugins keeps the check reliable.
     const installed = await wpWithOutput(`plugin is-installed ${plugin} --skip-plugins=${plugin}`);
+
+    // Only 0 (installed) and 1 (not installed) are answers. Anything else, e.g. 255 when WPR or
+    // another still-loaded plugin fatals during WP-CLI bootstrap, means the check itself crashed:
+    // surface it here instead of letting activatePlugin() fail with a confusing error.
+    if (installed.code !== 0 && installed.code !== 1) {
+        throw new Error(
+            `Could not check whether WP Rocket helper "${plugin}" is installed: WP-CLI exited with ` +
+            `code ${installed.code}. stderr: ${installed.stderr || '(empty)'}`
+        );
+    }
+
     if (installed.failed) {
         throw new Error(
             `WP Rocket helper "${plugin}" is not installed. Helpers are not on WordPress.org: ` +

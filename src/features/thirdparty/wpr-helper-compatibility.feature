@@ -15,7 +15,8 @@ Feature: C426 - WP Rocket helper plugins should not cause a PHP fatal error alon
         And I log out
         And I visit '' and it must load successfully
         And I am logged in
-        And I visit 'wp-admin/plugins.php' and it must load successfully
+        And I visit 'wp-admin/options-general.php?page=wprocket#dashboard' and it must load successfully
+        And The WP Rocket dashboard is displayed
         Then I must not see any error in debug.log
 
         Examples:

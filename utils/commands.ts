@@ -117,7 +117,8 @@ async function wp(args: string, show_errors: boolean = true): Promise<boolean> {
 type WPCliOutput = {
     stdout: string,
     stderr: string,
-    failed: boolean
+    failed: boolean,
+    code: number | null
 };
 
 /**
@@ -135,6 +136,7 @@ type WPCliOutput = {
  * - `stdout`: The standard output from the command as a string
  * - `stderr`: The error output from the command as a string (empty string if no errors)
  * - `failed`: Boolean indicating if the command failed (exit code 1)
+ * - `code`: The raw exit code (e.g. 255 when a PHP fatal crashes WP-CLI), or null if unavailable
  * 
  * @example
  * // Get list of installed plugins with details
@@ -178,7 +180,8 @@ export async function wpWithOutput(args: string): Promise<WPCliOutput> {
             return {
                 stdout: result.stdout,
                 stderr: result.stderr,
-                failed: result.code === 1
+                failed: result.code === 1,
+                code: result.code
             } as WPCliOutput;
         } finally {
             client.dispose();
@@ -193,7 +196,8 @@ export async function wpWithOutput(args: string): Promise<WPCliOutput> {
     return {
         stdout: result.stdout,
         stderr: result.stderr,
-        failed: result.code === 1
+        failed: result.code === 1,
+        code: result.code
     } as WPCliOutput;
 }
 

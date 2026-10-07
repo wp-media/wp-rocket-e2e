@@ -1,4 +1,5 @@
-import { Given, When } from '@cucumber/cucumber';
+import { Given, When, Then } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
 
 import { ICustomWorld } from "../../../common/custom-world";
 import { WP_BASE_URL, WP_SSH_ROOT_DIR } from "../../../../config/wp.config";
@@ -39,4 +40,12 @@ When('I visit {string} and it must load successfully', async function (this: ICu
             `(HTTP ${response?.status() ?? 'no response'}). This usually means the plugin caused a fatal error.`
         );
     }
+});
+
+/**
+ * Asserts the WP Rocket settings page rendered its Dashboard tab (#dashboard section),
+ * i.e. the page didn't just return 200 but WP Rocket's admin UI actually loaded.
+ */
+Then('The WP Rocket dashboard is displayed', async function (this: ICustomWorld) {
+    await expect(this.page.locator('#dashboard')).toBeVisible();
 });

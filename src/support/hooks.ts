@@ -23,7 +23,7 @@ import { deleteFolder, extractFromStdout, isWprRelatedError } from "../../utils/
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 
-import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, forceUninstallPlugin, forceDeactivatePlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin} from "../../utils/commands";
+import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, forceUninstallPlugin, forceDeactivatePlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin, wpWithOutput} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 import { PluginBuilder } from '../../utils/plugin-builder';
@@ -192,6 +192,26 @@ Before({tags: '@setup'}, async function(this: ICustomWorld, {pickle}) {
     // }
 
     this.pickle = pickle;
+});
+
+/**
+ * Before each test scenario with the @wpr-helper-compatibility tag, deactivates any WP Rocket
+ * helper left active on the site, e.g. by a run killed mid-scenario before its After hook ran,
+ * so the helper under test is never combined with a leftover one.
+ * Matches helpers by their 'wp-rocket-' slug prefix rather than the Examples list, so new helpers
+ * are covered without updating this hook. --skip-plugins keeps the listing working even if a
+ * leftover helper fatals on every bootstrap.
+ */
+Before({tags: '@wpr-helper-compatibility'}, async function (this: ICustomWorld): Promise<void> {
+    const activePlugins = await wpWithOutput('plugin list --status=active --field=name --skip-plugins');
+    const leftoverHelpers = activePlugins.stdout
+        .split('\n')
+        .map((plugin) => plugin.trim())
+        .filter((plugin) => plugin.startsWith('wp-rocket-'));
+
+    for (const helper of leftoverHelpers) {
+        await forceDeactivatePlugin(helper);
+    }
 });
 
 /**
