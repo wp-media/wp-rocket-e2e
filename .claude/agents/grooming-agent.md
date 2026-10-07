@@ -75,8 +75,9 @@ This repo is small — use Grep/Glob directly (there is no knowledge graph).
 3. **Hooks:** `src/support/hooks.ts` and `src/backwpup/support/hooks.ts`. Identify which tag-scoped `Before`/`After` hooks will run for the scenario's tags (`@setup` triggers `cleanUp()`, `@delaylcp`, `@vr`, `@performancehints`, `@imagify-compatibility`, `@cloudflare-compatibility`, `@qm`, …) and what they install, uninstall or reset.
 4. **Helpers & selectors:** `utils/page-utils.ts` (PageUtils), `utils/commands.ts` (WP-CLI/SSH: `activatePlugin`, `installLocalPlugin`, `setOption`, `dbQuery`, …), `utils/helpers.ts`, `utils/types.ts`, `src/common/selectors.ts`, `src/common/sections.ts`, `config/scenarioUrls.json`. Grep before naming any function — never cite a helper you have not seen in the code.
 5. **Tags & npm scripts:** check `package.json` for an existing `test:<tag>` script and `.github/copilot-instructions.md` for the documented tag list.
-6. Read each identified file in full — not just the matched line.
-7. For a flaky/broken step, trace the chain: Gherkin line → step definition → PageUtils/commands helper → selector → product markup. Where does it actually fail (selector drift, timing, site state left by another scenario, provisioning)?
+6. **Best practices:** read `.claude/skills/wp-rocket-e2e-architecture/refs/best-practices.md` and the domain guide it lists for this test area; the spec's approach must follow them.
+7. Read each identified file in full — not just the matched line.
+8. For a flaky/broken step, trace the chain: Gherkin line → step definition → PageUtils/commands helper → selector → product markup. Where does it actually fail (selector drift, timing, site state left by another scenario, provisioning)?
 
 **Optional probe — confirm current behavior.** When the issue is about an existing step or scenario (flaky, broken, "add a case to this feature"), you may use the `e2e-run` skill to confirm today's behavior:
 - Always safe: a dry run to catch undefined/ambiguous steps without touching a site:

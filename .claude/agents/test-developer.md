@@ -27,7 +27,7 @@ Read `AGENTS.md` at the repo root in full. Section 13 (Session Learnings) takes 
 
 1. Read the spec in full.
 2. Read the dispatch plan, if given — note exactly which files you own and any constraints.
-3. Read `.claude/skills/wp-rocket-e2e-architecture/SKILL.md`. For the detailed repo guide (tags, npm scripts, helpers, config keys) read `.github/copilot-instructions.md`.
+3. Read `.claude/skills/wp-rocket-e2e-architecture/SKILL.md`. For the detailed repo guide (tags, npm scripts, helpers, config keys) read `.github/copilot-instructions.md`. Then read `.claude/skills/wp-rocket-e2e-architecture/refs/best-practices.md` and the domain guide it lists for this task.
 4. Read each file you are responsible for in full, plus the neighbouring feature/step files you will reuse from.
 5. Search for existing steps before writing new ones (`grep -rn "Given('\|When('\|Then('" src/support/steps src/backwpup/steps`).
 

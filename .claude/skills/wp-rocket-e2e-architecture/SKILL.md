@@ -7,6 +7,8 @@ description: Use this skill when writing or changing anything in wp-rocket-e2e â
 
 Keep tests consistent with the framework's structure. The detailed guide (tag list, npm scripts, helper catalogue, config keys) is `.github/copilot-instructions.md` â€” read it, do not duplicate it here.
 
+Best-practice references for writing test cases (Playwright best practices, and the `.github/agents/` domain guides for each test area) are in `refs/best-practices.md` next to this file.
+
 ## Layout
 
 | Concern | Location |
