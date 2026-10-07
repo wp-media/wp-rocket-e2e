@@ -623,13 +623,8 @@ export const isMobileMenuOpen = async (page: Page): Promise<boolean> => {
         Number(style.opacity) === 0
       ) continue;
 
-      // getBoundingClientRect() already reflects any transform, so rather than
-      // special-casing transforms/offsets, measure how much of the element's box
-      // actually intersects the viewport. Off-canvas menus are frequently much
-      // larger than what little of them (if any) is scrolled/translated into
-      // view, e.g. Betheme's nav sits in normal flow far to the right of a
-      // horizontally-overflowing page, so most of its width falls outside the
-      // viewport even though its own bounding box is plenty large.
+      // getBoundingClientRect() already reflects transforms, so measure how much of the box is in
+      // the viewport; off-canvas menus (e.g. Betheme's) can be large yet mostly off-screen.
       const visibleWidth = Math.max(0, Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0));
       const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
 
