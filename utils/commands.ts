@@ -72,6 +72,12 @@ async function getSshClient(): Promise<InstanceType<typeof NodeSSH>> {
         privateKeyPath: configurations.ssh.key,
         keepaliveInterval: 30000
     }).then(() => {
+        // node-ssh drops its 'error' listener once connected, so a keepalive timeout or socket reset
+        // while idle would be an unhandled 'error' event and crash the run. Log it instead: the
+        // connection is then marked closed and the next call reconnects.
+        client.connection?.on('error', (error: Error) => {
+            console.warn('Pooled SSH connection error:', error.message);
+        });
         sshClient = client;
         return client;
     }).catch((error: Error) => {
@@ -90,18 +96,42 @@ async function getSshClient(): Promise<InstanceType<typeof NodeSSH>> {
  *
  * @param {string} command - The command to execute on the remote server.
  * @returns {Promise<{stdout: string, stderr: string, code: number | null}>} The command result.
+ * @throws {Error} If the connection is lost again during the retry.
  */
 async function sshExec(command: string): Promise<{ stdout: string, stderr: string, code: number | null }> {
     const client = await getSshClient();
+    let result;
     try {
-        return await client.execCommand(command);
+        result = await client.execCommand(command);
     } catch (error) {
         // Only retry when the connection itself is gone; any other error is a real failure.
         if (client.isConnected()) {
             throw error;
         }
-        return (await getSshClient()).execCommand(command);
+        return sshExecOnce(command);
     }
+
+    // A connection dropped mid-command does not reject: node-ssh resolves with code null.
+    if (result.code === null && !client.isConnected()) {
+        return sshExecOnce(command);
+    }
+    return result;
+}
+
+/**
+ * Runs a command on a fresh pooled connection, without further retry.
+ * Throws if that connection is lost too, so a dropped command is never mistaken for a success.
+ *
+ * @param {string} command - The command to execute on the remote server.
+ * @returns {Promise<{stdout: string, stderr: string, code: number | null}>} The command result.
+ */
+async function sshExecOnce(command: string): Promise<{ stdout: string, stderr: string, code: number | null }> {
+    const client = await getSshClient();
+    const result = await client.execCommand(command);
+    if (result.code === null && !client.isConnected()) {
+        throw new Error(`SSH connection lost while running: ${command}`);
+    }
+    return result;
 }
 
 /**

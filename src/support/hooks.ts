@@ -376,6 +376,9 @@ After({tags: '@plugin-compatibility'}, async function (this: ICustomWorld): Prom
  * After all tests, closes the Chromium browser and the pooled SSH connection.
  */
 AfterAll(async function () {
-    await browser.close();
-    await closeSshConnection();
+    try {
+        await browser.close();
+    } finally {
+        await closeSshConnection();
+    }
 });
