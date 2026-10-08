@@ -23,7 +23,7 @@ import { deleteFolder, extractFromStdout, isWprRelatedError } from "../../utils/
 import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 
-import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, forceUninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin} from "../../utils/commands";
+import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, forceUninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin, closeSshConnection} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 import { PluginBuilder } from '../../utils/plugin-builder';
@@ -373,8 +373,9 @@ After({tags: '@plugin-compatibility'}, async function (this: ICustomWorld): Prom
 //  })
 
 /**
- * After all tests, closes the Chromium browser.
+ * After all tests, closes the Chromium browser and the pooled SSH connection.
  */
 AfterAll(async function () {
     await browser.close();
+    await closeSshConnection();
 });
