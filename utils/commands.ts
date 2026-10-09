@@ -72,9 +72,8 @@ async function getSshClient(): Promise<InstanceType<typeof NodeSSH>> {
         privateKeyPath: configurations.ssh.key,
         keepaliveInterval: 30000
     }).then(() => {
-        // node-ssh drops its 'error' listener once connected, so a keepalive timeout or socket reset
-        // while idle would be an unhandled 'error' event and crash the run. Log it instead: the
-        // connection is then marked closed and the next call reconnects.
+        // node-ssh drops its 'error' listener once connected, so an idle keepalive timeout or reset
+        // would crash the run. Log it instead; the next call reconnects.
         client.connection?.on('error', (error: Error) => {
             console.warn('Pooled SSH connection error:', error.message);
         });
