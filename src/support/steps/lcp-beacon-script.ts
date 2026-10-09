@@ -22,6 +22,9 @@ import fs from 'fs/promises';
 const VIEWPORT_DESKTOP = { width: 1600, height: 700 };
 const VIEWPORT_MOBILE = { width: 389, height: 829 };
 
+/** Default max fonts WP Rocket stores per page (`rocket_preload_fonts_number`). */
+const PRELOAD_FONTS_LIMIT: number = 20;
+
 let data: string,
     truthy: boolean = true,
     failMsg: string,
@@ -66,6 +69,12 @@ const findUnmatchedExpectations = (expectedList: string[], actualList: string[])
 };
 
 /**
+ * Return the actual entries that match none of the expected patterns.
+ */
+const findUnexpectedActuals = (expectedList: string[], actualList: string[]): string[] =>
+  actualList.filter(act => !expectedList.some(exp => matchesExpected(exp, act)));
+
+/**
  * Parse array field from database result.
  * Handles both JSON format and comma-separated strings.
  */
@@ -106,6 +115,18 @@ async function validateArrayFieldExpectations(
       const expected = jsonData[key];
       const expectedArray: string[] = expected[fieldName] || [];
       const actualArray: string[] = parseArrayField(actual[key][fieldName]);
+
+      if (fieldName === 'fonts' && expectedArray.length > PRELOAD_FONTS_LIMIT) {
+        if (actualArray.length !== PRELOAD_FONTS_LIMIT) {
+          truthy = false;
+          failMsg += `Expected exactly ${PRELOAD_FONTS_LIMIT} ${fieldLabel}s for ${actual[key].url} (rocket_preload_fonts_number default) but found ${actualArray.length}\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+        }
+        for (const f of findUnexpectedActuals(expectedArray, actualArray)) {
+          truthy = false;
+          failMsg += `Actual ${fieldLabel} - ${f} for ${actual[key].url} matches none of the expected patterns\nmore info -- ( ${actual[key].comment} )\n\n\n`;
+        }
+        continue;
+      }
 
       const missing = findUnmatchedExpectations(expectedArray, actualArray);
 

@@ -330,6 +330,7 @@
       "^https://fonts\\.gstatic\\.com/s/exo2/v\\d+/.+\\.woff2$",
       "^https://fonts\\.gstatic\\.com/s/firasans/v\\d+/.+\\.woff2$"
     ],
+    "comment": "WP Rocket stores at most 20 fonts (rocket_preload_fonts_number default, enforced since wp-media/wp-rocket#8986). The test asserts exactly 20 stored fonts, each matching one of these patterns.",
     "enabled": true
   },
   "preloadfonts_10atf_btf_gfonly_internalstyle": {
