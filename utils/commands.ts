@@ -33,6 +33,123 @@ import { SSHConfig } from "./types";
 const {NodeSSH} = require('node-ssh')
 
 /**
+ * Pooled SSH connection shared by every WP-CLI call on external servers.
+ * Opening a new connection per command made the handshake/auth latency dominate
+ * short commands (cleanUp() alone chains ~10 of them), so one connection is opened
+ * lazily, reused, re-opened if it drops, and closed by closeSshConnection() in AfterAll.
+ */
+let sshClient: InstanceType<typeof NodeSSH> | null = null;
+let sshConnecting: Promise<InstanceType<typeof NodeSSH>> | null = null;
+
+/**
+ * Returns the pooled SSH client, connecting it first if needed.
+ * Concurrent callers share the same in-flight connect instead of opening several connections.
+ *
+ * @returns {Promise<NodeSSH>} A connected SSH client.
+ */
+async function getSshClient(): Promise<InstanceType<typeof NodeSSH>> {
+    if (sshClient && sshClient.isConnected()) {
+        return sshClient;
+    }
+    if (sshConnecting) {
+        return sshConnecting;
+    }
+
+    // Drop a stale client (connection closed by the server or the network) before reconnecting.
+    if (sshClient) {
+        sshClient.dispose();
+        sshClient = null;
+    }
+
+    if (configurations.type !== ServerType.external) {
+        throw new Error('The pooled SSH connection is only available on external servers');
+    }
+
+    const client = new NodeSSH();
+    sshConnecting = client.connect({
+        host: configurations.ssh.address,
+        username: configurations.ssh.username,
+        privateKeyPath: configurations.ssh.key,
+        keepaliveInterval: 30000
+    }).then(() => {
+        // node-ssh drops its 'error' listener once connected, so an idle keepalive timeout or reset
+        // would crash the run. Log it instead; the next call reconnects.
+        client.connection?.on('error', (error: Error) => {
+            console.warn('Pooled SSH connection error:', error.message);
+        });
+        sshClient = client;
+        return client;
+    }).catch((error: Error) => {
+        client.dispose();
+        throw error;
+    }).finally(() => {
+        sshConnecting = null;
+    });
+
+    return sshConnecting;
+}
+
+/**
+ * Runs a command over the pooled SSH connection.
+ * If the connection turns out to be dead, it is re-opened and the command is retried once.
+ *
+ * @param {string} command - The command to execute on the remote server.
+ * @returns {Promise<{stdout: string, stderr: string, code: number | null}>} The command result.
+ * @throws {Error} If the connection is lost again during the retry.
+ */
+async function sshExec(command: string): Promise<{ stdout: string, stderr: string, code: number | null }> {
+    const client = await getSshClient();
+    let result;
+    try {
+        result = await client.execCommand(command);
+    } catch (error) {
+        // Only retry when the connection itself is gone; any other error is a real failure.
+        if (client.isConnected()) {
+            throw error;
+        }
+        return sshExecOnce(command);
+    }
+
+    // A connection dropped mid-command does not reject: node-ssh resolves with code null.
+    if (result.code === null && !client.isConnected()) {
+        return sshExecOnce(command);
+    }
+    return result;
+}
+
+/**
+ * Runs a command on a fresh pooled connection, without further retry.
+ * Throws if that connection is lost too, so a dropped command is never mistaken for a success.
+ *
+ * @param {string} command - The command to execute on the remote server.
+ * @returns {Promise<{stdout: string, stderr: string, code: number | null}>} The command result.
+ */
+async function sshExecOnce(command: string): Promise<{ stdout: string, stderr: string, code: number | null }> {
+    const client = await getSshClient();
+    const result = await client.execCommand(command);
+    if (result.code === null && !client.isConnected()) {
+        throw new Error(`SSH connection lost while running: ${command}`);
+    }
+    return result;
+}
+
+/**
+ * Closes the pooled SSH connection, if one is open.
+ * Called from the AfterAll hook so no connection is left open on the server after the run.
+ *
+ * @returns {Promise<void>}
+ */
+export async function closeSshConnection(): Promise<void> {
+    if (sshConnecting) {
+        await sshConnecting.catch(() => undefined);
+    }
+    if (sshClient) {
+        sshClient.dispose();
+        sshClient = null;
+    }
+}
+
+/**
  * Wraps a command with the appropriate prefix based on the server configuration type.
  * 
  * @param command - The command string to be wrapped
@@ -77,34 +194,23 @@ function wrapPrefix(command: string, sshConfig?: SSHConfig): string {
  * @returns {Promise<boolean>} - True unless the command exited with code 1 (external/ssh);
  *                               Docker/local resolve with no value.
  * @remarks
- * - On external (ssh) servers, opens a dedicated SSH connection per command and disposes it in a
- *   finally block, so no connection is left open on the server even when connect or exec fails.
+ * - On external (ssh) servers, runs over the pooled SSH connection (see getSshClient()), which is
+ *   closed once in AfterAll by closeSshConnection().
  */
 async function wp(args: string, show_errors: boolean = true): Promise<boolean> {
     const root = configurations.type === ServerType.docker ? ' --allow-root': '';
     const cwd = getWPDir(configurations);
 
     if(configurations.type === ServerType.external) {
-        const client = new NodeSSH();
-        try {
-            await client.connect({
-                host: configurations.ssh.address,
-                username: configurations.ssh.username,
-                privateKeyPath: configurations.ssh.key
-            })
+        const result = await sshExec(`wp ${args}${root} --path=${cwd}`);
 
-            const result = await client.execCommand(`wp ${args}${root} --path=${cwd}`);
-
-            if(result.code !== 0) {
-                if(show_errors){
-                    console.error('Error :', result.stderr);
-                }
-                return false
+        if(result.code !== 0) {
+            if(show_errors){
+                console.error('Error :', result.stderr);
             }
-            return true;
-        } finally {
-            client.dispose();
+            return false
         }
+        return true;
     }
     const command = wrapPrefix(`wp ${args}${root} --path=${cwd}`);
 
@@ -153,8 +259,8 @@ type WPCliOutput = {
  * 
  * @remarks
  * - Automatically adds `--allow-root` flag when running in Docker environment
- * - For external SSH connections, establishes a new SSH connection for each command and disposes
- *   it in a finally block after execution, so nothing is left open on the server on any exit path
+ * - For external SSH connections, runs over the pooled SSH connection (see getSshClient()), which
+ *   is closed once in AfterAll by closeSshConnection()
  * - For local execution, uses shelljs exec with synchronous execution
  * - The `failed` property is determined by checking if the exit code equals 1
  */
@@ -164,25 +270,12 @@ export async function wpWithOutput(args: string): Promise<WPCliOutput> {
     const cwd = getWPDir(configurations);
 
     if (configurations.type === ServerType.external) {
-        const client = new NodeSSH();
-        try {
-            await client.connect({
-                host: configurations.ssh.address,
-                username: configurations.ssh.username,
-                privateKeyPath: configurations.ssh.key
-            });
-            const command = `wp ${args}${root} --path=${cwd}`;
-            const result = await client.execCommand(
-                command
-            );
-            return {
-                stdout: result.stdout,
-                stderr: result.stderr,
-                failed: result.code === 1
-            } as WPCliOutput;
-        } finally {
-            client.dispose();
-        }
+        const result = await sshExec(`wp ${args}${root} --path=${cwd}`);
+        return {
+            stdout: result.stdout,
+            stderr: result.stderr,
+            failed: result.code === 1
+        } as WPCliOutput;
     }
     const command = wrapPrefix(`wp ${args}${root} --path=${cwd}`);
 
