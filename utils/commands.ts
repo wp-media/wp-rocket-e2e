@@ -74,8 +74,7 @@ function wrapPrefix(command: string, sshConfig?: SSHConfig): string {
  * @async
  * @param {string} args - Arguments to be passed to the WP-CLI command.
  * @param {boolean} show_errors - Show error
- * @returns {Promise<boolean>} - True unless the command exited with code 1 (external/ssh);
- *                               Docker/local resolve with no value.
+ * @returns {Promise<boolean>} - True if the command exited with code 0, false otherwise.
  * @remarks
  * - On external (ssh) servers, opens a dedicated SSH connection per command and disposes it in a
  *   finally block, so no connection is left open on the server even when connect or exec fails.
@@ -108,11 +107,12 @@ async function wp(args: string, show_errors: boolean = true): Promise<boolean> {
     }
     const command = wrapPrefix(`wp ${args}${root} --path=${cwd}`);
 
-    await exec(command, {
+    const result = exec(command, {
         cwd: configurations.rootDir,
         async: false
     });
 
+    return result.code === 0;
 }
 type WPCliOutput = {
     stdout: string,
@@ -341,6 +341,31 @@ export async function rm(destination: string, sshConfig?: SSHConfig): Promise<vo
 }
 
 /**
+ * Gives paths under wp-content the same owner/group as wp-content itself.
+ *
+ * WP-CLI runs as the SSH user, while wp-admin runs as the web server's PHP user, so anything
+ * WP-CLI creates (an installed plugin's folder, files a plugin writes on activation) would
+ * otherwise be unwritable from wp-admin - breaking later UI steps such as deleting or
+ * replacing the plugin. Paths that don't exist are skipped.
+ *
+ * @function
+ * @name matchWpContentOwnership
+ * @async
+ * @param {string[]} relativePaths - Paths relative to wp-content.
+ * @returns {Promise<void>} - A Promise that resolves when ownership is updated.
+ */
+export async function matchWpContentOwnership(relativePaths: string[]): Promise<void> {
+    const wpContent = `${getWPDir(configurations).replace(/\/$/, '')}/wp-content`;
+    const safeRef = sanitizeShellArg(wpContent);
+    const safePaths = relativePaths.map(path => sanitizeShellArg(`${wpContent}/${path}`)).join(' ');
+    const command = wrapPrefix(`for p in ${safePaths}; do [ -e "$p" ] && sudo chown -R --reference=${safeRef} "$p"; done; true`);
+    await exec(command, {
+        cwd: configurations.rootDir,
+        async: false
+    });
+}
+
+/**
  * Removes files matching a glob pattern directly under a directory.
  *
  * @function
@@ -486,16 +511,63 @@ export async function installRemotePlugin(url: string): Promise<void>  {
 }
 
 /**
- * Install a WordPress plugin from a local zip file using the WP-CLI command.
+ * Reads a local zip file's own listing to find its top-level directory name.
+ * WP-CLI/WordPress core extract a plugin zip into wp-content/plugins/<this-name>/,
+ * so this is also the slug `wp plugin activate` expects - and unlike diffing the
+ * plugin list before/after install, it works even when the plugin is already present
+ * (a force-reinstall doesn't add a new entry to that list).
+ *
+ * @param {string} filePath - The local file path to the plugin zip file.
+ * @returns {string} - The zip's top-level directory name.
+ */
+function getZipTopLevelDir(filePath: string): string {
+    const result = exec(`unzip -Z1 ${sanitizeShellArg(filePath)}`, { silent: true });
+    if (result.code !== 0) {
+        throw new Error(`Failed to read contents of zip '${filePath}': ${result.stderr}`);
+    }
+
+    const firstEntry = result.stdout.split('\n').find(line => line.trim().length > 0);
+    if (!firstEntry) {
+        throw new Error(`Zip file '${filePath}' appears to be empty`);
+    }
+
+    return firstEntry.split('/')[0];
+}
+
+/**
+ * Install a WordPress plugin from a local zip file (on the machine running the tests)
+ * using the WP-CLI command. Copies the zip to the WordPress instance, installs it with
+ * --force so re-installing an already-present plugin doesn't fail, then removes the
+ * copied zip regardless of outcome.
  *
  * @function
  * @name installLocalPlugin
  * @async
  * @param {string} filePath - The local file path to the plugin zip file.
- * @returns {Promise<void>} - A Promise that resolves when the installation is completed.
+ * @returns {Promise<string>} - A Promise that resolves with the installed plugin's slug
+ *                              (its wp-content/plugins directory name), for use with
+ *                              `activatePlugin`.
  */
-export async function installLocalPlugin(filePath: string): Promise<void>  {
-    await wp(`plugin install ${filePath}`)
+export async function installLocalPlugin(filePath: string): Promise<string>  {
+    const slug = getZipTopLevelDir(filePath);
+    const fileName = filePath.split('/').pop();
+    const remotePath = `${getWPDir(configurations).replace(/\/$/, '')}/wp-content/plugins/${fileName}`;
+
+    await cp(filePath, remotePath);
+    let installed = false;
+    try {
+        installed = await wp(`plugin install ${remotePath} --force`);
+    } finally {
+        await rm(remotePath);
+    }
+
+    if (!installed) {
+        throw new Error(`Failed to install plugin from '${filePath}'.`);
+    }
+
+    await matchWpContentOwnership([`plugins/${slug}`]);
+
+    return slug;
 }
 
 /**

@@ -1,4 +1,4 @@
-@smoke @local @setup @requires-clean-imagify
+@smoke @local @setup @requires-clean-imagify @real-user-setup
 Feature: C1205 - Enabling all WP Rocket features should not throw any fatal errors
 
     Background:
