@@ -48,7 +48,7 @@ For each angle below, ask: **what would cause this plan to fail?**
 
 8. **Scope and risk** — Is anything in scope introducing disproportionate risk for the stated benefit? (e.g. refactoring `hooks.ts` or `PageUtils` to add one scenario.)
 9. **Observable behavior (Hyrum's Law)** — Does the change alter behavior other people and pipelines rely on: tag names and npm scripts used by auto-e2e/CI runners and reporting (`push-report`, `--tag`), hook behavior for existing tags, step texts used by other features, report/artifact paths in `test-results/`, `config/wp.config.ts` keys? Is the change intentional and documented in the spec? If not clearly yes, flag it as at least SHOULD_HAVE.
-10. **Alternatives** — Is there a simpler or lower-risk approach that achieves the same outcome?
+10. **Alternatives** — Is there a simpler or lower-risk approach that achieves the same outcome? Always check the spec's **Simplest Option Considered**: if the spec adds code where updating expected data would do, verify the reason it gives against the product code. An unverified "not predictable / not deterministic" claim is at least SHOULD_HAVE.
 
 ## Step 3 — Classify each finding
 

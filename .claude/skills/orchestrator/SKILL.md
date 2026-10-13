@@ -360,7 +360,7 @@ Update the decisions strip in the log.
   (`src/support/hooks.ts`, `utils/commands.ts`, `utils/page-utils.ts`, `src/common/*`)
   used by many scenarios, an irreversible decision, or a cross-cutting concern
 
-**Skip CHALLENGER** only when ALL: `effort IN [XS, S]`, `risk_level == LOW`, `complexity == LOW`, and `risk_notes` shows high confidence with no unusual concerns.
+**Skip CHALLENGER** only when ALL: `effort IN [XS, S]`, `risk_level == LOW`, `complexity == LOW`, `risk_notes` shows high confidence with no unusual concerns, and the spec's **Simplest Option Considered** section cites evidence for any reason it gives for rejecting a data-only fix. If the spec chose a code change for a data mismatch without that evidence, invoke CHALLENGER anyway.
 
 In **high-oversight mode**, when CHALLENGER is borderline (e.g. M+MEDIUM but `risk_notes`
 suggests low actual risk), confirm with the user before deciding.

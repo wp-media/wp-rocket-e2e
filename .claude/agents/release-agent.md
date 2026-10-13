@@ -112,7 +112,11 @@ section heading intact.
 ### Step 4 — Fill the PR draft
 
 Read the spec and the initialized draft. Fill **every section** — no placeholder text
-left behind.
+left behind. Edit the draft file `.TemporaryItems/Issues/wp-rocket-e2e/pull/<N>.md` in place; do not
+write the body from memory. Keep every template heading exactly as written (`### What was tested`,
+`### How to test`, `### Affected Features & Quality Assurance Scope`, `### Documentation`,
+`### New dependencies`, `### Risks`, and the checklist headings). Never rename, merge, replace or
+add sections: no "What was done", no "How the code works".
 
 - **The first line of the PR body must be the AI-generated notice:**
   ```
@@ -132,7 +136,6 @@ left behind.
   Closes #<N>
   ```
 - "Description": one or two sentences on what coverage is added or what flakiness/breakage is fixed.
-- "What was done": summarize the implementation from the spec (features, steps, helpers, hooks, scripts).
 - "How to test": derive from the acceptance criteria — the exact command(s), e.g.
   `npm run test:tags --tags="@mytag"` or `npm run test:scenario --scenario="<name>"`, the
   target-site preconditions (plugins pre-installed, zips in `plugin/`, helper plugin,
@@ -141,11 +144,23 @@ left behind.
 - "Type of change": select exactly one checkbox matching the change type.
 - "Affected Features & Quality Assurance Scope": list the tags/features and shared
   steps/helpers/hooks touched (a shared helper or hook change affects every feature using it).
-- "Technical description": explain *how* the code works, not *what* it does.
+- "Documentation" (under "Technical description"): explain how the change works — what changed
+  (features, steps, helpers, hooks, scripts, or data files), why it is built this way, and the
+  alternatives rejected when the spec records them. Describe the diff as committed, not the spec's
+  first plan. This section is mandatory, even for a data-only change (then: which entries changed
+  and how the new values were obtained).
 - "New dependencies": list any new npm packages, or "None."
 - "Risks": list flakiness, shared-site side effects, provisioning needs, or behavior
   changes for existing tags/scripts — or "None identified."
 - Leave "What was tested" blank — the orchestrator fills it after QA.
+- Before `gh pr create`, check that every `#`/`##`/`###` heading of the template is present in the
+  body, with the same text:
+  ```bash
+  grep -E '^#{1,3} ' .claude/skills/issue-workflow/refs/pr-template.md | while IFS= read -r h; do
+    grep -qxF "$h" .TemporaryItems/Issues/wp-rocket-e2e/pull/<N>.md || echo "MISSING HEADING: $h"
+  done
+  ```
+  Any `MISSING HEADING` line must be fixed before creating the PR.
 
 For low-complexity changes (≤ 2 files, trivial logic), keep each section to one or two
 sentences. For high-complexity changes (shared helper/hook refactor, 10+ files), use full

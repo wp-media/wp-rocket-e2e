@@ -165,7 +165,7 @@ Then fetch the PR body:
 - Layer 1: read `.TemporaryItems/Issues/wp-rocket-e2e/pull/<N>.md`
 - Layer 2: `gh api repos/wp-media/wp-rocket-e2e/pulls/<PR_NUMBER> --jq .body`
 
-Check that all required sections from the template are present and non-empty:
+Check that all required sections from the template are present and non-empty. At **both layers**, every heading of the template must appear verbatim (exact string match on the heading line, e.g. `### Documentation`). A renamed, replaced or missing heading (such as `### How the code works` instead of `### Documentation`) counts as a missing section:
 - Description (with `Fixes #N`)
 - Type of change (one checkbox ticked)
 - Detailed scenario → What was tested
@@ -192,7 +192,7 @@ Also confirm the body contains no credentials, SSH details, or private hostnames
 
 - **PASS**: All required sections present and filled
 - **WARN**: One section is thin or partially filled
-- **FAIL**: PR not created yet (Layer 2 only), 2+ sections missing / left with placeholder text, or secrets in the body
+- **FAIL**: PR not created yet (Layer 2 only), the `### Documentation` heading missing or renamed, 2+ sections missing / left with placeholder text, or secrets in the body
 
 ---
 

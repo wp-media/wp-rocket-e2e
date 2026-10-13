@@ -106,6 +106,11 @@ This is a separate question from where the fix goes — ask it first.
   - Option A: patch in place — state effort (Low/Medium/High), risk, and what debt this preserves.
   - Option B: move/refactor (e.g. extract a shared helper, consolidate duplicate steps) — state effort, risk, and the improvement gained.
 
+**c2. Simplest fix first — can expected data or config alone fix it?**
+When the failure is a mismatch between what the product now does and what the test expects (changed counts, new default, renamed text, removed entry), the default solution is to update the expected data (`src/support/results/*.json`, `config/scenarioUrls.json`, feature-file examples) and nothing else. Add or change step/helper code only with a stated reason why the data-only fix cannot work.
+- Any claim that rules the data-only fix out ("the value is non-deterministic", "order is not guaranteed", "cannot be predicted") must be verified, not assumed: read the linked `wp-rocket` code or PR (e.g. the AJAX controller, the beacon script in `rocket-scripts`), or run a probe, and cite the file/function in the spec. If you cannot verify it, list it in `risk_notes` as an unverified assumption.
+- If the data-only fix means the test no longer checks some product behavior (e.g. a limit), say so in the spec and name where that behavior is covered (TestRail case, another scenario), so it is a deliberate trade-off.
+
 **d. wp-rocket-e2e specific checks:**
 Read `.claude/skills/wp-rocket-e2e-architecture/SKILL.md` and verify the candidate solution complies with all conventions defined there (ICustomWorld usage, typed helpers with JSDoc, selectors in `src/common/selectors.ts`, no arbitrary waits, tag/npm-script conventions).
 
@@ -178,8 +183,11 @@ Rules for this block:
 ### Design Decision
 <where the change belongs and why — be explicit about the layer and the reasoning>
 
+### Simplest Option Considered
+<the data-only / config-only fix, and either "chosen" or why it cannot work — with the evidence (file/function in the product or test code). Required in every spec.>
+
 ### Implementation Options
-<!-- Include only when multiple implementation approaches exist (e.g. patch in place vs refactor) -->
+<!-- Include only when multiple implementation approaches exist (e.g. patch in place vs refactor). When the symptom is a data mismatch, the data-only option must be Option A. -->
 **Option A — Minimal fix:** <description>
 - Effort: Low / Medium / High
 - Risk: Low / Medium / High
