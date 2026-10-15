@@ -24,6 +24,7 @@ import {WP_SSH_ROOT_DIR,} from "../../config/wp.config";
 import { After, AfterAll, Before, BeforeAll, Status, setDefaultTimeout } from "@cucumber/cucumber";
 
 import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, forceUninstallPlugin, forceDeactivatePlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin, wpWithOutput} from "../../utils/commands";
+import {rename, exists, rmFiles, testSshConnection, installRemotePlugin, activatePlugin, uninstallPlugin, forceUninstallPlugin, readFile, isPluginActive, isPluginInstalled, getPostDataFromTitle, reactivatePlugin, closeSshConnection} from "../../utils/commands";
 import type { Selectors } from "../../utils/types";
 import type { Section } from "../../utils/types";
 import { PluginBuilder } from '../../utils/plugin-builder';
@@ -276,10 +277,11 @@ Before({tags: '@performancehints'}, async function (this: ICustomWorld) {
  */
 After(async function (this: ICustomWorld, { pickle, result }) {
     previousScenarioName = pickle.name
+    let videoPath: string | undefined;
 
     if (result?.status == Status.FAILED) {
         try {
-            await this.utils?.createScreenShot(this, pickle);
+            videoPath = await this.utils?.createScreenShot(this, pickle);
         } catch (error) {
             // Log and continue cleanup to ensure debug log handling and browser closing still run
             // eslint-disable-next-line no-console
@@ -302,6 +304,17 @@ After(async function (this: ICustomWorld, { pickle, result }) {
 
     await this.page?.close()
     await this.context?.close()
+
+    // Video recordings are only finalized into a valid webm container once the context that
+    // owns them closes, so the attach must happen after the closes above. See #407.
+    if (videoPath) {
+        try {
+            await this.utils?.attachVideo(this, videoPath);
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to attach video during After hook cleanup:', error);
+        }
+    }
 
     //  await resetWP();
 
@@ -395,8 +408,12 @@ After({tags: '@wpr-helper-compatibility'}, async function (this: ICustomWorld): 
 //  })
 
 /**
- * After all tests, closes the Chromium browser.
+ * After all tests, closes the Chromium browser and the pooled SSH connection.
  */
 AfterAll(async function () {
-    await browser.close();
+    try {
+        await browser.close();
+    } finally {
+        await closeSshConnection();
+    }
 });
