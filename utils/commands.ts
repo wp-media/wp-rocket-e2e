@@ -271,21 +271,14 @@ export async function wpWithOutput(args: string): Promise<WPCliOutput> {
         configurations.type === ServerType.docker ? ' --allow-root' : '';
     const cwd = getWPDir(configurations);
 
-    if (configurations.type === ServerType.external) {
-        const result = await sshExec(`wp ${args}${root} --path=${cwd}`);
-        return {
-            stdout: result.stdout,
-            stderr: result.stderr,
-            failed: result.code === 1,
-            code: result.code
-        } as WPCliOutput;
-    }
-    const command = wrapPrefix(`wp ${args}${root} --path=${cwd}`);
+    const result =
+        configurations.type === ServerType.external
+            ? await sshExec(`wp ${args}${root} --path=${cwd}`)
+            : exec(wrapPrefix(`wp ${args}${root} --path=${cwd}`), {
+                  cwd: configurations.rootDir,
+                  async: false
+              });
 
-    const result = exec(command, {
-        cwd: configurations.rootDir,
-        async: false
-    });
     return {
         stdout: result.stdout,
         stderr: result.stderr,
@@ -663,41 +656,26 @@ export async function forceUninstallPlugin(plugin: string): Promise<void> {
 }
 
 /**
- * Deactivates a single plugin, retrying with `--skip-plugins=<plugin>` if the plain attempt
- * leaves it active. The plain attempt comes first because it loads the plugin and so runs its
- * own deactivation hook (e.g. wp-rocket-modify-used-css clears the cache and used CSS there);
- * the retry covers plugins that fatal on every WordPress bootstrap, which would otherwise also
- * crash WP-CLI's own bootstrap. Unlike forceUninstallPlugin, the plugin files are kept: use it
- * for plugins pre-provisioned on the e2e environment that must survive the scenario.
+ * Deactivates a single plugin with `--skip-plugins=<plugin>`, so it still works when the plugin
+ * fatals on every WordPress bootstrap (which would otherwise crash WP-CLI itself). The plugin is
+ * not loaded, so its own deactivation hook does not run. Unlike forceUninstallPlugin, the plugin
+ * files are kept: use it for plugins pre-provisioned on the e2e environment that must survive
+ * the scenario.
  *
  * @function
  * @name forceDeactivatePlugin
  * @async
  * @param {string} plugin - The plugin slug to deactivate.
- * @returns {Promise<void>} - A Promise that resolves once the plugin is confirmed inactive.
- * @throws {Error} If the plugin is still active after both attempts, so a helper left active is
- *                  surfaced loudly rather than silently poisoning later scenarios.
+ * @returns {Promise<void>} - A Promise that resolves once `wp plugin deactivate` succeeds.
+ * @throws {Error} If WP-CLI exits non-zero, with the exit code and stderr.
  */
 export async function forceDeactivatePlugin(plugin: string): Promise<void> {
-    // Not isPluginActive(): it bootstraps without --skip-plugins, so a plugin that fatals on
-    // every bootstrap would make it report "not active". --skip-plugins keeps the check reliable.
-    const isStillActive = async (): Promise<boolean> => {
-        const result = await wpWithOutput(`plugin is-active ${plugin} --skip-plugins=${plugin}`);
-        return !result.failed;
-    };
+    const result = await wpWithOutput(`plugin deactivate ${plugin} --skip-plugins=${plugin}`);
 
-    await wpWithOutput(`plugin deactivate ${plugin}`);
-
-    if (!(await isStillActive())) {
-        return;
-    }
-
-    await wpWithOutput(`plugin deactivate ${plugin} --skip-plugins=${plugin}`);
-
-    if (await isStillActive()) {
+    if (result.code !== 0) {
         throw new Error(
-            `Failed to deactivate plugin "${plugin}" even with --skip-plugins. It could affect ` +
-            `subsequent scenarios - manual cleanup required.`
+            `Failed to deactivate plugin "${plugin}" (WP-CLI exit code ${result.code}): ` +
+            `${result.stderr || '(empty)'}. Manual cleanup may be required.`
         );
     }
 }
