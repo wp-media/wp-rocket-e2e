@@ -577,7 +577,7 @@ export class PageUtils {
             await this.sections.massToggle();
             await this.page.getByRole('button', { name: 'Save Changes and Optimize' }).click();
             //  Updating text as goal here isnot testing database option itself but if enable will cause error
-            await expect(this.page.getByText('Database optimization process is')).toBeVisible({ timeout: 30000 });
+            await expect(this.page.getByText(/Database optimization process is (running|complete)/).first()).toBeVisible({ timeout: 30000 });
         }
 
         if(await this.sections.doesSectionExist('cdn')) {

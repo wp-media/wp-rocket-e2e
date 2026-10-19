@@ -199,10 +199,17 @@ export class Sections {
         }
 
         try {
-            if (await trigger.getAttribute("aria-expanded") !== "true") {
-                await trigger.click();
-                await expect(trigger).toHaveAttribute("aria-expanded", "true");
-            }
+            // The nav script opens the group of the current page once it ran; reading the state earlier is stale
+            // and clicking afterwards would close the group again.
+            await this.page.locator('.wpr-menuItem[aria-current="page"]').first().waitFor({ state: "attached", timeout: 5000 }).catch(() => undefined);
+
+            await expect(async () => {
+                if (await trigger.getAttribute("aria-expanded") !== "true") {
+                    await trigger.click();
+                }
+
+                await expect(trigger).toHaveAttribute("aria-expanded", "true", { timeout: 1000 });
+            }).toPass({ timeout: 10000 });
 
             await link.click();
         } catch (error) {
