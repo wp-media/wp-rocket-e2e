@@ -22,6 +22,50 @@ These five rules apply to every agent, in every phase, before any skill-specific
 
 ---
 
+## Project Configuration
+
+Read by the GAS delivery pipeline (`gas-delivery-pipeline-templates`) agents and skills.
+
+This repo is a Cucumber/Playwright suite, not a WordPress plugin: there is no `gas-wordpress-engineering` configuration and no app to boot. Real runs target the WordPress site in `config/wp.config.ts` (see §4.2 and §9).
+
+**Commands:**
+
+| Setting | Value | Used by |
+|---|---|---|
+| Test command | No suite-level command: real runs are targeted. `node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --retry 0 --tags "<expr>"`. Never `npm run test:e2e` (long, and pushes reports) | implementer, dod |
+| Test — targeted subset | `--tags "<expr>"` or `--name "<scenario name>"` with `--retry 0`; static check first: `npx cucumber-js -p default --dry-run --tags "<expr>"` | implementer, dod |
+| Lint command | `npm run lint` (the only code check in CI) | implementer, dod |
+| Lint — auto-fix | `npm run lint:fix` | implementer, dod |
+| Static analysis | `npx tsc --noEmit -p tsconfig.json` (local only, compare against baseline, only new errors count) | dod |
+| Build command | none | implementer |
+| Install command | `npm ci` | setup |
+
+**Local run:**
+
+| Setting | Value | Used by |
+|---|---|---|
+| Boot command | none: the suite never boots or creates a WordPress. `WP_ENV_TYPE=external` → the remote e2e site. `docker` with a running container → `npm_config_env=local`. Anything else → `CANNOT_VERIFY` | qa-engineer, e2e-qa-tester |
+| Base URL | from `config/wp.config.ts` (`live` or `local`). Never print or paste it | qa-engineer, e2e-qa-tester |
+| Test credentials / login flow | from `config/wp.config.ts` (gitignored). Never print, log or paste them | qa-engineer, e2e-qa-tester |
+
+**Labels & branches:**
+
+| Setting | Value | Used by |
+|---|---|---|
+| AI label | `Made by AI` | pr-opener, ticket-writer, orchestrator |
+| Epic label | `project` (sub-issues carry `sub-task`) | ticket-writer, orchestrator |
+| Type labels | `bug`, `enhancement`, `test`, `smoke`, `Test Maintenance` | ticket-writer |
+| Effort labels | `effort: [XS]`, `[S]`, `[M]`, `[L]`, `[XL]` | ticket-writer |
+| Issue status transition | none | orchestrator |
+| Base branch | `develop` (`trunk` also exists, never a base unless asked) | all |
+| Branch prefixes | `fix` / `enhancement` / `test` (see §6) | orchestrator |
+| Worktree isolation | off | orchestrator |
+| Protected branches (never push directly) | `develop`, `trunk` | all |
+
+Use only labels that exist (`gh label list --repo wp-media/wp-rocket-e2e`). Never invent one, except ensuring `Made by AI` exists.
+
+---
+
 The objective is to keep this test suite:
 
 - Reliable (no flaky or order-dependent scenarios)
@@ -176,11 +220,11 @@ AI must NOT:
 
 By default, AI may only **suggest** commit messages and must not run `git commit` or `git push`.
 
-**Exception — Issue Workflow:** When operating under the issue-workflow skill (triggered by `/task <number>`, `issue <number>`, or `#<number>`), the agent MAY:
+**Exception — Delivery Pipeline:** When operating under the GAS `orchestrator` skill (triggered by `/task <number>`, `work on issue <number>`, or `#<number>`), the `implementer` and `pr-opener` agents MAY:
 
 1. Run atomic `git commit` calls — one commit per logical, self-contained change set.
 2. Run `git push` exactly once after all commits are ready, to publish the branch.
-3. Create a GitHub Pull Request using the prepared PR draft.
+3. Create a draft GitHub Pull Request from the PR template.
 4. Monitor PR CI status checks until all pass or a failure is detected.
 
 Atomic commit rules:
@@ -201,7 +245,7 @@ Changes must:
 * Avoid noise in diff.
 * Avoid unrelated formatting changes.
 
-Base branch is `develop`. Every PR body must follow `.claude/skills/issue-workflow/refs/pr-template.md` (the `PR Template Checker` CI enforces it).
+Base branch is `develop`. Every PR body must follow `.claude/skills/orchestrator/refs/pr-template.md` (the `PR Template Checker` CI enforces it).
 
 ### Branch Naming Convention
 
@@ -245,28 +289,34 @@ Not breaking the shared test site is more important than speed.
 
 ---
 
-# 9. QA Agent
+# 9. QA Conventions
 
-The `qa-engineer` sub-agent validates PRs automatically after the PR is opened in the issue workflow.
-It reads the PR spec, runs the changed scenarios itself through the `e2e-run` skill against the configured test site, and produces a structured test report.
+The GAS `qa-engineer` agent validates PRs at the end of the delivery pipeline and delegates execution to `e2e-qa-tester`. This repo overrides `e2e-qa-tester` in `.claude/agents/e2e-qa-tester.md`: instead of driving a browser by hand, it runs the PR's Cucumber scenarios through the `e2e-run` skill against the configured test site. The scenarios drive their own Playwright browser.
 
-Agent definition: `.claude/agents/qa-engineer.md`.
-
-If `config/wp.config.ts`, the plugin zips or the target site are unavailable, the report states `SKIP` with the reason; it does not claim validation.
+- **Execution QA is mandatory** whenever the diff adds or changes a feature, step, hook, helper, selector, section or `cucumber.json`. `qa-engineer` must delegate to `e2e-qa-tester` for these, not skip it as "no UI change".
+- **Environment rule:** `WP_ENV_TYPE=external` → the remote site; `docker` with a running container → `npm_config_env=local`; otherwise `CANNOT_VERIFY`. Never build a fresh WordPress: the scenarios need the e2e environment snapshot.
+- **`--retry 0` always.** For a flaky-test fix, repeat the in-scope scenarios 3 times and report `passes/runs`.
+- **Non-vacuous proof:** every new or changed scenario is shown to fail when the behavior it tests is broken (precondition or product mutation, otherwise an assertion review that caps the criterion at `PARTIAL`). Mutations are always reverted.
+- **Shared code** (hooks, shared steps, `PageUtils`, `utils/commands.ts`, selectors, sections, `cucumber.json`, npm scripts) → also run one unrelated scenario that uses it.
+- **Guards:** a criterion that needs a plugin zip, helper plugin, config key (`IMAGIFY_INFOS`, `BACKWPUP_INFOS`) or service that is missing is `CANNOT_VERIFY`, naming exactly what is missing. A `SKIP` or `CANNOT_VERIFY` is never a pass.
+- **One run per site:** never run on a site another agent or run is using. Ask which site is free.
+- **Browsers:** never use the shared Playwright MCP browser. Agents run in parallel. Use a standalone Playwright script with a fresh temporary profile and delete it afterwards.
 
 ---
 
 # 10. Skills Activation
 
-Skills live in `/.claude/skills`. Agents MUST activate the relevant skill depending on the task:
+Generic pipeline skills come from the GAS plugin `gas-delivery-pipeline-templates`. The repository ships only the e2e-specific skills under `.claude/skills/`, plus the files the GAS skills expect to find in the repo (`orchestrator/refs/pr-template.md`, `orchestrator/scripts/issue-sync.sh`) and the local `e2e-qa-tester` agent.
+
+Agents MUST activate the relevant skill depending on the task:
 
 - Writing/changing features, steps, hooks, helpers, selectors, tags or npm scripts → `wp-rocket-e2e-architecture`
 - Running scenarios against the test site (probe, validation, QA) → `e2e-run`
-- Issue intake, branch, PR draft → `issue-workflow`
-- Public-surface changes (tag, npm script, config key, hook behaviour, shared helper) → `docs`
-- Pre-handoff checks → `dod`
+- Issue intake, branch, PR, review, QA → `gas-delivery-pipeline-templates:orchestrator`
+- Public-surface changes (tag, npm script, config key, hook behaviour, shared helper) → `gas-delivery-pipeline-templates:docs`
+- Pre-handoff checks → `gas-delivery-pipeline-templates:dod`
 
-Other entry points: `orchestrator`, `groom`, `challenge`, `review`, `qa`.
+Use the fully qualified `gas-delivery-pipeline-templates:` names: bare `docs` also matches `anthropic-skills:docs`. Other entry points: `gas-delivery-pipeline-templates:groom`, `:challenge`, `:review`, `:qa`.
 
 Codebase exploration uses `grep`/`Glob`; the repo is small enough that no pre-built dependency graph is maintained.
 
@@ -323,3 +373,84 @@ spec or skill files when there is a conflict.
 ---
 
 _No entries yet._
+
+---
+
+# 14. Delivery Pipeline Conventions
+
+Project-specific guidance for the GAS delivery pipeline agents. It extends §1–§7 and never overrides them.
+
+## Grooming conventions
+
+Effort is sized by the grooming and challenger agents; this repo does not define its own scale. The spec for a new scenario includes a **Proposed Scenarios** Gherkin block, so the team can approve the wording before implementation.
+
+**Always flag as HIGH risk regardless of effort:**
+- Changes to `src/support/hooks.ts` or `src/backwpup/support/hooks.ts` (global `BeforeAll`/`Before`/`After`, or a tag filter on a hook)
+- Changes to a shared step (`general.ts`, `steps.ts`), `PageUtils`, `utils/commands.ts`, `utils/helpers.ts`, `src/common/selectors.ts` or `sections.ts`: every feature depends on them
+- Changes to `cucumber.json` (profiles, require globs, `retry`, `parallel`) or to the `test:e2e` tag exclusions
+- A scenario that mutates the shared test site (plugins, options, theme, permalinks, cron events) without cleanup
+- Anything touching `config/wp.config.ts` handling, `config/wp.config.sample.ts`, plugin zips, or `PluginBuilder` refs (`E2E_*_REF`)
+- A fix that relies on a longer timeout, `retry`, `waitForTimeout` or a `debug.log` exclusion instead of the root cause
+
+**Places that often need to change too:** the tag in `.github/copilot-instructions.md` and a `test:<tag>` npm script, `config/wp.config.sample.ts` for a new config key, `src/common/selectors.ts` / `sections.ts`, `utils/types.ts`.
+
+**Probe:** for a flaky or broken step, `grooming-agent` may use `e2e-run` for one cheap targeted run to confirm today's behavior (§4.2). If the site is unreachable it notes "probe skipped: <reason>" and continues.
+
+**Knowledge graph:** none (§10).
+
+## Review conventions
+
+Load `wp-rocket-e2e-architecture` and read `.github/copilot-instructions.md` for every diff. In this repo the "product" is the test suite, so review for three failure modes: **false confidence** (a scenario that passes while the feature is broken), **false alarms** (flaky or environment-coupled scenarios), and **breaking other scenarios** (a shared step or hook changed, missing cleanup).
+
+- Every `Then` must be able to fail. Flag assertions on always-truthy values, swallowed errors, loops over possibly empty collections. A vacuous assertion is HIGH.
+- Search every changed step, helper, selector, section key, hook, tag or npm script across the whole suite. A consumer outside the diff is a cross-file finding.
+- No new `waitForTimeout`/`sleep`, no raised `retry`, no new arrow-function steps, no raw selectors in steps, no raw `exec`/`ssh` in steps.
+- No duplicate or ambiguous step text (verify with a dry-run).
+- Secrets: a committed `config/wp.config.ts`, plugin zip, credential, SSH detail or private hostname is CRITICAL. `config/wp.config.sample.ts` holds placeholders only.
+- Sibling updates: new tag → `test:<tag>` script and a deliberate `test:e2e` decision; new config key → `wp.config.sample.ts`; new prerequisite → documented.
+- Observable behavior of shared infrastructure (a step's wording, implicit waits, which hooks run for which tags, npm script names that automation calls such as `test:e2e`, `test:smoke`, `push-report`, report paths under `test-results/`) is public surface: a change needs to be intentional and documented.
+- Do not run scenarios during review. A `--dry-run` is fine.
+
+## IMPLEMENTER configuration
+
+Single implementer for the whole change: there is no frontend/backend split. Commit format and permissions: §5.1.
+
+**Common pitfalls:**
+- ❌ Arrow-function steps → ✅ `async function (this: ICustomWorld): Promise<void>`
+- ❌ Adding a step that rephrases an existing one → ✅ reuse it, then dry-run for ambiguity
+- ❌ Per-feature setup in `BeforeAll`, global `Before` or copied steps → ✅ a tag-scoped hook
+- ❌ `waitForTimeout`, a longer timeout or `retry` to force green → ✅ wait on a selector, response or state and fix the cause
+- ❌ Validating with the default profile → ✅ `--retry 0` on the narrowest tag or `--name`
+- ❌ Running `npm run test:e2e` or `push-report` → ✅ a targeted run only
+- ❌ Trusting the exit code on Node 24 → ✅ read the summary and `test-results/cucumber-report.json`
+- ❌ Leaving plugins, options or theme changed on the shared site → ✅ clean up in `@setup` or a tag-scoped `After`
+- ❌ Real values in `config/wp.config.sample.ts`, features or docs → ✅ placeholders and key names only
+- ❌ Invoking the bare `docs` or `dod` skill → ✅ `gas-delivery-pipeline-templates:docs` and `gas-delivery-pipeline-templates:dod`
+
+## Documentation conventions
+
+**Docs location:** `README.md` (setup, prerequisites, run commands), `src/backwpup/README.md` (BackWPup), `.github/copilot-instructions.md` (the main developer guide: tags, npm scripts, config keys, hooks, helpers, troubleshooting).
+
+**Public surface** (what the `docs` skill treats as documentation-worthy):
+- a new or renamed tag, a new or changed npm script, or a change to the `test:e2e` exclusions
+- a new or changed `config/wp.config.sample.ts` key, or an environment variable the suite reads (`E2E_*_REF`, `npm_config_*`)
+- hook behaviour in `src/support/hooks.ts` / `src/backwpup/support/hooks.ts`
+- a shared helper (`PageUtils`, `utils/commands.ts`, `utils/helpers.ts`) or a section/option in `src/common/sections.ts`
+- a new site prerequisite (plugin zip, helper plugin, theme, service account)
+- `cucumber.json` profiles, report paths, retry/parallel defaults
+
+**Skip** when only feature-specific scenarios, steps or selectors changed with existing tags and scripts, or a flaky step was fixed without changing its wording, parameters or side effects.
+
+A new `config/wp.config.sample.ts` key triggers a Slack notification on merge to `develop` (`notify-config-change.yml`): document the key. A new tag comes with a `test:<tag>` script; document both, and say whether `test:e2e` excludes it. Document the current state, never real credentials, hosts or URLs.
+
+**Inline comment style:** §2.2.
+
+## Definition of Done
+
+- `npm run lint` passes.
+- `npx tsc --noEmit -p tsconfig.json` shows no new errors in code that Cucumber loads. Errors in eslint-ignored files (`src/specs/**`, `utils/commands.ts`, `utils/configurations.ts`) are a WARN, not a pass.
+- `npx cucumber-js -p default --dry-run` reports no undefined or ambiguous steps for the affected tags. A new step can make an existing feature ambiguous, so also dry-run the whole suite.
+- The changed scenarios ran with `--retry 0` and passed, or the DoD reports the `SKIP` reason from `e2e-run`. A `SKIP` is "unverified", never "passed".
+- Flaky-test fixes: repeated runs all green, not a single green run.
+- The PR body follows `.claude/skills/orchestrator/refs/pr-template.md` with headings copied exactly. The `PR Template Checker` CI (`wp-media/pr-checklist-action`) fails otherwise.
+- No `config/wp.config.ts`, plugin zip, `test-results/`, `@rerun.txt` or `.TemporaryItems/` committed.

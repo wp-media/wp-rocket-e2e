@@ -1,6 +1,6 @@
 # E2E Test Best Practices — References
 
-Reference list for any agent writing or changing e2e test cases (`test-developer`,
+Reference list for any agent writing or changing e2e test cases (the GAS `implementer`,
 `grooming-agent` when it specs a test, and `lead-reviewer` when it reviews one). Read the
 entries that match the task before writing or reviewing code. This list is meant to grow: add a link plus one line on when to use it.
 

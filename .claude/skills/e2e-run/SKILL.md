@@ -1,6 +1,6 @@
 ---
 name: e2e-run
-description: Run wp-rocket-e2e Cucumber scenarios safely against the configured test site — prerequisites check, dry-run, targeted run by tag or name with --retry 0, and report reading. Returns PASS/FAIL/SKIP JSON. Invoked by grooming-agent (probe), test-developer and qa-engineer.
+description: Run wp-rocket-e2e Cucumber scenarios safely against the configured test site — prerequisites check, dry-run, targeted run by tag or name with --retry 0, and report reading. Returns PASS/FAIL/SKIP JSON. Invoked by the GAS grooming-agent (probe), the GAS implementer and the local e2e-qa-tester.
 ---
 
 # E2E-RUN SKILL
@@ -8,9 +8,9 @@ description: Run wp-rocket-e2e Cucumber scenarios safely against the configured 
 Runs real scenarios against the WordPress site configured in `config/wp.config.ts`. There is no local app to boot in this repo: the target is a remote, Docker or local WordPress site reached through Playwright (browser) and SSH/WP-CLI (`utils/commands.ts`).
 
 **Invokers:**
-- `grooming-agent` — probe current behaviour before writing the spec: run the one existing scenario closest to the issue (or a dry-run if none exists) to confirm what the suite does today.
-- `test-developer` — validate new/changed scenarios before committing (`--retry 0`).
-- `qa-engineer` — validate a PR's scenarios and the neighbouring ones that share steps or hooks.
+- `grooming-agent` (GAS) — probe current behaviour before writing the spec: run the one existing scenario closest to the issue (or a dry-run if none exists) to confirm what the suite does today.
+- `implementer` (GAS) — validate new/changed scenarios before committing (`--retry 0`).
+- `e2e-qa-tester` (local, called by the GAS `qa-engineer`) — validate a PR's scenarios and the neighbouring ones that share steps or hooks.
 
 ## Anti-rationalization table
 

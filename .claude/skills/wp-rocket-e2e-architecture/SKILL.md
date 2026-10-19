@@ -90,4 +90,4 @@ Follow the policy defined in AGENTS.md §5.1. Outside the issue workflow, do not
 
 ## Pull request descriptions
 
-Every PR body must follow `.claude/skills/issue-workflow/refs/pr-template.md` with its section headings copied exactly, including "What was tested" and "Mandatory Checklist". This applies outside the issue workflow too. The `PR Template Checker` CI (`wp-media/pr-checklist-action`) fails otherwise. The only other required PR check is `Typescript eslint` (`npm run lint`).
+Every PR body must follow `.claude/skills/orchestrator/refs/pr-template.md` with its section headings copied exactly, including "What was tested" and "Mandatory Checklist". This applies outside the delivery pipeline too. The `PR Template Checker` CI (`wp-media/pr-checklist-action`) fails otherwise. The only other required PR check is `Typescript eslint` (`npm run lint`).
