@@ -160,7 +160,7 @@ public wpAdminLogin = async (user: string | null = null): Promise<void> => {
 3. **WP Rocket specific**:
    - Use `Sections` class for navigating WP Rocket settings
    - Use `PageUtils.gotoWpr()` to navigate to WP Rocket settings
-   - Use `PageUtils.clearWPRCache()` to clear cache (on WP Rocket 3.24+ it clears from the admin bar via `PageUtils.clearCacheFromAdminBar()`; `PageUtils.getWprVersion()` / `isNewDashboard()` decide, and throw if the version is unreadable)
+   - Use `PageUtils.clearWPRCache()` to clear cache (always through the admin bar, via `PageUtils.clearCacheFromAdminBar()`)
    - Use `Sections.openNavItem(id)` to open any settings nav item (expands its group on the redesigned dashboard); do not click `#wpr-nav-*` directly
    - Use `PageUtils.saveSettings()` to save settings
    - Use `PageUtils.disableAllOptions()` to disable all WP Rocket options

@@ -417,20 +417,7 @@ When('expand mobile menu and validate no console error nor warning', async funct
     }
 });
 When('I clear cache', async function (this:ICustomWorld) {
-    if (await this.utils.isNewDashboard()) {
-        await this.utils.clearCacheNewDashboard();
-        return;
-    }
-
-    // Goto WP Rocket dashboard
-    await this.utils.gotoWpr();
-
-    this.sections.set('dashboard');
-
-    const cacheButton = this.page.getByRole('link', { name: 'Clear and preload' });
-    await cacheButton.click();
-
-    await expect(this.page.getByText('WP Rocket: Cache cleared.')).toBeVisible();
+    await this.utils.clearCacheFromAdminBarAndAssert();
 });
 
 /**

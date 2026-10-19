@@ -483,57 +483,15 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public clearWPRCache = async(): Promise<void> => {
-        await this.gotoWpr();
-
-        if (await this.isNewDashboard()) {
-            await this.clearCacheNewDashboard();
-            return;
-        }
-
-        const clearCacheURL = await this.page.locator('.wpr-button.wpr-button--icon.wpr-icon-trash').first().getAttribute('href');
-
-        await this.page.goto(clearCacheURL);
-
-        // Verify that cache cleared message is displayed
-        const cacheClearedElement = this.page.getByText('Cache cleared.');
-        await expect(cacheClearedElement).toBeVisible();
+        await this.clearCacheFromAdminBarAndAssert();
     }
 
     /**
-     * Reads the installed WP Rocket version through WP-CLI.
-     *
-     * @return {Promise<string>} Trimmed version string.
-     * @throws {Error} When the command fails or the output is not a version.
-     */
-    public getWprVersion = async (): Promise<string> => {
-        const result = await wpWithOutput('plugin get wp-rocket --field=version');
-        const version = result.stdout.split('\n').map((line) => line.trim()).filter(Boolean).pop() ?? '';
-
-        if (result.failed || !/^\d+\.\d+/.test(version)) {
-            throw new Error(`Unable to read the WP Rocket version: "${version}" ${result.stderr}`);
-        }
-
-        return version;
-    }
-
-    /**
-     * Tells whether the installed WP Rocket uses the redesigned dashboard (3.24 and above).
-     *
-     * @return {Promise<boolean>} True for the new dashboard.
-     * @throws {Error} When the version cannot be read.
-     */
-    public isNewDashboard = async (): Promise<boolean> => {
-        const [major, minor] = (await this.getWprVersion()).split('.').map((part) => parseInt(part, 10));
-
-        return major > 3 || (major === 3 && minor >= 24);
-    }
-
-    /**
-     * Clears the cache on the redesigned dashboard (admin bar) and asserts the notice.
+     * Clears the cache from the admin bar of the WP Rocket settings page and asserts the notice.
      *
      * @return {Promise<void>}
      */
-    public clearCacheNewDashboard = async (): Promise<void> => {
+    public clearCacheFromAdminBarAndAssert = async (): Promise<void> => {
         await this.gotoWpr();
         await this.clearCacheFromAdminBar();
         await expect(this.page.getByText('WP Rocket: Cache cleared.')).toBeVisible();
