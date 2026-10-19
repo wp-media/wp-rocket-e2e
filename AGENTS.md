@@ -439,7 +439,7 @@ Single implementer for the whole change: there is no frontend/backend split. Com
 - ❌ Trusting the exit code on Node 24 → ✅ read the summary and `test-results/cucumber-report.json`
 - ❌ Leaving plugins, options or theme changed on the shared site → ✅ clean up in `@setup` or a tag-scoped `After`
 - ❌ Real values in `config/wp.config.sample.ts`, features or docs → ✅ placeholders and key names only
-- ❌ `gh pr edit`, `gh issue edit`, or `gh pr/issue view` without `--json`: they fail on this repo with a GitHub error about the deprecated classic Projects → ✅ edit with `gh api` (REST PATCH), always pass `--json` to views, and fall back to the GraphQL `markPullRequestReadyForReview` mutation for `gh pr ready`
+- ❌ `gh pr edit`, `gh issue edit`, or `gh pr/issue view` without `--json`: on older `gh` versions (2.45 confirmed) they fail with a GitHub error about the deprecated classic Projects. Upgrade `gh` first (2.102 works). If you can't, → ✅ edit with `gh api` (REST PATCH), always pass `--json` to views, and fall back to the GraphQL `markPullRequestReadyForReview` mutation for `gh pr ready`
 - ❌ Invoking the bare `docs` or `dod` skill → ✅ `gas-delivery-pipeline-templates:docs` and `gas-delivery-pipeline-templates:dod`
 
 ## PR description sync
