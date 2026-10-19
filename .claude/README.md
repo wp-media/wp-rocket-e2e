@@ -6,7 +6,7 @@ Repo rules for all AI work, and the settings the pipeline reads (commands, label
 
 ## Before you start
 
-- Enable the `gas-delivery-pipeline-templates` plugin in Claude Code, version **2.1.1 or later** (`claude plugin marketplace update group-ai-skills`, then `claude plugin update gas-delivery-pipeline-templates@group-ai-skills`, then restart). Older versions lack the dry-run mode.
+- Accept the plugin prompt when you trust this folder. `.claude/settings.json` registers the `group-ai-skills` marketplace and enables `gas-delivery-pipeline-templates` and `gas-wpm-qa`. Make sure `gas-delivery-pipeline-templates` is version **2.1.1 or later** (`claude plugin marketplace update group-ai-skills`, then `claude plugin update gas-delivery-pipeline-templates@group-ai-skills`, then restart). Older versions lack the dry-run mode.
 - `gh auth login` (the pipeline reads issues, opens PRs and posts comments as you).
 - `npm ci`.
 - `config/wp.config.ts` points at **your** test site (see [Which environment QA uses](#which-environment-qa-uses)).
