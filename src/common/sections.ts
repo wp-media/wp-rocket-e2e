@@ -74,13 +74,6 @@ export class Sections {
     private elements: object;
 
     /**
-     * URL (without hash) of the last page found without settings nav.
-     *
-     * @var {string}
-     */
-    private navAbsentPage: string = "";
-
-    /**
      * Option state.
      *
      * @var {boolean}
@@ -158,28 +151,20 @@ export class Sections {
     /**
      * Waits until the settings navigation is rendered, so DOM detection does not run on an unrendered nav.
      *
-     * A page without nav (invalid licence) is waited on once per URL, later calls on it return false at once.
+     * Pages without nav (invalid licence) cost up to one 3s wait per helper call, then fall through.
      *
      * @method
      * @async
-     * @return {Promise<boolean>} - True when the nav is attached, false when it did not render within the short timeout.
+     * @return {Promise<void>} - Resolves when the nav is attached or the short timeout elapses.
      */
-    private waitForNav = async (): Promise<boolean> => {
+    private waitForNav = async (): Promise<void> => {
         const nav = this.page.locator("#wpr-nav-dashboard");
-        const pageKey = this.page.url().split("#")[0];
 
         if (await nav.count() > 0) {
-            return true;
+            return;
         }
 
-        if (this.navAbsentPage === pageKey) {
-            return false;
-        }
-
-        const attached = await nav.waitFor({ state: "attached", timeout: 3000 }).then(() => true, () => false);
-        this.navAbsentPage = attached ? "" : pageKey;
-
-        return attached;
+        await nav.waitFor({ state: "attached", timeout: 3000 }).catch(() => undefined);
     };
 
     /**
