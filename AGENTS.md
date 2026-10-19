@@ -382,7 +382,20 @@ Project-specific guidance for the GAS delivery pipeline agents. It extends §1�
 
 ## Grooming conventions
 
-Effort is sized by the grooming and challenger agents; this repo does not define its own scale. The spec for a new scenario includes a **Proposed Scenarios** Gherkin block, so the team can approve the wording before implementation.
+Effort is sized by the grooming and challenger agents; this repo does not define its own scale.
+
+**Spec additions required in every spec** (grooming-agent writes them, challenger and lead-reviewer check them):
+
+1. **Proposed Scenarios** — a `gherkin` block with the scenarios to add or change, so the team can approve the wording before implementation. It is also copied into the grooming comment on the issue.
+   - Reuse existing step text word for word (copied from the step definition pattern). Mark every step that doesn't exist yet with a trailing `# NEW`; each one appears as "Add" in the spec's Steps: Reuse vs Add table.
+   - Include the tags (they decide which hooks run), the Background, and cleanup steps if no hook does the cleanup. Use a `Scenario Outline` for the same flow over several inputs.
+   - Changing an existing scenario: show the full scenario after the change and name the feature file. A pure flaky-step fix with no scenario change says "No scenario change" and names the affected scenarios.
+   - The implementer starts the `.feature` file from this block. The challenger checks it. The lead-reviewer flags any difference not explained in the PR description or the implementer's notes (`LOGIC` if it changes what is verified, otherwise `CONVENTIONS`).
+2. **Simplest Option Considered** — the data-only or config-only fix, and either "chosen" or why it cannot work, with evidence.
+   - When a test fails because the product behavior changed (changed counts, new default, renamed text, removed entry), the default is to update the expected data (`src/support/results/*.json`, `config/scenarioUrls.json`, feature-file examples) and nothing else. Step or helper code changes need a stated reason why the data-only fix cannot work.
+   - Any claim that rules it out ("non-deterministic", "order not guaranteed", "cannot be predicted") must be verified, not assumed: read the linked `wp-rocket` code or PR, or run a probe, and cite the file/function. If it can't be verified, list it in `risk_notes` as an unverified assumption.
+   - If the data-only fix means the test no longer checks some product behavior (a limit, for example), say so and name where that behavior is covered (TestRail case, another scenario).
+   - The orchestrator does not skip the `challenger` on a small issue when this evidence is missing, and the challenger verifies it.
 
 **Always flag as HIGH risk regardless of effort:**
 - Changes to `src/support/hooks.ts` or `src/backwpup/support/hooks.ts` (global `BeforeAll`/`Before`/`After`, or a tag filter on a hook)
@@ -409,6 +422,7 @@ Load `wp-rocket-e2e-architecture` and read `.github/copilot-instructions.md` for
 - Secrets: a committed `config/wp.config.ts`, plugin zip, credential, SSH detail or private hostname is CRITICAL. `config/wp.config.sample.ts` holds placeholders only.
 - Sibling updates: new tag → `test:<tag>` script and a deliberate `test:e2e` decision; new config key → `wp.config.sample.ts`; new prerequisite → documented.
 - Observable behavior of shared infrastructure (a step's wording, implicit waits, which hooks run for which tags, npm script names that automation calls such as `test:e2e`, `test:smoke`, `push-report`, report paths under `test-results/`) is public surface: a change needs to be intentional and documented.
+- Compare the feature file with the spec's **Proposed Scenarios** block (see Grooming conventions): same tags, step order and step text.
 - Do not run scenarios during review. A `--dry-run` is fine.
 
 ## IMPLEMENTER configuration
@@ -425,7 +439,26 @@ Single implementer for the whole change: there is no frontend/backend split. Com
 - ❌ Trusting the exit code on Node 24 → ✅ read the summary and `test-results/cucumber-report.json`
 - ❌ Leaving plugins, options or theme changed on the shared site → ✅ clean up in `@setup` or a tag-scoped `After`
 - ❌ Real values in `config/wp.config.sample.ts`, features or docs → ✅ placeholders and key names only
+- ❌ `gh pr edit`, `gh issue edit`, or `gh pr/issue view` without `--json`: they fail on this repo with a GitHub error about the deprecated classic Projects → ✅ edit with `gh api` (REST PATCH), always pass `--json` to views, and fall back to the GraphQL `markPullRequestReadyForReview` mutation for `gh pr ready`
 - ❌ Invoking the bare `docs` or `dod` skill → ✅ `gas-delivery-pipeline-templates:docs` and `gas-delivery-pipeline-templates:dod`
+
+## PR description sync
+
+The PR body must match the code after every fix push (a fix loop from review, QA or CI).
+
+- After each fix push, before re-running the gates, update every PR template section whose content no longer matches the diff: **How to test** (tags or commands changed), **Documentation** (steps, hooks, helpers added or changed), **Risks** (shared hooks or helpers touched, new site side effects), **Affected Features & Quality Assurance Scope**, and **What was tested** (the new QA/run evidence).
+- The implementer reports these as `pr_description_updates` (section heading plus its full new text) in its return notes. The orchestrator applies them with a REST PATCH, keeping every heading verbatim.
+- The DoD PR-description check compares the body with the diff. If How to test no longer covers the change, or a tag, step or hook in the diff is missing from How to test or Documentation, it is a FAIL.
+- Headings are copied exactly from `.claude/skills/orchestrator/refs/pr-template.md`, including a mandatory `### Documentation` even for data-only changes. A missing or renamed heading is a FAIL, because the `PR Template Checker` CI rejects it.
+
+## Ticket conventions
+
+For `ticket-writer`, in both modes and for follow-ups from review, QA or the challenger:
+
+- Search for duplicates before every `gh issue create`: 2–3 searches over open and closed issues with different keywords (title words, the tag or feature such as `@delayjs`, the file/step/helper name such as `clearWPRCache`). Use the REST search so the closed reason is returned: `gh api -X GET search/issues -f q="repo:wp-media/wp-rocket-e2e is:issue <keywords>"`.
+- A duplicate asks for the same change to the same scenario, step, helper or behavior. The same area with a different change is "related": mention it, don't merge.
+- From a user request, show the duplicate and ask before creating. For pipeline follow-ups, don't ask: an **open** duplicate gets a comment instead of a new issue; one **closed as not planned** is skipped; one **closed as completed** gets a new issue that links the old one ("Previously fixed in #N").
+- Labels: see Project Configuration. Epics are `project` with `sub-task` children. Follow-ups are `enhancement`, or `Test Maintenance` for cleanup of existing tests. Always `Made by AI`.
 
 ## Documentation conventions
 
