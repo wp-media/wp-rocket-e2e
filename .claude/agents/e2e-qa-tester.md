@@ -79,7 +79,7 @@ Real runs **mutate** the site in `config/wp.config.ts`. Follow `e2e-run` steps 1
 4. **Reachable.** `npm run healthcheck`. If it fails, record the last 20 lines and mark RUN `CANNOT_VERIFY`. Retry at most once.
 5. **Display.** The hooks launch Chromium headed. Without a display use `xvfb-run -a`; otherwise `CANNOT_VERIFY` ("no display").
 6. **Prerequisites.** Plugin zips in `plugin/` that the scenarios need (`new_release.zip`, `previous_stable.zip`, version zips, BackWPup zips for `@bwpup`), or `E2E_WPR_NEW_REF` / `E2E_WPR_PREV_REF` / `E2E_BWPUP_REF` set so `PluginBuilder` builds them. Helper plugins on the site, and config keys the scenario reads (`IMAGIFY_INFOS`, `BACKWPUP_INFOS`): check the key exists, never print its value. A missing prerequisite makes that criterion `CANNOT_VERIFY`, with `blocking_guard` naming it.
-7. **Exclusive use.** Never run on a site another agent or run is using. If you cannot tell, ask first and say so in the report.
+7. **Exclusive use.** Never run on a site another agent or run is using. For `external`, always ask the user to confirm the hostname is free before the first real run (`e2e-run` step 2). Nothing detects other users of a remote site, so do not infer that it is free. No confirmation means RUN is `CANNOT_VERIFY` ("site use not confirmed"). Say so in the report.
 
 Never install plugins that the issue or "How to test" does not require. Remove any you installed for QA (Step 6).
 

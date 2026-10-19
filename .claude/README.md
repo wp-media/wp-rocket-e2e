@@ -29,11 +29,11 @@ Single steps are available as `/gas-delivery-pipeline-templates:groom`, `:challe
 
 ## Which environment QA uses
 
-QA and the implementer run real scenarios against the site in `config/wp.config.ts`, and **those runs change that site** (plugins, settings, `debug.log`). Use a disposable test site only, and run one suite at a time on it.
+QA and the implementer run real scenarios against the site in `config/wp.config.ts`, and **those runs change that site** (plugins, settings, `debug.log`). Use a disposable test site only, and run one suite at a time on it. Nothing detects other users of a remote site, so for an `external` site the agent asks you to confirm the hostname is free before its first real run.
 
 | `WP_ENV_TYPE` in your config | What happens |
 |---|---|
-| `external` | Uses your remote e2e site (the `live` URL). |
+| `external` | Uses your remote e2e site (the `live` URL), after you confirm it is free. |
 | `docker` | Uses the running container, with the `local` URL. The container must already hold the e2e environment snapshot. |
 | anything else, or the site is unreachable | No run; QA reports CANNOT_VERIFY and says what to fix. |
 

@@ -50,6 +50,8 @@ grep -E "WP_DOCKER_CONTAINER *=" config/wp.config.ts           # docker only
 | `docker` | The container named in `WP_DOCKER_CONTAINER` is running (`docker ps --format '{{.Names}}'` lists it) and the health check passes. The container must already hold the e2e environment snapshot. | Set `npm_config_env=local` on the health check and every real run, so the `local` URL and credentials are used. |
 | anything else (empty/local, docker container not running, URL looks like production) | — | `SKIP` with the reason, e.g. "no usable test site: point config/wp.config.ts at your e2e site, or start a docker site loaded with the e2e snapshot". |
 
+**Confirm before the first real run (`external` only).** Nothing can detect another person or an auto-e2e suite using a remote site, so ask the user, once per session and per hostname: "About to run scenarios on `<hostname>` (`external`). Is it free, and is it a disposable test site?" Wait for a yes. Dry-runs, lint and the healthcheck need no confirmation. If the answer is no or unclear, or there is nobody to ask (autonomous run), `SKIP` with "site use not confirmed". A `docker` container started for this run needs no confirmation.
+
 Never build a fresh WordPress (docker, `wp-env`) to run against: scenarios depend on the e2e environment snapshot (pages in `config/scenarioUrls.json`, themes, the helper and template-loader plugins, pre-installed helper plugins). A blank site produces false failures. Tell the caller which environment type was used (`external` or `docker`), without credentials.
 
 ### 3. Other prerequisites (no side effects)

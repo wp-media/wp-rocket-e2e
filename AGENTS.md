@@ -299,7 +299,7 @@ The GAS `qa-engineer` agent validates PRs at the end of the delivery pipeline an
 - **Non-vacuous proof:** every new or changed scenario is shown to fail when the behavior it tests is broken (precondition or product mutation, otherwise an assertion review that caps the criterion at `PARTIAL`). Mutations are always reverted.
 - **Shared code** (hooks, shared steps, `PageUtils`, `utils/commands.ts`, selectors, sections, `cucumber.json`, npm scripts) → also run one unrelated scenario that uses it.
 - **Guards:** a criterion that needs a plugin zip, helper plugin, config key (`IMAGIFY_INFOS`, `BACKWPUP_INFOS`) or service that is missing is `CANNOT_VERIFY`, naming exactly what is missing. A `SKIP` or `CANNOT_VERIFY` is never a pass.
-- **One run per site:** never run on a site another agent or run is using. Ask which site is free.
+- **One run per site:** never run on a site another agent or run is using. Nothing detects other users of a remote site, so for `external` always ask the user to confirm the hostname is free before the first real run, once per session and hostname. No confirmation means `SKIP`/`CANNOT_VERIFY`.
 - **Browsers:** never use the shared Playwright MCP browser. Agents run in parallel. Use a standalone Playwright script with a fresh temporary profile and delete it afterwards.
 
 ---
