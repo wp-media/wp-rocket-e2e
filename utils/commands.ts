@@ -223,7 +223,8 @@ async function wp(args: string, show_errors: boolean = true): Promise<boolean> {
 type WPCliOutput = {
     stdout: string,
     stderr: string,
-    failed: boolean
+    failed: boolean,
+    code: number | null
 };
 
 /**
@@ -241,6 +242,7 @@ type WPCliOutput = {
  * - `stdout`: The standard output from the command as a string
  * - `stderr`: The error output from the command as a string (empty string if no errors)
  * - `failed`: Boolean indicating if the command failed (exit code 1)
+ * - `code`: The raw exit code (e.g. 255 when a PHP fatal crashes WP-CLI), or null if unavailable
  * 
  * @example
  * // Get list of installed plugins with details
@@ -269,24 +271,19 @@ export async function wpWithOutput(args: string): Promise<WPCliOutput> {
         configurations.type === ServerType.docker ? ' --allow-root' : '';
     const cwd = getWPDir(configurations);
 
-    if (configurations.type === ServerType.external) {
-        const result = await sshExec(`wp ${args}${root} --path=${cwd}`);
-        return {
-            stdout: result.stdout,
-            stderr: result.stderr,
-            failed: result.code === 1
-        } as WPCliOutput;
-    }
-    const command = wrapPrefix(`wp ${args}${root} --path=${cwd}`);
+    const result =
+        configurations.type === ServerType.external
+            ? await sshExec(`wp ${args}${root} --path=${cwd}`)
+            : exec(wrapPrefix(`wp ${args}${root} --path=${cwd}`), {
+                  cwd: configurations.rootDir,
+                  async: false
+              });
 
-    const result = exec(command, {
-        cwd: configurations.rootDir,
-        async: false
-    });
     return {
         stdout: result.stdout,
         stderr: result.stderr,
-        failed: result.code === 1
+        failed: result.code === 1,
+        code: result.code
     } as WPCliOutput;
 }
 
@@ -654,6 +651,31 @@ export async function forceUninstallPlugin(plugin: string): Promise<void> {
         throw new Error(
             `Failed to remove plugin "${plugin}" even with --skip-plugins. It may still be ` +
             `active and could affect subsequent scenarios - manual cleanup required.`
+        );
+    }
+}
+
+/**
+ * Deactivates a single plugin with `--skip-plugins=<plugin>`, so it still works when the plugin
+ * fatals on every WordPress bootstrap (which would otherwise crash WP-CLI itself). The plugin is
+ * not loaded, so its own deactivation hook does not run. Unlike forceUninstallPlugin, the plugin
+ * files are kept: use it for plugins pre-provisioned on the e2e environment that must survive
+ * the scenario.
+ *
+ * @function
+ * @name forceDeactivatePlugin
+ * @async
+ * @param {string} plugin - The plugin slug to deactivate.
+ * @returns {Promise<void>} - A Promise that resolves once `wp plugin deactivate` succeeds.
+ * @throws {Error} If WP-CLI exits non-zero, with the exit code and stderr.
+ */
+export async function forceDeactivatePlugin(plugin: string): Promise<void> {
+    const result = await wpWithOutput(`plugin deactivate ${plugin} --skip-plugins=${plugin}`);
+
+    if (result.code !== 0) {
+        throw new Error(
+            `Failed to deactivate plugin "${plugin}" (WP-CLI exit code ${result.code}): ` +
+            `${result.stderr || '(empty)'}. Manual cleanup may be required.`
         );
     }
 }
