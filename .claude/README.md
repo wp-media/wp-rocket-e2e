@@ -6,7 +6,7 @@ Repo rules for all AI work, and the settings the pipeline reads (commands, label
 
 ## Before you start
 
-- Enable the `gas-delivery-pipeline-templates` plugin in Claude Code.
+- Enable the `gas-delivery-pipeline-templates` plugin in Claude Code, version **2.1.1 or later** (`claude plugin marketplace update group-ai-skills`, then `claude plugin update gas-delivery-pipeline-templates@group-ai-skills`, then restart). Older versions lack the dry-run mode.
 - `gh auth login` (the pipeline reads issues, opens PRs and posts comments as you).
 - `npm ci`.
 - `config/wp.config.ts` points at **your** test site (see [Which environment QA uses](#which-environment-qa-uses)).
@@ -22,6 +22,8 @@ In Claude Code, from the repo root, write `work on issue #123` or use the orches
 ```
 
 Add a phrase to set how often it stops to ask you: "handle this autonomously" stops only for hard blockers, nothing is the default, and "keep this interactive" confirms after each phase.
+
+To try the pipeline without touching GitHub, say "dry run" (for example "work on issue #123, dry run"): everything runs locally, nothing is pushed or posted, and the commands it would have run are printed.
 
 Single steps are available as `/gas-delivery-pipeline-templates:groom`, `:challenge`, `:review`, `:qa` and `:dod`. Each asks before posting anything to GitHub.
 
