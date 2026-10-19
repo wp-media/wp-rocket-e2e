@@ -486,8 +486,7 @@ export class PageUtils {
         await this.gotoWpr();
 
         if (await this.isNewDashboard()) {
-            await this.clearCacheFromAdminBar();
-            await expect(this.page.getByText('WP Rocket: Cache cleared.')).toBeVisible();
+            await this.clearCacheNewDashboard();
             return;
         }
 
@@ -508,7 +507,7 @@ export class PageUtils {
      */
     public getWprVersion = async (): Promise<string> => {
         const result = await wpWithOutput('plugin get wp-rocket --field=version');
-        const version = result.stdout.trim();
+        const version = result.stdout.split('\n').map((line) => line.trim()).filter(Boolean).pop() ?? '';
 
         if (result.failed || !/^\d+\.\d+/.test(version)) {
             throw new Error(`Unable to read the WP Rocket version: "${version}" ${result.stderr}`);
@@ -527,6 +526,17 @@ export class PageUtils {
         const [major, minor] = (await this.getWprVersion()).split('.').map((part) => parseInt(part, 10));
 
         return major > 3 || (major === 3 && minor >= 24);
+    }
+
+    /**
+     * Clears the cache on the redesigned dashboard (admin bar) and asserts the notice.
+     *
+     * @return {Promise<void>}
+     */
+    public clearCacheNewDashboard = async (): Promise<void> => {
+        await this.gotoWpr();
+        await this.clearCacheFromAdminBar();
+        await expect(this.page.getByText('WP Rocket: Cache cleared.')).toBeVisible();
     }
 
     /**

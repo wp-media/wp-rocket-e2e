@@ -20,7 +20,7 @@
  */
 import { expect } from "@playwright/test";
 import type { Page, Locator } from "@playwright/test";
-import type { Selectors, Roles, Section, SectionId, NavOpenResult } from "../../utils/types";
+import type { Selectors, Roles, Section, SectionId } from "../../utils/types";
 
 /**
  * Raised when opening a navigation item fails on a page whose items are nested in collapsible groups.
@@ -72,6 +72,13 @@ export class Sections {
      * @var {object}
      */
     private elements: object;
+
+    /**
+     * URL (without hash) of the last page found without settings nav.
+     *
+     * @var {string}
+     */
+    private navAbsentPage: string = "";
 
     /**
      * Option state.
@@ -151,12 +158,28 @@ export class Sections {
     /**
      * Waits until the settings navigation is rendered, so DOM detection does not run on an unrendered nav.
      *
+     * A page without nav (invalid licence) is waited on once per URL, later calls on it return false at once.
+     *
      * @method
      * @async
-     * @return {Promise<void>} - Resolves when the nav is attached or the short timeout elapses (no nav on invalid-licence pages).
+     * @return {Promise<boolean>} - True when the nav is attached, false when it did not render within the short timeout.
      */
-    private waitForNav = async (): Promise<void> => {
-        await this.page.locator("#wpr-nav-dashboard").waitFor({ state: "attached", timeout: 3000 }).catch(() => undefined);
+    private waitForNav = async (): Promise<boolean> => {
+        const nav = this.page.locator("#wpr-nav-dashboard");
+        const pageKey = this.page.url().split("#")[0];
+
+        if (await nav.count() > 0) {
+            return true;
+        }
+
+        if (this.navAbsentPage === pageKey) {
+            return false;
+        }
+
+        const attached = await nav.waitFor({ state: "attached", timeout: 3000 }).then(() => true, () => false);
+        this.navAbsentPage = attached ? "" : pageKey;
+
+        return attached;
     };
 
     /**
@@ -176,10 +199,10 @@ export class Sections {
      * @method
      * @async
      * @param {string} navId - Navigation item ID (without the "wpr-nav-" prefix).
-     * @return {Promise<NavOpenResult>} - Whether the item was nested in a collapsible group.
+     * @return {Promise<void>} - A promise that resolves once the item is clicked.
      * @throws {NavGroupError} - When the item is nested in a group and expanding or clicking fails.
      */
-    public openNavItem = async (navId: string): Promise<NavOpenResult> => {
+    public openNavItem = async (navId: string): Promise<void> => {
         await this.waitForNav();
 
         const link = this.page.locator("#wpr-nav-" + navId);
@@ -187,7 +210,7 @@ export class Sections {
 
         if (await trigger.count() === 0) {
             await link.click();
-            return { grouped: false };
+            return;
         }
 
         try {
@@ -200,8 +223,6 @@ export class Sections {
         } catch (error) {
             throw new NavGroupError("Could not open nav item '" + navId + "': " + (error instanceof Error ? error.message : String(error)));
         }
-
-        return { grouped: true };
     };
 
     /**

@@ -161,11 +161,3 @@ export type SSHConfig = {
     host: string;
     username: string;
 }
-/**
- * Result of opening a settings navigation item.
- *
- * @property grouped - True when the item was nested in a collapsible navigation group.
- */
-export type NavOpenResult = {
-    grouped: boolean;
-}
