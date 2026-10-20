@@ -29,7 +29,7 @@ You receive from `qa-engineer`:
 | You'll be tempted to say | Why you can't |
 |---|---|
 | "The dry-run is clean, so the scenario works" | A dry-run only resolves step definitions. It proves nothing about behavior. |
-| "It passed on the second attempt, good enough" | The default profile retries 3 times and hides flakiness. Always run with `--retry 0`. |
+| "It passed on the second attempt, good enough" | The default profile retries 3 times and hides flakiness. Run new or changed scenarios with `--retry 0`. A full-suite run keeps the default retries; report scenarios that passed only after a retry as flaky. |
 | "The exit code was non-zero, so it failed" | On Node 24 cucumber can crash on teardown after finishing. Read the summary and `test-results/cucumber-report.json`. |
 | "The site is probably not configured, I'll skip" | Follow `e2e-run` steps 1–4. Report `CANNOT_VERIFY` only with the concrete failing check. |
 | "The Then step passes, so the scenario is meaningful" | Prove it can fail (Step 4c). A scenario that cannot go red is a defect. |
@@ -186,6 +186,6 @@ Return this JSON to `qa-engineer`. **Do not post or comment on the PR yourself**
 
 ## Boundaries
 
-- ✅ **Always:** verify you are on the PR branch; read the spec and "How to test" before running; run with `--retry 0`; read `cucumber-report.json` rather than the exit code; repeat runs for flakiness fixes; attempt the non-vacuous proof; map every in-scope scenario and criterion to a result with evidence; revert every temporary change.
+- ✅ **Always:** verify you are on the PR branch; read the spec and "How to test" before running; run new or changed scenarios with `--retry 0` (a full-suite run keeps the default `retry: 3`, and scenarios that passed only after a retry are reported as flaky); read `cucumber-report.json` rather than the exit code; repeat runs for flakiness fixes; attempt the non-vacuous proof; map every in-scope scenario and criterion to a result with evidence; revert every temporary change.
 - ⚠️ **Ask first:** no acceptance criteria available; the site looks like production or customer data, or may be in use by another run; a required premium plugin or zip is unavailable; a "How to test" step is ambiguous.
 - 🚫 **Never:** print or post credentials, SSH details or the contents of `config/wp.config.ts`; commit or push anything (mutations, `wp.config.ts`, `plugin/*.zip`, `test-results/`, `.TemporaryItems/`); point the config at another site yourself; raise `retry` to get green; build a fresh WordPress; use the shared Playwright MCP browser; report PASS without execution evidence; use ANALYSIS to return PASS for a behavioral claim; modify application or test code.

@@ -18,7 +18,7 @@ Runs real scenarios against the WordPress site configured in `config/wp.config.t
 |---|---|
 | "The site is probably not configured, I'll skip" | Check `config/wp.config.ts` and run `npm run healthcheck`. Only report `SKIP` with the concrete failing check. |
 | "The dry-run passed, so the scenario works" | A dry-run only resolves step definitions. It proves nothing about behaviour. `scenarios_tested` lists only scenarios that really ran. |
-| "It passed on the second attempt, good enough" | The default profile retries 3 times and hides flakiness. Always run with `--retry 0` when validating. |
+| "It passed on the second attempt, good enough" | The default profile retries 3 times and hides flakiness. Run new or changed scenarios with `--retry 0`. (A full-suite run keeps the default retries; report scenarios that passed only after a retry as flaky.) |
 | "The exit code was non-zero, so it failed" | On Node 24 cucumber can crash on teardown after finishing. Read the summary and the JSON report. |
 | "I'll point it at a quick production site to test" | Never. Scenarios install/delete plugins and change settings. Use only the site the user configured for testing. |
 
@@ -87,7 +87,7 @@ Catches undefined and ambiguous steps and tag-expression typos without touching 
 
 ### 6. Targeted real run — `--retry 0`
 
-Run the smallest selection that covers the change. Never the whole `test:e2e` suite.
+Run the smallest selection that covers the change. For the whole suite use the full-suite form below, never `npm run test:e2e` (it pushes reports).
 
 ```bash
 node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --retry 0 --tags "@mytag"
@@ -96,6 +96,14 @@ node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --retry 0 --na
 ```
 
 (`npm run test:tags --tags="@mytag"` and `npm run test:scenario --scenario="<name>"` also work if you append `-- --retry 0`; the `node ...` form above is the unambiguous one for validating.)
+
+**Full suite** (only when the change touches shared code and the PR or issue asks for it): keep the default `retry: 3`, do not pass `--retry 0`:
+
+```bash
+node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags "not @vr and not @bwpup and not @cdn"
+```
+
+Read the JSON report for attempts: a scenario that passed only on a retry is reported as flaky, not as a clean pass.
 
 Notes:
 - `parallel` is 1: scenarios share one site. Do not run two cucumber processes against the same site at once — they will corrupt each other's plugin and settings state.
