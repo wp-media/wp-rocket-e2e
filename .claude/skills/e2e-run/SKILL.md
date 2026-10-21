@@ -9,7 +9,7 @@ Runs real scenarios against the WordPress site configured in `config/wp.config.t
 
 **Invokers:**
 - `grooming-agent` (GAS) — probe current behaviour before writing the spec: run the one existing scenario closest to the issue (or a dry-run if none exists) to confirm what the suite does today.
-- `implementer` (GAS) — validate newly added scenarios before committing (`--retry 0`); existing or changed ones run with the default retries.
+- `implementer` (GAS) — validate newly added scenarios before committing (`--retry 0`), and flaky-test fixes too; existing or changed ones run with the default retries.
 - `e2e-qa-tester` (local, called by the GAS `qa-engineer`) — validate a PR's scenarios and the neighbouring ones that share steps or hooks.
 
 ## Anti-rationalization table
@@ -18,7 +18,7 @@ Runs real scenarios against the WordPress site configured in `config/wp.config.t
 |---|---|
 | "The site is probably not configured, I'll skip" | Check `config/wp.config.ts` and run `npm run healthcheck`. Only report `SKIP` with the concrete failing check. |
 | "The dry-run passed, so the scenario works" | A dry-run only resolves step definitions. It proves nothing about behaviour. `scenarios_tested` lists only scenarios that really ran. |
-| "It passed on the second attempt, good enough" | The default profile retries 3 times and hides flakiness. Run newly added scenarios with `--retry 0`. (Existing scenarios, smoke and full-suite runs keep the default retries; report scenarios that passed only after a retry as flaky.) |
+| "It passed on the second attempt, good enough" | The default profile retries 3 times and hides flakiness. Run newly added scenarios and flaky-test fixes with `--retry 0`. (Existing scenarios, smoke and full-suite runs keep the default retries; report scenarios that passed only after a retry as flaky.) |
 | "The exit code was non-zero, so it failed" | On Node 24 cucumber can crash on teardown after finishing. Read the summary and the JSON report. |
 | "I'll point it at a quick production site to test" | Never. Scenarios install/delete plugins and change settings. Use only the site the user configured for testing. |
 

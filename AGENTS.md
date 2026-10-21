@@ -32,8 +32,8 @@ This repo is a Cucumber/Playwright suite, not a WordPress plugin: there is no `g
 
 | Setting | Value | Used by |
 |---|---|---|
-| Test command | Real runs are targeted by default. Newly added scenarios: `node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --retry 0 --tags "<expr>"`. Existing scenarios, `@smoke` and the full suite (full suite only when shared code changes or the issue asks): `node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags "not @vr and not @bwpup and not @cdn"` with **no** `--retry` flag, so the default `retry: 3` applies (for smoke, `--tags "@smoke"`). Never `npm run test:e2e` (long, and pushes reports) | implementer, dod |
-| Test — targeted subset | `--tags "<expr>"` or `--name "<scenario name>"`, with `--retry 0` only for newly added scenarios; static check first: `npx cucumber-js -p default --dry-run --tags "<expr>"` | implementer, dod |
+| Test command | Real runs are targeted by default. Newly added scenarios and flaky-test fixes: `node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --retry 0 --tags "<expr>"`. Existing scenarios, `@smoke` and the full suite (full suite only when shared code changes or the issue asks): `node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags "not @vr and not @bwpup and not @cdn"` with **no** `--retry` flag, so the default `retry: 3` applies (for smoke, `--tags "@smoke"`). Never `npm run test:e2e` (long, and pushes reports) | implementer, dod |
+| Test — targeted subset | `--tags "<expr>"` or `--name "<scenario name>"`, with `--retry 0` only for newly added scenarios and flaky-test fixes; static check first: `npx cucumber-js -p default --dry-run --tags "<expr>"` | implementer, dod |
 | Lint command | `npm run lint` (the only code check in CI) | implementer, dod |
 | Lint — auto-fix | `npm run lint:fix` | implementer, dod |
 | Static analysis | `npx tsc --noEmit -p tsconfig.json` (local only, compare against baseline, only new errors count) | dod |
@@ -295,7 +295,7 @@ The GAS `qa-engineer` agent validates PRs at the end of the delivery pipeline an
 
 - **Execution QA is mandatory** whenever the diff adds or changes a feature, step, hook, helper, selector, section or `cucumber.json`. `qa-engineer` must delegate to `e2e-qa-tester` for these, not skip it as "no UI change".
 - **Environment rule:** `WP_ENV_TYPE=external` → the remote site; `docker` with a running container → `npm_config_env=local`; otherwise `CANNOT_VERIFY`. Never build a fresh WordPress: the scenarios need the e2e environment snapshot.
-- **`--retry 0` for newly added scenarios only.** For a flaky-test fix, repeat the in-scope scenarios 3 times with `--retry 0` and report `passes/runs`. Existing scenarios, **smoke** and **full-suite** runs keep the default `retry: 3`; list scenarios that passed only on a retry as flaky, not as clean passes.
+- **`--retry 0` for newly added scenarios and flaky-test fixes only.** For a flaky-test fix, repeat the in-scope scenarios 3 times with `--retry 0` and report `passes/runs`. Existing scenarios, **smoke** and **full-suite** runs keep the default `retry: 3`; list scenarios that passed only on a retry as flaky, not as clean passes.
 - **Non-vacuous proof:** every new or changed scenario is shown to fail when the behavior it tests is broken (precondition or product mutation, otherwise an assertion review that caps the criterion at `PARTIAL`). Mutations are always reverted.
 - **Shared code** (hooks, shared steps, `PageUtils`, `utils/commands.ts`, selectors, sections, `cucumber.json`, npm scripts) → also run one unrelated scenario that uses it.
 - **Guards:** a criterion that needs a plugin zip, helper plugin, config key (`IMAGIFY_INFOS`, `BACKWPUP_INFOS`) or service that is missing is `CANNOT_VERIFY`, naming exactly what is missing. A `SKIP` or `CANNOT_VERIFY` is never a pass.
@@ -434,7 +434,7 @@ Single implementer for the whole change: there is no frontend/backend split. Com
 - ❌ Adding a step that rephrases an existing one → ✅ reuse it, then dry-run for ambiguity
 - ❌ Per-feature setup in `BeforeAll`, global `Before` or copied steps → ✅ a tag-scoped hook
 - ❌ `waitForTimeout`, a longer timeout or `retry` to force green → ✅ wait on a selector, response or state and fix the cause
-- ❌ Validating a newly added scenario with the default profile → ✅ `--retry 0` on the narrowest tag or `--name` (existing scenarios, smoke and full-suite runs keep the default retries)
+- ❌ Validating a newly added scenario or a flaky-test fix with the default profile → ✅ `--retry 0` on the narrowest tag or `--name` (existing scenarios, smoke and full-suite runs keep the default retries)
 - ❌ Running `npm run test:e2e` or `push-report` → ✅ a targeted run only
 - ❌ Trusting the exit code on Node 24 → ✅ read the summary and `test-results/cucumber-report.json`
 - ❌ Leaving plugins, options or theme changed on the shared site → ✅ clean up in `@setup` or a tag-scoped `After`
