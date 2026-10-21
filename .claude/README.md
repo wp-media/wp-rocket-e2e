@@ -45,8 +45,8 @@ In a git worktree, `config/wp.config.ts` doesn't exist. The agent asks before co
 
 | Path | Contents |
 |---|---|
-| `agents/e2e-qa-tester.md` | Overrides the GAS agent: runs the PR's Cucumber scenarios with `--retry 0`, repeats them for flakiness fixes, proves they can fail. Called by the GAS `qa-engineer`. |
-| `skills/e2e-run/` | How to run scenarios safely (environment choice, `--retry 0`, reading the report) |
+| `agents/e2e-qa-tester.md` | Overrides the GAS agent: runs the PR's Cucumber scenarios (`--retry 0` for newly added ones, default retries otherwise), repeats them for flakiness fixes, proves they can fail. Called by the GAS `qa-engineer`. |
+| `skills/e2e-run/` | How to run scenarios safely (environment choice, `--retry 0` for newly added scenarios, reading the report) |
 | `skills/wp-rocket-e2e-architecture/` | Test rules for this repo; `refs/best-practices.md` lists best-practice references |
 | `skills/orchestrator/refs/pr-template.md` | The PR body template the `PR Template Checker` CI enforces |
 | `skills/orchestrator/scripts/issue-sync.sh` | Issue sync that also pulls parent epics and sub-issues |

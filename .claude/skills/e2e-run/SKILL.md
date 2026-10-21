@@ -1,6 +1,6 @@
 ---
 name: e2e-run
-description: Run wp-rocket-e2e Cucumber scenarios safely against the configured test site — prerequisites check, dry-run, targeted run by tag or name with --retry 0, and report reading. Returns PASS/FAIL/SKIP JSON. Invoked by the GAS grooming-agent (probe), the GAS implementer and the local e2e-qa-tester.
+description: Run wp-rocket-e2e Cucumber scenarios safely against the configured test site — prerequisites check, dry-run, targeted run by tag or name (--retry 0 for newly added scenarios), and report reading. Returns PASS/FAIL/SKIP JSON. Invoked by the GAS grooming-agent (probe), the GAS implementer and the local e2e-qa-tester.
 ---
 
 # E2E-RUN SKILL
@@ -9,7 +9,7 @@ Runs real scenarios against the WordPress site configured in `config/wp.config.t
 
 **Invokers:**
 - `grooming-agent` (GAS) — probe current behaviour before writing the spec: run the one existing scenario closest to the issue (or a dry-run if none exists) to confirm what the suite does today.
-- `implementer` (GAS) — validate new/changed scenarios before committing (`--retry 0`).
+- `implementer` (GAS) — validate newly added scenarios before committing (`--retry 0`); existing or changed ones run with the default retries.
 - `e2e-qa-tester` (local, called by the GAS `qa-engineer`) — validate a PR's scenarios and the neighbouring ones that share steps or hooks.
 
 ## Anti-rationalization table
@@ -18,7 +18,7 @@ Runs real scenarios against the WordPress site configured in `config/wp.config.t
 |---|---|
 | "The site is probably not configured, I'll skip" | Check `config/wp.config.ts` and run `npm run healthcheck`. Only report `SKIP` with the concrete failing check. |
 | "The dry-run passed, so the scenario works" | A dry-run only resolves step definitions. It proves nothing about behaviour. `scenarios_tested` lists only scenarios that really ran. |
-| "It passed on the second attempt, good enough" | The default profile retries 3 times and hides flakiness. Run new or changed scenarios with `--retry 0`. (A full-suite run keeps the default retries; report scenarios that passed only after a retry as flaky.) |
+| "It passed on the second attempt, good enough" | The default profile retries 3 times and hides flakiness. Run newly added scenarios with `--retry 0`. (Existing scenarios, smoke and full-suite runs keep the default retries; report scenarios that passed only after a retry as flaky.) |
 | "The exit code was non-zero, so it failed" | On Node 24 cucumber can crash on teardown after finishing. Read the summary and the JSON report. |
 | "I'll point it at a quick production site to test" | Never. Scenarios install/delete plugins and change settings. Use only the site the user configured for testing. |
 
@@ -85,7 +85,7 @@ npx cucumber-js -p default --dry-run --name "<scenario name>"
 
 Catches undefined and ambiguous steps and tag-expression typos without touching the site. Zero matching scenarios means the tag/name is wrong — fix it before a real run. Any undefined/ambiguous step is a `FAIL` (for new code) before running anything.
 
-### 6. Targeted real run — `--retry 0`
+### 6. Targeted real run — `--retry 0` for newly added scenarios
 
 Run the smallest selection that covers the change. For the whole suite use the full-suite form below, never `npm run test:e2e` (it pushes reports).
 
@@ -97,7 +97,7 @@ node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --retry 0 --na
 
 (`npm run test:tags --tags="@mytag"` and `npm run test:scenario --scenario="<name>"` also work if you append `-- --retry 0`; the `node ...` form above is the unambiguous one for validating.)
 
-**Full suite** (only when the change touches shared code and the PR or issue asks for it): keep the default `retry: 3`, do not pass `--retry 0`:
+**Existing scenarios, smoke (`@smoke`) and full suite** (full suite only when the change touches shared code and the PR or issue asks for it): keep the default `retry: 3`, do not pass `--retry 0`:
 
 ```bash
 node ./node_modules/@cucumber/cucumber/bin/cucumber-js -p default --tags "not @vr and not @bwpup and not @cdn"
@@ -134,11 +134,11 @@ For a failing scenario, find the first non-passed step and its `error_message`, 
 {
   "status": "PASS|FAIL|SKIP",
   "scenarios_tested": ["Scenario name (tag) — passed", "Scenario name (tag) — failed at step '...'"],
-  "details": "Environment (external|docker), command run (tags/name, --retry 0), counts passed/failed, first failing step and error, report path. No credentials."
+  "details": "Environment (external|docker), command run (tags/name, --retry 0 only for newly added scenarios), counts passed/failed, first failing step and error, report path. No credentials."
 }
 ```
 
-- `PASS`: all selected scenarios passed in a real run with `--retry 0`.
+- `PASS`: all selected scenarios passed in a real run (`--retry 0` for newly added scenarios, default retries otherwise).
 - `FAIL`: at least one scenario failed, or a step is undefined/ambiguous.
 - `SKIP`: prerequisites or health check failed; state which one. A `SKIP` is not a pass — callers must report it as unverified.
 

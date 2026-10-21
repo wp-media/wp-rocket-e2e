@@ -69,7 +69,7 @@ Cucumber loads steps and hooks through the `require` globs in `cucumber.json`. A
 - Each feature tag has a matching `npm run test:<tag>` script in `package.json` (`"$npm_package_config_testCommand --tags @<tag>"`). Adding a tag means adding the script and listing the tag in `.github/copilot-instructions.md`.
 - `test:e2e` runs `--tags "not @vr and not @bwpup and not @cdn"`. Decide deliberately whether a new tag must be excluded there (visual regression, BackWPup and CDN suites are run separately). Do not exclude tags just to hide a failing scenario.
 - Ad-hoc runs: `npm run test:tags --tags="@x"` or `npm run test:scenario --scenario="<name>"`.
-- The default Cucumber profile has `retry: 3` and `parallel: 1`. Do not raise parallelism (scenarios share one site), and validate new scenarios with `--retry 0`.
+- The default Cucumber profile has `retry: 3` and `parallel: 1`. Do not raise parallelism (scenarios share one site), and validate newly added scenarios with `--retry 0`. Existing scenarios, smoke and full-suite runs keep the default retries.
 
 ## No hardcoded waits
 
