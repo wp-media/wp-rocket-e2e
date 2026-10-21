@@ -10,7 +10,6 @@ Feature: CPCSS Notice
   Scenario: Should enable RUCSS and hide notice when clicking turn on RUCSS
     Given I have an unexpired account
     And turn on 'CPCSS'
-    And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
     Then I must see the banner 'We highly recommend the updated Remove Unused CSS for a better CSS optimization. Load CSS Asynchronously is always available as a back-up.'
     When click on 'Turn on Remove Unused CSS'
     Then I must not see the banner 'Critical CSS generation is currently running'
@@ -19,7 +18,6 @@ Feature: CPCSS Notice
   Scenario: Should keep the current settings and hide notice when clicking stay with old option 
     When I have an unexpired account
     And turn on 'CPCSS'
-    And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
     Then I must see the banner 'We highly recommend the updated Remove Unused CSS for a better CSS optimization. Load CSS Asynchronously is always available as a back-up.'
     When I click on 'Stay with the old option' and wait for request 
     And refresh the page
@@ -28,13 +26,11 @@ Feature: CPCSS Notice
     And save the option
     And turn on 'CPCSS'
     And save the option
-    And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
     Then I must not see the banner 'We highly recommend the updated Remove Unused CSS for a better CSS optimization. Load CSS Asynchronously is always available as a back-up.'
 
   Scenario: Should display the CPCSS banner only at WPR settings
     When I have an unexpired account
     And turn on 'CPCSS'
-    And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
     Then I must see the banner 'We highly recommend the updated Remove Unused CSS for a better CSS optimization. Load CSS Asynchronously is always available as a back-up.'
     When I go '/wp-admin'
     Then I must not see the banner 'We highly recommend the updated Remove Unused CSS for a better CSS optimization. Load CSS Asynchronously is always available as a back-up.'
@@ -43,17 +39,15 @@ Feature: CPCSS Notice
   Scenario: Should not display the CPCSS banner for expired user
     Given turn on 'CPCSS'
     And I have an expired account
-    And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
     Then I must not see the banner 'We highly recommend the updated Remove Unused CSS for a better CSS optimization. Load CSS Asynchronously is always available as a back-up.'
 
 
   Scenario: Should not display the CPCSS banner to admin 2 if it was dismissed by admin 1
     Given I have an unexpired account
     And turn on 'CPCSS'
-    And I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
     Then I must see the banner 'We highly recommend the updated Remove Unused CSS for a better CSS optimization. Load CSS Asynchronously is always available as a back-up.'
     When click on 'Turn on Remove Unused CSS'
     Then I must see the banner 'The Remove Unused CSS service is processing your pages'
     When I connect as 'admin2'
-    And I go '/wp-admin/options-general.php?page=wprocket#dashboard'
+    And I go '/wp-admin/options-general.php?page=wprocket#file_optimization'
     Then I must not see the banner 'We highly recommend the updated Remove Unused CSS for a better CSS optimization. Load CSS Asynchronously is always available as a back-up.'
