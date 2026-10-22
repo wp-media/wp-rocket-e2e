@@ -322,9 +322,13 @@ When('I click on {string}', async function (this: ICustomWorld, selector) {
         await this.page.waitForSelector('#save_last_major_version');
         await this.page.locator('#save_last_major_version').click();
         await this.utils.gotoWpr();
-        await this.page.locator('#wpr-nav-tools').click();
+        await this.sections.openNavItem('tools');
         await this.page.locator(selector).click();
         await this.page.waitForLoadState('load', { timeout: 70000 });
+    }
+    else if (/^#wpr-nav-[\w-]+$/.test(selector)) {
+        // Settings nav items may be nested in a collapsed group.
+        await this.sections.openNavItem(selector.replace('#wpr-nav-', ''));
     }
     else{
         await this.page.locator(selector).click();
@@ -413,15 +417,7 @@ When('expand mobile menu and validate no console error nor warning', async funct
     }
 });
 When('I clear cache', async function (this:ICustomWorld) {
-    // Goto WP Rocket dashboard
-    await this.utils.gotoWpr();
-
-    this.sections.set('dashboard');
-
-    const cacheButton = this.page.getByRole('link', { name: 'Clear and preload' });
-    await cacheButton.click();
-
-    await expect(this.page.getByText('WP Rocket: Cache cleared.')).toBeVisible();
+    await this.utils.clearCacheFromAdminBarAndAssert();
 });
 
 /**
