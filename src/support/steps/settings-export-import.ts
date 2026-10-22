@@ -46,7 +46,7 @@ When('I export data {string}', async function (this: ICustomWorld, fileNo: strin
             await this.utils.visitPage('wp-admin/options-general.php?page=wprocket#tools');
 
         }
-    await this.page.locator('#wpr-nav-tools').click();
+    await this.sections.openNavItem('tools');
     // Export settings.
     const downloadPromise = this.page.waitForEvent('download');
     await this.page.locator('a[href*="action=rocket_export"]').click();

@@ -205,26 +205,55 @@ Given('I install plugin {string}', async function (pluginUrl) {
 });
 
 /**
- * Ensures WordPress core is latest stable or newer.
- * Fails only when current version is lower than latest stable.
- * Allows prerelease/dev builds (RC, beta, dev) as long as they're >= latest stable numeric release.
+ * Reads the installed WordPress core version.
+ *
+ * @return {Promise<string>} The WordPress version.
  */
-Given('WordPress core is up to date', async function (): Promise<void> {
-    const currentResult = await wpWithOutput('core version');
-    if (currentResult.failed) {
+const getWpCoreVersion = async (): Promise<string> => {
+    const result = await wpWithOutput('core version');
+    const version = (result.stdout ?? '').trim();
+
+    if (result.failed || !version) {
         throw new Error(
             `Failed to read current WordPress version via "wp core version".` +
-            `\nSTDOUT:\n${currentResult.stdout}\nSTDERR:\n${currentResult.stderr}`
+            `\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`
         );
     }
 
-    const current = (currentResult.stdout ?? '').trim();
-    if (!current) {
+    return version;
+}
+
+/**
+ * Checks whether a WordPress version is at least another one, with PHP's version_compare().
+ *
+ * @param {string} current - The installed version.
+ * @param {string} latestStable - The version to compare against.
+ * @return {Promise<boolean>} True if current >= latestStable.
+ */
+const isWpVersionAtLeast = async (current: string, latestStable: string): Promise<boolean> => {
+    const compare = await wpWithOutput(
+        `eval "echo version_compare('${current.replace(/'/g, "\\'")}', '${latestStable.replace(/'/g, "\\'")}', '>=') ? '1' : '0';"`
+    );
+
+    if (compare.failed) {
         throw new Error(
-            `Current WordPress version is empty.` +
-            `\nSTDOUT:\n${currentResult.stdout}\nSTDERR:\n${currentResult.stderr}`
+            `Failed to compare WordPress core version against latest stable.` +
+            `\nCurrent: ${current}\nLatest stable: ${latestStable}` +
+            `\nComparison STDOUT:\n${compare.stdout}` +
+            `\nComparison STDERR:\n${compare.stderr}`
         );
     }
+
+    return (compare.stdout ?? '').trim() === '1';
+}
+
+/**
+ * Ensures WordPress core is latest stable or newer, updating it when it's behind.
+ * Prerelease/dev builds (RC, beta, dev) are kept as long as they're >= latest stable numeric release.
+ * Updates go to the exact latest stable version, so prerelease offers (e.g. from a beta tester plugin) are never installed.
+ */
+Given('WordPress core is up to date', async function (): Promise<void> {
+    const current = await getWpCoreVersion();
 
     const updatesResult = await wpWithOutput("core check-update --field=version");
     if (updatesResult.failed) {
@@ -241,27 +270,32 @@ Given('WordPress core is up to date', async function (): Promise<void> {
         .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
         .pop();
 
-    if (!latestStable) return;
+    if (!latestStable || await isWpVersionAtLeast(current, latestStable)) {
+        return;
+    }
 
-    const compare = await wpWithOutput(
-        `eval "echo version_compare('${current.replace(/'/g, "\\'")}', '${latestStable.replace(/'/g, "\\'")}', '>=') ? '1' : '0';"`
-    );
-
-    if (compare.failed) {
+    const updateResult = await wpWithOutput(`core update --version=${latestStable}`);
+    if (updateResult.failed) {
         throw new Error(
-            `Failed to compare WordPress core version against latest stable.` +
-            `\nCurrent: ${current}\nLatest stable: ${latestStable}` +
-            `\nComparison STDOUT:\n${compare.stdout}` +
-            `\nComparison STDERR:\n${compare.stderr}`
+            `Failed to update WordPress core from ${current} to ${latestStable} via "wp core update".` +
+            `\nSTDOUT:\n${updateResult.stdout}\nSTDERR:\n${updateResult.stderr}`
         );
     }
 
-    if ((compare.stdout ?? '').trim() !== '1') {
+    const updateDbResult = await wpWithOutput('core update-db');
+    if (updateDbResult.failed) {
         throw new Error(
-            `WordPress core is below the latest stable version.` +
-            `\nCurrent: ${current}\nLatest stable: ${latestStable}` +
-            `\nComparison STDOUT:\n${compare.stdout}` +
-            `\nComparison STDERR:\n${compare.stderr}`
+            `Failed to update the WordPress database after updating core to ${latestStable} via "wp core update-db".` +
+            `\nSTDOUT:\n${updateDbResult.stdout}\nSTDERR:\n${updateDbResult.stderr}`
+        );
+    }
+
+    const updated = await getWpCoreVersion();
+    if (!await isWpVersionAtLeast(updated, latestStable)) {
+        throw new Error(
+            `WordPress core is still below the latest stable version after updating.` +
+            `\nBefore: ${current}\nAfter: ${updated}\nLatest stable: ${latestStable}` +
+            `\nUpdate STDOUT:\n${updateResult.stdout}\nUpdate STDERR:\n${updateResult.stderr}`
         );
     }
 });
@@ -288,9 +322,13 @@ When('I click on {string}', async function (this: ICustomWorld, selector) {
         await this.page.waitForSelector('#save_last_major_version');
         await this.page.locator('#save_last_major_version').click();
         await this.utils.gotoWpr();
-        await this.page.locator('#wpr-nav-tools').click();
+        await this.sections.openNavItem('tools');
         await this.page.locator(selector).click();
         await this.page.waitForLoadState('load', { timeout: 70000 });
+    }
+    else if (/^#wpr-nav-[\w-]+$/.test(selector)) {
+        // Settings nav items may be nested in a collapsed group.
+        await this.sections.openNavItem(selector.replace('#wpr-nav-', ''));
     }
     else{
         await this.page.locator(selector).click();
@@ -379,15 +417,7 @@ When('expand mobile menu and validate no console error nor warning', async funct
     }
 });
 When('I clear cache', async function (this:ICustomWorld) {
-    // Goto WP Rocket dashboard
-    await this.utils.gotoWpr();
-
-    this.sections.set('dashboard');
-
-    const cacheButton = this.page.getByRole('link', { name: 'Clear and preload' });
-    await cacheButton.click();
-
-    await expect(this.page.getByText('WP Rocket: Cache cleared.')).toBeVisible();
+    await this.utils.clearCacheFromAdminBarAndAssert();
 });
 
 /**

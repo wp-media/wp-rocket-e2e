@@ -483,15 +483,40 @@ export class PageUtils {
      * @return  {Promise<void>}
      */
     public clearWPRCache = async(): Promise<void> => {
+        await this.clearCacheFromAdminBarAndAssert();
+    }
+
+    /**
+     * Clears the cache from the admin bar of the WP Rocket settings page and asserts the notice.
+     *
+     * @return {Promise<void>}
+     */
+    public clearCacheFromAdminBarAndAssert = async (): Promise<void> => {
         await this.gotoWpr();
+        await this.clearCacheFromAdminBar();
+        await expect(this.page.getByText('WP Rocket: Cache cleared.')).toBeVisible();
+    }
 
-        const clearCacheURL = await this.page.locator('.wpr-button.wpr-button--icon.wpr-icon-trash').first().getAttribute('href');
+    /**
+     * Clears the cache from the admin bar, on the current page.
+     *
+     * Uses the child link when the entry is a parent menu (i18n plugins), else the entry itself.
+     *
+     * @return {Promise<void>}
+     * @throws {Error} When no clickable clear cache link exists.
+     */
+    public clearCacheFromAdminBar = async (): Promise<void> => {
+        await this.wprDropdown();
 
-        await this.page.goto(clearCacheURL);
+        const allLanguages = this.page.locator('#wp-admin-bar-purge-all-all > a');
+        const purgeAll = this.page.locator('#wp-admin-bar-purge-all > a[href]');
+        const link = await allLanguages.count() > 0 ? allLanguages : purgeAll;
 
-        // Verify that cache cleared message is displayed
-        const cacheClearedElement = this.page.getByText('Cache cleared.');
-        await expect(cacheClearedElement).toBeVisible();
+        if (await link.count() === 0) {
+            throw new Error('No clickable clear cache link found in the admin bar.');
+        }
+
+        await link.first().click();
     }
 
     /**
@@ -552,7 +577,7 @@ export class PageUtils {
             await this.sections.massToggle();
             await this.page.getByRole('button', { name: 'Save Changes and Optimize' }).click();
             //  Updating text as goal here isnot testing database option itself but if enable will cause error
-            await expect(this.page.getByText('Database optimization process is')).toBeVisible({ timeout: 30000 });
+            await expect(this.page.getByText(/Database optimization process is (running|complete)/).first()).toBeVisible({ timeout: 30000 });
         }
 
         if(await this.sections.doesSectionExist('cdn')) {
@@ -587,7 +612,7 @@ export class PageUtils {
      */
     public importSettings = async (file: string): Promise<void> => {
         await this.gotoWpr();
-        await this.page.locator('#wpr-nav-tools').click();
+        await this.sections.openNavItem('tools');
         await this.page.locator('#upload').setInputFiles(file);
         await this.page.locator('button:has-text("Upload file and import settings")').click({ timeout: 120000 });
     }
