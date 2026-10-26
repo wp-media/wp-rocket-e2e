@@ -5,7 +5,6 @@ Feature: Renewal Notice
     Given I am logged in
     And auto renew is disabled
 
-
   Scenario Outline: Should display expiring soon renew banner for different license types
     Given "<licenseType>" license is active
     And license is 'expiring_soon'
@@ -26,7 +25,6 @@ Feature: Renewal Notice
       | multi_100   |
       | multi_500   |
 
-
   Scenario Outline: Should display expired renew banner for different license types
     Given "<licenseType>" license is active
     And license is 'expired'
@@ -46,7 +44,6 @@ Feature: Renewal Notice
       | multi_100   |
       | multi_500   |
 
-
   Scenario Outline: Should display the same renew banner wording for a grandfathered license
     Given "plus" license is active
     And license was created in "2020"
@@ -63,7 +60,6 @@ Feature: Renewal Notice
       | expiring_soon | Your license is about to expire!    | Renew now at              |
       | expired       | Your WP Rocket license has expired! | Renew your license now at |
 
-
   Scenario: Should display the standard expired banner when expired 2 days ago and OCD is disabled
     Given "single" license is active
     And license is 'just_expired'
@@ -75,7 +71,6 @@ Feature: Renewal Notice
     And renew banner message contains "Renew your license now at"
     And renew banner shows the renewal price
 
-
   Scenario: Should display the OCD expired banner when expired 2 days ago and OCD is enabled
     Given "single" license is active
     And license is 'just_expired'
@@ -86,5 +81,5 @@ Feature: Renewal Notice
     When I go to 'wp-admin/options-general.php?page=wprocket#dashboard'
     Then renew banner title is "Your license has expired. Keep your speed gains!"
     And renew banner message contains "Your CSS optimization will stop working on"
-    And renew banner shows a date later than today
+    And renew banner shows a date 12 to 14 days from today
     And renew banner message contains "and your pages will slow down, affecting your traffic and conversions. You'll also lose access to plugin updates and support."

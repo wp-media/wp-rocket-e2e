@@ -8,6 +8,9 @@ const RENEWAL_BANNER = '.rocket-renewal-banner, #rocket-renewal-banner';
 /** Title element of the renewal banner (expiring soon and expired variants). */
 const RENEWAL_BANNER_TITLE = '.rocket-promo-title, .rocket-expired-title';
 
+/** Message paragraphs of the banner; the title heading is deliberately excluded. */
+const RENEWAL_BANNER_MESSAGE = '.rocket-renew-message p, .rocket-expired-message p';
+
 /** Currency amount followed by the "(excl. taxes)" suffix, whatever the amount or currency. */
 const RENEWAL_PRICE_PATTERN = /(?:[$€£]\s*\d[\d.,]*|\d[\d.,]*\s*[$€£])[^()]*\(excl\. taxes\)/;
 
@@ -140,62 +143,84 @@ Then('renew banner title is {string}',
 );
 
 /**
- * Asserts the renewal banner text contains the given text (whitespace normalised).
+ * Escapes a string for literal use inside a regular expression.
+ *
+ * @param {string} text - Text to escape.
+ * @returns {string} The escaped text.
+ */
+function escapeRegExp(text: string): string {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Asserts a banner message paragraph contains the given text (case-sensitive, whitespace normalised).
+ *
+ * The title heading is not part of the message paragraphs, so text found only in the title does not match.
  *
  * @param {string} text - Expected text.
  * @returns {Promise<void>}
  */
 Then('renew banner message contains {string}',
     async function (this: ICustomWorld, text: string): Promise<void> {
-        await expect(this.page.locator(RENEWAL_BANNER)).toContainText(text);
+        const paragraphs = this.page.locator(RENEWAL_BANNER).locator(RENEWAL_BANNER_MESSAGE);
+
+        await expect(paragraphs.filter({ hasText: new RegExp(escapeRegExp(text)) })).not.toHaveCount(0);
     }
 );
 
 /**
- * Asserts the renewal banner text does not contain the given text (whitespace normalised).
+ * Asserts no banner message paragraph contains the given text (case-insensitive, whitespace normalised).
  *
  * @param {string} text - Text that must be absent.
  * @returns {Promise<void>}
  */
 Then('renew banner message does not contain {string}',
     async function (this: ICustomWorld, text: string): Promise<void> {
-        await expect(this.page.locator(RENEWAL_BANNER)).not.toContainText(text);
+        const paragraphs = this.page.locator(RENEWAL_BANNER).locator(RENEWAL_BANNER_MESSAGE);
+
+        await expect(paragraphs.first()).toBeVisible();
+        await expect(paragraphs.filter({ hasText: text })).toHaveCount(0);
     }
 );
 
 /**
- * Asserts the renewal banner shows a price (currency amount followed by "(excl. taxes)").
+ * Asserts a banner message paragraph shows a price (currency amount followed by "(excl. taxes)").
  *
  * @returns {Promise<void>}
  */
 Then('renew banner shows the renewal price',
     async function (this: ICustomWorld): Promise<void> {
-        await expect(this.page.locator(RENEWAL_BANNER)).toContainText(RENEWAL_PRICE_PATTERN);
+        const paragraphs = this.page.locator(RENEWAL_BANNER).locator(RENEWAL_BANNER_MESSAGE);
+
+        await expect(paragraphs.filter({ hasText: RENEWAL_PRICE_PATTERN })).not.toHaveCount(0);
     }
 );
 
 /**
- * Asserts the renewal banner shows a date strictly later than today.
+ * Asserts the banner message shows a date 12 to 14 days after today (UTC).
  *
- * The format follows the site's date_format, so only the default and ISO formats are parsed;
- * any other format fails with an explicit message.
+ * The window absorbs the site timezone offset around the expected 13 days. Only the WordPress
+ * "F j, Y" and ISO "Y-m-d" formats are parsed; any other site date_format fails with an explicit error.
  *
  * @returns {Promise<void>}
  */
-Then('renew banner shows a date later than today',
+Then('renew banner shows a date 12 to 14 days from today',
     async function (this: ICustomWorld): Promise<void> {
-        await expect(this.page.locator(RENEWAL_BANNER)).toContainText(BANNER_DATE_PATTERN);
+        const paragraphs = this.page.locator(RENEWAL_BANNER).locator(RENEWAL_BANNER_MESSAGE);
 
-        const text = await this.page.locator(RENEWAL_BANNER).innerText();
-        const match = text.match(BANNER_DATE_PATTERN);
-        const bannerDate = Date.parse(`${match?.[0] ?? ''} UTC`);
+        await expect(paragraphs.filter({ hasText: BANNER_DATE_PATTERN })).not.toHaveCount(0);
 
-        expect(Number.isNaN(bannerDate), `Banner date "${match?.[0]}" could not be parsed`).toBe(false);
+        const text = (await paragraphs.allInnerTexts()).join(' ');
+        const found = text.match(BANNER_DATE_PATTERN)?.[0];
+        const bannerDate = Date.parse(`${found} UTC`);
+
+        expect(Number.isNaN(bannerDate), `Banner date "${found}" could not be parsed`).toBe(false);
 
         const now = new Date();
         const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+        const days = Math.round((bannerDate - todayUtc) / 86400000);
 
-        expect(bannerDate).toBeGreaterThan(todayUtc);
+        expect(days, `Banner date "${found}" is ${days} days from today, expected 12 to 14`).toBeGreaterThanOrEqual(12);
+        expect(days, `Banner date "${found}" is ${days} days from today, expected 12 to 14`).toBeLessThanOrEqual(14);
     }
 );
-
