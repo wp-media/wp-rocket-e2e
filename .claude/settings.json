@@ -1,0 +1,17 @@
+{
+  "extraKnownMarketplaces": {
+    "group-ai-skills": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/wp-media/gas-claude-marketplace.git"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "gas-delivery-pipeline-templates@group-ai-skills": true,
+    "gas-wpm-qa@group-ai-skills": true
+  },
+  "hooks": {
+    "PostToolUse": []
+  }
+}
