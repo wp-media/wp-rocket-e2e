@@ -668,7 +668,7 @@ export const openMobileMenu = async (page: Page): Promise<void> => {
     }
 
     const genericToggle = page.locator(
-        '.menu-mobile-toggle, .mobile_menu_bar, [data-open="#main-menu"], .menu-toggle-icon, button.fusion-mobile-selector[aria-controls="mobile-menu-header-menu"], #site-header-inner > div.oceanwp-mobile-menu-icon.clr.mobile-right > a > i, .menu-toggle, .nav-toggle, .hamburger, .fusion-icon.fusion-icon-bars, ' +
+        '.menu-mobile-toggle, .mobile_menu_bar, [data-open="#main-menu"], .menu-toggle-icon, button.fusion-mobile-selector[aria-controls="mobile-menu-header-menu"], .menu-toggle, .nav-toggle, .hamburger, .fusion-icon.fusion-icon-bars, ' +
         // WordPress block themes (e.g. Twenty Twenty-Four/Five) use the core Navigation
         // block's own responsive toggle instead of any theme-specific class.
         'button.wp-block-navigation__responsive-container-open, ' +
@@ -682,7 +682,11 @@ export const openMobileMenu = async (page: Page): Promise<void> => {
         // classes, so this one must be scoped to the visible instance.
         '.navbar-toggle.navbar-toggler:visible, ' +
         // Betheme
-        'a.responsive-menu-toggle'
+        'a.responsive-menu-toggle, ' +
+        // OceanWP (4.2.6, 4.2.8): the toggle is <a class="mobile-menu"> or, with the semantic
+        // mobile header setting, <button class="mobile-menu">. It sits in .mobile-right or
+        // .mobile-left and may be wrapped in .container (big header), so match on the class only.
+        '.oceanwp-mobile-menu-icon > .mobile-menu, .oceanwp-mobile-menu-icon > .container > .mobile-menu'
     ).first();
 
     await genericToggle.waitFor({ state: 'visible', timeout: 3000 });
