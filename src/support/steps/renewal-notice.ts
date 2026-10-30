@@ -69,7 +69,7 @@ When('expiring soon banner is displayed',
 // Validate expired banner is displayed
 When('expired banner is displayed',
     async function (this: ICustomWorld) {
-        await expect(this.page.getByText('Your WP Rocket license is expired!')).toBeVisible();
+        await expect(this.page.getByText('Your WP Rocket license has expired!')).toBeVisible();
     }
 );
 

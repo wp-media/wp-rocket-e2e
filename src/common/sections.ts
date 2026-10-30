@@ -18,8 +18,19 @@
  * @property {object} elements - Section element selectors.
  * @property {boolean} optionState - Option state (enabled or disabled).
  */
-import type { Page } from "@playwright/test";
-import type { Selectors, Roles, Section, SectionId  } from "../../utils/types";
+import { expect } from "@playwright/test";
+import type { Page, Locator } from "@playwright/test";
+import type { Selectors, Roles, Section, SectionId } from "../../utils/types";
+
+/**
+ * Raised when opening a navigation item fails on a page whose items are nested in collapsible groups.
+ */
+export class NavGroupError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "NavGroupError";
+    }
+}
 
 /**
  * Class representing sections in WP Rocket settings for Playwright tests.
@@ -120,8 +131,12 @@ export class Sections {
         try {
             this.canPerformAction();
 
-            await this.page.locator("#wpr-nav-" + this.sectionId).click();
+            await this.openNavItem(this.sectionId);
         } catch (error) {
+            if (error instanceof NavGroupError) {
+                throw error;
+            }
+
             if (error instanceof Error) {
                 // Handle the error
                 console.error("An error occurred:", error.message);
@@ -134,14 +149,94 @@ export class Sections {
     };
 
     /**
+     * Waits until the settings navigation is rendered, so DOM detection does not run on an unrendered nav.
+     *
+     * Pages without nav (invalid licence) cost up to one 3s wait per helper call, then fall through.
+     *
+     * @method
+     * @async
+     * @return {Promise<void>} - Resolves when the nav is attached or the short timeout elapses.
+     */
+    private waitForNav = async (): Promise<void> => {
+        const nav = this.page.locator("#wpr-nav-dashboard");
+
+        if (await nav.count() > 0) {
+            return;
+        }
+
+        await nav.waitFor({ state: "attached", timeout: 3000 }).catch(() => undefined);
+    };
+
+    /**
+     * Builds the locator of the collapsible group trigger owning a navigation item.
+     *
+     * @method
+     * @param {string} navId - Navigation item ID (without the "wpr-nav-" prefix).
+     * @return {Locator} - Locator matching the group trigger, empty when the item is not nested in a group.
+     */
+    private groupTrigger = (navId: string): Locator => {
+        return this.page.locator(".wpr-menuGroup:has(#wpr-nav-" + navId + ") > .wpr-menuGroup-trigger");
+    };
+
+    /**
+     * Opens a settings navigation item, expanding its group first when the item is nested in one.
+     *
+     * @method
+     * @async
+     * @param {string} navId - Navigation item ID (without the "wpr-nav-" prefix).
+     * @return {Promise<void>} - A promise that resolves once the item is clicked.
+     * @throws {NavGroupError} - When the item is nested in a group and expanding or clicking fails.
+     */
+    public openNavItem = async (navId: string): Promise<void> => {
+        await this.waitForNav();
+
+        const link = this.page.locator("#wpr-nav-" + navId);
+        const trigger = this.groupTrigger(navId);
+
+        if (await trigger.count() === 0) {
+            await link.click();
+            return;
+        }
+
+        try {
+            // The nav script opens the group of the current page once it ran; reading the state earlier is stale
+            // and clicking afterwards would close the group again.
+            await this.page.locator('.wpr-menuItem[aria-current="page"]').first().waitFor({ state: "attached", timeout: 5000 }).catch(() => undefined);
+
+            await expect(async () => {
+                if (await trigger.getAttribute("aria-expanded") !== "true") {
+                    await trigger.click();
+                }
+
+                await expect(trigger).toHaveAttribute("aria-expanded", "true", { timeout: 1000 });
+            }).toPass({ timeout: 10000 });
+
+            await link.click();
+        } catch (error) {
+            throw new NavGroupError("Could not open nav item '" + navId + "': " + (error instanceof Error ? error.message : String(error)));
+        }
+    };
+
+    /**
      * Checks if the current section exists.
+     *
+     * Items nested in a collapsed group are hidden, so they are checked for presence instead of visibility.
      *
      * @method
      * @async
      * @return {Promise<boolean>} - A promise that resolves with true if the section exists; otherwise, resolves with false.
      */
     public doesSectionExist = async (section: Section): Promise<boolean> => {
-        return await this.page.locator("#wpr-nav-" + this.selectors[section]["parent"]).isVisible();
+        await this.waitForNav();
+
+        const navId = this.selectors[section]["parent"];
+        const link = this.page.locator("#wpr-nav-" + navId);
+
+        if (await this.page.locator(".wpr-menuGroup:has(#wpr-nav-" + navId + ")").count() > 0) {
+            return await link.count() > 0;
+        }
+
+        return await link.isVisible();
     }
 
     /**
