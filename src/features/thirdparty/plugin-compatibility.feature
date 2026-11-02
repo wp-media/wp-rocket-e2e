@@ -1,8 +1,5 @@
 # Paid plugins (Elementor Pro, Advanced Custom Fields PRO, Rank Math SEO PRO) are intentionally
-# left out of this list for now - they require manual provisioning and are tracked in a follow-up ticket.
-# Imagify is also left out here: it already has a dedicated @imagify-compatibility suite with its
-# own hooks and required API-key config, so it's tracked in the same follow-up rather than risking
-# false positives from running it through this generic loop unconfigured.
+# left out of this list for now - they require manual provisioning and are tracked in #446.
 @setup @smoke @plugin-compatibility
 Feature: C397 - Third-party plugins should not cause a PHP fatal error alongside WP Rocket
 
@@ -24,6 +21,7 @@ Feature: C397 - Third-party plugins should not cause a PHP fatal error alongside
             | classic-editor             |
             | elementor                  |
             | seo-by-rank-math           |
+            | imagify                    |
             | contact-form-7             |
             | google-site-kit            |
             | woocommerce                |
