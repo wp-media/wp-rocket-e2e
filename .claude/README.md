@@ -46,12 +46,22 @@ In a git worktree, `config/wp.config.ts` doesn't exist. The agent asks before co
 | Path | Contents |
 |---|---|
 | `agents/e2e-qa-tester.md` | Overrides the GAS agent: runs the PR's Cucumber scenarios (`--retry 0` for newly added ones, default retries otherwise), repeats them for flakiness fixes, proves they can fail. Called by the GAS `qa-engineer`. |
+| `agents/e2e-failure-analyst.md` | Read-only analysis of failed e2e reports posted in Slack for WP Rocket or BackWPup: classifies each failure, groups recurring ones, summarises. Standalone, not a pipeline phase. |
 | `skills/e2e-run/` | How to run scenarios safely (environment choice, `--retry 0` for newly added scenarios, reading the report) |
 | `skills/wp-rocket-e2e-architecture/` | Test rules for this repo; `refs/best-practices.md` lists best-practice references |
 | `skills/orchestrator/refs/pr-template.md` | The PR body template the `PR Template Checker` CI enforces |
 | `skills/orchestrator/scripts/issue-sync.sh` | Issue sync that also pulls parent epics and sub-issues |
 
 The GAS orchestrator, grooming, challenger, implementer, PR, review, QA, DoD and docs agents and skills are not copied here. Do not add a repo copy of one: two copies make a plain request match both.
+
+## Analyse failed e2e reports from Slack
+
+Ask: `Use the e2e-failure-analyst agent for WP Rocket, last 7 days` (product `WP Rocket` or `BackWPup`; window 1 to 30 days, default 7; the 30-day cap is a volume guard, not an issue rule). Anything else is rejected with `INVALID INPUT` before Slack is called.
+
+- **Prerequisite:** a Slack MCP connector in your Claude Code session with read access to channel `C0925D6CBPF` (workspace `group-onecom`). Without it the agent answers `ACCESS PROBLEM` and stops.
+- **Read-only:** the agent's `tools:` line lists only the two Slack read tools (`slack_read_channel`, `slack_read_thread`) plus `Read`, `Glob`, `Grep`, `WebFetch`. It cannot post, edit or react, and nothing is posted back. It returns a per-failure list, recurring-failure groups and a summary; unreachable items are listed as `unparsed`.
+- **Tool names are connector-specific.** The names in the agent file are those of one connector. If yours differs, edit the `tools:` line of `agents/e2e-failure-analyst.md` and replace them with the exact full names of your server's channel-read and thread-read tools. Add read tools only, never send, post, schedule, draft, react, edit or canvas tools. Wildcards in `tools:` are unverified and not used here.
+- **Limits per run:** 5 channel pages, 15 thread reads, 8 artifact fetches. When one is hit, the summary says "window incomplete".
 
 ## Improving it
 
