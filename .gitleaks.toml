@@ -1,0 +1,6 @@
+# Config of the PR secret scan (.github/workflows/gitleaks.yml). See docs/secret-scan.md.
+# The default rules found nothing in this repo's history, so there is no allowlist yet.
+# Scope every future exception to a rule (targetRules) and a value pattern or file, never a whole directory.
+
+[extend]
+useDefault = true
