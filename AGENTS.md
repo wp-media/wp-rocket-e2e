@@ -276,6 +276,7 @@ Never:
 * Hardcode credentials or hostnames in features, steps or helpers.
 * Point the suite at a production or customer site.
 * Build SQL or shell commands from unsanitised input.
+* Print Slack message content or CI/report artifact content that may contain tokens, cookies or credentials. Redact it.
 
 ---
 
@@ -301,6 +302,7 @@ The GAS `qa-engineer` agent validates PRs at the end of the delivery pipeline an
 - **Guards:** a criterion that needs a plugin zip, helper plugin, config key (`IMAGIFY_INFOS`, `BACKWPUP_INFOS`) or service that is missing is `CANNOT_VERIFY`, naming exactly what is missing. A `SKIP` or `CANNOT_VERIFY` is never a pass.
 - **One run per site:** never run on a site another agent or run is using. Nothing detects other users of a remote site, so for `external` always ask the user to confirm the hostname is free before the first real run, once per session and hostname. No confirmation means `SKIP`/`CANNOT_VERIFY`.
 - **Browsers:** never use the shared Playwright MCP browser. Agents run in parallel. Use a standalone Playwright script with a fresh temporary profile and delete it afterwards.
+- **Failure analysis:** `.claude/agents/e2e-failure-analyst.md` reads failed-report posts from Slack channel `C0925D6CBPF` and reports; it is read-only (no posting, editing or reacting in Slack; no code, test or GitHub changes) and never prints secrets. Each failure gets exactly one class from `product bug | test flake | environment | data | selector | timing`, and suggestions must be root-cause, never a longer timeout, retry, `waitForTimeout` or exclusion list. Flaky history it may cite as "possible match, not proof": #310, #292, #402, #54, #104, #218. A Node teardown crash after all scenarios passed is not a failed test.
 
 ---
 
