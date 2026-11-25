@@ -21,7 +21,8 @@ Given('rucss beacon is opened', async function (this: ICustomWorld) {
     // Enable Optimize CSS delivery option.
     await this.sections.state(true).toggle("rucss");
 
-    await this.page.locator('iframe[title="Help Scout Beacon - Open"]').waitFor();
+    // Help Scout now renders the beacon inline (no "Open" iframe); wait for its container.
+    await this.page.locator('.hsds-beacon').waitFor({ state: 'attached' });
     await this.page.locator('a[data-beacon-article="6076083ff8c0ef2d98df1f97"]').click();
 
     await this.page.waitForSelector('iframe[title="Help Scout Beacon - Live Chat, Contact Form, and Knowledge Base"]');
